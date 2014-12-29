@@ -42,11 +42,11 @@ import java.util.List;
 //Import of resources file for file browser
 
 public class FileBrowserActivity extends Activity {
-    final static public String EXTRA_PEER_ID = "tools.skylink.sample.FileBrowserActivity.peerId";
-    final static public String EXTRA_FILE_NAME = "tools.skylink.sample.FileBrowserActivity.fileName";
-    final static public String EXTRA_CANCEL_SAVE = "tools.skylink.sample.FileBrowserActivity.cancelSave";
-    final static public String EXTRA_CANCEL_MESSAGE = "tools.skylink.sample.FileBrowserActivity.cancelMessage";
-    final static public String EXTRA_TIMEOUT = "tools.skylink.sample.FileBrowserActivity.timeout";
+    final static public String EXTRA_PEER_ID = "com.temasys.skylink.sample.FileBrowserActivity.peerId";
+    final static public String EXTRA_FILE_NAME = "com.temasys.skylink.sample.FileBrowserActivity.fileName";
+    final static public String EXTRA_CANCEL_SAVE = "com.temasys.skylink.sample.FileBrowserActivity.cancelSave";
+    final static public String EXTRA_CANCEL_MESSAGE = "com.temasys.skylink.sample.FileBrowserActivity.cancelMessage";
+    final static public String EXTRA_TIMEOUT = "com.temasys.skylink.sample.FileBrowserActivity.timeout";
 
     // Intent Action Constants
     public static final String INTENT_ACTION_SELECT_DIR = "ua.com.vassiliev.androidfilebrowser.SELECT_DIRECTORY_ACTION";

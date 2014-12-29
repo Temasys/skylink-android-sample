@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+dependencies {
+    compile fileTree(dir: 'libs', exclude: 'amazon-device-messaging-1.0.1.jar', include: '*.jar')
+    compile project(':skylink_sdk')
+}
+
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.1"
@@ -10,17 +15,16 @@ android {
         targetSdkVersion 21
     }
 
+    sourceSets {
+        main {
+            resources.srcDirs = ['src', 'src/main/resources', 'src/main/jniLibs/']
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
 }
 
-dependencies {
-    compile files('libs/afilechooser.jar')
-    compile files('libs/libjingle_peerconnection.jar')
-    compile files('libs/socketio.jar')
-    compile project(':skylink_sdk')
-}
