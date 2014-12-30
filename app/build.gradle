@@ -8,13 +8,11 @@ dependencies {
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.1"
-
     defaultConfig {
         applicationId "com.temasys.skylink.sample"
         minSdkVersion 17
         targetSdkVersion 21
     }
-
     sourceSets {
         main {
             resources.srcDirs = ['src', 'src/main/resources', 'src/main/jniLibs/']
@@ -23,8 +21,11 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
         }
+    }
+    productFlavors {
     }
 }
 
