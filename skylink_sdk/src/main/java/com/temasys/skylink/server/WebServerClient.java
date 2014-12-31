@@ -410,6 +410,7 @@ public class WebServerClient {
                 return null;
             }
 
+            // Will send joinRoom message.
             WebServerClient.this.iceServersObserver.onError(null);
       
       /*String gaeBaseHref = url.substring(0, url.indexOf('?'));

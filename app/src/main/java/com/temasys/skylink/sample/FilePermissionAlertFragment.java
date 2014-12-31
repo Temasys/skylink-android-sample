@@ -9,9 +9,9 @@ import android.os.Bundle;
 
 public class FilePermissionAlertFragment extends DialogFragment {
 
-    final static private String BUNDLE_MESSAGE = "tools.skylink.sample.FilePermissionAlertFragment.message";
-    final static private String BUNDLE_PEER_ID = "tools.skylink.sample.FilePermissionAlertFragment.peerId";
-    final static private String BUNDLE_FILE_NAME = "tools.skylink.sample.FilePermissionAlertFragment.fileName";
+    final static private String BUNDLE_MESSAGE = "com.temasys.skylink.sample.FilePermissionAlertFragment.message";
+    final static private String BUNDLE_PEER_ID = "com.temasys.skylink.sample.FilePermissionAlertFragment.peerId";
+    final static private String BUNDLE_FILE_NAME = "com.temasys.skylink.sample.FilePermissionAlertFragment.fileName";
 
     private String mMessage;
     private String mPeerId;
@@ -46,10 +46,10 @@ public class FilePermissionAlertFragment extends DialogFragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent fileExploreIntent = new Intent(
-                                        FileBrowserActivity.INTENT_ACTION_SELECT_DIR,
+                                        com.temasys.skylink.sample.FileBrowserActivity.INTENT_ACTION_SELECT_DIR,
                                         null,
                                         getActivity(),
-                                        FileBrowserActivity.class);
+                                        com.temasys.skylink.sample.FileBrowserActivity.class);
                                 fileExploreIntent.putExtra(
                                         FileBrowserActivity.EXTRA_PEER_ID,
                                         mPeerId);
@@ -113,10 +113,10 @@ public class FilePermissionAlertFragment extends DialogFragment {
     // explicitly by Peer or due to timeout.
     public void saveTimeout(String message) {
         Intent fileExploreIntent = new Intent(
-                FileBrowserActivity.INTENT_ACTION_CANCEL_SAVE,
+                com.temasys.skylink.sample.FileBrowserActivity.INTENT_ACTION_CANCEL_SAVE,
                 null,
                 getActivity(),
-                FileBrowserActivity.class);
+                com.temasys.skylink.sample.FileBrowserActivity.class);
         fileExploreIntent.putExtra(FileBrowserActivity.EXTRA_PEER_ID, mPeerId);
         fileExploreIntent.putExtra(FileBrowserActivity.EXTRA_FILE_NAME, mFileName);
         fileExploreIntent.putExtra(FileBrowserActivity.EXTRA_CANCEL_MESSAGE, message);

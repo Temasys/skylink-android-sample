@@ -3,9 +3,6 @@
     <string name="app_name">VLSDemo</string>
     <string name="chat_button">Chat</string>
     <string name="fe_button">File</string>
-    <string name="app_key"></string>
-    <string name="app_secret"></string>
-    <string name="room_name"></string>
 
     <!-- JoinRoom Activity -->
     <string name="hint_display_name">Display name</string>

@@ -1,92 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:id="@+id/linearLayoutFE"
-  android:orientation="vertical"
-  android:layout_width="fill_parent"
-  android:layout_height="fill_parent" >
-  
-  <TextView
-      android:id="@+id/textViewLabTarget"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1"
-      android:layout_gravity="top"
-      android:scrollbars="vertical"
-      android:textAppearance="?android:attr/textAppearanceLarge"
-      android:focusable="true"
-      android:focusableInTouchMode="true" >
-      <requestFocus />
-  </TextView>
-  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayoutLabels"
-    android:orientation="horizontal"
+    android:id="@+id/linearLayoutFE"
+    android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1" 
-    >
+    android:layout_height="fill_parent">
+
     <TextView
-      android:id="@+id/textViewLabPath"
-      android:layout_width="0dp" 
-      android:layout_height="match_parent"
-      android:layout_weight="2" >
+        android:id="@+id/textViewLabTarget"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="top"
+        android:scrollbars="vertical"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+        <requestFocus />
     </TextView>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/linearLayoutLabels"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/textViewLabPath"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"></TextView>
+
+        <TextView
+            android:id="@+id/textViewLabFile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"></TextView>
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/linearLayoutDisplays"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/textViewCurPath"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"></TextView>
+
+        <EditText
+            android:id="@+id/editTextCurFile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"></EditText>
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/linearLayoutButtons"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <Button
+            android:id="@+id/buttonSelect"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"></Button>
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"></Button>
+    </LinearLayout>
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="7" />
+
     <TextView
-      android:id="@+id/textViewLabFile"
-      android:layout_width="0dp" 
-      android:layout_height="match_parent"
-      android:layout_weight="1" >
-    </TextView>
-  </LinearLayout>
-  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayoutDisplays"
-    android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    >
-    <TextView
-      android:id="@+id/textViewCurPath"
-      android:layout_width="0dp" 
-      android:layout_height="match_parent"
-      android:layout_weight="2" >
-    </TextView>
-    <EditText
-      android:id="@+id/editTextCurFile"
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
-      android:layout_weight="1" >
-    </EditText>
-  </LinearLayout>
-  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linearLayoutButtons"
-    android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    >
-    <Button
-        android:id="@+id/buttonSelect"
-        android:layout_width="0dp" 
-        android:layout_height="match_parent"
-        android:layout_weight="2" >
-    </Button>
-    <Button
-        android:id="@+id/buttonCancel"
-        android:layout_width="0dp" 
-        android:layout_height="match_parent"
-        android:layout_weight="1" >
-    </Button>
-  </LinearLayout>
-  <ListView
-    android:id="@android:id/list"
-    android:layout_width="fill_parent" 
-    android:layout_height="0dp"
-    android:layout_weight="7"
-   />
-  <TextView
-    android:id="@android:id/empty"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="No Data" >
-  </TextView>
+        android:id="@android:id/empty"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="No Data"></TextView>
 </LinearLayout>

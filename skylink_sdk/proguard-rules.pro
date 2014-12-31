@@ -15,3 +15,19 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# Do not obfuscate webrtc library
+-keep class org.webrtc.** { *; }
+-dontwarn org.webrtc.**
+-keep class io.socket.** { *; }
+-dontwarn io.socket.**
+
+-keep public class * {
+    public *;
+}
+
+-keepclassmembers class * {
+    public *;
+}
+
+-keepattributes Exceptions,InnerClasses

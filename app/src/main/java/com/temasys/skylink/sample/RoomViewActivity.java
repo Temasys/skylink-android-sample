@@ -3,10 +3,13 @@ package com.temasys.skylink.sample;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Point;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -40,12 +43,12 @@ public class RoomViewActivity extends Activity implements
 
     final static private String TAG = "RoomViewActivity";
 
-    final static private String BUNDLE_IS_CONNECTED = "tools.skylink.sample.RoomViewActivity.isConnected";
-    final static private String BUNDLE_CONNECTION_CONFIG = "tools.skylink.sample.RoomViewActivity.connectionConfig";
-    final static private String BUNDLE_CONTROL_PANEL_WEIGHT = "tools.skylink.sample.RoomViewActivity.controlPanelWeight";
-    final static private String BUNDLE_IS_RUNNING = "tools.skylink.sample.RoomViewActivity.isRunning";
-    final static public String EXTRA_DISPLAY_NAME = "tools.skylink.sample.RoomViewActiivty.displayName";
-    final static public String EXTRA_ROOM_NAME = "tools.skylink.sample.RoomViewActivity.roomName";
+    final static private String BUNDLE_IS_CONNECTED = "com.temasys.skylink.sample.RoomViewActivity.isConnected";
+    final static private String BUNDLE_CONNECTION_CONFIG = "com.temasys.skylink.sample.RoomViewActivity.connectionConfig";
+    final static private String BUNDLE_CONTROL_PANEL_WEIGHT = "com.temasys.skylink.sample.RoomViewActivity.controlPanelWeight";
+    final static private String BUNDLE_IS_RUNNING = "com.temasys.skylink.sample.RoomViewActivity.isRunning";
+    final static public String EXTRA_DISPLAY_NAME = "com.temasys.skylink.sample.RoomViewActiivty.displayName";
+    final static public String EXTRA_ROOM_NAME = "com.temasys.skylink.sample.RoomViewActivity.roomName";
 
     private boolean mIsExplicitlyTerminated = false;
 
@@ -63,6 +66,32 @@ public class RoomViewActivity extends Activity implements
 
     private boolean mIsRunning = false;
 
+    // Audio
+    private HeadSetReceiver mHeadSetReceiver;
+    private IntentFilter headSetFilter;
+    private MediaPlayer mMediaPlayer;
+
+    private class HeadSetReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+                int state = intent.getIntExtra("state", -1);
+                switch (state) {
+                    case 0:
+                        Log.d(TAG, "Headset: Unplugged");
+                        break;
+                    case 1:
+                        Log.d(TAG, "Headset: Plugged");
+                        break;
+                    default:
+                        Log.d(TAG, "Headset: Error determining state!");
+                }
+                // Reset audio path
+                setAudioPath();
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -79,13 +108,14 @@ public class RoomViewActivity extends Activity implements
         mDisplayName = getIntent().getStringExtra(EXTRA_DISPLAY_NAME);
         mRoomName = getIntent().getStringExtra(EXTRA_ROOM_NAME);
 
-        AudioManager audioManager = ((AudioManager) getSystemService(android.content.Context.AUDIO_SERVICE));
+		/*AudioManager audioManager = ((AudioManager) getSystemService(android.content.Context.AUDIO_SERVICE));
 
-        @SuppressWarnings("deprecation")
-        boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
-        audioManager.setMode(isWiredHeadsetOn ? AudioManager.MODE_IN_CALL
-                : AudioManager.MODE_IN_COMMUNICATION);
-        audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
+		@SuppressWarnings("deprecation")
+		boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
+		audioManager.setMode(isWiredHeadsetOn ? AudioManager.MODE_IN_CALL
+				: AudioManager.MODE_IN_COMMUNICATION);
+		audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);*/
+
 
         if (!mIsAlreadyConnected) {
             SkyLinkConfig config = new SkyLinkConnection.SkyLinkConfig();
@@ -145,6 +175,10 @@ public class RoomViewActivity extends Activity implements
         } catch (IOException e) {
             Log.w(TAG, e.getLocalizedMessage(), e);
         }
+
+        // Prepare to set audio path
+        mHeadSetReceiver = new HeadSetReceiver();
+        headSetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
     }
 
     @Override
@@ -158,6 +192,8 @@ public class RoomViewActivity extends Activity implements
             setVideoUIFromRoomManager();
             RoomManager.get().setSplitChanged(false);
         }
+        // Get ready to set audio path when headset state changes.
+        registerReceiver(mHeadSetReceiver, headSetFilter);
     }
 
     @Override
@@ -167,6 +203,8 @@ public class RoomViewActivity extends Activity implements
         mIsRunning = false;
         if (mConnection != null)
             mConnection.onPause();
+        // Do not set audio path when app is not forefront.
+        unregisterReceiver(mHeadSetReceiver);
     }
 
     @Override
@@ -399,6 +437,23 @@ public class RoomViewActivity extends Activity implements
         return displayName;
     }
 
+    // Set the audio path according to whether earphone is connected.
+    // Use ear piece if earphone is connected.
+    // Use speakerphone if no earphone is connected.
+    private void setAudioPath() {
+        AudioManager audioManager =
+                ((AudioManager) getSystemService(android.content.Context.AUDIO_SERVICE));
+        boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
+        mMediaPlayer = new MediaPlayer();
+        if (isWiredHeadsetOn) {
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_VOICE_CALL);
+            audioManager.setSpeakerphoneOn(false);
+        } else {
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            audioManager.setSpeakerphoneOn(true);
+        }
+    }
+
     public void setVideoUI() {
         int totalPeerVideos = RoomManager.get().getRemoteVideoList().size();
         FragmentManager fragmentManager = getFragmentManager();
@@ -566,8 +621,8 @@ public class RoomViewActivity extends Activity implements
             strShareTemp = String.format(
                     getString(R.string.message_file_request_private), nick,
                     fileName);
-        /*FilePermissionAlertFragment.newInstance(strShareTemp, peerId, fileName)
-                .show(RoomViewActivity.this.getFragmentManager(), TAG);*/
+		/*FilePermissionAlertFragment.newInstance(strShareTemp, peerId, fileName)
+				.show(RoomViewActivity.this.getFragmentManager(), TAG);*/
 
         // Put request into queue at last position
         String[] fileRequest = {strShareTemp, peerId, fileName};
@@ -788,7 +843,7 @@ public class RoomViewActivity extends Activity implements
                 chatAdapter.add(comment);
             }
         }
-
+	  
       /*Fragment fragment = getFragmentManager().findFragmentById(R.id.split_container);
 
     // Check if fragment occupying split_container is a ChatFragment
@@ -872,7 +927,7 @@ public class RoomViewActivity extends Activity implements
             case Utility.REQUEST_CODE_PICK_DIR: {
                 if (data != null) {
                     String newDir = data
-                            .getStringExtra(FileBrowserActivity.returnDirectoryParameter);
+                            .getStringExtra(com.temasys.skylink.sample.FileBrowserActivity.returnDirectoryParameter);
                     String peerId = data
                             .getStringExtra(FileBrowserActivity.EXTRA_PEER_ID);
                     String fileName = data

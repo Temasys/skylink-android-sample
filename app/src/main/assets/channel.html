@@ -1,14 +1,14 @@
 <html>
-  <head>
+<head>
     <script src="https://apprtc.appspot.com/_ah/channel/jsapi"></script>
-  </head>
-  <!--
-  Helper HTML that redirects Google AppEngine's Channel API to a JS object named
-  |androidMessageHandler|, which is expected to be injected into the WebView
-  rendering this page by an Android app's class such as AppRTCClient.
-  -->
-  <body onbeforeunload="closeSocket()" onload="openSocket()">
-    <script type="text/javascript">
+</head>
+<!--
+Helper HTML that redirects Google AppEngine's Channel API to a JS object named
+|androidMessageHandler|, which is expected to be injected into the WebView
+rendering this page by an Android app's class such as AppRTCClient.
+-->
+<body onbeforeunload="closeSocket()" onload="openSocket()">
+<script type="text/javascript">
       var token = androidMessageHandler.getToken();
       if (!token)
         throw "Missing/malformed token parameter: [" + token + "]";
@@ -29,6 +29,8 @@
       function closeSocket() {
         socket.close();
       }
-    </script>
-  </body>
+
+
+</script>
+</body>
 </html>

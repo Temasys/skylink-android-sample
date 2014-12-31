@@ -72,6 +72,7 @@ public class SignalingServerClient implements IOCallback {
         Log.d(TAG, "Connection terminated.");
         Log.d(TAG, "Disconnected from Signaling server.");
         if (delegate != null) delegate.onClose();
+        delegate = null;
     }
 
     @Override

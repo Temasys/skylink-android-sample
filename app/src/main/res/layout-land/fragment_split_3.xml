@@ -2,84 +2,84 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:orientation="horizontal">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
 
         <RelativeLayout
+            android:id="@+id/video1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" >
-          <RelativeLayout
-              android:id="@+id/video1"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_weight="1" >
-          </RelativeLayout>
-          <TextView
+            android:layout_weight="1"></RelativeLayout>
+
+        <TextView
             android:id="@+id/chatPrivate1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_above="@+id/chatGroup1"
-          />
-          <TextView
+            android:layout_above="@+id/chatGroup1" />
+
+        <TextView
             android:id="@+id/chatGroup1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video1"
-            android:layout_centerHorizontal="true"
-          />
-        </RelativeLayout>
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
 
         <RelativeLayout
+            android:id="@+id/video2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" >
-          <RelativeLayout
-              android:id="@+id/video2"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_weight="1" >
-          </RelativeLayout>
-          <TextView
+            android:layout_weight="1"></RelativeLayout>
+
+        <TextView
             android:id="@+id/chatPrivate2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_above="@+id/chatGroup2"
-          />
-          <TextView
+            android:layout_above="@+id/chatGroup2" />
+
+        <TextView
             android:id="@+id/chatGroup2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video2"
-            android:layout_centerHorizontal="true"
-          />
-        </RelativeLayout>
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
 
         <RelativeLayout
+            android:id="@+id/video3"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" >
-          <RelativeLayout
-              android:id="@+id/video3"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_weight="1" >
-          </RelativeLayout>
-          <TextView
+            android:layout_weight="1"></RelativeLayout>
+
+        <TextView
             android:id="@+id/chatPrivate3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_above="@+id/chatGroup3"
-          />
-          <TextView
+            android:layout_above="@+id/chatGroup3" />
+
+        <TextView
             android:id="@+id/chatGroup3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video3"
-            android:layout_centerHorizontal="true"
-          />
-        </RelativeLayout>
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 
 </LinearLayout>
