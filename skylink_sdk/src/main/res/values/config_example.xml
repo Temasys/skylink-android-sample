@@ -12,12 +12,12 @@
 <-->
 <resources>
 
-	<!-- API keys and secrets. res/values/config.xml is ignored by git and will not be committed -->
+    <!-- API keys and secrets. res/values/config.xml is ignored by git and will not be committed -->
 
-  <!-- Uncomment in config.xml>
-	<item name="app_key" type="config">Enter your app ID here.</item>
-  <item name="app_secret" type="config">Enter your app secret here.</item>
-	<item name="room_name" type="config">Enter room name here.</item>
-  <-->
-	
+    <!-- Uncomment in config.xml>
+      <item name="app_key" type="config">Enter your app ID here.</item>
+    <item name="app_secret" type="config">Enter your app secret here.</item>
+      <item name="room_name" type="config">Enter room name here.</item>
+    <-->
+
 </resources>

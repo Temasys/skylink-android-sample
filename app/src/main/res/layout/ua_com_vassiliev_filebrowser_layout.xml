@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:padding="3dp" >
+    android:padding="3dp">
 
     <!--
     android:layout_weight="1"
@@ -23,7 +23,7 @@
         android:layout_margin="0dp"
         android:gravity="top"
         android:orientation="horizontal"
-        android:padding="0dp" >
+        android:padding="0dp">
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -32,7 +32,7 @@
             android:layout_weight="1"
             android:gravity="top"
             android:orientation="horizontal"
-            android:padding="0dp" >
+            android:padding="0dp">
 
             <Button
                 android:id="@+id/upDirectoryButton"
@@ -53,14 +53,14 @@
             android:layout_weight="1"
             android:gravity="top"
             android:orientation="horizontal"
-            android:padding="0dp" >
+            android:padding="0dp">
 
             <Button
                 android:id="@+id/selectCurrentDirectoryButton"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:gravity = "center|center_vertical"
+                android:gravity="center|center_vertical"
                 android:layout_margin="0dp"
                 android:layout_weight="1"
                 android:padding="0dp"
