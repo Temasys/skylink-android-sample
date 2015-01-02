@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.content.Context;
 import android.graphics.Point;

@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,11 +7,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.temasys.skylink.sample.R;
+
 public class FilePermissionAlertFragment extends DialogFragment {
 
-    final static private String BUNDLE_MESSAGE = "com.temasys.skylink.sample.FilePermissionAlertFragment.message";
-    final static private String BUNDLE_PEER_ID = "com.temasys.skylink.sample.FilePermissionAlertFragment.peerId";
-    final static private String BUNDLE_FILE_NAME = "com.temasys.skylink.sample.FilePermissionAlertFragment.fileName";
+    final static private String BUNDLE_MESSAGE = "sg.com.temasys.sdk.sample.FilePermissionAlertFragment.message";
+    final static private String BUNDLE_PEER_ID = "sg.com.temasys.sdk.sample.FilePermissionAlertFragment.peerId";
+    final static private String BUNDLE_FILE_NAME = "sg.com.temasys.sdk.sample.FilePermissionAlertFragment.fileName";
 
     private String mMessage;
     private String mPeerId;
@@ -46,10 +48,10 @@ public class FilePermissionAlertFragment extends DialogFragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent fileExploreIntent = new Intent(
-                                        com.temasys.skylink.sample.FileBrowserActivity.INTENT_ACTION_SELECT_DIR,
+                                        FileBrowserActivity.INTENT_ACTION_SELECT_DIR,
                                         null,
                                         getActivity(),
-                                        com.temasys.skylink.sample.FileBrowserActivity.class);
+                                        FileBrowserActivity.class);
                                 fileExploreIntent.putExtra(
                                         FileBrowserActivity.EXTRA_PEER_ID,
                                         mPeerId);
@@ -113,10 +115,10 @@ public class FilePermissionAlertFragment extends DialogFragment {
     // explicitly by Peer or due to timeout.
     public void saveTimeout(String message) {
         Intent fileExploreIntent = new Intent(
-                com.temasys.skylink.sample.FileBrowserActivity.INTENT_ACTION_CANCEL_SAVE,
+                FileBrowserActivity.INTENT_ACTION_CANCEL_SAVE,
                 null,
                 getActivity(),
-                com.temasys.skylink.sample.FileBrowserActivity.class);
+                FileBrowserActivity.class);
         fileExploreIntent.putExtra(FileBrowserActivity.EXTRA_PEER_ID, mPeerId);
         fileExploreIntent.putExtra(FileBrowserActivity.EXTRA_FILE_NAME, mFileName);
         fileExploreIntent.putExtra(FileBrowserActivity.EXTRA_CANCEL_MESSAGE, message);

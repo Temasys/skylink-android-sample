@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.temasys.skylink.sample.R;
 
 public class JoinRoomActivity extends Activity {
 

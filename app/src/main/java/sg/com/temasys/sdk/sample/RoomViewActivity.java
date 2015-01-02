@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -23,6 +23,8 @@ import android.widget.TextView;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
+
+import com.temasys.skylink.sample.R;
 import com.warting.bubbles.DiscussArrayAdapter;
 import com.warting.bubbles.OneComment;
 
@@ -43,12 +45,12 @@ public class RoomViewActivity extends Activity implements
 
     final static private String TAG = "RoomViewActivity";
 
-    final static private String BUNDLE_IS_CONNECTED = "com.temasys.skylink.sample.RoomViewActivity.isConnected";
-    final static private String BUNDLE_CONNECTION_CONFIG = "com.temasys.skylink.sample.RoomViewActivity.connectionConfig";
-    final static private String BUNDLE_CONTROL_PANEL_WEIGHT = "com.temasys.skylink.sample.RoomViewActivity.controlPanelWeight";
-    final static private String BUNDLE_IS_RUNNING = "com.temasys.skylink.sample.RoomViewActivity.isRunning";
+    final static private String BUNDLE_IS_CONNECTED = "sg.com.temasys.sdk.sample.RoomViewActivity.isConnected";
+    final static private String BUNDLE_CONNECTION_CONFIG = "sg.com.temasys.sdk.sample.RoomViewActivity.connectionConfig";
+    final static private String BUNDLE_CONTROL_PANEL_WEIGHT = "sg.com.temasys.sdk.sample.RoomViewActivity.controlPanelWeight";
+    final static private String BUNDLE_IS_RUNNING = "sg.com.temasys.sdk.sample.RoomViewActivity.isRunning";
     final static public String EXTRA_DISPLAY_NAME = "com.temasys.skylink.sample.RoomViewActiivty.displayName";
-    final static public String EXTRA_ROOM_NAME = "com.temasys.skylink.sample.RoomViewActivity.roomName";
+    final static public String EXTRA_ROOM_NAME = "sg.com.temasys.sdk.sample.RoomViewActivity.roomName";
 
     private boolean mIsExplicitlyTerminated = false;
 
@@ -927,7 +929,7 @@ public class RoomViewActivity extends Activity implements
             case Utility.REQUEST_CODE_PICK_DIR: {
                 if (data != null) {
                     String newDir = data
-                            .getStringExtra(com.temasys.skylink.sample.FileBrowserActivity.returnDirectoryParameter);
+                            .getStringExtra(FileBrowserActivity.returnDirectoryParameter);
                     String peerId = data
                             .getStringExtra(FileBrowserActivity.EXTRA_PEER_ID);
                     String fileName = data

@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,6 +12,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.temasys.skylink.sample.R;
 import com.warting.bubbles.HelloBubblesActivity;
 
 public class OptionAlertFragment extends DialogFragment {

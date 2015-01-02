@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
+import com.temasys.skylink.sample.R;
 
 public class Utility {
 

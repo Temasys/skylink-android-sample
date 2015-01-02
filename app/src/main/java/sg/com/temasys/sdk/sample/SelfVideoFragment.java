@@ -1,9 +1,11 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.temasys.skylink.sample.R;
 
 public class SelfVideoFragment extends RoomFragment {
 

@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 
 import android.app.Activity;
@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.temasys.skylink.sample.R;
 
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;

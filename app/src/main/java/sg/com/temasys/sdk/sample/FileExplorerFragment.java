@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.temasys.skylink.sample.R;
 
 import java.io.File;
 import java.util.ArrayList;

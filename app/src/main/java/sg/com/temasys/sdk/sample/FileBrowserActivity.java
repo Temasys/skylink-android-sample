@@ -1,4 +1,4 @@
-package com.temasys.skylink.sample;
+package sg.com.temasys.sdk.sample;
 
 //Heavily based on code from
 //https://github.com/mburman/Android-File-Explore
@@ -32,6 +32,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.temasys.skylink.sample.R;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -42,11 +44,11 @@ import java.util.List;
 //Import of resources file for file browser
 
 public class FileBrowserActivity extends Activity {
-    final static public String EXTRA_PEER_ID = "com.temasys.skylink.sample.FileBrowserActivity.peerId";
-    final static public String EXTRA_FILE_NAME = "com.temasys.skylink.sample.FileBrowserActivity.fileName";
-    final static public String EXTRA_CANCEL_SAVE = "com.temasys.skylink.sample.FileBrowserActivity.cancelSave";
-    final static public String EXTRA_CANCEL_MESSAGE = "com.temasys.skylink.sample.FileBrowserActivity.cancelMessage";
-    final static public String EXTRA_TIMEOUT = "com.temasys.skylink.sample.FileBrowserActivity.timeout";
+    final static public String EXTRA_PEER_ID = "sg.com.temasys.sdk.sample.FileBrowserActivity.peerId";
+    final static public String EXTRA_FILE_NAME = "sg.com.temasys.sdk.sample.FileBrowserActivity.fileName";
+    final static public String EXTRA_CANCEL_SAVE = "sg.com.temasys.sdk.sample.FileBrowserActivity.cancelSave";
+    final static public String EXTRA_CANCEL_MESSAGE = "sg.com.temasys.sdk.sample.FileBrowserActivity.cancelMessage";
+    final static public String EXTRA_TIMEOUT = "sg.com.temasys.sdk.sample.FileBrowserActivity.timeout";
 
     // Intent Action Constants
     public static final String INTENT_ACTION_SELECT_DIR = "ua.com.vassiliev.androidfilebrowser.SELECT_DIRECTORY_ACTION";

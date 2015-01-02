@@ -11,7 +11,7 @@ import android.widget.ListView;
 
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
 import com.temasys.skylink.sample.R;
-import com.temasys.skylink.sample.RoomManager;
+import sg.com.temasys.sdk.sample.RoomManager;
 
 import java.util.List;
 import java.util.Random;
