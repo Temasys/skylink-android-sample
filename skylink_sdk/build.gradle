@@ -1,28 +1,53 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 android {
-    signingConfigs {
-        config {
-            storeFile file('/Users/xiangrong/Dropbox/Temasys/Projects/FireOS/keystores/keystore.jks')
-        }
-    }
     compileSdkVersion 21
     buildToolsVersion "21.1.1"
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 21
         versionCode 1
-        versionName "1.0"
+        versionName "0.9.0"
     }
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenSdk(MavenPublication) {
+            artifacts {
+                groupId 'sg.com.temasys.skylink.sdk'
+                artifactId 'skylink_sdk'
+                version currentVersion
+                artifact 'build/outputs/aar/skylink_sdk-release.aar'
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            if (!project.ext.isReleaseVersion) {
+                url archiva_contextUrl + "/snapshots"
+            } else {
+                url archiva_contextUrl + "/internal"
+            }
+            credentials {
+                username archiva_username
+                password archiva_password
+            }
         }
     }
 }
