@@ -1,4 +1,4 @@
-package com.temasys.skylink.server;
+package sg.com.temasys.skylink.sdk.server;
 
 import android.util.Log;
 

@@ -18,9 +18,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.temasys.skylink.rtc.SkyLinkConnection;
-import com.temasys.skylink.rtc.SkyLinkConnection.SkyLinkConfig;
-import com.temasys.skylink.rtc.SkyLinkException;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
 
 import java.util.Map;
 

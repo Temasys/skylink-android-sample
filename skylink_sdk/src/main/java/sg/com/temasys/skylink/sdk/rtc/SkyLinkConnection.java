@@ -1,4 +1,4 @@
-package com.temasys.skylink.rtc;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -9,9 +9,9 @@ import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
-import com.temasys.skylink.data.DataChannelManager;
-import com.temasys.skylink.rendering.VideoRendererGui;
-import com.temasys.skylink.server.WebServerClient;
+import sg.com.temasys.skylink.sdk.data.DataChannelManager;
+import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
+import sg.com.temasys.skylink.sdk.server.WebServerClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;

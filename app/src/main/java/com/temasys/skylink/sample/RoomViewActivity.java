@@ -21,8 +21,8 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
-import com.temasys.skylink.rtc.SkyLinkConnection;
-import com.temasys.skylink.rtc.SkyLinkConnection.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
 import com.warting.bubbles.DiscussArrayAdapter;
 import com.warting.bubbles.OneComment;
 

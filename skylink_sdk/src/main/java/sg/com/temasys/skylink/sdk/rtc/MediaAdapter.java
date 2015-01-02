@@ -1,4 +1,4 @@
-package com.temasys.skylink.rtc;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;

@@ -1,4 +1,4 @@
-package com.temasys.skylink.data;
+package sg.com.temasys.skylink.sdk.data;
 
 // Timeout implementation
 public class DcHandler extends android.os.Handler {

@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.temasys.skylink.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 import com.warting.bubbles.DiscussArrayAdapter;
 import com.warting.bubbles.OneComment;
 

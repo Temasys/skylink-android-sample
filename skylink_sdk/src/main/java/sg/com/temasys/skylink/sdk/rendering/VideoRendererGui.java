@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.temasys.skylink.rendering;
+package sg.com.temasys.skylink.sdk.rendering;
 
 import android.graphics.Point;
 import android.opengl.GLES20;

@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.temasys.skylink.server;
+package sg.com.temasys.skylink.sdk.server;
 
 import android.app.Activity;
 import android.os.AsyncTask;

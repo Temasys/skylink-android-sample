@@ -1,10 +1,10 @@
-package com.temasys.skylink.data;
+package sg.com.temasys.skylink.sdk.data;
 
 import android.app.Activity;
 import android.util.Base64;
 import android.util.Log;
 
-import com.temasys.skylink.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 import org.json.JSONException;
 import org.json.JSONObject;
