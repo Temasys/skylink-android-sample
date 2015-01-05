@@ -26,3 +26,14 @@ android {
         }
     }
 }
+
+if (file(project.property("appLocalConfig")).exists()
+        && project.hasProperty("appSigningConfigs")) {
+    apply from: project.property("appLocalConfig");
+    println("[app]: Applied from appLocalConfig.");
+} else {
+    println("[app]: Did NOT apply from appLocalConfig.");
+    println("[app]: project.hasProperty( \"appSigningConfigs\" ): " + project.hasProperty("appSigningConfigs"))
+    println("[app]: project.property(appLocalConfig): " + project.property("appLocalConfig"))
+    println("[app]: file( project.property(appLocalConfig) ): " + file(project.property("appLocalConfig")))
+}
