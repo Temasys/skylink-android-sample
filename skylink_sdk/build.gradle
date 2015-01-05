@@ -2,8 +2,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
-project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
@@ -24,6 +22,19 @@ android {
         }
     }
 }
+
+// Check environment variables for Archiva configuration (e.g CI environment)
+if (System.getenv("ARCHIVA_USR") != null) {
+    archiva_username = "$System.env.ARCHIVA_USR"
+    println 'Used environment variable for Archiva Username'
+}
+
+if (System.getenv("ARCHIVA_PWD") != null) {
+    archiva_password = "$System.env.ARCHIVA_PWD"
+    println 'Used environment variable for Archiva Password'
+}
+
+project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
 
 publishing {
     publications {
