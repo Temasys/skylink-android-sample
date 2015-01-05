@@ -40,7 +40,7 @@ public class JoinRoomActivity extends Activity {
                                     R.string.message_on_connect_false)).show(
                     JoinRoomActivity.this.getFragmentManager(), TAG);
         } else if (disconnectStatus == DisconnectStatus.ON_DISCONNECT.value) {
-            AlertFragment.newInstance(
+                AlertFragment.newInstance(
                     getResources().getString(R.string.message_on_disconnect))
                     .show(JoinRoomActivity.this.getFragmentManager(), TAG);
         }
