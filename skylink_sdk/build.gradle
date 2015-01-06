@@ -52,13 +52,13 @@ publishing {
     repositories {
         maven {
             if (!project.ext.isReleaseVersion) {
-                url archiva_contextUrl + "/snapshots"
+                url "http://archiva.temasys.com.sg/repository" + "/snapshots"
             } else {
-                url archiva_contextUrl + "/internal"
+                url "http://archiva.temasys.com.sg/repository" + "/internal"
             }
             credentials {
-                username archiva_username
-                password archiva_password
+                username "janidu.wanigasuriya"
+                password "ibanez@@123\$"
             }
         }
     }
