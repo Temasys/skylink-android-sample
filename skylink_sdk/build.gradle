@@ -25,6 +25,11 @@ android {
 }
 
 // Check environment variables for Archiva configuration (e.g CI environment)
+if (System.getenv("ARCHIVA_URL") != null) {
+    archiva_contextUrl = "$System.env.ARCHIVA_URL"
+    println 'Used environment variable for Archiva URL'
+}
+
 if (System.getenv("ARCHIVA_USR") != null) {
     archiva_username = "$System.env.ARCHIVA_USR"
     println 'Used environment variable for Archiva Username'
@@ -48,13 +53,12 @@ publishing {
             }
         }
     }
-
     repositories {
         maven {
             if (!project.ext.isReleaseVersion) {
-                url "http://archiva.temasys.com.sg/repository" + "/snapshots"
+                url archiva_contextUrl + "/snapshots"
             } else {
-                url "http://archiva.temasys.com.sg/repository" + "/internal"
+                url archiva_contextUrl + "/internal"
             }
             credentials {
                 username archiva_username
