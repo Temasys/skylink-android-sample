@@ -9,9 +9,9 @@ import android.view.View.OnKeyListener;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.temasys.skylink.rtc.SkyLinkException;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
 import com.temasys.skylink.sample.R;
-import com.temasys.skylink.sample.RoomManager;
+import sg.com.temasys.sdk.sample.RoomManager;
 
 import java.util.List;
 import java.util.Random;
