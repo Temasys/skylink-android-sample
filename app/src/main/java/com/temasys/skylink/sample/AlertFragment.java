@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 public class AlertFragment extends DialogFragment {
 
-        final static private String BUNDLE_MESSAGE = "tools.skylink.sample.AlertFragment.message";
+    final static private String BUNDLE_MESSAGE = "tools.skylink.sample.AlertFragment.message";
 
     private String mMessage;
 
