@@ -30,9 +30,6 @@ if (System.getenv("ARCHIVA_USR") != null) {
     println 'Used environment variable for Archiva Username'
 }
 
-logger.info( '++++++++++++++ Archiva Username' + archiva_username)
-logger.info('++++++++++++++ Archiva URL' + archiva_contextUrl)
-
 if (System.getenv("ARCHIVA_PWD") != null) {
     archiva_password = "$System.env.ARCHIVA_PWD"
     println 'Used environment variable for Archiva Password'
@@ -60,8 +57,8 @@ publishing {
                 url "http://archiva.temasys.com.sg/repository" + "/internal"
             }
             credentials {
-                username "janidu.wanigasuriya"
-                password "ibanez@@123\$"
+                username archiva_username
+                password archiva_password
             }
         }
     }
