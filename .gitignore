@@ -12,3 +12,6 @@
 
 # Android res/values/ files.
 /**/res/values/config.xml
+
+# Android local gradle config files.
+/**/local.gradle
