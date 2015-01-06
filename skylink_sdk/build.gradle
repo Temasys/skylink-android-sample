@@ -1,8 +1,21 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: "sonar-runner"
 
 project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectKey", "AND"
+        property "sonar.projectName", "Skylink Android SDK"
+        property "sonar.projectVersion", currentVersion
+        property "sonar.language", "java"
+        property "sonar.sources", "src"
+        property "sonar.binaries", "build"
+        property "sonar.profile", "Android Lint"
+    }
+}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
