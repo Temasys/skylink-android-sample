@@ -65,7 +65,7 @@ public class WebServerClient {
      * to GAEChannelClient's constructor.
      */
     public interface MessageHandler {
-        public void onOpen();
+         public void onOpen();
 
         public void onMessage(String data);
 
