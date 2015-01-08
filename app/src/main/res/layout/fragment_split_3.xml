@@ -16,14 +16,14 @@
             android:layout_weight="1"></RelativeLayout>
 
         <TextView
-            android:id="@+id/chatPrivate1"
+            android:id="@+id/notifPrivate1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_above="@+id/chatGroup1" />
+            android:layout_above="@+id/notifGroup1"
+            android:layout_centerHorizontal="true" />
 
         <TextView
-            android:id="@+id/chatGroup1"
+            android:id="@+id/notifGroup1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video1"
@@ -42,14 +42,14 @@
             android:layout_weight="1"></RelativeLayout>
 
         <TextView
-            android:id="@+id/chatPrivate2"
+            android:id="@+id/notifPrivate2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_above="@+id/chatGroup2" />
+            android:layout_above="@+id/notifGroup2"
+            android:layout_centerHorizontal="true" />
 
         <TextView
-            android:id="@+id/chatGroup2"
+            android:id="@+id/notifGroup2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video2"
@@ -68,14 +68,14 @@
             android:layout_weight="1"></RelativeLayout>
 
         <TextView
-            android:id="@+id/chatPrivate3"
+            android:id="@+id/notifPrivate3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_above="@+id/chatGroup3" />
+            android:layout_above="@+id/notifGroup3"
+            android:layout_centerHorizontal="true" />
 
         <TextView
-            android:id="@+id/chatGroup3"
+            android:id="@+id/notifGroup3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video3"

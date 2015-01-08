@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.temasys.skylink.sample">
+    package="sg.com.temasys.skylink.sdk.sample">
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -23,7 +23,7 @@
         android:allowBackup="false">
 
         <activity
-            android:name="sg.com.temasys.sdk.sample.JoinRoomActivity"
+            android:name="sg.com.temasys.skylink.sdk.sample.JoinRoomActivity"
             android:label="@string/app_name"
             android:screenOrientation="sensor"
             android:configChanges="orientation|screenSize"
@@ -49,13 +49,13 @@
         </activity>
 
         <activity
-            android:name="sg.com.temasys.sdk.sample.RoomViewActivity"
+            android:name="sg.com.temasys.skylink.sdk.sample.RoomViewActivity"
             android:label="@string/app_name"
             android:screenOrientation="sensor"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="sg.com.temasys.sdk.sample.JoinRoomActivity" />
+                android:value="sg.com.temasys.skylink.sdk.sample.JoinRoomActivity" />
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -74,7 +74,7 @@
 
         <!-- This is necessary for file browser -->
         <activity
-            android:name="sg.com.temasys.sdk.sample.FileBrowserActivity"
+            android:name="sg.com.temasys.skylink.sdk.sample.FileBrowserActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="File browser">
             <intent-filter>

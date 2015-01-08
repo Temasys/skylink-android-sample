@@ -9,24 +9,24 @@ import android.view.View.OnKeyListener;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
-import com.temasys.skylink.sample.R;
-import sg.com.temasys.sdk.sample.RoomManager;
-
 import java.util.List;
 import java.util.Random;
 
+import sg.com.temasys.skylink.sdk.sample.R;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
+import sg.com.temasys.skylink.sdk.sample.RoomManager;
+
 public class HelloBubblesActivity extends Activity {
 
-    final static public String TAG = "HelloBubblesActivity";
+    final static private String TAG = "HelloBubblesActivity";
+
     final static public String EXTRA_PEER_ID = "com.warting.bubbles.HelloBubblesActivity.peerId";
-    final static public String EXTRA_CHAT_ADAPTER =
-            "com.warting.bubbles.HelloBubblesActivity.chatAdapter";
+
+    private static Random random;
 
     private com.warting.bubbles.DiscussArrayAdapter adapter;
-    private ListView lv;
     private EditText editText1;
-    private static Random random;
+    private ListView lv;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,9 +34,11 @@ public class HelloBubblesActivity extends Activity {
 
         // Restore state if rotated.
         if (savedInstanceState != null) {
-            RoomManager.get().setChatPeerId(savedInstanceState.getString(EXTRA_PEER_ID));
-            RoomManager.get().setChatAdapter(RoomManager.get().getChatAdapterTemp());
-            RoomManager.get().setChatAdapterTemp(null);
+            RoomManager.get().setChatPeerId(
+                    savedInstanceState.getString(EXTRA_PEER_ID));
+            RoomManager.get().setChatAdapter(
+                    RoomManager.get().getTempChatAdapter());
+            RoomManager.get().setTempChatAdapter(null);
         }
 
         setContentView(R.layout.activity_discuss);
@@ -44,7 +46,8 @@ public class HelloBubblesActivity extends Activity {
 
         lv = (ListView) findViewById(R.id.listView1);
 
-        adapter = new DiscussArrayAdapter(getApplicationContext(), R.layout.listitem_discuss);
+        adapter = new DiscussArrayAdapter(getApplicationContext(),
+                R.layout.listitem_discuss);
         RoomManager.get().setChatAdapter(adapter);
 
         lv.setAdapter(adapter);
@@ -60,7 +63,8 @@ public class HelloBubblesActivity extends Activity {
         editText1.setOnKeyListener(new OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN)
+                        && (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                     String message = editText1.getText().toString();
                     OneComment comment = new OneComment(false, message);
@@ -93,7 +97,8 @@ public class HelloBubblesActivity extends Activity {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(EXTRA_PEER_ID, RoomManager.get().getChatPeerId());
-        RoomManager.get().setChatAdapterTemp(RoomManager.get().getChatAdapter());
+        RoomManager.get()
+                .setTempChatAdapter(RoomManager.get().getChatAdapter());
     }
 
     @Override

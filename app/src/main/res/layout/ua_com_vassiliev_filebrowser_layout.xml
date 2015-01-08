@@ -14,7 +14,7 @@
     android:layout_gravity="top"
     android:background = "#f00"
     android:background = "#0f0"
-    
+
     -->
 
     <LinearLayout
@@ -41,8 +41,8 @@
                 android:layout_gravity="top"
                 android:layout_margin="0dp"
                 android:layout_weight="1"
-                android:padding="0dp"
                 android:drawableLeft="@drawable/dir_up"
+                android:padding="0dp"
                 android:text="Up" />
         </LinearLayout>
 
@@ -60,9 +60,9 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:gravity="center|center_vertical"
                 android:layout_margin="0dp"
                 android:layout_weight="1"
+                android:gravity="center|center_vertical"
                 android:padding="0dp"
                 android:text="Select" />
         </LinearLayout>

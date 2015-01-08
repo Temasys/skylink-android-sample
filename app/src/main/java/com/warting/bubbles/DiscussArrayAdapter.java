@@ -11,16 +11,16 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.temasys.skylink.sample.R;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import sg.com.temasys.skylink.sdk.sample.R;
+
 public class DiscussArrayAdapter extends ArrayAdapter<OneComment> {
 
-    private TextView countryName;
-    private List<OneComment> countries = new ArrayList<OneComment>();
     private LinearLayout wrapper;
+    private List<OneComment> countries = new ArrayList<OneComment>();
+    private TextView countryName;
 
     @Override
     public void add(OneComment object) {
@@ -43,7 +43,8 @@ public class DiscussArrayAdapter extends ArrayAdapter<OneComment> {
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
         if (row == null) {
-            LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) this.getContext()
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.listitem_discuss, parent, false);
         }
 
@@ -55,14 +56,17 @@ public class DiscussArrayAdapter extends ArrayAdapter<OneComment> {
 
         countryName.setText(coment.comment);
 
-        countryName.setBackgroundResource(coment.left ? R.drawable.bubble_yellow : R.drawable.bubble_green);
+        countryName
+                .setBackgroundResource(coment.left ? R.drawable.bubble_yellow
+                        : R.drawable.bubble_green);
         wrapper.setGravity(coment.left ? Gravity.LEFT : Gravity.RIGHT);
 
         return row;
     }
 
     public Bitmap decodeToBitmap(byte[] decodedByte) {
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+        return BitmapFactory
+                .decodeByteArray(decodedByte, 0, decodedByte.length);
     }
 
 }
