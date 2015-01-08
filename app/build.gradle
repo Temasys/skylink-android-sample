@@ -9,8 +9,8 @@ sonarRunner {
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
-        property "sonar.profile", "Android Lint"
-        property "sonar.profile", "Temasys-Android"
+        //property "sonar.profile", "Android Lint"
+        //property "sonar.profile", "Temasys-Android"
     }
 }
 
