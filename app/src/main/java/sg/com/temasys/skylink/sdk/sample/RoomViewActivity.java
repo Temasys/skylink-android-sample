@@ -121,7 +121,7 @@ public class RoomViewActivity extends Activity implements
             config.setHasPeerMessaging(true);
             config.setHasFileTransfer(true);
             config.setTimeout(60);
-            // config.setTimeout( 11 );
+            // config.setTimeout( 10 );
             mConnection = new SkyLinkConnection(getString(R.string.app_key),
                     getString(R.string.app_secret), config, this);
             mConnectionConfig = config;
