@@ -18,6 +18,8 @@ sonarRunner {
         property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
         property "sonar.jdbc.username", System.getenv("SONAR_JDBC_USERNAME")
         property "sonar.jdbc.password", System.getenv("SONAR_JDBC_PASSWORD")
+        property "sonar.login", System.getenv("SONAR_USERNAME")
+        property "sonar.password", System.getenv("SONAR_PASSWORD")
     }
 }
 
