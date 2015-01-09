@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-/*apply plugin: "sonar-runner"
+apply plugin: "sonar-runner"
 
 sonarRunner {
     sonarProperties {
@@ -9,11 +9,10 @@ sonarRunner {
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
-        //property "sonar.profile", "Android Lint"
-        //property "sonar.profile", "Temasys-Android"
+        property "sonar.profile", "Temasys-Android"
     }
 }
-*/
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':skylink_sdk')
