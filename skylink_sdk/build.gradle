@@ -5,18 +5,6 @@ apply plugin: "sonar-runner"
 
 project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
 
-sonarRunner {
-    sonarProperties {
-        property "sonar.projectKey", "AND"
-        property "sonar.projectName", "Skylink Android SDK"
-        property "sonar.projectVersion", currentVersion
-        property "sonar.language", "java"
-        property "sonar.sources", "src"
-        property "sonar.binaries", "build"
-        property "sonar.profile", "Temasys-Android"
-    }
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
@@ -62,5 +50,17 @@ publishing {
                 password archiva_password
             }
         }
+    }
+}
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectKey", "AND"
+        property "sonar.projectName", "Skylink Android SDK"
+        property "sonar.projectVersion", currentVersion
+        property "sonar.language", "java"
+        property "sonar.sources", "src"
+        property "sonar.binaries", "build"
+        property "sonar.profile", "Temasys-Android"
     }
 }
