@@ -13,13 +13,6 @@ sonarRunner {
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
-        property "sonar.host.url", System.getenv("SONAR_HOST_URL")
-        property "sonar.jdbc.url", System.getenv("SONAR_JDBC_URL")
-        property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
-        property "sonar.jdbc.username", System.getenv("SONAR_JDBC_USERNAME")
-        property "sonar.jdbc.password", System.getenv("SONAR_JDBC_PASSWORD")
-        property "sonar.login", System.getenv("SONAR_USERNAME")
-        property "sonar.password", System.getenv("SONAR_PASSWORD")
     }
 }
 
