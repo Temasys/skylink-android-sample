@@ -16,10 +16,6 @@ sonarRunner {
     }
 }
 
-println System.getenv("SONAR_HOST_URL")
-println System.getenv("SONAR_JDBC_URL")
-println System.getenv("SONAR_JDBC_USERNAME")
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
