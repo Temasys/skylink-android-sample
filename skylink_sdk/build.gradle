@@ -1,16 +1,21 @@
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
-apply plugin: "sonar-runner"
+apply plugin: 'robolectric'
+apply plugin: 'sonar-runner'
+apply plugin: 'jacoco'
 
 dependencies {
+    androidTestCompile 'junit:junit:4.11'
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile 'com.android.support:support-v4:19.0.1'
+    androidTestCompile 'org.mockito:mockito-all:1.9.5'
+    androidTestCompile 'org.robolectric:robolectric:2.3'
 }
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "21.1.2"
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 21
@@ -69,6 +74,7 @@ publishing {
     }
 }
 
+// Code quality
 sonarRunner {
     sonarProperties {
         property "sonar.projectKey", "AND"
@@ -78,5 +84,45 @@ sonarRunner {
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
         property "sonar.profile", "Temasys-Android"
+    }
+}
+
+// Test coverage using jacoco
+jacoco {
+    toolVersion = "0.7.1.201405082137"
+}
+
+def coverageSourceDirs = [
+        'src/main/java',
+        'src/gen'
+]
+
+task jacocoTestReport(type: JacocoReport, dependsOn: "testDebug") {
+
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    // Rules to ignore Dagger/Butterknife
+    classDirectories = fileTree(
+            dir: 'build/intermediates/classes/debug',
+            excludes: ['sg/com/temasys/skylink/sdk/R*.class',
+                       '**/*$InjectAdapter.class',
+                       '**/*$ModuleAdapter.class',
+                       '**/*$ViewInjector*.class'
+            ])
+    sourceDirectories = files(coverageSourceDirs)
+    executionData = files('build/jacoco/testDebug.exec')
+    // Bit hacky but fixes https://code.google.com/p/android/issues/detail?id=69174.
+    // We iterate through the compiled .class tree and rename $$ to $.
+    doFirst {
+        new File('skylink_sdk/build/intermediates/classes/').eachFileRecurse { file ->
+            if (file.name.contains('$$')) {
+                file.renameTo(file.path.replace('$$', '$'))
+            }
+        }
     }
 }
