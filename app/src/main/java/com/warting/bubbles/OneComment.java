@@ -1,6 +1,7 @@
 package com.warting.bubbles;
 
 public class OneComment {
+
     public boolean left;
     public String comment;
 
