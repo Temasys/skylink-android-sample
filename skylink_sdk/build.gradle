@@ -80,10 +80,15 @@ sonarRunner {
         property "sonar.projectKey", "AND"
         property "sonar.projectName", "Skylink Android SDK"
         property "sonar.projectVersion", currentVersion
-        property "sonar.language", "java"
-        property "sonar.sources", "src"
-        property "sonar.binaries", "build"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.sources", "src/main/java"
+        property "sonar.binaries", "build/intermediates/classes/debug"
+        property "sonar.tests", "src/androidTest/java"
+        property "sonar.junit.reportsPath", file("$buildDir/test-results")
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.jacoco.reportPath", "build/jacoco/testDebug.exec"
         property "sonar.profile", "Temasys-Android"
+
     }
 }
 
