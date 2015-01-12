@@ -1,4 +1,17 @@
 apply plugin: 'com.android.application'
+apply plugin: "sonar-runner"
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectKey", "AND-Sample"
+        property "sonar.projectName", "Skylink Android SDK - Sample App"
+        property "sonar.projectVersion", "0.9.0"
+        property "sonar.language", "java"
+        property "sonar.sources", "src"
+        property "sonar.binaries", "build"
+        property "sonar.profile", "Temasys-Android"
+    }
+}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])

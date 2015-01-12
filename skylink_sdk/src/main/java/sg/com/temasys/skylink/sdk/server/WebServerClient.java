@@ -27,7 +27,15 @@
 
 package sg.com.temasys.skylink.sdk.server;
 
-import io.socket.SocketIO;
+import android.app.Activity;
+import android.os.AsyncTask;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.webrtc.MediaConstraints;
+import org.webrtc.PeerConnection;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,15 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.webrtc.MediaConstraints;
-import org.webrtc.PeerConnection;
-
-import android.app.Activity;
-import android.os.AsyncTask;
-import android.util.Log;
+import io.socket.SocketIO;
 
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms".
@@ -57,60 +57,64 @@ import android.util.Log;
  * registered handler to be called with received messages.
  */
 public class WebServerClient {
-	
-	/**
-	   * Callback interface for messages delivered on the Google AppEngine channel.
-	   *
-	   * Methods are guaranteed to be invoked on the UI thread of |activity| passed
-	   * to GAEChannelClient's constructor.
-	   */
-  public interface MessageHandler {
-    public void onOpen();
-    public void onMessage(String data);
-    public void onClose();
-    public void onError(int code, String description);
-  }
-	  
-  private static final String TAG = "AppRTCClient";
-  // private GAEChannelClient channelClient;
-  @SuppressWarnings("unused")
-  private final Activity activity;
-  private final WebServerClient.MessageHandler gaeHandler;
-  private final IceServersObserver iceServersObserver;
-  private boolean verboseLogging;
-  private SignalingServerClient socketTester;
+    /**
+     * Callback interface for messages delivered on the Google AppEngine channel.
+     * <p/>
+     * Methods are guaranteed to be invoked on the UI thread of |activity| passed
+     * to GAEChannelClient's constructor.
+     */
+    public interface MessageHandler {
+        public void onOpen();
 
-  // These members are only read/written under sendQueue's lock.
-  private LinkedList<String> sendQueue = new LinkedList<String>();
-  private AppRTCSignalingParameters appRTCSignalingParameters;
+        public void onMessage(String data);
 
-  /**
-   * Callback fired once the room's signaling parameters specify the set of
-   * ICE servers to use.
-   */
-  public static interface IceServersObserver {
-    public void onIceServers(List<PeerConnection.IceServer> iceServers);
-    public void onError(String message);
-  }
+        public void onClose();
 
-  public WebServerClient(
-      Activity activity, WebServerClient.MessageHandler gaeHandler,
-      IceServersObserver iceServersObserver) {
-    this.activity = activity;
-    this.gaeHandler = gaeHandler;
-    this.iceServersObserver = iceServersObserver;
-    verboseLogging = true;
-  }
+        public void onError(int code, String description);
+    }
 
-  /**
-   * Asynchronously connect to an AppRTC room URL, e.g.
-   * https://apprtc.appspot.com/?r=NNN and register message-handling callbacks
-   * on its GAE Channel.
- * @throws IOException 
- * @throws JSONException 
- * @throws Exception 
-   */
-  public void connectToRoom(String url) throws IOException, JSONException {
+    private static final String TAG = "AppRTCClient";
+    // private GAEChannelClient channelClient;
+    @SuppressWarnings("unused")
+    private final Activity activity;
+    private final WebServerClient.MessageHandler gaeHandler;
+    private final IceServersObserver iceServersObserver;
+    private boolean verboseLogging;
+    private SignalingServerClient socketTester;
+
+    // These members are only read/written under sendQueue's lock.
+    private LinkedList<String> sendQueue = new LinkedList<String>();
+    private AppRTCSignalingParameters appRTCSignalingParameters;
+
+    /**
+     * Callback fired once the room's signaling parameters specify the set of
+     * ICE servers to use.
+     */
+    public static interface IceServersObserver {
+        public void onIceServers(List<PeerConnection.IceServer> iceServers);
+
+        public void onError(String message);
+    }
+
+    public WebServerClient(
+            Activity activity, WebServerClient.MessageHandler gaeHandler,
+            IceServersObserver iceServersObserver) {
+        this.activity = activity;
+        this.gaeHandler = gaeHandler;
+        this.iceServersObserver = iceServersObserver;
+        verboseLogging = true;
+    }
+
+    /**
+     * Asynchronously connect to an AppRTC room URL, e.g.
+     * https://apprtc.appspot.com/?r=NNN and register message-handling callbacks
+     * on its GAE Channel.
+     *
+     * @throws IOException
+     * @throws JSONException
+     * @throws Exception
+     */
+    public void connectToRoom(String url) throws IOException, JSONException {
     /*while (url.indexOf('?') < 0) {
       // Keep redirecting until we get a room number.
       (new RedirectResolver()).execute(url);
