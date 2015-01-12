@@ -6,11 +6,11 @@ apply plugin: 'sonar-runner'
 apply plugin: 'jacoco'
 
 dependencies {
-    androidTestCompile 'junit:junit:4.11'
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile 'junit:junit:4.11'
+    androidTestCompile 'org.robolectric:robolectric:2.3'
     androidTestCompile 'com.android.support:support-v4:19.0.1'
     androidTestCompile 'org.mockito:mockito-all:1.9.5'
-    androidTestCompile 'org.robolectric:robolectric:2.3'
 }
 
 android {
