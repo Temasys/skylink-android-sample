@@ -41,7 +41,7 @@ public class SignalingServerClient implements IOCallback {
 		sigIP = signalingIp;
 		// sigIP = "http://192.168.1.125";
 		// sigIP = "http://sgbeta.signaling.temasys.com.sg";
-		sigPort = SIG_PORT_DEFAULT;
+		sigPort = signalingPort;
 		try {
 			SSLContext sslContext = SSLContext.getInstance("TLS");
 			sslContext.init(null, null, null);
