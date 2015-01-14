@@ -32,6 +32,13 @@ android {
 
 println '++++++++++++++++++++++++' + System.getenv("ARCHIVA_URL")
 println '++++++++++++++++++++++++' + System.getenv("BAMBOO_ARCHIVA_URL")
+println '++++++++++++++++++++++++' + System.getenv("bamboo.ARCHIVA_URL")
+
+def env = System.getenv()
+//Print all the environment variables.
+env.each{
+    println it
+}
 
 // Check environment variables for Archiva configuration (e.g CI environment)
 if (System.getenv("ARCHIVA_URL") != null) {
