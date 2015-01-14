@@ -101,7 +101,7 @@ public class SignalingServerClientTest {
                         assertEquals(true, false);
                         countDownLatch.countDown();
                     }
-                }, "http://" + mSignalingServer, mSignalingPort);
+                }, "https://" + mSignalingServer, mSignalingPort);
 
         countDownLatch.await();
         assertNotNull(signalingServerClient.getSocketIO());
