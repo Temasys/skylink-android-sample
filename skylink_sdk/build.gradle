@@ -30,29 +30,19 @@ android {
     }
 }
 
-println '++++++++++++++++++++++++' + System.getenv("ARCHIVA_URL")
-println '++++++++++++++++++++++++' + System.getenv("BAMBOO_ARCHIVA_URL")
-println '++++++++++++++++++++++++' + System.getenv("bamboo_ARCHIVA_URL")
-
-def env = System.getenv()
-//Print all the environment variables.
-env.each{
-    println it
-}
-
 // Check environment variables for Archiva configuration (e.g CI environment)
-if (System.getenv("ARCHIVA_URL") != null) {
-    archiva_contextUrl = "$System.env.ARCHIVA_URL"
+if (System.getenv("bamboo_ARCHIVA_URL") != null) {
+    archiva_contextUrl = "$System.env.bamboo_ARCHIVA_URL"
     println 'Used environment variable for Archiva URL'
 }
 
-if (System.getenv("ARCHIVA_USR") != null) {
-    archiva_username = "$System.env.ARCHIVA_USR"
+if (System.getenv("bamboo_ARCHIVA_USR") != null) {
+    archiva_username = "$System.env.bamboo_ARCHIVA_USR"
     println 'Used environment variable for Archiva Username'
 }
 
-if (System.getenv("ARCHIVA_PWD") != null) {
-    archiva_password = "$System.env.ARCHIVA_PWD"
+if (System.getenv("bamboo_ARCHIVA_PWD") != null) {
+    archiva_password = "$System.env.bamboo_ARCHIVA_PWD"
     println 'Used environment variable for Archiva Password'
 }
 
@@ -98,7 +88,6 @@ sonarRunner {
         property "sonar.java.coveragePlugin", "jacoco"
         property "sonar.jacoco.reportPath", "build/jacoco/testDebug.exec"
         property "sonar.profile", "Temasys-Android"
-
     }
 }
 
