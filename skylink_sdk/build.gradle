@@ -32,7 +32,7 @@ android {
 
 println '++++++++++++++++++++++++' + System.getenv("ARCHIVA_URL")
 println '++++++++++++++++++++++++' + System.getenv("BAMBOO_ARCHIVA_URL")
-println '++++++++++++++++++++++++' + System.getenv("bamboo.ARCHIVA_URL")
+println '++++++++++++++++++++++++' + System.getenv("bamboo_ARCHIVA_URL")
 
 def env = System.getenv()
 //Print all the environment variables.
