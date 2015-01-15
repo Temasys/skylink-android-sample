@@ -1,3 +1,5 @@
+package com.sg.temasys.skylink.sdk.utils;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -18,6 +20,12 @@ public class UtilsTest {
 
     @Test
     public void testCalculateRFC2104HMAC() throws SignatureException {
-        assertNotNull("Should calculate", Utils.calculateRFC2104HMAC("Test", "Data"));
+        String shouldBeResult = "6XQ62fspwYw4mWsWv6weBEuDuaM=";
+        String roomName = "test";
+        String duration = "200.0";
+        String date = "2015-01-15T18:30:00.0Z";
+        String secret = "4xcrx4w32zm8i";
+        assertNotNull("Should calculate", Utils.calculateRFC2104HMAC(roomName + "_" + duration + "_"
+                + date, secret));
     }
 }

@@ -1,3 +1,5 @@
+package com.sg.temasys.skylink.sdk.test.helper;
+
 import org.json.JSONObject;
 
 /**

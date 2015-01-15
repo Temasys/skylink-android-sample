@@ -1,3 +1,5 @@
+package com.sg.temasys.skylink.sdk.test.helper;
+
 import android.util.Log;
 
 import org.json.JSONException;

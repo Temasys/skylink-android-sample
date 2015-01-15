@@ -1,6 +1,10 @@
+package com.sg.temasys.skylink.sdk.test.helper;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.sg.temasys.skylink.sdk.test.helper.SignalingParameterHelperListener;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
