@@ -40,6 +40,7 @@ import org.webrtc.VideoTrack;
 import sg.com.temasys.skylink.sdk.data.DataChannelManager;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
 import sg.com.temasys.skylink.sdk.server.WebServerClient;
@@ -292,68 +293,6 @@ public class SkyLinkConnection {
 
 	}
 
-	/**
-	 * Delegate comprises of callbacks upon receiving various messages from
-	 * peers.
-	 * 
-	 * @author temasys
-	 * 
-	 */
-	public interface MessagesDelegate {
-
-		/**
-		 * This is triggered when a text message is received from a peer. This
-		 * functionality is deprecated and will be removed eventually. One may
-		 * continue to use 'onCustomMessage'.
-		 * 
-		 * @param peerId
-		 *            The id of the peer.
-		 * @param nick
-		 *            The nick of the peer
-		 * @param message
-		 *            The message itself
-		 * @param isPrivate
-		 *            Flag to specify whether the message was broadcast to all
-		 *            the peers
-		 */
-		@Deprecated
-		public void onChatMessage(String peerId, String nick, String message,
-				boolean isPrivate);
-
-		/**
-		 * This is triggered when a custom broadcast or private message is
-		 * received from a peer via signaling channel.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param message
-		 *            User defined message. May be a 'java.lang.String',
-		 *            'org.json.JSONObject' or 'org.json.JSONArray'.
-		 * @param isPrivate
-		 *            Flag to specify whether the message was broadcast to all
-		 *            the peers
-		 */
-		public void onCustomMessage(String peerId, Object message,
-				boolean isPrivate);
-
-		/**
-		 * This is triggered when a broadcast or private peer message is
-		 * received via data channel.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param message
-		 *            User defined message. May be a 'java.lang.String',
-		 *            'org.json.JSONObject' or 'org.json.JSONArray'.
-		 * @param isPrivate
-		 *            Flag to specify whether the message was broadcast to all
-		 *            the peers
-		 */
-		public void onPeerMessage(String peerId, Object message,
-				boolean isPrivate);
-
-	}
-
   /**
    * 
    * @return The file transfer delegate object.
@@ -422,21 +361,21 @@ public class SkyLinkConnection {
    * 
    * @return The messages delegate object.
    */
-  public MessagesDelegate getMessagesDelegate() {
-    return messagesDelegate;
+  public MessagesListener getMessagesListener() {
+    return messagesListener;
   }
 
   /**
    * Sets the specified messages delegate object.
    * 
-   * @param messagesDelegate
+   * @param messagesListener
    *            The messages delegate object
    */
-  public void setMessagesDelegate(MessagesDelegate messagesDelegate) {
-    if (messagesDelegate == null)
-      this.messagesDelegate = new MessagesAdapter();
+  public void setMessagesListener(MessagesListener messagesListener) {
+    if (messagesListener == null)
+      this.messagesListener = new MessagesAdapter();
     else
-      this.messagesDelegate = messagesDelegate;
+      this.messagesListener = messagesListener;
   }
 
   /**
@@ -508,7 +447,7 @@ public class SkyLinkConnection {
 	private FileTransferListener fileTransferListener;
 	private LifeCycleListener lifeCycleListener;
 	private MediaDelegate mediaDelegate;
-	private MessagesDelegate messagesDelegate;
+	private MessagesListener messagesListener;
 	private RemotePeerListener remotePeerListener;
 
   // List of Connection state types
@@ -623,8 +562,8 @@ public class SkyLinkConnection {
 			this.lifeCycleListener = new LifeCycleAdapter();
 		if (this.mediaDelegate == null)
 			this.mediaDelegate = new MediaAdapter();
-		if (this.messagesDelegate == null)
-			this.messagesDelegate = new MessagesAdapter();
+		if (this.messagesListener == null)
+			this.messagesListener = new MessagesAdapter();
 		if (this.remotePeerListener == null)
 			this.remotePeerListener = new RemotePeerAdapter();
 
@@ -1664,7 +1603,7 @@ public class SkyLinkConnection {
                 // If user has indicated intention to disconnect,
                   // We should no longer process messages from signalling server.
                 if( connectionState == ConnectionState.DISCONNECT ) return;
-  							messagesDelegate.onChatMessage(mid, nick, text, target != null);
+  							messagesListener.onChatMessage(mid, nick, text, target != null);
               }
 						}
 					});
@@ -1780,7 +1719,7 @@ public class SkyLinkConnection {
                 // If user has indicated intention to disconnect,
                   // We should no longer process messages from signalling server.
                 if( connectionState == ConnectionState.DISCONNECT ) return;
-  							messagesDelegate.onCustomMessage( mid, objData, value.compareTo( "private" ) == 0 );
+  							messagesListener.onCustomMessage( mid, objData, value.compareTo( "private" ) == 0 );
               }
 						}
 					});

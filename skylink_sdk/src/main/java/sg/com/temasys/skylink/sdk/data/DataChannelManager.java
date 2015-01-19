@@ -1211,7 +1211,7 @@ public class DataChannelManager {
     if( hasPeerMessaging ) {
       ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
   		  public void run() {
-  			  connectionManager.getMessagesDelegate().onPeerMessage(tid, msg, isPrivate);
+  			  connectionManager.getMessagesListener().onPeerMessage(tid, msg, isPrivate);
 			  }
 		  });
     } else {
