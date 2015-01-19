@@ -35,6 +35,7 @@ import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
@@ -42,7 +43,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
 
 public class RoomViewActivity extends Activity implements
         LifeCycleListener,
-        RemotePeerListener, SkyLinkConnection.MediaDelegate,
+        RemotePeerListener, MediaListener,
         MessagesListener,
         FileTransferListener {
 

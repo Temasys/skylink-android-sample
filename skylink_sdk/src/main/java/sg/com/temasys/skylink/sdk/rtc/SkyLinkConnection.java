@@ -40,6 +40,7 @@ import org.webrtc.VideoTrack;
 import sg.com.temasys.skylink.sdk.data.DataChannelManager;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
@@ -251,48 +252,6 @@ public class SkyLinkConnection {
 
 	}
 
-	/**
-	 * Delegate comprises of callbacks related to audio / video manipulation
-	 * during the call.
-	 * 
-	 * @author temasys
-	 * 
-	 */
-	public interface MediaDelegate {
-
-		/**
-		 * This is triggered when any of the given video streams' frame size
-		 * changes. It includes the self stream also.
-		 * 
-		 * @param videoView
-		 *            The video view for which the frame size is changed
-		 * @param size
-		 *            Size of the video frame
-		 */
-		public void onVideoSize(GLSurfaceView videoView, Point size);
-
-		/**
-		 * This is triggered when a peer enable / disable its audio.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param isMuted
-		 *            Flag specifying whether the audio is muted or not
-		 */
-		public void onToggleAudio(String peerId, boolean isMuted);
-
-		/**
-		 * This is triggered when a peer enable / disable its video.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param isMuted
-		 *            Flag specifying whether the video is muted or not
-		 */
-		public void onToggleVideo(String peerId, boolean isMuted);
-
-	}
-
   /**
    * 
    * @return The file transfer delegate object.
@@ -340,21 +299,21 @@ public class SkyLinkConnection {
    * 
    * @return The media delegate object.
    */
-  public MediaDelegate getMediaDelegate() {
-    return mediaDelegate;
+  public MediaListener getMediaDelegate() {
+    return mediaListener;
   }
 
   /**
    * Sets the specified media delegate object.
    * 
-   * @param mediaDelegate
+   * @param mediaListener
    *            The media delegate object
    */
-  public void setMediaDelegate(MediaDelegate mediaDelegate) {
-    if (mediaDelegate == null)
-      this.mediaDelegate = new MediaAdapter();
+  public void setMediaDelegate(MediaListener mediaListener) {
+    if (mediaListener == null)
+      this.mediaListener = new MediaAdapter();
     else
-      this.mediaDelegate = mediaDelegate;
+      this.mediaListener = mediaListener;
   }
 
   /**
@@ -446,7 +405,7 @@ public class SkyLinkConnection {
 
 	private FileTransferListener fileTransferListener;
 	private LifeCycleListener lifeCycleListener;
-	private MediaDelegate mediaDelegate;
+	private MediaListener mediaListener;
 	private MessagesListener messagesListener;
 	private RemotePeerListener remotePeerListener;
 
@@ -560,8 +519,8 @@ public class SkyLinkConnection {
 			this.fileTransferListener = new FileTransferAdapter();
 		if (this.lifeCycleListener == null)
 			this.lifeCycleListener = new LifeCycleAdapter();
-		if (this.mediaDelegate == null)
-			this.mediaDelegate = new MediaAdapter();
+		if (this.mediaListener == null)
+			this.mediaListener = new MediaAdapter();
 		if (this.messagesListener == null)
 			this.messagesListener = new MessagesAdapter();
 		if (this.remotePeerListener == null)
@@ -1754,7 +1713,7 @@ public class SkyLinkConnection {
                   // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
                   if( connectionState == ConnectionState.DISCONNECT ) return;
-  								mediaDelegate.onToggleAudio(mid, muted);
+  								mediaListener.onToggleAudio(mid, muted);
                 }
 							}
 						});
@@ -1774,7 +1733,7 @@ public class SkyLinkConnection {
                   // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
                   if( connectionState == ConnectionState.DISCONNECT ) return;
-  								mediaDelegate.onToggleVideo(mid, muted);
+  								mediaListener.onToggleVideo(mid, muted);
                 }
 							}
 						});
@@ -1843,7 +1802,7 @@ public class SkyLinkConnection {
               // We should no longer process messages from signalling server.
             if( connectionState == ConnectionState.DISCONNECT ) return;
   					if (true/*SkyLinkConnection.this.surfaceOnHoldPool.get(surface) == null*/) {
-  						mediaDelegate.onVideoSize(surface, screenDimensions);
+  						mediaListener.onVideoSize(surface, screenDimensions);
   					} else {
   						String peerId = SkyLinkConnection.this.surfaceOnHoldPool
   								.get(surface);
