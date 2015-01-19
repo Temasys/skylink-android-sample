@@ -34,12 +34,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
 
 public class RoomViewActivity extends Activity implements
         LifeCycleListener,
-        SkyLinkConnection.RemotePeerDelegate, SkyLinkConnection.MediaDelegate,
+        RemotePeerListener, SkyLinkConnection.MediaDelegate,
         SkyLinkConnection.MessagesDelegate,
         SkyLinkConnection.FileTransferDelegate {
 
@@ -137,7 +138,7 @@ public class RoomViewActivity extends Activity implements
         mConnection.setLifeCycleListener(this);
         mConnection.setMediaDelegate(this);
         mConnection.setMessagesDelegate(this);
-        mConnection.setRemotePeerDelegate(this);
+        mConnection.setRemotePeerListener(this);
 
         LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rootView = layoutInflater.inflate(R.layout.activity_room_view,

@@ -39,6 +39,7 @@ import org.webrtc.VideoTrack;
 
 import sg.com.temasys.skylink.sdk.data.DataChannelManager;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
 import sg.com.temasys.skylink.sdk.server.WebServerClient;
 import android.annotation.SuppressLint;
@@ -245,76 +246,6 @@ public class SkyLinkConnection {
 			}
 			return result;
 		}
-
-	}
-
-	/**
-	 * Delegate comprises of callbacks related to the remote peers' activities.
-	 * 
-	 * @author temasys
-	 * 
-	 */
-	public interface RemotePeerDelegate {
-
-		/**
-		 * This is triggered when a new peer joins the room.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param userData
-		 *            User defined data relating to the peer. May be a
-		 *            'java.lang.String', 'org.json.JSONObject' or
-		 *            'org.json.JSONArray'.
-		 */
-		public void onPeerJoin(String peerId, Object userData);
-
-		/**
-		 * The is triggered upon receiving the video stream of the peer if the
-		 * connection is configured to have a video call.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param videoView
-		 *            Video of the peer
-		 * @param size
-		 *            Size of the peer video frame
-		 */
-		public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-				Point size);
-
-		/**
-		 * This is triggered when an update is received in the user defined data
-		 * of a peer.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param userData
-		 *            User defined data relating to the peer. May be a
-		 *            'java.lang.String', 'org.json.JSONObject' or
-		 *            'org.json.JSONArray'.
-		 */
-		public void onUserData(String peerId, Object userData);
-
-		/**
-		 * This is triggered when the underlying data connection is established
-		 * between two peers and is ready to send and receive peer messages and
-		 * files between them.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 */
-		public void onOpenDataConnection(String peerId);
-
-		/**
-		 * This is triggered when a peer leaves the room.
-		 * 
-		 * @param peerId
-		 *            The id of the peer
-		 * @param message
-		 *            Message specifying the possible reason for leaving the
-		 *            room
-		 */
-		public void onPeerLeave(String peerId, String message);
 
 	}
 
@@ -589,21 +520,21 @@ public class SkyLinkConnection {
    * 
    * @return The remote peer delegate object.
    */
-  public RemotePeerDelegate getRemotePeerDelegate() {
-    return remotePeerDelegate;
+  public RemotePeerListener getRemotePeerListener() {
+    return remotePeerListener;
   }
 
   /**
    * Sets the specified remote peer delegate object.
    * 
-   * @param remotePeerDelegate
+   * @param remotePeerListener
    *            The remote peer delegate object
    */
-  public void setRemotePeerDelegate(RemotePeerDelegate remotePeerDelegate) {
-    if (remotePeerDelegate == null)
-      this.remotePeerDelegate = new RemotePeerAdapter();
+  public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
+    if (remotePeerListener == null)
+      this.remotePeerListener = new RemotePeerAdapter();
     else
-      this.remotePeerDelegate = remotePeerDelegate;
+      this.remotePeerListener = remotePeerListener;
   }
 
   /**
@@ -655,7 +586,7 @@ public class SkyLinkConnection {
 	private LifeCycleListener lifeCycleListener;
 	private MediaDelegate mediaDelegate;
 	private MessagesDelegate messagesDelegate;
-	private RemotePeerDelegate remotePeerDelegate;
+	private RemotePeerListener remotePeerListener;
 
   // List of Connection state types
   public enum ConnectionState {
@@ -771,8 +702,8 @@ public class SkyLinkConnection {
 			this.mediaDelegate = new MediaAdapter();
 		if (this.messagesDelegate == null)
 			this.messagesDelegate = new MessagesAdapter();
-		if (this.remotePeerDelegate == null)
-			this.remotePeerDelegate = new RemotePeerAdapter();
+		if (this.remotePeerListener == null)
+			this.remotePeerListener = new RemotePeerAdapter();
 
 		this.webServerClient = new WebServerClient(myActivity, messageHandler,
 				iceServersObserver);
@@ -1836,7 +1767,7 @@ public class SkyLinkConnection {
                 // If user has indicated intention to disconnect,
                   // We should no longer process messages from signalling server.
                 if( connectionState == ConnectionState.DISCONNECT ) return;
-  							remotePeerDelegate.onPeerLeave( mid, "The peer has left the room" );
+  							remotePeerListener.onPeerLeave( mid, "The peer has left the room" );
               }
 						}
 					});
@@ -1943,7 +1874,7 @@ public class SkyLinkConnection {
                 // If user has indicated intention to disconnect,
                   // We should no longer process messages from signalling server.
                 if( connectionState == ConnectionState.DISCONNECT ) return;
-  							remotePeerDelegate.onUserData(mid, userData);
+  							remotePeerListener.onUserData(mid, userData);
               }
 						}
 					});
@@ -2060,7 +1991,7 @@ public class SkyLinkConnection {
   							lifeCycleListener.onGetUserMedia(surface,
   									screenDimensions);
   						} else {
-  							remotePeerDelegate.onGetPeerMedia(peerId, surface,
+  							remotePeerListener.onGetPeerMedia(peerId, surface,
   									screenDimensions);
   						}
   					}
@@ -2219,7 +2150,7 @@ public class SkyLinkConnection {
   						final GLSurfaceView rVideoView = remoteVideoView;
   						// connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
   						if (!connectionManager.isPeerIdMCU(myId))
-  							remotePeerDelegate.onGetPeerMedia( myId, rVideoView, null );
+  							remotePeerListener.onGetPeerMedia( myId, rVideoView, null );
   					}
           }
 				}
@@ -2352,7 +2283,7 @@ public class SkyLinkConnection {
   							drainRemoteCandidates();
   							if( !connectionManager.isPeerIdMCU( myId ) ) {
   								String tid = SDPObserver.this.myId;
-  								remotePeerDelegate.onPeerJoin( tid, connectionManager.displayNameMap.get( tid ) );
+  								remotePeerListener.onPeerJoin( tid, connectionManager.displayNameMap.get( tid ) );
                 }
   						}
   					}

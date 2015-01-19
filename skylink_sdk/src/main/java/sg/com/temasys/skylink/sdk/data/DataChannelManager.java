@@ -267,7 +267,7 @@ public class DataChannelManager {
     	  if (!isPeerIdMCU(tid))
     	  ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
     		  public void run() {
-    			  connectionManager.getRemotePeerDelegate().onOpenDataConnection(tid);
+    			  connectionManager.getRemotePeerListener().onOpenDataConnection(tid);
     			  }
     		  });
     }
