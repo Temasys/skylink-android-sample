@@ -6,8 +6,6 @@ import android.opengl.GLSurfaceView;
 /**
  * Listener comprises of callbacks related to audio / video manipulation
  * during the call.
- *
- * @author temasys
  */
 public interface MediaListener {
     /**
