@@ -430,7 +430,7 @@ public class DataChannelManager {
     // Trigger callback 
     ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
 		  public void run() {
-        connectionManager.getFileTransferDelegate()
+        connectionManager.getFileTransferListener()
           .onRequest( dcObserver.getTid(), fileName, isPrivate );
 			  }
 		  });
@@ -470,7 +470,7 @@ public class DataChannelManager {
     final double pct = pctTemp;
     ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
 		  public void run() {
-			  connectionManager.getFileTransferDelegate().onProgress(tid, filePath, pct, false);
+			  connectionManager.getFileTransferListener().onProgress(tid, filePath, pct, false);
 			  }
 		  });
     
@@ -485,7 +485,7 @@ public class DataChannelManager {
       sendACK( dcObserver, chunk + 1, true );
       ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
 		  public void run() {
-			  connectionManager.getFileTransferDelegate().onComplete(dcObserver.getTid(), filePath, false);
+			  connectionManager.getFileTransferListener().onComplete(dcObserver.getTid(), filePath, false);
 			  }
 		  });
       return;
@@ -571,7 +571,7 @@ public class DataChannelManager {
         // Transfer declined.
     	  ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
     		  public void run() {
-    			  connectionManager.getFileTransferDelegate().onPermission(tid, filePath, false);
+    			  connectionManager.getFileTransferListener().onPermission(tid, filePath, false);
     			  }
     		  });
         return;
@@ -579,7 +579,7 @@ public class DataChannelManager {
         // Transfer accepted, notify UI.
     	  ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
     		  public void run() {
-    			  connectionManager.getFileTransferDelegate().onPermission(tid, filePath, true);
+    			  connectionManager.getFileTransferListener().onPermission(tid, filePath, true);
     			  }
     		  });
       }
@@ -594,7 +594,7 @@ public class DataChannelManager {
       final double pct = pctTemp;
       ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
 		  public void run() {
-			  connectionManager.getFileTransferDelegate().onProgress(tid, filePath, pct, true);
+			  connectionManager.getFileTransferListener().onProgress(tid, filePath, pct, true);
 			  }
 		  });
     }
@@ -617,7 +617,7 @@ public class DataChannelManager {
         // Hence do nothing and assume the receiver will assume that we got the acknowledgement.
     	((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
   		  public void run() {
-  			  connectionManager.getFileTransferDelegate().onComplete(tid, filePath, true);
+  			  connectionManager.getFileTransferListener().onComplete(tid, filePath, true);
   			  }
   		  });
       // End of send operation
@@ -658,7 +658,7 @@ public class DataChannelManager {
           "but did not get any from Peer " + getDisplayName( tid ) + " (" + tid + ").";
         ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
   		  public void run() {
-  			  connectionManager.getFileTransferDelegate().onDrop(tid, fileName, errorMessage, false);
+  			  connectionManager.getFileTransferListener().onDrop(tid, fileName, errorMessage, false);
   			  }
   		  });
         sendError( errorMessage, true, tid );
@@ -730,7 +730,7 @@ public class DataChannelManager {
     // Trigger callback 
     ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
       public void run() {
-        connectionManager.getFileTransferDelegate().onDrop(tid, fileName, newErrorMessage, false);
+        connectionManager.getFileTransferListener().onDrop(tid, fileName, newErrorMessage, false);
       }
     });
   }
@@ -778,7 +778,7 @@ public class DataChannelManager {
     // Trigger callback 
     ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
 		  public void run() {
-			  connectionManager.getFileTransferDelegate().onDrop( tid, fileName, newCancelMessage, true );
+			  connectionManager.getFileTransferListener().onDrop( tid, fileName, newCancelMessage, true );
 		  }
 	  });
   }
@@ -842,7 +842,7 @@ public class DataChannelManager {
           " (" + tid + ").";
         ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
         public void run() {
-          connectionManager.getFileTransferDelegate().onDrop(tid, fileName, errorMessage, false);
+          connectionManager.getFileTransferListener().onDrop(tid, fileName, errorMessage, false);
           }
         });
         sendError( errorMessage, true, tid );
@@ -896,7 +896,7 @@ public class DataChannelManager {
             " (" + tid + ").";
           ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
           public void run() {
-            connectionManager.getFileTransferDelegate().onDrop( tid, filePath, errorMessage, false );
+            connectionManager.getFileTransferListener().onDrop( tid, filePath, errorMessage, false );
             }
           });
           sendError( errorMessage, false, tid );
