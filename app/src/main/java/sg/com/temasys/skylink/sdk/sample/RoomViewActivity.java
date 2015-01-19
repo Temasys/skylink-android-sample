@@ -33,13 +33,13 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
 
 public class RoomViewActivity extends Activity implements
         LifeCycleListener,
@@ -119,7 +119,7 @@ public class RoomViewActivity extends Activity implements
 
 
         if (!mIsAlreadyConnected) {
-            SkyLinkConfig config = new SkyLinkConnection.SkyLinkConfig();
+            SkyLinkConfig config = new SkyLinkConfig();
             config.setHasAudio(true);
             config.setHasVideo(true);
             config.setHasPeerMessaging(true);
