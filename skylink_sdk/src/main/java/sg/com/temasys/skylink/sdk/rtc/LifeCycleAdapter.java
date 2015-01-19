@@ -3,12 +3,14 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+
 /**
  * 
  * @author temasys
  *
  */
-public class LifeCycleAdapter implements SkyLinkConnection.LifeCycleDelegate {
+public class LifeCycleAdapter implements LifeCycleListener {
 
 	/**
 	 * 

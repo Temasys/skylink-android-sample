@@ -1002,7 +1002,7 @@ public class DataChannelManager {
         final String str = str1 + tid + ".";
         ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
           public void run() {
-            connectionManager.getLifeCycleDelegate().onReceiveLog(str);
+            connectionManager.getLifeCycleListener().onReceiveLog(str);
           }
         });
       }
@@ -1012,7 +1012,7 @@ public class DataChannelManager {
       final String str = str1 + tid + ".";
       ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
         public void run() {
-          connectionManager.getLifeCycleDelegate().onReceiveLog(str);
+          connectionManager.getLifeCycleListener().onReceiveLog(str);
         }
       });
     }

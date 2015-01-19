@@ -38,6 +38,7 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
 import sg.com.temasys.skylink.sdk.data.DataChannelManager;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
 import sg.com.temasys.skylink.sdk.server.WebServerClient;
 import android.annotation.SuppressLint;
@@ -244,67 +245,6 @@ public class SkyLinkConnection {
 			}
 			return result;
 		}
-
-	}
-
-	/**
-	 * Delegate comprises of callbacks related to the life cycle of the
-	 * connection.
-	 * 
-	 * @author temasys
-	 * 
-	 */
-	public interface LifeCycleDelegate {
-
-		/**
-		 * This is the first callback to specify whether the connection was
-		 * successful.
-		 * 
-		 * @param isSuccess
-		 *            Specify success or failure
-		 * @param message
-		 *            A message in case of isSuccess is 'false' describing the
-		 *            reason of failure
-		 */
-		public void onConnect(boolean isSuccess, String message);
-
-		/**
-		 * This is triggered when the framework successfully captures the camera
-		 * input from one's phone if the connection is configured to have a
-		 * video call.
-		 * 
-		 * @param videoView
-		 *            Video of oneself
-		 * @param size
-		 *            Size of the video frame
-		 */
-		public void onGetUserMedia(GLSurfaceView videoView, Point size);
-
-		/**
-		 * This is triggered when the framework issues a warning to the client.
-		 * 
-		 * @param message
-		 *            Warning message
-		 */
-		public void onWarning(String message);
-
-		/**
-		 * This is triggered whenever the connection between the client and the
-		 * infrastructure drops.
-		 * 
-		 * @param message
-		 *            Message specifying the reason for disconnection
-		 */
-		public void onDisconnect(String message);
-
-		/**
-		 * Occasionally the framework sends some messages for the client to
-		 * intimate about certain happenings.
-		 * 
-		 * @param message
-		 *            Happening message
-		 */
-		public void onReceiveLog(String message);
 
 	}
 
@@ -586,21 +526,21 @@ public class SkyLinkConnection {
    * 
    * @return The life cycle delegate object.
    */
-  public LifeCycleDelegate getLifeCycleDelegate() {
-    return lifeCycleDelegate;
+  public LifeCycleListener getLifeCycleListener() {
+    return lifeCycleListener;
   }
 
   /**
    * Sets the specified life cycle delegate object.
    * 
-   * @param lifeCycleDelegate
+   * @param lifeCycleListener
    *            The life cycle delegate object
    */
-  public void setLifeCycleDelegate(LifeCycleDelegate lifeCycleDelegate) {
-    if (lifeCycleDelegate == null)
-      this.lifeCycleDelegate = new LifeCycleAdapter();
+  public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
+    if (lifeCycleListener == null)
+      this.lifeCycleListener = new LifeCycleAdapter();
     else
-      this.lifeCycleDelegate = lifeCycleDelegate;
+      this.lifeCycleListener = lifeCycleListener;
   }
 
   /**
@@ -712,7 +652,7 @@ public class SkyLinkConnection {
 	private VideoRendererGui.VideoRendererGuiDelegate videoRendererGuiDelegate = new MyVideoRendererGuiDelegate();
 
 	private FileTransferDelegate fileTransferDelegate;
-	private LifeCycleDelegate lifeCycleDelegate;
+	private LifeCycleListener lifeCycleListener;
 	private MediaDelegate mediaDelegate;
 	private MessagesDelegate messagesDelegate;
 	private RemotePeerDelegate remotePeerDelegate;
@@ -825,8 +765,8 @@ public class SkyLinkConnection {
 
 		if (this.fileTransferDelegate == null)
 			this.fileTransferDelegate = new FileTransferAdapter();
-		if (this.lifeCycleDelegate == null)
-			this.lifeCycleDelegate = new LifeCycleAdapter();
+		if (this.lifeCycleListener == null)
+			this.lifeCycleListener = new LifeCycleAdapter();
 		if (this.mediaDelegate == null)
 			this.mediaDelegate = new MediaAdapter();
 		if (this.messagesDelegate == null)
@@ -1060,7 +1000,7 @@ public class SkyLinkConnection {
             // If user has indicated intention to disconnect,
               // We should no longer process messages from DC.
             if( connectionState == ConnectionState.DISCONNECT ) return;
-  					lifeCycleDelegate.onReceiveLog(str);
+  					lifeCycleListener.onReceiveLog(str);
           }
 				}
 			});
@@ -1170,7 +1110,7 @@ public class SkyLinkConnection {
             // If user has indicated intention to disconnect,
               // We should no longer process messages from DC.
             if( connectionState == ConnectionState.DISCONNECT ) return;
-  					lifeCycleDelegate.onReceiveLog(str);
+  					lifeCycleListener.onReceiveLog(str);
           }
 				}
 			});
@@ -1527,7 +1467,7 @@ public class SkyLinkConnection {
                 connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
               connectionManager.logMessage("[SDK] Local video source: Created.");
               // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-              lifeCycleDelegate.onGetUserMedia(localVideoView, null);
+              lifeCycleListener.onGetUserMedia(localVideoView, null);
               connectionManager.logMessage("[SDK] Local video source: Sent to App.");
             }
           }
@@ -1589,7 +1529,7 @@ public class SkyLinkConnection {
             // If user has indicated intention to disconnect,
               // We should no longer process messages from signalling server.
             if( connectionState == ConnectionState.DISCONNECT ) return;
-  					lifeCycleDelegate.onConnect( message == null, message );
+  					lifeCycleListener.onConnect( message == null, message );
           }
 				}
 			});
@@ -1966,9 +1906,9 @@ public class SkyLinkConnection {
                 // We should no longer process messages from signalling server.
               if( connectionState == ConnectionState.DISCONNECT ) return;
   						if (action.compareTo("warning") == 0)
-  							lifeCycleDelegate.onWarning(info);
+  							lifeCycleListener.onWarning(info);
   						else
-  							lifeCycleDelegate.onDisconnect(info);
+  							lifeCycleListener.onDisconnect(info);
             }
 					}
 				});
@@ -2067,7 +2007,7 @@ public class SkyLinkConnection {
               // We should no longer process messages from signalling server.
             if( connectionState == ConnectionState.DISCONNECT ) return;
             connectionManager.logMessage("[SDK] onClose.");
-  					lifeCycleDelegate.onDisconnect("Connection with the skylink server is closed");
+  					lifeCycleListener.onDisconnect("Connection with the skylink server is closed");
           }
         }
       });
@@ -2084,7 +2024,7 @@ public class SkyLinkConnection {
             if( connectionState == ConnectionState.DISCONNECT ) return;
       			final String message = "[SDK] onError: " + code + ", " + description;
       			connectionManager.logMessage(message);
-  					lifeCycleDelegate.onDisconnect(message);
+  					lifeCycleListener.onDisconnect(message);
           }
 				}
 			});
@@ -2117,7 +2057,7 @@ public class SkyLinkConnection {
   						SkyLinkConnection.this.surfaceOnHoldPool
   								.remove(surface);
   						if (peerId.compareToIgnoreCase(MY_SELF) == 0) {
-  							lifeCycleDelegate.onGetUserMedia(surface,
+  							lifeCycleListener.onGetUserMedia(surface,
   									screenDimensions);
   						} else {
   							remotePeerDelegate.onGetPeerMedia(peerId, surface,

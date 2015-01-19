@@ -33,12 +33,12 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.sample.R;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
 
 public class RoomViewActivity extends Activity implements
-        SkyLinkConnection.LifeCycleDelegate,
+        LifeCycleListener,
         SkyLinkConnection.RemotePeerDelegate, SkyLinkConnection.MediaDelegate,
         SkyLinkConnection.MessagesDelegate,
         SkyLinkConnection.FileTransferDelegate {
@@ -134,7 +134,7 @@ public class RoomViewActivity extends Activity implements
         }
 
         mConnection.setFileTransferDelegate(this);
-        mConnection.setLifeCycleDelegate(this);
+        mConnection.setLifeCycleListener(this);
         mConnection.setMediaDelegate(this);
         mConnection.setMessagesDelegate(this);
         mConnection.setRemotePeerDelegate(this);
