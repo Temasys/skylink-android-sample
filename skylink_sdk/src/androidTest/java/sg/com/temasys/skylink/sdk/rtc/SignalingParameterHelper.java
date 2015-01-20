@@ -16,8 +16,6 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.utils.Utils;
-
 /**
  * Created by janidu on 13/1/15.
  */
