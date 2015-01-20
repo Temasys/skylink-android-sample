@@ -236,6 +236,12 @@ public class SkyLinkConnection {
         handler = new Handler(Looper.getMainLooper());
     }
 
+    public static synchronized SkyLinkConnection getInstance(){
+        if(instance == null){
+            instance = new SkyLinkConnection();
+        }
+        return instance;
+    }
 
 	/**
 	 * Creates a new SkyLinkConnection object with the specified parameters.
@@ -246,10 +252,10 @@ public class SkyLinkConnection {
 	 *            The secret associated with the key
 	 * @param config
 	 *            The config object to configure the call itself
-	 * @param parentActivity
-	 *            The activity to which this connection object belongs
+	 * @param context
+	 *            The application context
 	 */
-	public SkyLinkConnection( String apiKey, String secret,
+	public void init( String apiKey, String secret,
 			SkyLinkConfig config, Context context ) {
 		logMessage("TEMAConnectionManager::config=>" + config);
 

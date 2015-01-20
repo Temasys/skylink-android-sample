@@ -126,15 +126,14 @@ public class RoomViewActivity extends Activity implements
             config.setHasFileTransfer(true);
             config.setTimeout(60);
             // config.setTimeout( 10 );
-            mConnection = new SkyLinkConnection(getString(R.string.app_key),
-                    getString(R.string.app_secret), config, this);
+            mConnection = SkyLinkConnection.getInstance();
+            mConnection.init(getString(R.string.app_key),
+                    getString(R.string.app_secret), config, getApplicationContext());
             mConnectionConfig = config;
             RoomManager.getInstance(mConnection);
         } else {
-            // New Activity has been generated, so reset the delegates to the
-            // new activity.
+            // Get the connection instance from the room manager
             mConnection = RoomManager.get().getConnection();
-            mConnection.resetContext(this);
         }
 
         mConnection.setFileTransferListener(this);
