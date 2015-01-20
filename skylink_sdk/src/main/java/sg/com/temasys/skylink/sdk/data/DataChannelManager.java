@@ -1263,18 +1263,14 @@ public class DataChannelManager {
 	}
 
   // Get DcHandler associated with DcObserver
-  private DcHandler getDcHandler( final DcObserver dcObserver ) {
+  private synchronized DcHandler getDcHandler( final DcObserver dcObserver ) {
     final DcHandler dcHandlerTemp = dcHandlerList.get( dcObserver );
-    // handler must be created in thread that has called Looper.prepare().
-    ( ( Activity ) getConnectionManager().getContext() ).runOnUiThread(new Runnable() {
-      public void run() {
         if( dcHandlerTemp == null ) {
           dcHandler = new DcHandler();
           dcHandlerList.put( dcObserver, dcHandler );
-        } else dcHandler = dcHandlerTemp;
-      }
-    });
-
+        } else {
+            dcHandler = dcHandlerTemp;
+        }
     return dcHandler;       
   }
 
