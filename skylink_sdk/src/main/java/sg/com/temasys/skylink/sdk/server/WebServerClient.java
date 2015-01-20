@@ -75,8 +75,7 @@ public class WebServerClient {
 
     private static final String TAG = "AppRTCClient";
     // private GAEChannelClient channelClient;
-    @SuppressWarnings("unused")
-    private final Activity activity;
+
     private final WebServerClient.MessageHandler gaeHandler;
     private final IceServersObserver iceServersObserver;
     private boolean verboseLogging;
@@ -96,10 +95,8 @@ public class WebServerClient {
         public void onError(String message);
     }
 
-    public WebServerClient(
-            Activity activity, WebServerClient.MessageHandler gaeHandler,
+    public WebServerClient(WebServerClient.MessageHandler gaeHandler,
             IceServersObserver iceServersObserver) {
-        this.activity = activity;
         this.gaeHandler = gaeHandler;
         this.iceServersObserver = iceServersObserver;
         verboseLogging = true;

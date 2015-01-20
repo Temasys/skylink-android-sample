@@ -214,10 +214,6 @@ public class RoomManager {
         mChatPeerId = chatPeerId;
     }
 
-    public Context getContext() {
-        return mConnection.getContext();
-    }
-
     public void putDisplayName(String peerId, String displayName) {
         VideoInfo videoInfo = mVideoPool.get(peerId);
         if (videoInfo == null) {

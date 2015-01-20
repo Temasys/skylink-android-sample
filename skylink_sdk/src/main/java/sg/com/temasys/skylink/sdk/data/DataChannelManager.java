@@ -265,7 +265,7 @@ public class DataChannelManager {
       }
       if (state == DataChannel.State.OPEN)
     	  if (!isPeerIdMCU(tid))
-    	  ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    	  connectionManager.runOnUiThread(new Runnable() {
     		  public void run() {
     			  connectionManager.getRemotePeerListener().onOpenDataConnection(tid);
     			  }
@@ -428,7 +428,7 @@ public class DataChannelManager {
     dcObserver.setChunkSizePost( chunkSize );
 
     // Trigger callback 
-    ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    connectionManager.runOnUiThread(new Runnable() {
 		  public void run() {
         connectionManager.getFileTransferListener()
           .onRequest( dcObserver.getTid(), fileName, isPrivate );
@@ -468,7 +468,7 @@ public class DataChannelManager {
     if( pctTemp > 100 ) pctTemp = 
       ( double ) ( chunk - 1 ) * ( double ) chunkSizePost / ( double ) fileSize * 100;
     final double pct = pctTemp;
-    ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    connectionManager.runOnUiThread(new Runnable() {
 		  public void run() {
 			  connectionManager.getFileTransferListener().onProgress(tid, filePath, pct, false);
 			  }
@@ -483,7 +483,7 @@ public class DataChannelManager {
       dcObserver.setChunk( 0 );
       // Let Peer know we have received chunk by sending 1 more ACK:
       sendACK( dcObserver, chunk + 1, true );
-      ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+      connectionManager.runOnUiThread(new Runnable() {
 		  public void run() {
 			  connectionManager.getFileTransferListener().onComplete(dcObserver.getTid(), filePath, false);
 			  }
@@ -569,7 +569,7 @@ public class DataChannelManager {
     // If this is first ACK, determine if transfer should proceed.
       if( chunk == -1 ) {
         // Transfer declined.
-    	  ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    	  connectionManager.runOnUiThread(new Runnable() {
     		  public void run() {
     			  connectionManager.getFileTransferListener().onPermission(tid, filePath, false);
     			  }
@@ -577,7 +577,7 @@ public class DataChannelManager {
         return;
       } else if( chunk == 0 ) {
         // Transfer accepted, notify UI.
-    	  ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    	  connectionManager.runOnUiThread(new Runnable() {
     		  public void run() {
     			  connectionManager.getFileTransferListener().onPermission(tid, filePath, true);
     			  }
@@ -592,7 +592,7 @@ public class DataChannelManager {
       if( pctTemp > 100 ) pctTemp = 
         ( double ) ( chunk - 1 ) * ( double ) CHUNK_SIZE_PRE / ( double ) fileSize * 100;
       final double pct = pctTemp;
-      ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+      connectionManager.runOnUiThread(new Runnable() {
 		  public void run() {
 			  connectionManager.getFileTransferListener().onProgress(tid, filePath, pct, true);
 			  }
@@ -615,7 +615,7 @@ public class DataChannelManager {
       // This happens when the previous chunk was < full size.
       // It is the receiver acknowledging that he got the last chunk.
         // Hence do nothing and assume the receiver will assume that we got the acknowledgement.
-    	((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    	connectionManager.runOnUiThread(new Runnable() {
   		  public void run() {
   			  connectionManager.getFileTransferListener().onComplete(tid, filePath, true);
   			  }
@@ -656,7 +656,7 @@ public class DataChannelManager {
           "Waited for " + Integer.toString( TIMEOUT ) + " seconds for ACK of chunk " + chunk + 
           " out of " + chunkLast + " expected chunks, " +
           "but did not get any from Peer " + getDisplayName( tid ) + " (" + tid + ").";
-        ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+        connectionManager.runOnUiThread(new Runnable() {
   		  public void run() {
   			  connectionManager.getFileTransferListener().onDrop(tid, fileName, errorMessage, false);
   			  }
@@ -728,7 +728,7 @@ public class DataChannelManager {
       " sent DC Error:\n" + desc;
     final String newErrorMessage = errorMessage;
     // Trigger callback 
-    ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    connectionManager.runOnUiThread(new Runnable() {
       public void run() {
         connectionManager.getFileTransferListener().onDrop(tid, fileName, newErrorMessage, false);
       }
@@ -776,7 +776,7 @@ public class DataChannelManager {
       " sent DC CANCEL:\n" + desc;
     final String newCancelMessage = cancelMessage;
     // Trigger callback 
-    ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+    connectionManager.runOnUiThread(new Runnable() {
 		  public void run() {
 			  connectionManager.getFileTransferListener().onDrop( tid, fileName, newCancelMessage, true );
 		  }
@@ -840,7 +840,7 @@ public class DataChannelManager {
           "Waited for " + Integer.toString( TIMEOUT ) + 
           " seconds but did not get file acceptance response from Peer " + getDisplayName( tid ) +
           " (" + tid + ").";
-        ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+        connectionManager.runOnUiThread(new Runnable() {
         public void run() {
           connectionManager.getFileTransferListener().onDrop(tid, fileName, errorMessage, false);
           }
@@ -894,7 +894,7 @@ public class DataChannelManager {
             "Waited for " + Integer.toString( TIMEOUT ) + 
             " seconds but did not get file chunk " + chunk + " from Peer " + getDisplayName( tid ) +
             " (" + tid + ").";
-          ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+          connectionManager.runOnUiThread(new Runnable() {
           public void run() {
             connectionManager.getFileTransferListener().onDrop( tid, filePath, errorMessage, false );
             }
@@ -1000,7 +1000,7 @@ public class DataChannelManager {
         tid = iPeerId.next();
         sendFtrToPeer( fileName, filePath, tid, false );
         final String str = str1 + tid + ".";
-        ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+        connectionManager.runOnUiThread(new Runnable() {
           public void run() {
             connectionManager.getLifeCycleListener().onReceiveLog(str);
           }
@@ -1010,7 +1010,7 @@ public class DataChannelManager {
       // Send to specific Peer.
       sendFtrToPeer( fileName, filePath, tid, true );
       final String str = str1 + tid + ".";
-      ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+      connectionManager.runOnUiThread(new Runnable() {
         public void run() {
           connectionManager.getLifeCycleListener().onReceiveLog(str);
         }
@@ -1209,7 +1209,7 @@ public class DataChannelManager {
   public void processDcChat( final String tid, final String msg, final boolean isPrivate ) {
     // Fire callback to client if PeerMessaging is activated:
     if( hasPeerMessaging ) {
-      ((Activity)connectionManager.getContext()).runOnUiThread(new Runnable() {
+      connectionManager.runOnUiThread(new Runnable() {
   		  public void run() {
   			  connectionManager.getMessagesListener().onPeerMessage(tid, msg, isPrivate);
 			  }

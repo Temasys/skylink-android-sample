@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URLEncoder;
 import java.security.SignatureException;
 import java.text.SimpleDateFormat;
@@ -52,6 +51,8 @@ import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 
@@ -169,21 +170,13 @@ public class SkyLinkConnection {
       this.remotePeerListener = remotePeerListener;
   }
 
-  /**
-   * 
-   * @return The associated activity.
-   */
-  public Context getContext() {
-    return myActivity;
-  }
-
 	private static final String TAG = "TEMAConnectionManager";
 	private static final int MAX_PEER_CONNECTIONS = 4;
 	private static final String MY_SELF = "me";
 
 	private static boolean factoryStaticInitialized;
 
-	private Activity myActivity;
+	private Context applicationContext;
 	private AudioSource localAudioSource;
 	private AudioTrack localAudioTrack;
 	private boolean isMCUConnection;
@@ -235,6 +228,14 @@ public class SkyLinkConnection {
   private Object lockDisconnectMsg = new Object();
   private Object lockDisconnectMedia = new Object();
   private Object lockDisconnectSdp = new Object();
+
+    private static SkyLinkConnection instance;
+    private Handler handler;
+
+    private SkyLinkConnection(){
+        handler = new Handler(Looper.getMainLooper());
+    }
+
 
 	/**
 	 * Creates a new SkyLinkConnection object with the specified parameters.
@@ -289,7 +290,7 @@ public class SkyLinkConnection {
 				"true"));
 		this.pcConstraints = constraints;
 
-		this.myActivity = (Activity) context;
+		this.applicationContext = context;
 
 		// Instantiate DataChannelManager.
 		if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()) {
@@ -299,6 +300,14 @@ public class SkyLinkConnection {
 			this.dataChannelManager.setConnectionManager(this);
 		}
 	}
+
+    /***
+     * Runs the specified action on the UI thread
+     * @param action the action to run on the UI thread
+     */
+    public void runOnUiThread(Runnable action){
+        handler.post(action);
+    }
 
 	/**
 	 * Connects to a room.
@@ -337,7 +346,7 @@ public class SkyLinkConnection {
 		if (this.remotePeerListener == null)
 			this.remotePeerListener = new RemotePeerAdapter();
 
-		this.webServerClient = new WebServerClient(myActivity, messageHandler,
+		this.webServerClient = new WebServerClient(messageHandler,
 				iceServersObserver);
 
 		logMessage("TEMAConnectionManager::room name=>" + roomName);
@@ -366,7 +375,7 @@ public class SkyLinkConnection {
 	 *            The context
 	 */
 	public void resetContext(Context context) {
-		this.myActivity = (Activity) context;
+		this.applicationContext = context;
 	}
 	
 	/**
@@ -556,7 +565,7 @@ public class SkyLinkConnection {
 		} else {
 			final String str = "Cannot send P2P message as it was not enabled in the configuration.\nUse "
 					+ "hasP2PMessage( true ) on TEMAConnectionConfig before creating TEMAConnectionManager.";
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -666,7 +675,7 @@ public class SkyLinkConnection {
 		} else {
 			final String str = "Cannot do file transfer as it was not enabled in the configuration.\nUse "
 					+ "hasFileTransfer( true ) on TEMAConnectionConfig before creating TEMAConnectionManager.";
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1002,22 +1011,17 @@ public class SkyLinkConnection {
               lms.addTrack(localVideoTrack);
               connectionManager.localVideoTrack = localVideoTrack;
             }
-
-            final Point displaySize = new Point();
-            myActivity.getWindowManager().getDefaultDisplay()
-                .getRealSize(displaySize);
           }
         }
 
-        myActivity.runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable() {
           public void run() {
             // Prevent thread from executing with disconnect concurrently.
             synchronized( lockDisconnectMedia ) {
               // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
               if( connectionState == ConnectionState.DISCONNECT ) return;
-              localVideoView = new GLSurfaceView(myActivity
-                  .getApplicationContext());
+              localVideoView = new GLSurfaceView(applicationContext);
               VideoRendererGui gui = new VideoRendererGui(
                   localVideoView);
               gui.setDelegate(connectionManager.videoRendererGuiDelegate);
@@ -1085,7 +1089,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onError(final String message) {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1366,7 +1370,7 @@ public class SkyLinkConnection {
 				connectionManager.logMessage("event:" + value + ", nick->"
 						+ nick + ", text->" + text + ", target->" + target);
 				if (!connectionManager.isPeerIdMCU(mid)) {
-					myActivity.runOnUiThread(new Runnable() {
+					runOnUiThread(new Runnable() {
 						public void run() {
               // Prevent thread from executing with disconnect concurrently.
               synchronized( lockDisconnect ) {
@@ -1392,7 +1396,7 @@ public class SkyLinkConnection {
 
 				final String mid = objects.getString("mid");
 				if (!connectionManager.isPeerIdMCU(mid)) {
-					myActivity.runOnUiThread(new Runnable() {
+					runOnUiThread(new Runnable() {
 						public void run() {
               // Prevent thread from executing with disconnect concurrently.
               synchronized( lockDisconnect ) {
@@ -1461,7 +1465,7 @@ public class SkyLinkConnection {
 
 				final String info = objects.getString("info");
 				final String action = objects.getString("action");
-				myActivity.runOnUiThread(new Runnable() {
+				runOnUiThread(new Runnable() {
 					public void run() {
             // Prevent thread from executing with disconnect concurrently.
             synchronized( lockDisconnect ) {
@@ -1482,7 +1486,7 @@ public class SkyLinkConnection {
 				final Object objData = objects.get("data");
 				final String mid = objects.getString("mid");
 				if (!connectionManager.isPeerIdMCU(mid)) {
-					myActivity.runOnUiThread(new Runnable() {
+					runOnUiThread(new Runnable() {
 						public void run() {
               // Prevent thread from executing with disconnect concurrently.
               synchronized( lockDisconnect ) {
@@ -1499,7 +1503,7 @@ public class SkyLinkConnection {
 				final String mid = objects.getString("mid");
 				final Object userData = objects.get("userData");
 				if (!connectionManager.isPeerIdMCU(mid)) {
-					myActivity.runOnUiThread(new Runnable() {
+					runOnUiThread(new Runnable() {
 						public void run() {
               // Prevent thread from executing with disconnect concurrently.
               synchronized( lockDisconnect ) {
@@ -1517,7 +1521,7 @@ public class SkyLinkConnection {
 					final String mid = objects.getString("mid");
 					final boolean muted = objects.getBoolean("muted");
 					if (!connectionManager.isPeerIdMCU(mid)) {
-						myActivity.runOnUiThread(new Runnable() {
+						runOnUiThread(new Runnable() {
 							public void run() {
                 // Prevent thread from executing with disconnect concurrently.
                 synchronized( lockDisconnect ) {
@@ -1537,7 +1541,7 @@ public class SkyLinkConnection {
 					final String mid = objects.getString("mid");
 					final boolean muted = objects.getBoolean("muted");
 					if (!connectionManager.isPeerIdMCU(mid)) {
-						myActivity.runOnUiThread(new Runnable() {
+						runOnUiThread(new Runnable() {
 							public void run() {
                 // Prevent thread from executing with disconnect concurrently.
                 synchronized( lockDisconnect ) {
@@ -1562,7 +1566,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onClose() {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1578,7 +1582,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onError( final int code, final String description) {
-      myActivity.runOnUiThread(new Runnable() {
+      runOnUiThread(new Runnable() {
         public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1604,7 +1608,7 @@ public class SkyLinkConnection {
 		@Override
 		public void updateDisplaySize(final GLSurfaceView surface,
 				final Point screenDimensions) {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				@SuppressWarnings("unused")
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
@@ -1669,7 +1673,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onIceCandidate(final IceCandidate candidate) {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1698,7 +1702,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onError() {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1724,7 +1728,7 @@ public class SkyLinkConnection {
 				PeerConnection.IceGatheringState newState) {
 			if (newState == PeerConnection.IceGatheringState.COMPLETE
 					&& connectionManager.isMCUConnection)
-				myActivity.runOnUiThread(new Runnable() {
+				runOnUiThread(new Runnable() {
 					public void run() {
             // Prevent thread from executing with disconnect concurrently.
             synchronized( lockDisconnect ) {
@@ -1754,7 +1758,7 @@ public class SkyLinkConnection {
 		@SuppressLint("NewApi")
 		@Override
 		public void onAddStream(final MediaStream stream) {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1766,11 +1770,7 @@ public class SkyLinkConnection {
   							"Weird-looking stream: " + stream);
   					GLSurfaceView remoteVideoView = null;
   					if (stream.videoTracks.size() == 1 && myConfig.hasVideo()) {
-  						Point displaySize = new Point();
-  						myActivity.getWindowManager().getDefaultDisplay()
-  								.getRealSize(displaySize);
-  						remoteVideoView = new GLSurfaceView(myActivity
-  								.getApplicationContext());
+  						remoteVideoView = new GLSurfaceView(applicationContext);
   						VideoRendererGui gui = new VideoRendererGui(
   								remoteVideoView);
   						gui.setDelegate(connectionManager.videoRendererGuiDelegate);
@@ -1791,7 +1791,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onRemoveStream(final MediaStream stream) {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1865,7 +1865,7 @@ public class SkyLinkConnection {
   			pc = connectionManager.peerConnectionPool
   					.get(this.myId);
       }
-      myActivity.runOnUiThread(new Runnable() {
+      runOnUiThread(new Runnable() {
         public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1891,7 +1891,7 @@ public class SkyLinkConnection {
         if( connectionState == ConnectionState.DISCONNECT ) return;
   			pc = connectionManager.peerConnectionPool.get( this.myId );
       }
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1926,7 +1926,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onCreateFailure(final String error) {
-			myActivity.runOnUiThread(new Runnable() {
+			runOnUiThread(new Runnable() {
 				public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
@@ -1941,7 +1941,7 @@ public class SkyLinkConnection {
 
 		@Override
 		public void onSetFailure(final String error) {
-      myActivity.runOnUiThread(new Runnable() {
+      runOnUiThread(new Runnable() {
         public void run() {
           // Prevent thread from executing with disconnect concurrently.
           synchronized( lockDisconnect ) {
