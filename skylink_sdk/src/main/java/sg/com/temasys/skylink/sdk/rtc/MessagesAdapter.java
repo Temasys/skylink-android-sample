@@ -5,7 +5,7 @@ import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 /**
  * @author temasys
  */
-public class MessagesAdapter implements MessagesListener {
+class MessagesAdapter implements MessagesListener {
 
     /**
      *

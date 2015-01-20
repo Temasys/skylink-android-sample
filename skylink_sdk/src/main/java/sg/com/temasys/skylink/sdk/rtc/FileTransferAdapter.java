@@ -5,7 +5,7 @@ import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 /**
  * @author temasys
  */
-public class FileTransferAdapter implements
+class FileTransferAdapter implements
         FileTransferListener {
 
     /**

@@ -8,7 +8,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 /**
  * @author temasys
  */
-public class MediaAdapter implements MediaListener {
+class MediaAdapter implements MediaListener {
 
     /**
      *

@@ -8,7 +8,7 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 /**
  * @author temasys
  */
-public class RemotePeerAdapter implements RemotePeerListener {
+class RemotePeerAdapter implements RemotePeerListener {
 
     /**
      *
