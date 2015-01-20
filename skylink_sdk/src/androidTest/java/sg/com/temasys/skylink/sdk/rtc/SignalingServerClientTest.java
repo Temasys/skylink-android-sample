@@ -1,8 +1,6 @@
-package com.sg.temasys.skylink.sdk.server;
-import android.util.Log;
+package sg.com.temasys.skylink.sdk.rtc;
 
-import com.sg.temasys.skylink.sdk.test.helper.SignalingParameterHelper;
-import com.sg.temasys.skylink.sdk.test.helper.SignalingParameterHelperListener;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,9 +14,6 @@ import org.robolectric.shadows.ShadowLog;
 
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CountDownLatch;
-
-import sg.com.temasys.skylink.sdk.server.SignalingServerClient;
-import sg.com.temasys.skylink.sdk.server.WebServerClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

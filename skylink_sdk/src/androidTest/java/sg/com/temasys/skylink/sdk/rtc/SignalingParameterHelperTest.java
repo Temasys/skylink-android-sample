@@ -1,4 +1,4 @@
-package com.sg.temasys.skylink.sdk.test.helper;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Log;
 

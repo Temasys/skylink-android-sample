@@ -1,10 +1,8 @@
-package com.sg.temasys.skylink.sdk.test.helper;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.sg.temasys.skylink.sdk.test.helper.SignalingParameterHelperListener;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -18,7 +16,6 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.server.SignalingServerClient;
 import sg.com.temasys.skylink.sdk.utils.Utils;
 
 /**
@@ -26,7 +23,7 @@ import sg.com.temasys.skylink.sdk.utils.Utils;
  */
 public class SignalingParameterHelper {
 
-    public static final String TAG = SignalingServerClient.class.getName();
+    public static final String TAG = SignalingParameterHelper.class.getName();
 
     public static final String API_SERVER = "http://api.temasys.com.sg/api/";
     public static final String API_KEY = "cff8ff52-ce29-4840-a489-0ceef3af81f0";

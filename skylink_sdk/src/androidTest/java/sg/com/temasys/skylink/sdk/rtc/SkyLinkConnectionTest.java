@@ -1,4 +1,4 @@
-package com.sg.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -6,8 +6,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
-
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
