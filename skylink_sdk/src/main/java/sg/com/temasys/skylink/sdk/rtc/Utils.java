@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.utils;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Base64;
 import android.util.Log;
@@ -14,7 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Created by janidu on 13/1/15.
  */
-public class Utils {
+class Utils {
 
     private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";

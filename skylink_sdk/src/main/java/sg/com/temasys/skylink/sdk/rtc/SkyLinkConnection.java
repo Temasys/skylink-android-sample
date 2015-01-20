@@ -37,16 +37,14 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
 import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
-import sg.com.temasys.skylink.sdk.data.DataChannelManager;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
-import sg.com.temasys.skylink.sdk.server.WebServerClient;
+
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
