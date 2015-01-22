@@ -43,6 +43,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
+import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -64,17 +65,17 @@ public class SkyLinkConnection {
 
   /**
    * 
-   * @return The file transfer delegate object.
+   * @return The file transfer listener object.
    */
   public FileTransferListener getFileTransferListener() {
     return fileTransferListener;
   }
 
   /**
-   * Sets the specified file transfer delegate object.
+   * Sets the specified file transfer listener object.
    * 
    * @param fileTransferListener
-   *            The file transfer delegate object
+   *            The file transfer listener object
    */
   public void setFileTransferListener(
           FileTransferListener fileTransferListener) {
@@ -86,17 +87,17 @@ public class SkyLinkConnection {
 
   /**
    * 
-   * @return The life cycle delegate object.
+   * @return The life cycle listener object.
    */
   public LifeCycleListener getLifeCycleListener() {
     return lifeCycleListener;
   }
 
   /**
-   * Sets the specified life cycle delegate object.
+   * Sets the specified life cycle listener object.
    * 
    * @param lifeCycleListener
-   *            The life cycle delegate object
+   *            The life cycle listener object
    */
   public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
     if (lifeCycleListener == null)
@@ -107,19 +108,19 @@ public class SkyLinkConnection {
 
   /**
    * 
-   * @return The media delegate object.
+   * @return The media listener object.
    */
-  public MediaListener getMediaDelegate() {
+  public MediaListener getMediaListener() {
     return mediaListener;
   }
 
   /**
-   * Sets the specified media delegate object.
+   * Sets the specified media listener object.
    * 
    * @param mediaListener
-   *            The media delegate object
+   *            The media listener object
    */
-  public void setMediaDelegate(MediaListener mediaListener) {
+  public void setMediaListener(MediaListener mediaListener) {
     if (mediaListener == null)
       this.mediaListener = new MediaAdapter();
     else
@@ -128,17 +129,17 @@ public class SkyLinkConnection {
 
   /**
    * 
-   * @return The messages delegate object.
+   * @return The messages listener object.
    */
   public MessagesListener getMessagesListener() {
     return messagesListener;
   }
 
   /**
-   * Sets the specified messages delegate object.
+   * Sets the specified messages listener object.
    * 
    * @param messagesListener
-   *            The messages delegate object
+   *            The messages listener object
    */
   public void setMessagesListener(MessagesListener messagesListener) {
     if (messagesListener == null)
@@ -149,17 +150,17 @@ public class SkyLinkConnection {
 
   /**
    * 
-   * @return The remote peer delegate object.
+   * @return The remote peer listener object.
    */
   public RemotePeerListener getRemotePeerListener() {
     return remotePeerListener;
   }
 
   /**
-   * Sets the specified remote peer delegate object.
+   * Sets the specified remote peer listener object.
    * 
    * @param remotePeerListener
-   *            The remote peer delegate object
+   *            The remote peer listener object
    */
   public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
     if (remotePeerListener == null)
@@ -203,7 +204,7 @@ public class SkyLinkConnection {
 
 	private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
 	private WebServerClient.MessageHandler messageHandler = new MyMessageHandler();
-	private VideoRendererGui.VideoRendererGuiDelegate videoRendererGuiDelegate = new MyVideoRendererGuiDelegate();
+	private VideoRendererGuiListener videoRendererGuiListener = new MyVideoRendererGuiListener();
 
 	private FileTransferListener fileTransferListener;
 	private LifeCycleListener lifeCycleListener;
@@ -1028,7 +1029,7 @@ public class SkyLinkConnection {
               localVideoView = new GLSurfaceView(applicationContext);
               VideoRendererGui gui = new VideoRendererGui(
                   localVideoView);
-              gui.setDelegate(connectionManager.videoRendererGuiDelegate);
+              gui.setListener(connectionManager.videoRendererGuiListener);
               VideoRenderer.Callbacks localRender = gui.create(0,
                   0, 100, 100);
               localVideoTrack.addRenderer(new VideoRenderer(
@@ -1604,10 +1605,10 @@ public class SkyLinkConnection {
 	}
 
 	/*
-	 * VideoRendererGui.VideoRendererGuiDelegate
+	 * VideoRendererGui.VideoRendererGuiListener
 	 */
-	private class MyVideoRendererGuiDelegate implements
-			VideoRendererGui.VideoRendererGuiDelegate {
+	private class MyVideoRendererGuiListener implements
+			VideoRendererGuiListener {
 
 		@Override
 		public void updateDisplaySize(final GLSurfaceView surface,
@@ -1777,7 +1778,7 @@ public class SkyLinkConnection {
   						remoteVideoView = new GLSurfaceView(applicationContext);
   						VideoRendererGui gui = new VideoRendererGui(
   								remoteVideoView);
-  						gui.setDelegate(connectionManager.videoRendererGuiDelegate);
+  						gui.setListener(connectionManager.videoRendererGuiListener);
   						VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
   								100, 100);
   						stream.videoTracks.get(0).addRenderer(

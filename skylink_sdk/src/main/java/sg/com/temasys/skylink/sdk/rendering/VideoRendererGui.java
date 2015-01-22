@@ -66,15 +66,12 @@ public class VideoRendererGui implements GLSurfaceView.Renderer {
   private ArrayList<YuvImageRenderer> yuvImageRenderers;
   private int program;
 
-  public interface VideoRendererGuiDelegate {
-	  public void updateDisplaySize(GLSurfaceView surface, Point screenDimensions);
+  private VideoRendererGuiListener listener;
+  public VideoRendererGuiListener getListener() {
+	  return listener;
   }
-  private VideoRendererGuiDelegate delegate;
-  public VideoRendererGuiDelegate getDelegate() {
-	  return delegate;
-  }
-  public void setDelegate(VideoRendererGuiDelegate delegate) {
-	  this.delegate = delegate;
+  public void setListener(VideoRendererGuiListener listener) {
+	  this.listener = listener;
   }
 
   private final String VERTEX_SHADER_STRING =
@@ -318,7 +315,7 @@ public class VideoRendererGui implements GLSurfaceView.Renderer {
         frameToRenderQueue.poll();
         // Re-allocate / allocate the frame
         frameToRender = new I420Frame(width, height, strides, null);
-        delegate.updateDisplaySize(surface, new Point(width, height));
+        listener.updateDisplaySize(surface, new Point(width, height));
       }
     }
 

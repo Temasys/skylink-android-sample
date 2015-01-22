@@ -138,7 +138,7 @@ public class RoomViewActivity extends Activity implements
 
         mConnection.setFileTransferListener(this);
         mConnection.setLifeCycleListener(this);
-        mConnection.setMediaDelegate(this);
+        mConnection.setMediaListener(this);
         mConnection.setMessagesListener(this);
         mConnection.setRemotePeerListener(this);
 
@@ -310,7 +310,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// LifeCycleDelegate callbacks
+// LifeCycleListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onConnect(boolean isSuccess, String message) {
@@ -365,7 +365,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// RemotePeerDelegate callbacks
+// RemotePeerListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onUserData(String peerId, Object userData) {
@@ -452,7 +452,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// MediaDelegate callbacks
+// MediaListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onVideoSize(GLSurfaceView videoView, Point size) {
@@ -480,7 +480,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// MessagesDelegate callbacks
+// MessagesListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     @Deprecated
@@ -502,7 +502,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// FileTransferDelegate callbacks
+// FileTransferListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onRequest(String peerId, String fileName, boolean isPrivate) {
