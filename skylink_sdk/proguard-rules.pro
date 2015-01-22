@@ -31,3 +31,4 @@
 }
 
 -keepattributes Exceptions,InnerClasses
+-keepparameternames
