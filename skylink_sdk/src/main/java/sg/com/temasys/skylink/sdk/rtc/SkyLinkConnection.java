@@ -1039,7 +1039,7 @@ public class SkyLinkConnection {
                 connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
               connectionManager.logMessage("[SDK] Local video source: Created.");
               // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-              lifeCycleListener.onGetUserMedia(localVideoView, null);
+              mediaListener.onGetUserMedia(localVideoView, null);
               connectionManager.logMessage("[SDK] Local video source: Sent to App.");
             }
           }
@@ -1629,7 +1629,7 @@ public class SkyLinkConnection {
   						SkyLinkConnection.this.surfaceOnHoldPool
   								.remove(surface);
   						if (peerId.compareToIgnoreCase(MY_SELF) == 0) {
-  							lifeCycleListener.onGetUserMedia(surface,
+                            mediaListener.onGetUserMedia(surface,
   									screenDimensions);
   						} else {
   							remotePeerListener.onGetPeerMedia(peerId, surface,

@@ -22,11 +22,6 @@ class LifeCycleAdapter implements LifeCycleListener {
     }
 
     @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
-
-    }
-
-    @Override
     public void onWarning(String message) {
 
     }

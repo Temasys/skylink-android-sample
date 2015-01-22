@@ -8,6 +8,17 @@ import android.opengl.GLSurfaceView;
  * during the call.
  */
 public interface MediaListener {
+
+    /**
+     * This is triggered when the framework successfully captures the camera
+     * input from one's device if the connection is configured to have a
+     * video call.
+     *
+     * @param videoView Video of oneself
+     * @param size      Size of the video frame
+     */
+    public void onGetUserMedia(GLSurfaceView videoView, Point size);
+
     /**
      * This is triggered when any of the given video streams' frame size
      * changes. It includes the self stream also.

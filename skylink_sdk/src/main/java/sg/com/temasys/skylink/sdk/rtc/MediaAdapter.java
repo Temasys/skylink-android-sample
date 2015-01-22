@@ -31,4 +31,9 @@ class MediaAdapter implements MediaListener {
 
     }
 
+    @Override
+    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+
+    }
+
 }

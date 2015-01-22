@@ -328,20 +328,6 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
-        RoomManager.get().putVideo(null, videoView);
-        FragmentManager fragmentManager = getFragmentManager();
-        Fragment fragment = fragmentManager
-                .findFragmentById(R.id.split_container);
-        if (fragment == null) {
-            fragment = new SelfVideoFragment();
-            fragmentManager.beginTransaction()
-                    .add(R.id.split_container, fragment).commit();
-            RoomManager.get().setSplitFragmentClass(fragment.getClass());
-        }
-    }
-
-    @Override
     public void onWarning(String message) {
         Log.d(TAG, "onWarning()::message->" + message);
     }
@@ -454,6 +440,20 @@ public class RoomViewActivity extends Activity implements
     // -------------------------------------------------------------------------------------------------
 // MediaListener callbacks
 // -------------------------------------------------------------------------------------------------
+    @Override
+    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+        RoomManager.get().putVideo(null, videoView);
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment fragment = fragmentManager
+                .findFragmentById(R.id.split_container);
+        if (fragment == null) {
+            fragment = new SelfVideoFragment();
+            fragmentManager.beginTransaction()
+                    .add(R.id.split_container, fragment).commit();
+            RoomManager.get().setSplitFragmentClass(fragment.getClass());
+        }
+    }
+
     @Override
     public void onVideoSize(GLSurfaceView videoView, Point size) {
         RoomManager manager = RoomManager.get();
