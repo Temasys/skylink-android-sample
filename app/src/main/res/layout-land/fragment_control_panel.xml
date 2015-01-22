@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/self_video"
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:src="@drawable/disable_audio" />
+            android:src="@drawable/disable_audio"/>
 
         <ImageButton
             android:id="@+id/video_imageButton"
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:src="@drawable/disable_camera" />
+            android:src="@drawable/disable_camera"/>
 
         <ImageButton
             android:id="@+id/chat_button"
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:src="@drawable/open_chat" />
+            android:src="@drawable/open_chat"/>
 
         <ImageButton
             android:id="@+id/file_button"
@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:src="@drawable/send_file" />
+            android:src="@drawable/send_file"/>
     </LinearLayout>
 
 </LinearLayout>

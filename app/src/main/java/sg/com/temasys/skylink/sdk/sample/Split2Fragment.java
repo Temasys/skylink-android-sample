@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import sg.com.temasys.skylink.sdk.sample.R;
 import sg.com.temasys.skylink.sdk.sample.RoomManager.VideoInfo;
 
 public class Split2Fragment extends RoomFragment {

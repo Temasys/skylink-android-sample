@@ -1,8 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.graphics.Point;
-import android.opengl.GLSurfaceView;
-
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
 /**

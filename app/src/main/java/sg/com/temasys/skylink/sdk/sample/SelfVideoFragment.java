@@ -5,8 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import sg.com.temasys.skylink.sdk.sample.R;
-
 public class SelfVideoFragment extends RoomFragment {
 
     @Override

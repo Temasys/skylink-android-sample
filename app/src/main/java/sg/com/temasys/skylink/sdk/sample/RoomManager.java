@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.sample;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.view.View;

@@ -7,8 +7,6 @@ import org.robolectric.annotation.Config;
 
 import java.security.SignatureException;
 
-import sg.com.temasys.skylink.sdk.rtc.Utils;
-
 import static org.junit.Assert.assertNotNull;
 
 /**

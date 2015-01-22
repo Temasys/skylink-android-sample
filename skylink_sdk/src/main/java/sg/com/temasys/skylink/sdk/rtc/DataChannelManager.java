@@ -44,8 +44,6 @@ class DataChannelManager {
     private int TIMEOUT = 60;
     // List of DcHandler for each DcObserver (unique for each DataChannel)
     private Hashtable<DcObserver, DcHandler> dcHandlerList = new Hashtable<DcObserver, DcHandler>();
-    // Required in getDcHandler.
-    private DcHandler dcHandler;
 
     // Self
     private String mid = "";
@@ -154,6 +152,7 @@ class DataChannelManager {
             this.createId = createId;
             this.receiveId = receiveId;
             this.tid = tid;
+            getDcHandler();
         }
 
         @SuppressWarnings("unused")
@@ -174,15 +173,16 @@ class DataChannelManager {
             return dc;
         }
 
-        /*public DcHandler getDcHandler() {
-          // handler must be created in thread that has called Looper.prepare().
-          ( ( Activity ) getConnectionManager().getContext() ).runOnUiThread(new Runnable() {
-            public void run() {
-              if( dcHandler == null ) dcHandler = new DcHandler();
-            }
-          });
-          return dcHandler;
-        }*/
+        public DcHandler getDcHandler() {
+            // handler must be created in thread that has called Looper.prepare().
+            connectionManager.runOnUiThread(new Runnable() {
+                public void run() {
+                    if (dcHandler == null) dcHandler = new DcHandler();
+                }
+            });
+            return dcHandler;
+        }
+
         public String getFileName() {
             return fileName;
         }
@@ -530,7 +530,7 @@ class DataChannelManager {
     // Save file sent as base64 encoded string.
     public void dataChannelDATAHandler(final DcObserver dcObserver, String dataStr) {
         // Clear save timer.
-        if (!getDcHandler(dcObserver).clearSaveTimer()) {
+        if (!(dcObserver.getDcHandler()).clearSaveTimer()) {
             // Timeout had occurred, return and do nothing as Timer would have sent:
             // didHaltFileTransfer to self.
             // DC ERROR message to Peer.
@@ -600,15 +600,15 @@ class DataChannelManager {
   			  }
   		  });
         sendError( errorMessage, false, tid );
-        getDcHandler( dcObserver ).stopSaveTimer();
+        (dcObserver.getDcHandler()).stopSaveTimer();
         // Set chunk back to 0.
         dcObserver.setChunk( 0 );
       }
     };
       // Queue the Runnable on this thread.
-    getDcHandler( dcObserver ).postDelayed( run, ( long ) ( TIMEOUT * 1000 ) );
+    (dcObserver.getDcHandler()).postDelayed( run, ( long ) ( TIMEOUT * 1000 ) );
       // Set the Send state of our dcHandler.
-    getDcHandler( dcObserver ).startSaveTimer( run );*/
+    (dcObserver.getDcHandler()).startSaveTimer( run );*/
     }
 
     // Send file chunk requested.
@@ -623,7 +623,7 @@ class DataChannelManager {
     */
 
         // Clear send timer.
-        if (!getDcHandler(dcObserver).clearSendTimer()) {
+        if (!(dcObserver.getDcHandler()).clearSendTimer()) {
             // Timeout had occurred, return and do nothing as Timer would have sent:
             // didHaltFileTransfer to self.
             // DC ERROR message to Peer.
@@ -753,15 +753,15 @@ class DataChannelManager {
                     }
                 });
                 sendError(errorMessage, true, tid);
-                getDcHandler(dcObserver).stopSendTimer();
+                (dcObserver.getDcHandler()).stopSendTimer();
                 // End of send operation
                 dcObserver.setNowSending(false);
             }
         };
         // Queue the Runnable on this thread.
-        getDcHandler(dcObserver).postDelayed(run, (long) (TIMEOUT * 1000));
+        (dcObserver.getDcHandler()).postDelayed(run, (long) (TIMEOUT * 1000));
         // Set the Send state of our dcHandler.
-        getDcHandler(dcObserver).startSendTimer(run);
+        (dcObserver.getDcHandler()).startSendTimer(run);
     }
 
     // Terminate file transfer on receiving ERROR message from Peer.
@@ -792,7 +792,7 @@ class DataChannelManager {
         fileName = fileNameTemp;
         String errorMessage = "Aborting ";
 
-        DcHandler dcHandler = getDcHandler(dcObserver);
+        DcHandler dcHandler = (dcObserver.getDcHandler());
         if (isUploadError) {
             // If we are the receiver
             // Clear timer.
@@ -853,7 +853,7 @@ class DataChannelManager {
 
         // We are the sender
         // Clear timer.
-        getDcHandler(dcObserver).clearSendTimer();
+        (dcObserver.getDcHandler()).clearSendTimer();
         // End of send operation
         dcObserver.setNowSending(false);
         // reset file info.
@@ -937,13 +937,13 @@ class DataChannelManager {
                     }
                 });
                 sendError(errorMessage, true, tid);
-                getDcHandler(dcObserver).stopSendTimer();
+                (dcObserver.getDcHandler()).stopSendTimer();
             }
         };
         // Queue the Runnable on this thread.
-        getDcHandler(dcObserver).postDelayed(run, (long) (TIMEOUT * 1000));
+        (dcObserver.getDcHandler()).postDelayed(run, (long) (TIMEOUT * 1000));
         // Set the Send state of our dcHandler.
-        getDcHandler(dcObserver).startSendTimer(run);
+        (dcObserver.getDcHandler()).startSendTimer(run);
 
     }
 
@@ -976,8 +976,8 @@ class DataChannelManager {
         DataChannel dc = dcObserver.getDc();
         sendDcString(dc, msgStr);
 
-        // Start save timer only if not finalAck
-        if (!finalAck) {
+        // Start save timer only if not finalAck or file share decline.
+        if (!finalAck && chunk != -1) {
             // Runnable to execute on timeout:
             Runnable run = new Runnable() {
                 public void run() {
@@ -991,13 +991,13 @@ class DataChannelManager {
                         }
                     });
                     sendError(errorMessage, false, tid);
-                    getDcHandler(dcObserver).stopSaveTimer();
+                    (dcObserver.getDcHandler()).stopSaveTimer();
                 }
             };
             // Queue the Runnable on this thread.
-            getDcHandler(dcObserver).postDelayed(run, (long) (TIMEOUT * 1000));
+            (dcObserver.getDcHandler()).postDelayed(run, (long) (TIMEOUT * 1000));
             // Set the Send state of our dcHandler.
-            getDcHandler(dcObserver).startSaveTimer(run);
+            (dcObserver.getDcHandler()).startSaveTimer(run);
         }
     }
 
@@ -1145,13 +1145,13 @@ class DataChannelManager {
   			  }
   		  });
         sendError( errorMessage, true, tid );
-        getDcHandler( dcObserver ).stopSendTimer();
+        (dcObserver.getDcHandler()).stopSendTimer();
       }
     };
       // Queue the Runnable on this thread.
-    getDcHandler( dcObserver ).postDelayed( run, ( long ) ( TIMEOUT * 1000 ) );
+    (dcObserver.getDcHandler()).postDelayed( run, ( long ) ( TIMEOUT * 1000 ) );
       // Set the Send state of our dcHandler.
-    getDcHandler( dcObserver ).startSendTimer( run );*/
+    (dcObserver.getDcHandler()).startSendTimer( run );*/
     }
 
 
@@ -1179,13 +1179,13 @@ class DataChannelManager {
             }
           });
           sendError( errorMessage, false, remotePeerId );
-          getDcHandler( dcObserver ).stopSaveTimer();
+          (dcObserver.getDcHandler()).stopSaveTimer();
         }
       };
         // Queue the Runnable on this thread.
-      getDcHandler( dcObserver ).postDelayed( run, ( long ) ( TIMEOUT * 1000 ) );
+      (dcObserver.getDcHandler()).postDelayed( run, ( long ) ( TIMEOUT * 1000 ) );
         // Set the Send state of our dcHandler.
-      getDcHandler( dcObserver ).startSaveTimer( run );*/
+      (dcObserver.getDcHandler()).startSaveTimer( run );*/
         } else {
             dcObserver.setSaveFilePath("");
             dcObserver.setSaveFileSizeEncoded(0);
@@ -1350,18 +1350,6 @@ class DataChannelManager {
 
     private boolean isPeerIdMCU(String peerId) {
         return peerId.startsWith("MCU");
-    }
-
-    // Get DcHandler associated with DcObserver
-    private synchronized DcHandler getDcHandler(final DcObserver dcObserver) {
-        final DcHandler dcHandlerTemp = dcHandlerList.get(dcObserver);
-        if (dcHandlerTemp == null) {
-            dcHandler = new DcHandler();
-            dcHandlerList.put(dcObserver, dcHandler);
-        } else {
-            dcHandler = dcHandlerTemp;
-        }
-        return dcHandler;
     }
 
 }

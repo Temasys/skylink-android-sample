@@ -1,8 +1,5 @@
 package sg.com.temasys.skylink.sdk.listener;
 
-import android.graphics.Point;
-import android.opengl.GLSurfaceView;
-
 /**
  * Listener comprises of callbacks related to the life cycle of the
  * connection.

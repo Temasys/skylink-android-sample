@@ -12,8 +12,6 @@ import com.warting.bubbles.HelloBubblesActivity;
 
 import java.util.Map;
 
-import sg.com.temasys.skylink.sdk.sample.R;
-
 public class ControlPanelFragment extends RoomFragment {
 
     final static private String BUNDLE_AUDIO_MUTE = "sg.com.temasys.skylink.sdk.sample.ControlPanelFragment.audioMute";

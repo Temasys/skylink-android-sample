@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import sg.com.temasys.skylink.sdk.sample.R;
-
 public class JoinRoomActivity extends Activity {
 
     final static private String TAG = "JoinRoomActivity";

@@ -7,8 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
-import sg.com.temasys.skylink.sdk.sample.R;
-
 public class FilePermissionAlertFragment extends DialogFragment {
 
     final static private String BUNDLE_FILE_NAME = "sg.com.temasys.skylink.sdk.sample.FilePermissionAlertFragment.fileName";
