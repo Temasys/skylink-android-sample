@@ -12,8 +12,8 @@ import android.widget.ListView;
 import java.util.List;
 import java.util.Random;
 
-import sg.com.temasys.skylink.sdk.sample.R;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
+import sg.com.temasys.skylink.sdk.sample.R;
 import sg.com.temasys.skylink.sdk.sample.RoomManager;
 
 public class HelloBubblesActivity extends Activity {

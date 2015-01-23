@@ -11,8 +11,6 @@ import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
-import sg.com.temasys.skylink.sdk.sample.R;
-
 public class Utility {
 
     final static public int REQUEST_CODE_PICK_DIR = 6383;

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -20,14 +20,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/notifGroup1"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"/>
 
         <TextView
             android:id="@+id/notifGroup1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video1"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -46,14 +46,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/notifGroup2"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"/>
 
         <TextView
             android:id="@+id/notifGroup2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video2"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -72,14 +72,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/notifGroup3"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"/>
 
         <TextView
             android:id="@+id/notifGroup3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/video3"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"/>
     </RelativeLayout>
 
 </LinearLayout>

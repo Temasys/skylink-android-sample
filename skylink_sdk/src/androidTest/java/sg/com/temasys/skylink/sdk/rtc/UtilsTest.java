@@ -1,4 +1,4 @@
-package com.sg.temasys.skylink.sdk.utils;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -6,8 +6,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.security.SignatureException;
-
-import sg.com.temasys.skylink.sdk.utils.Utils;
 
 import static org.junit.Assert.assertNotNull;
 

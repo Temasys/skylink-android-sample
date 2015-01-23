@@ -14,8 +14,6 @@ import android.widget.TextView;
 
 import com.warting.bubbles.HelloBubblesActivity;
 
-import sg.com.temasys.skylink.sdk.sample.R;
-
 public class OptionAlertFragment extends DialogFragment {
 
     final static private String BUNDLE_CHAT_BUTTON_STATUS = "sg.com.temasys.skylink.sdk.sample.OptionAlertFragment.chatButtonStatus";

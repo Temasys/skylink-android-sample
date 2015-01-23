@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="horizontal">
 
     <RelativeLayout
         android:id="@+id/self_video"
@@ -27,14 +27,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/enable_audio" />
+                android:src="@drawable/enable_audio"/>
 
             <ImageButton
                 android:id="@+id/video_imageButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/enable_camera" />
+                android:src="@drawable/enable_camera"/>
         </LinearLayout>
 
         <LinearLayout
@@ -48,14 +48,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/open_chat" />
+                android:src="@drawable/open_chat"/>
 
             <ImageButton
                 android:id="@+id/file_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/send_file" />
+                android:src="@drawable/send_file"/>
         </LinearLayout>
     </LinearLayout>
 

@@ -38,8 +38,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import sg.com.temasys.skylink.sdk.sample.R;
 //Android imports 
 //Import of resources file for file browser
 

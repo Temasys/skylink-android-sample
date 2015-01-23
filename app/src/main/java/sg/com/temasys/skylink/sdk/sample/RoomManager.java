@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.sample;
 
-import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.view.View;
@@ -212,10 +211,6 @@ public class RoomManager {
 
     public void setChatPeerId(String chatPeerId) {
         mChatPeerId = chatPeerId;
-    }
-
-    public Context getContext() {
-        return mConnection.getContext();
     }
 
     public void putDisplayName(String peerId, String displayName) {

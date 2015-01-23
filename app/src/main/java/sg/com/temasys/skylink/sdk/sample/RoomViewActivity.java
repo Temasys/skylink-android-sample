@@ -33,15 +33,19 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.sample.R;
+import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.MessagesListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection.SkyLinkConfig;
 
 public class RoomViewActivity extends Activity implements
-        SkyLinkConnection.LifeCycleDelegate,
-        SkyLinkConnection.RemotePeerDelegate, SkyLinkConnection.MediaDelegate,
-        SkyLinkConnection.MessagesDelegate,
-        SkyLinkConnection.FileTransferDelegate {
+        LifeCycleListener,
+        RemotePeerListener, MediaListener,
+        MessagesListener,
+        FileTransferListener {
 
     final static private String TAG = "RoomViewActivity";
 
@@ -115,29 +119,28 @@ public class RoomViewActivity extends Activity implements
 
 
         if (!mIsAlreadyConnected) {
-            SkyLinkConfig config = new SkyLinkConnection.SkyLinkConfig();
+            SkyLinkConfig config = new SkyLinkConfig();
             config.setHasAudio(true);
             config.setHasVideo(true);
             config.setHasPeerMessaging(true);
             config.setHasFileTransfer(true);
             config.setTimeout(60);
             // config.setTimeout( 10 );
-            mConnection = new SkyLinkConnection(getString(R.string.app_key),
-                    getString(R.string.app_secret), config, this);
+            mConnection = SkyLinkConnection.getInstance();
+            mConnection.init(getString(R.string.app_key),
+                    getString(R.string.app_secret), config, getApplicationContext());
             mConnectionConfig = config;
             RoomManager.getInstance(mConnection);
         } else {
-            // New Activity has been generated, so reset the delegates to the
-            // new activity.
+            // Get the connection instance from the room manager
             mConnection = RoomManager.get().getConnection();
-            mConnection.resetContext(this);
         }
 
-        mConnection.setFileTransferDelegate(this);
-        mConnection.setLifeCycleDelegate(this);
-        mConnection.setMediaDelegate(this);
-        mConnection.setMessagesDelegate(this);
-        mConnection.setRemotePeerDelegate(this);
+        mConnection.setFileTransferListener(this);
+        mConnection.setLifeCycleListener(this);
+        mConnection.setMediaListener(this);
+        mConnection.setMessagesListener(this);
+        mConnection.setRemotePeerListener(this);
 
         LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rootView = layoutInflater.inflate(R.layout.activity_room_view,
@@ -307,7 +310,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// LifeCycleDelegate callbacks
+// LifeCycleListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onConnect(boolean isSuccess, String message) {
@@ -321,20 +324,6 @@ public class RoomViewActivity extends Activity implements
             finish();
         } else {
             mIsAlreadyConnected = true;
-        }
-    }
-
-    @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
-        RoomManager.get().putVideo(null, videoView);
-        FragmentManager fragmentManager = getFragmentManager();
-        Fragment fragment = fragmentManager
-                .findFragmentById(R.id.split_container);
-        if (fragment == null) {
-            fragment = new SelfVideoFragment();
-            fragmentManager.beginTransaction()
-                    .add(R.id.split_container, fragment).commit();
-            RoomManager.get().setSplitFragmentClass(fragment.getClass());
         }
     }
 
@@ -362,7 +351,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// RemotePeerDelegate callbacks
+// RemotePeerListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onUserData(String peerId, Object userData) {
@@ -449,8 +438,22 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// MediaDelegate callbacks
+// MediaListener callbacks
 // -------------------------------------------------------------------------------------------------
+    @Override
+    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+        RoomManager.get().putVideo(null, videoView);
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment fragment = fragmentManager
+                .findFragmentById(R.id.split_container);
+        if (fragment == null) {
+            fragment = new SelfVideoFragment();
+            fragmentManager.beginTransaction()
+                    .add(R.id.split_container, fragment).commit();
+            RoomManager.get().setSplitFragmentClass(fragment.getClass());
+        }
+    }
+
     @Override
     public void onVideoSize(GLSurfaceView videoView, Point size) {
         RoomManager manager = RoomManager.get();
@@ -477,7 +480,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// MessagesDelegate callbacks
+// MessagesListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     @Deprecated
@@ -499,7 +502,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     // -------------------------------------------------------------------------------------------------
-// FileTransferDelegate callbacks
+// FileTransferListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
     public void onRequest(String peerId, String fileName, boolean isPrivate) {
