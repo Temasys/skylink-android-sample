@@ -4,6 +4,12 @@ apply plugin: 'maven-publish'
 apply plugin: 'robolectric'
 apply plugin: 'sonar-runner'
 apply plugin: 'jacoco'
+apply plugin: 'android-library'
+
+configurations {
+    jaxDoclet
+    classpaths
+}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -11,6 +17,7 @@ dependencies {
     androidTestCompile 'org.robolectric:robolectric:2.3'
     androidTestCompile 'com.android.support:support-v4:19.0.1'
     androidTestCompile 'org.mockito:mockito-all:1.9.5'
+    jaxDoclet("com.google.doclava:doclava:1.0.5")
 }
 
 android {
@@ -29,6 +36,10 @@ android {
         }
     }
 }
+
+/***
+ * Publishing to maven repository
+ */
 
 // Check environment variables for Archiva configuration (e.g CI environment)
 if (System.getenv("bamboo_ARCHIVA_URL") != null) {
@@ -56,6 +67,9 @@ publishing {
                 artifactId 'skylink_sdk'
                 version currentVersion
                 artifact 'build/outputs/aar/skylink_sdk-release.aar'
+                artifact androidJavadocsJar {
+                    classifier "javadoc"
+                }
             }
         }
     }
@@ -74,7 +88,9 @@ publishing {
     }
 }
 
-// Code quality
+/***
+ * Sonar Runner configurations for code quality
+ */
 sonarRunner {
     sonarProperties {
         property "sonar.projectKey", "AND"
@@ -91,7 +107,9 @@ sonarRunner {
     }
 }
 
-// Test coverage using jacoco
+/***
+ * Test coverage using jacoco
+ */
 jacoco {
     toolVersion = "0.7.1.201405082137"
 }
@@ -129,4 +147,26 @@ task jacocoTestReport(type: JacocoReport, dependsOn: "testDebug") {
             }
         }
     }
+}
+
+/***
+ * Java doc using Doclava
+ */
+task androidJavadoc(type: Javadoc, dependsOn: 'compileReleaseJava') {
+    source = android.sourceSets.main.java.srcDirs
+    title = null
+    options.docletpath = configurations.jaxDoclet.files.asType(List)
+    options.classpath = configurations.classpaths.files.asType(List)
+    options {
+        doclet "com.google.doclava.Doclava"
+        bootClasspath new File(System.getenv('JAVA_HOME') + "/jre/lib/rt.jar")
+        addStringOption "hdf project.name", "Skylink Android SDK " + currentVersion
+        addStringOption "federate android", "http://d.android.com/reference"
+        addStringOption "federationxml android", "http://doclava.googlecode.com/svn/static/api/android-10.xml"
+    }
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: 'androidJavadoc') {
+    classifier = 'javadoc'
+    from androidJavadoc.destinationDir
 }
