@@ -13,18 +13,14 @@ import com.temasys.skylink.sampleapp.R;
 
 
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-{
-
+    static final String ARG_SECTION_NUMBER = "section_number";
     private static final String TAG = MainActivity.class.getCanonicalName();
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
-     static final String ARG_SECTION_NUMBER = "section_number";
-
-
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
@@ -53,7 +49,7 @@ public class MainActivity extends ActionBarActivity
         Fragment fragmentToLaunch = getFragmentToLaunch(position);
 
         fragmentManager.beginTransaction()
-                .replace(R.id.container,fragmentToLaunch )
+                .replace(R.id.container, fragmentToLaunch)
                 .commit();
     }
 
@@ -111,7 +107,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     public Fragment getFragmentToLaunch(int position) {
-        Fragment fragmentToLaunch=null;
+        Fragment fragmentToLaunch = null;
         switch (position) {
             case 0:
                 fragmentToLaunch = new PlaceholderFragment();
@@ -128,7 +124,7 @@ public class MainActivity extends ActionBarActivity
         }
 
         Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, position+1);
+        args.putInt(ARG_SECTION_NUMBER, position + 1);
         fragmentToLaunch.setArguments(args);
 
         return fragmentToLaunch;
