@@ -313,8 +313,8 @@ public class RoomViewActivity extends Activity implements
 // LifeCycleListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onConnect(boolean isSuccess, String message) {
-        if (!isSuccess) {
+    public void onConnect(boolean isSuccessful, String message) {
+        if (!isSuccessful) {
             Log.d(TAG, "onConnect()::message->" + message);
             Intent intent = new Intent();
             intent.putExtra(JoinRoomActivity.EXTRA_RESULT_DISCONNECT_STATUS,
