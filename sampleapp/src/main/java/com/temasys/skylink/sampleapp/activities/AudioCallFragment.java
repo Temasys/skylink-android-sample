@@ -13,13 +13,14 @@ import android.widget.LinearLayout;
 import com.temasys.skylink.sampleapp.R;
 
 import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MediaListener;
 
 /**
  * This class is used to demonstrate the audicall between two clients in webrtc
  * Created by lavanyasudharsanam on 20/1/15.
  */
-public class AudioCallFragment extends Fragment implements SkyLinkConnection.LifeCycleDelegate, SkyLinkConnection.MediaDelegate {
+public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     LinearLayout parentFragment;
 
@@ -39,8 +40,8 @@ public class AudioCallFragment extends Fragment implements SkyLinkConnection.Lif
 //                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity());
 //
 //        Log.d(TAG," lo " + this.getActivity());
-//        mConnection.setLifeCycleDelegate(this);
-//        mConnection.setMediaDelegate(this);
+//        mConnection.setLifeCycleListener(this);
+//        mConnection.setMediaListener(this);
 //        try {
 //            mConnection.connectToRoom("room","username",new Date(),200);
 //        } catch (SignatureException e) {
@@ -64,7 +65,7 @@ public class AudioCallFragment extends Fragment implements SkyLinkConnection.Lif
     }
 
     /***
-     * Lifecycle delegate
+     * Lifecycle Listener
      */
 
     /**
