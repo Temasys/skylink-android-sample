@@ -231,7 +231,7 @@ public class RoomViewActivity extends Activity implements
                             // Get the file path from the URI
                             final String path = FileUtils.getPath(this, uri);
                             final String fileName = new File(path).getName();
-                            mConnection.sendFileTransferRequest(RoomManager.get()
+                            mConnection.sendFileTransferPermissionRequest(RoomManager.get()
                                     .getFileTransferPeerId(), fileName, path);
                         } catch (Exception e) {
                             Log.e("FileSelectorTestActivity", "File select error",

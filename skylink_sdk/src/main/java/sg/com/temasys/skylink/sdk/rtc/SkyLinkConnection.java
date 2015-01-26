@@ -639,17 +639,17 @@ public class SkyLinkConnection {
     /**
      * Sends file transfer request to a specified peer.
      *
-     * @param peerId   The id of the peer
+     * @param remotePeerId The id of the peer
      * @param fileName The name of the file
      * @param filePath The path of the file in the filesystem
      */
-    public void sendFileTransferRequest(String peerId, String fileName,
-                                        String filePath) {
+    public void sendFileTransferPermissionRequest(String remotePeerId, String fileName,
+                                                  String filePath) {
         if (this.webServerClient == null)
             return;
 
         if (myConfig.hasFileTransfer()) {
-            dataChannelManager.sendFileTransferRequest(peerId, fileName,
+            dataChannelManager.sendFileTransferRequest(remotePeerId, fileName,
                     filePath);
         } else {
             final String str = "Cannot do file transfer as it was not enabled in the configuration.\nUse "
