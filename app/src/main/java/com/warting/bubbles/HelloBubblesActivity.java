@@ -73,7 +73,7 @@ public class HelloBubblesActivity extends Activity {
                     if (peerId == null) {
                         RoomManager.get().addGroupChat(comment);
                         RoomManager.get().getConnection()
-                                .sendCustomMessage(peerId, message);
+                                .sendServerMessage(peerId, message);
                     } else {
                         RoomManager.get().addPrivateChat(peerId, comment);
                         try {

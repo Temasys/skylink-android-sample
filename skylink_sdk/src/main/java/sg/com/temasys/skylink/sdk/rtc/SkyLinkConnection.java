@@ -456,7 +456,7 @@ public class SkyLinkConnection {
     /**
      * Sends a text message to a peer or to all peers. This functionality is
      * deprecated and will be removed eventually. One is appreciated to use
-     * 'sendCustomMessage' instead.
+     * 'sendServerMessage' instead.
      *
      * @param peerId  The id of the peer. Send 'null' if the message is intended to
      *                broadcast to all of the connected peers in the room.
@@ -489,12 +489,12 @@ public class SkyLinkConnection {
      * Sends a user defined message to a peer or to all peers via signalling
      * channel.
      *
-     * @param peerId  The id of the peer. Send 'null' if the message is intended to
+     * @param remotePeerId  The id of the peer. Send 'null' if the message is intended to
      *                broadcast to all of the connected peers in the room.
      * @param message User defined data. May be a 'java.lang.String',
      *                'org.json.JSONObject' or 'org.json.JSONArray'.
      */
-    public void sendCustomMessage(String peerId, Object message) {
+    public void sendServerMessage(String remotePeerId, Object message) {
         if (this.webServerClient == null)
             return;
 
@@ -505,9 +505,9 @@ public class SkyLinkConnection {
             dict.put("mid", webServerClient.getSid());
             dict.put("nick", webServerClient.getDisplayName());
             dict.put("rid", webServerClient.getRoomId());
-            if (peerId != null) {
+            if (remotePeerId != null) {
                 dict.put("type", "private");
-                dict.put("target", peerId);
+                dict.put("target", remotePeerId);
             } else {
                 dict.put("type", "public");
             }
