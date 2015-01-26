@@ -672,7 +672,7 @@ public class SkyLinkConnection {
      * Call this method to accept the file transfer request from a
      * peer.
      *
-     * @param peerId   The id of the peer
+     * @param remotePeerId The id of the peer
      * @param filePath The path of the file
      */
     public void acceptFileTransferRequest(String remotePeerId,
@@ -688,7 +688,7 @@ public class SkyLinkConnection {
      * Call this method to reject the file transfer request from a
      * peer.
      *
-     * @param peerId   The id of the peer
+     * @param remotePeerId The id of the peer
      * @param filePath The path of the file
      */
     public void rejectFileTransferRequest(String remotePeerId,
