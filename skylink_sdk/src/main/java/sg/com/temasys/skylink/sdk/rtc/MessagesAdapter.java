@@ -14,19 +14,12 @@ class MessagesAdapter implements MessagesListener {
     }
 
     @Override
-    @Deprecated
-    public void onChatMessage(String peerId, String nick, String message,
-                              boolean isPrivate) {
+    public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
 
     }
 
     @Override
-    public void onCustomMessage(String peerId, Object message, boolean isPrivate) {
-
-    }
-
-    @Override
-    public void onPeerMessage(String peerId, Object message, boolean isPrivate) {
+    public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
 
     }
 

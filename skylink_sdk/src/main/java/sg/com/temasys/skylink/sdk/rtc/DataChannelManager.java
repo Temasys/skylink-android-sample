@@ -1301,7 +1301,7 @@ class DataChannelManager {
         if (hasPeerMessaging) {
             connectionManager.runOnUiThread(new Runnable() {
                 public void run() {
-                    connectionManager.getMessagesListener().onPeerMessage(tid, msg, isPrivate);
+                    connectionManager.getMessagesListener().onP2PMessageReceive(tid, msg, isPrivate);
                 }
             });
         } else {

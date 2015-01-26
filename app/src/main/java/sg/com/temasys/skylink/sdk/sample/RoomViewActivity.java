@@ -481,23 +481,17 @@ public class RoomViewActivity extends Activity implements
     // -------------------------------------------------------------------------------------------------
 // MessagesListener callbacks
 // -------------------------------------------------------------------------------------------------
+
     @Override
-    @Deprecated
-    public void onChatMessage(String peerId, String nick, String message,
-                              boolean isPrivate) {
-        displayChatMessage(peerId, nick, message, isPrivate);
+    public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
+        displayChatMessage(remotePeerId, nick, message, isPrivate);
     }
 
     @Override
-    public void onCustomMessage(String peerId, Object message, boolean isPrivate) {
-        String nick = RoomManager.get().getDisplayName(peerId);
-        displayChatMessage(peerId, nick, message, isPrivate);
-    }
-
-    @Override
-    public void onPeerMessage(String peerId, Object message, boolean isPrivate) {
-        String nick = RoomManager.get().getDisplayName(peerId);
-        displayChatMessage(peerId, nick, message, isPrivate);
+    public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
+        displayChatMessage(remotePeerId, nick, message, isPrivate);
     }
 
     // -------------------------------------------------------------------------------------------------

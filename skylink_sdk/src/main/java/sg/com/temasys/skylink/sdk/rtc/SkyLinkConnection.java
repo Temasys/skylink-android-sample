@@ -1351,7 +1351,6 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                messagesListener.onChatMessage(mid, nick, text, target != null);
                             }
                         }
                     });
@@ -1467,7 +1466,7 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                messagesListener.onCustomMessage(mid, objData, value.compareTo("private") == 0);
+                                messagesListener.onServerMessageReceive(mid, objData, value.compareTo("private") == 0);
                             }
                         }
                     });
