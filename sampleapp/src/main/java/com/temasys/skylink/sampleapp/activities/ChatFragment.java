@@ -23,12 +23,16 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MessagesListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
  */
-public class ChatFragment extends Fragment implements SkyLinkConnection.LifeCycleDelegate, SkyLinkConnection.RemotePeerDelegate, SkyLinkConnection.MessagesDelegate {
+public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
     private static final String TAG = ChatFragment.class.getCanonicalName();
     String peerId;
     String myName = "usernamechat";
@@ -76,13 +80,12 @@ public class ChatFragment extends Fragment implements SkyLinkConnection.LifeCycl
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        skyLinkConnection = new SkyLinkConnection(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity());
-//
-//        Log.d(TAG, " lo " + this.getActivity());
-        skyLinkConnection.setLifeCycleDelegate(this);
-        skyLinkConnection.setMessagesDelegate(this);
-        skyLinkConnection.setRemotePeerDelegate(this);
+        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection.init(getString(R.string.app_key),
+                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
+        skyLinkConnection.setLifeCycleListener(this);
+        skyLinkConnection.setMessagesListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
 
         try {
             skyLinkConnection.connectToRoom("room", myName, new Date(), 20000);
@@ -96,8 +99,8 @@ public class ChatFragment extends Fragment implements SkyLinkConnection.LifeCycl
 
     }
 
-    private SkyLinkConnection.SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConnection.SkyLinkConfig config = new SkyLinkConnection.SkyLinkConfig();
+    private SkyLinkConfig getSkylinkConfig() {
+        SkyLinkConfig config = new SkyLinkConfig();
         config.setHasAudio(true);
         config.setHasVideo(true);
         config.setHasPeerMessaging(true);
@@ -107,7 +110,7 @@ public class ChatFragment extends Fragment implements SkyLinkConnection.LifeCycl
     }
 
     /***
-     * Lifecycle delegate
+     * Lifecycle Listener
      */
 
     /**
@@ -122,16 +125,6 @@ public class ChatFragment extends Fragment implements SkyLinkConnection.LifeCycl
             Log.d(TAG, "Skylink Connected");
         else
             Log.d(TAG, "Skylink Failed");
-    }
-
-    @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
-        // TODO Auto-generated method stub
-        //show media on screen
-        videoView.setTag("self");
-//        parentFragment.addView(videoView);
-        Log.d(TAG, videoView + "received view");
-
     }
 
     @Override
