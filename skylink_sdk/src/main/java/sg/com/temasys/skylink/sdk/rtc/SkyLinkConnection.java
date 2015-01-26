@@ -520,19 +520,19 @@ public class SkyLinkConnection {
     /**
      * Sends a user defined message to a peer or to all peers via data channel.
      *
-     * @param peerId  The id of the peer. Send 'null' if the message is intended to
+     * @param remotePeerId  The id of the peer. Send 'null' if the message is intended to
      *                broadcast to all of the connected peers in the room.
      * @param message User defined data. May be a 'java.lang.String',
      *                'org.json.JSONObject' or 'org.json.JSONArray'.
      * @throws SkyLinkException if the system was unable to send the message.
      */
-    public void sendPeerMessage(String peerId, Object message)
+    public void sendP2PMessage(String remotePeerId, Object message)
             throws SkyLinkException {
         if (this.webServerClient == null)
             return;
 
         if (myConfig.hasPeerMessaging()) {
-            if (peerId == null) {
+            if (remotePeerId == null) {
                 Iterator<String> iPeerId = this.displayNameMap.keySet()
                         .iterator();
                 while (iPeerId.hasNext())
@@ -541,7 +541,7 @@ public class SkyLinkConnection {
                         throw new SkyLinkException(
                                 "Unable to send the message via data channel");
             } else {
-                if (!dataChannelManager.sendDcChat(true, message, peerId))
+                if (!dataChannelManager.sendDcChat(true, message, remotePeerId))
                     throw new SkyLinkException(
                             "Unable to send the message via data channel");
             }
