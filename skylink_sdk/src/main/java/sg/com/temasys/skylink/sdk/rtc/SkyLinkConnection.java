@@ -261,18 +261,18 @@ public class SkyLinkConnection {
         this.sdpMediaConstraints = new MediaConstraints();
         this.sdpMediaConstraints.mandatory
                 .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                        String.valueOf(this.myConfig.hasAudio())));
+                        String.valueOf(this.myConfig.hasAudioReceive())));
         this.sdpMediaConstraints.mandatory
                 .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                        String.valueOf(this.myConfig.hasVideo())));
+                        String.valueOf(this.myConfig.hasVideoReceive())));
 
         MediaConstraints constraints = new MediaConstraints();
         constraints.mandatory
                 .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                        String.valueOf(this.myConfig.hasAudio())));
+                        String.valueOf(this.myConfig.hasAudioReceive())));
         constraints.mandatory
                 .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                        String.valueOf(this.myConfig.hasVideo())));
+                        String.valueOf(this.myConfig.hasVideoReceive())));
         constraints.optional.add(new MediaConstraints.KeyValuePair(
                 "internalSctpDataChannels", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair(
@@ -370,7 +370,7 @@ public class SkyLinkConnection {
      */
     public void onPause() {
         /*if (this.localVideoSource != null
-				&& this.localVideoSource.state() != MediaSource.State.ENDED) {
+                && this.localVideoSource.state() != MediaSource.State.ENDED) {
 			this.localVideoSource.stop();
 			videoSourceStopped = true;
 		}*/
@@ -595,7 +595,7 @@ public class SkyLinkConnection {
         if (this.webServerClient == null)
             return;
 
-        if (myConfig.hasAudio() && (localAudioTrack.enabled() == isMuted)) {
+        if (myConfig.hasAudioSend() && (localAudioTrack.enabled() == isMuted)) {
             localAudioTrack.setEnabled(!isMuted);
             JSONObject dict = new JSONObject();
             try {
@@ -619,7 +619,7 @@ public class SkyLinkConnection {
         if (this.webServerClient == null)
             return;
 
-        if (myConfig.hasVideo() && (localVideoTrack.enabled() == isMuted)) {
+        if (myConfig.hasVideoSend() && (localVideoTrack.enabled() == isMuted)) {
             localVideoTrack.setEnabled(!isMuted);
             JSONObject dict = new JSONObject();
             try {
@@ -887,13 +887,13 @@ public class SkyLinkConnection {
 
     private void setUserInfo(JSONObject jsonObject) throws JSONException {
         JSONObject dictAudio = null;
-        if (myConfig.hasAudio()) {
+        if (myConfig.hasAudioSend()) {
             dictAudio = new JSONObject();
             dictAudio.put("stereo", settingsObject.audio_stereo);
         }
 
         JSONObject dictVideo = null;
-        if (myConfig.hasVideo()) {
+        if (myConfig.hasVideoSend()) {
             dictVideo = new JSONObject();
             dictVideo.put("frameRate", settingsObject.video_frameRate);
             JSONObject resolution = new JSONObject();
@@ -903,9 +903,9 @@ public class SkyLinkConnection {
         }
 
         JSONObject dictBandwidth = new JSONObject();
-        if (myConfig.hasAudio())
+        if (myConfig.hasAudioSend())
             dictBandwidth.put("audio", settingsObject.audio_bandwidth);
-        if (myConfig.hasVideo())
+        if (myConfig.hasVideoSend())
             dictBandwidth.put("video", settingsObject.video_bandwidth);
         if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer())
             dictBandwidth.put("data", settingsObject.data_bandwidth);
@@ -968,7 +968,7 @@ public class SkyLinkConnection {
                             .createLocalMediaStream("ARDAMS");
                     connectionManager.localMediaStream = lms;
 
-                    if (myConfig.hasVideo()) {
+                    if (myConfig.hasVideoSend()) {
                         VideoCapturer capturer = getVideoCapturer();
                         connectionManager.localVideoCapturer = capturer;
                         connectionManager.localVideoSource = connectionManager.peerConnectionFactory
@@ -982,6 +982,8 @@ public class SkyLinkConnection {
                             lms.addTrack(localVideoTrack);
                             connectionManager.localVideoTrack = localVideoTrack;
                         }
+                    } else {
+//                      lms.addTrack( connectionManager.localVideoTrack );
                     }
                 }
 
@@ -992,21 +994,23 @@ public class SkyLinkConnection {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
                             if (connectionState == ConnectionState.DISCONNECT) return;
-                            localVideoView = new GLSurfaceView(applicationContext);
-                            VideoRendererGui gui = new VideoRendererGui(
-                                    localVideoView);
-                            gui.setListener(connectionManager.videoRendererGuiListener);
-                            VideoRenderer.Callbacks localRender = gui.create(0,
-                                    0, 100, 100);
-                            localVideoTrack.addRenderer(new VideoRenderer(
-                                    localRender));
+                            if (myConfig.hasVideoSend()) {
+                                localVideoView = new GLSurfaceView(applicationContext);
+                                VideoRendererGui gui = new VideoRendererGui(
+                                        localVideoView);
+                                gui.setListener(connectionManager.videoRendererGuiListener);
+                                VideoRenderer.Callbacks localRender = gui.create(0,
+                                        0, 100, 100);
+                                localVideoTrack.addRenderer(new VideoRenderer(
+                                        localRender));
 
-                            if (connectionManager.surfaceOnHoldPool == null)
-                                connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
-                            connectionManager.logMessage("[SDK] Local video source: Created.");
-                            // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-                            mediaListener.onGetUserMedia(localVideoView, null);
-                            connectionManager.logMessage("[SDK] Local video source: Sent to App.");
+                                if (connectionManager.surfaceOnHoldPool == null)
+                                    connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
+                                connectionManager.logMessage("[SDK] Local video source: Created.");
+                                // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
+                                mediaListener.onGetUserMedia(localVideoView, null);
+                                connectionManager.logMessage("[SDK] Local video source: Sent to App.");
+                            }
                         }
                     }
                 });
@@ -1015,7 +1019,7 @@ public class SkyLinkConnection {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
                     if (connectionState == ConnectionState.DISCONNECT) return;
-                    if (myConfig.hasAudio()) {
+                    if (myConfig.hasAudioSend()) {
                         connectionManager.logMessage("[SDK] Local audio source: Creating...");
                         connectionManager.localAudioSource = connectionManager.peerConnectionFactory
                                 .createAudioSource(new MediaConstraints());
@@ -1191,7 +1195,9 @@ public class SkyLinkConnection {
                     receiveOnly = objects.getBoolean("receiveOnly");
                 } catch (JSONException e) {
                 }
-                if (myConfig.hasAudio() && !receiveOnly)
+
+                // Add our local media stream to this PC, or not.
+                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly)
                     peerConnection.addStream(
                             connectionManager.localMediaStream,
                             connectionManager.pcConstraints);
@@ -1266,7 +1272,9 @@ public class SkyLinkConnection {
                     receiveOnly = objects.getBoolean("receiveOnly");
                 } catch (JSONException e) {
                 }
-                if (myConfig.hasAudio() && !receiveOnly)
+
+                // Add our local media stream to this PC, or not.
+                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly)
                     peerConnection.addStream(
                             connectionManager.localMediaStream,
                             connectionManager.pcConstraints);
@@ -1488,7 +1496,7 @@ public class SkyLinkConnection {
                 }
             } else if (value.compareTo("muteAudioEvent") == 0) {
 
-                if (myConfig.hasAudio()) {
+                if (myConfig.hasAudioReceive()) {
                     final String mid = objects.getString("mid");
                     final boolean muted = objects.getBoolean("muted");
                     if (!connectionManager.isPeerIdMCU(mid)) {
@@ -1508,7 +1516,7 @@ public class SkyLinkConnection {
 
             } else if (value.compareTo("muteVideoEvent") == 0) {
 
-                if (myConfig.hasVideo()) {
+                if (myConfig.hasVideoReceive()) {
                     final String mid = objects.getString("mid");
                     final boolean muted = objects.getBoolean("muted");
                     if (!connectionManager.isPeerIdMCU(mid)) {
@@ -1736,24 +1744,26 @@ public class SkyLinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        abortUnless(stream.audioTracks.size() <= 1
-                                        && stream.videoTracks.size() <= 1,
-                                "Weird-looking stream: " + stream);
-                        GLSurfaceView remoteVideoView = null;
-                        if (stream.videoTracks.size() == 1 && myConfig.hasVideo()) {
-                            remoteVideoView = new GLSurfaceView(applicationContext);
-                            VideoRendererGui gui = new VideoRendererGui(
-                                    remoteVideoView);
-                            gui.setListener(connectionManager.videoRendererGuiListener);
-                            VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
-                                    100, 100);
-                            stream.videoTracks.get(0).addRenderer(
-                                    new VideoRenderer(remoteRender));
+                        if (myConfig.hasVideoReceive()) {
+                            abortUnless(stream.audioTracks.size() <= 1
+                                            && stream.videoTracks.size() <= 1,
+                                    "Weird-looking stream: " + stream);
+                            GLSurfaceView remoteVideoView = null;
+                            if (stream.videoTracks.size() == 1) {
+                                remoteVideoView = new GLSurfaceView(applicationContext);
+                                VideoRendererGui gui = new VideoRendererGui(
+                                        remoteVideoView);
+                                gui.setListener(connectionManager.videoRendererGuiListener);
+                                VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
+                                        100, 100);
+                                stream.videoTracks.get(0).addRenderer(
+                                        new VideoRenderer(remoteRender));
 
-                            final GLSurfaceView rVideoView = remoteVideoView;
-                            // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
-                            if (!connectionManager.isPeerIdMCU(myId))
-                                remotePeerListener.onGetPeerMedia(myId, rVideoView, null);
+                                final GLSurfaceView rVideoView = remoteVideoView;
+                                // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
+                                if (!connectionManager.isPeerIdMCU(myId))
+                                    remotePeerListener.onGetPeerMedia(myId, rVideoView, null);
+                            }
                         }
                     }
                 }

@@ -12,12 +12,24 @@ public class SkyLinkConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private boolean video;
-    private boolean audio;
+    private boolean audioSend;
+    private boolean videoSend;
+    private boolean audioReceive;
+    private boolean videoReceive;
     private boolean peerMessaging;
     private boolean fileTransfer;
     private int timeout = 60;
     private Map<String, Object> advancedOptions;
+
+    /**
+     * List of enums that specify an audio video setting.
+     */
+    public enum AudioVideoConfig {
+        NO_AUDIO_NO_VIDEO,
+        AUDIO_ONLY,
+        VIDEO_ONLY,
+        AUDIO_AND_VIDEO,
+    }
 
     /**
      * Creates a new SkyLinkConfig object.
@@ -33,44 +45,93 @@ public class SkyLinkConfig implements Serializable {
      */
     public SkyLinkConfig(SkyLinkConfig config) {
         super();
-        this.video = config.video;
-        this.audio = config.audio;
+        this.audioSend = config.audioSend;
+        this.videoSend = config.videoSend;
+        this.audioReceive = config.audioReceive;
+        this.videoReceive = config.videoReceive;
         this.peerMessaging = config.peerMessaging;
         this.fileTransfer = config.fileTransfer;
         this.timeout = config.timeout;
     }
 
     /**
-     * @return Audio config value.
+     * @return Audio send config value.
      */
-    public boolean hasAudio() {
-        return audio;
+    public boolean hasAudioSend() {
+        return audioSend;
     }
 
     /**
-     * Sets the audio flag for this object to the indicated boolean value.
+     * @return Video send config value.
+     */
+    public boolean hasVideoSend() {
+        return videoSend;
+    }
+
+    /**
+     * @return Audio receive config value.
+     */
+    public boolean hasAudioReceive() {
+        return audioReceive;
+    }
+
+    /**
+     * @return Video receive config value.
+     */
+    public boolean hasVideoReceive() {
+        return videoReceive;
+    }
+
+    /**
+     * Sets the audio video send flag to the indicated boolean value.
      *
-     * @param audio Audio config value
+     * @param audioVideoConfig Audio video send config value
      */
-    public void setHasAudio(boolean audio) {
-        this.audio = audio;
-        this.video = this.video && this.audio;
+    public void setAudioVideoSendConfig(AudioVideoConfig audioVideoConfig) {
+        switch (audioVideoConfig) {
+            case NO_AUDIO_NO_VIDEO:
+                this.audioSend = false;
+                this.videoSend = false;
+                break;
+            case AUDIO_ONLY:
+                this.audioSend = true;
+                this.videoSend = false;
+                break;
+            case VIDEO_ONLY:
+                this.audioSend = false;
+                this.videoSend = true;
+                break;
+            case AUDIO_AND_VIDEO:
+                this.audioSend = true;
+                this.videoSend = true;
+                break;
+        }
     }
 
     /**
-     * @return Video config value.
-     */
-    public boolean hasVideo() {
-        return video;
-    }
-
-    /**
-     * Sets the video flag for this object to the indicated boolean value.
+     * Sets the audio video receive flag to the indicated boolean value.
      *
-     * @param video Video config value
+     * @param audioVideoConfig Audio video receive config value
      */
-    public void setHasVideo(boolean video) {
-        this.video = video && this.audio;
+    public void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) {
+        switch (audioVideoConfig) {
+            case NO_AUDIO_NO_VIDEO:
+                this.audioReceive = false;
+                this.videoReceive = false;
+                break;
+            case AUDIO_ONLY:
+                this.audioReceive = true;
+                this.videoReceive = false;
+                break;
+            case VIDEO_ONLY:
+                this.audioReceive = false;
+                this.videoReceive = true;
+                break;
+            case AUDIO_AND_VIDEO:
+                this.audioReceive = true;
+                this.videoReceive = true;
+                break;
+        }
     }
 
     /**
@@ -181,9 +242,10 @@ public class SkyLinkConfig implements Serializable {
 
     @Override
     public String toString() {
-        return "TEMAConnectionConfig [video=" + video + ", audio=" + audio
-                + ", p2PMessage=" + peerMessaging + ", fileTransfer="
-                + fileTransfer + ", timeout=" + timeout + "]";
+        return "TEMAConnectionConfig [videoSend=" + videoSend + ", audioSend=" + audioSend
+                + ",videoReceive=" + videoReceive + ", audioReceive=" + audioReceive
+                + ", p2PMessage=" + peerMessaging + ", fileTransfer=" + fileTransfer
+                + ", timeout=" + timeout + "]";
     }
 
 }

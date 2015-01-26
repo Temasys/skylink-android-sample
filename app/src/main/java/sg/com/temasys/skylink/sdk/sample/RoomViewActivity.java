@@ -120,8 +120,11 @@ public class RoomViewActivity extends Activity implements
 
         if (!mIsAlreadyConnected) {
             SkyLinkConfig config = new SkyLinkConfig();
-            config.setHasAudio(true);
-            config.setHasVideo(true);
+            // config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+//            config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.VIDEO_ONLY);
+            config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_ONLY);
+            // config.setAudioVideoReceiveConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+            config.setAudioVideoReceiveConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
             config.setHasPeerMessaging(true);
             config.setHasFileTransfer(true);
             config.setTimeout(60);
