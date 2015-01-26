@@ -463,7 +463,7 @@ public class SkyLinkConnection {
      * @param message The message to be sent to the peer
      */
     @Deprecated
-    public void sendChatMessage(String peerId, String message) {
+    private void sendChatMessage(String peerId, String message) {
         if (this.webServerClient == null)
             return;
         Log.d(TAG,
