@@ -356,36 +356,6 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Must be called to reset the context if the context is destroyed or
-     * updated.
-     *
-     * @param context The context
-     */
-    public void resetContext(Context context) {
-        this.applicationContext = context;
-    }
-
-    /**
-     * Call this method from within the onPause of the parent activity.
-     */
-    public void onPause() {
-        /*if (this.localVideoSource != null
-                && this.localVideoSource.state() != MediaSource.State.ENDED) {
-			this.localVideoSource.stop();
-			videoSourceStopped = true;
-		}*/
-    }
-
-    /**
-     * Call this method from within the onResume of the parent activity.
-     */
-    public void onResume() {
-        if (this.localVideoSource != null && videoSourceStopped) {
-            this.localVideoSource.restart();
-        }
-    }
-
-    /**
      * Disconnects from the room.
      */
     public void disconnect() {

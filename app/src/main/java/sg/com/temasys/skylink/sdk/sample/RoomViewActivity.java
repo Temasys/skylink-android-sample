@@ -178,8 +178,6 @@ public class RoomViewActivity extends Activity implements
     protected void onResume() {
         super.onResume();
         mIsRunning = true;
-        if (mConnection != null)
-            mConnection.onResume();
         if (RoomManager.get().isSplitChanged()) {
             setVideoUIFromRoomManager();
             RoomManager.get().setSplitChanged(false);
@@ -192,15 +190,8 @@ public class RoomViewActivity extends Activity implements
     protected void onPause() {
         super.onPause();
         mIsRunning = false;
-        if (mConnection != null)
-            mConnection.onPause();
         // Do not set audio path when app is not forefront.
         unregisterReceiver(mHeadSetReceiver);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
     }
 
     @Override
