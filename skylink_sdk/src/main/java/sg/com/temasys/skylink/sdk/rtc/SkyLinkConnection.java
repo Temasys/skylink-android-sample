@@ -616,7 +616,7 @@ public class SkyLinkConnection {
      *
      * @param isMuted Flag that specify whether to mute / unmute the audio
      */
-    public void muteVideo(boolean isMuted) {
+    public void muteLocalVideo(boolean isMuted) {
         if (this.webServerClient == null)
             return;
 

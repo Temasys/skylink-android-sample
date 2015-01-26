@@ -65,7 +65,7 @@ public class ControlPanelFragment extends RoomFragment {
                 ((ImageButton) view)
                         .setImageResource(mIsVideoMuted ? R.drawable.disable_camera
                                 : R.drawable.enable_camera);
-                RoomManager.get().getConnection().muteVideo(mIsVideoMuted);
+                RoomManager.get().getConnection().muteLocalVideo(mIsVideoMuted);
             }
         });
 
