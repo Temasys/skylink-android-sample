@@ -1377,7 +1377,7 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onPeerLeave(mid, "The peer has left the room");
+                                remotePeerListener.onRemotePeerLeave(mid, "The peer has left the room");
                             }
                         }
                     });
@@ -1484,7 +1484,7 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onUserData(mid, userData);
+                                remotePeerListener.onRemotePeerUserDataReceive(mid, userData);
                             }
                         }
                     });
@@ -1890,7 +1890,7 @@ public class SkyLinkConnection {
                                 drainRemoteCandidates();
                                 if (!connectionManager.isPeerIdMCU(myId)) {
                                     String tid = SDPObserver.this.myId;
-                                    remotePeerListener.onPeerJoin(tid, connectionManager.displayNameMap.get(tid));
+                                    remotePeerListener.onRemotePeerJoin(tid, connectionManager.displayNameMap.get(tid));
                                 }
                             }
                         }

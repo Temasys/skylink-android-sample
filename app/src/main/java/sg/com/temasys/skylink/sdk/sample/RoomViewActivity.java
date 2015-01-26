@@ -354,33 +354,33 @@ public class RoomViewActivity extends Activity implements
 // RemotePeerListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onUserData(String peerId, Object userData) {
-        String oldNick = RoomManager.get().getDisplayName(peerId);
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        String oldNick = RoomManager.get().getDisplayName(remotePeerId);
         String userDataStr = userData.toString();
-        RoomManager.get().putDisplayName(peerId, userDataStr);
+        RoomManager.get().putDisplayName(remotePeerId, userDataStr);
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_user_data, oldNick, userDataStr);
     }
 
     @Override
-    public void onOpenDataConnection(String peerId) {
-        Log.d(TAG, "onOpenDataConnection()::peerId->" + peerId);
+    public void onOpenDataConnection(String remotePeerId) {
+        Log.d(TAG, "onOpenDataConnection()::peerId->" + remotePeerId);
     }
 
     @Override
-    public void onPeerJoin(String peerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
         String userDataStr = getDisplayNameFromUserData(userData);
-        RoomManager.get().putDisplayName(peerId, userDataStr);
+        RoomManager.get().putDisplayName(remotePeerId, userDataStr);
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_peer_join, userDataStr);
     }
 
     @Override
-    public void onPeerLeave(String peerId, String message) {
+    public void onRemotePeerLeave(String remotePeerId, String message) {
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_peer_leave, RoomManager.get()
-                        .getDisplayName(peerId));
-        RoomManager.get().removePeer(peerId);
+                        .getDisplayName(remotePeerId));
+        RoomManager.get().removePeer(remotePeerId);
 
         // Set video UI either immediately or record the video UI required.
         if (mIsRunning) {

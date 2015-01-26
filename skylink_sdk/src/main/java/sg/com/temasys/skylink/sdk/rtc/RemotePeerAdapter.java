@@ -17,22 +17,22 @@ class RemotePeerAdapter implements RemotePeerListener {
     }
 
     @Override
-    public void onPeerJoin(String peerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
 
     }
 
     @Override
-    public void onUserData(String peerId, Object userData) {
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
 
     }
 
     @Override
-    public void onPeerLeave(String peerId, String message) {
+    public void onRemotePeerLeave(String remotePeerId, String message) {
 
     }
 
     @Override
-    public void onOpenDataConnection(String peerId) {
+    public void onOpenDataConnection(String remotePeerId) {
 
     }
 
