@@ -376,18 +376,6 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
-        RoomManager.get().putVideo(peerId, videoView);
-
-        // Set video UI either immediately or record the video UI required.
-        if (mIsRunning)
-            setVideoUI();
-        else
-            recordVideoUI();
-    }
-
-    @Override
     public void onPeerLeave(String peerId, String message) {
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_peer_leave, RoomManager.get()
@@ -441,7 +429,7 @@ public class RoomViewActivity extends Activity implements
 // MediaListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
         RoomManager.get().putVideo(null, videoView);
         FragmentManager fragmentManager = getFragmentManager();
         Fragment fragment = fragmentManager
@@ -455,7 +443,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onVideoSize(GLSurfaceView videoView, Point size) {
+    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
         RoomManager manager = RoomManager.get();
         if (manager != null) {
             RoomManager.get().putSize(videoView, size);
@@ -464,19 +452,30 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onToggleAudio(String peerId, boolean isMuted) {
+    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
         int messageId = isMuted ? R.string.message_on_audio_muted
                 : R.string.message_on_audio_unmuted;
         Utility.showShortToast(getApplicationContext(), messageId, RoomManager
-                .get().getDisplayName(peerId));
+                .get().getDisplayName(remotePeerId));
     }
 
     @Override
-    public void onToggleVideo(String peerId, boolean isMuted) {
+    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
         int messageId = isMuted ? R.string.message_on_video_muted
                 : R.string.message_on_video_unmuted;
         Utility.showShortToast(getApplicationContext(), messageId, RoomManager
-                .get().getDisplayName(peerId));
+                .get().getDisplayName(remotePeerId));
+    }
+
+    @Override
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+        RoomManager.get().putVideo(remotePeerId, videoView);
+        // Set video UI either immediately or record the video UI required.
+        if (mIsRunning) {
+            setVideoUI();
+        } else {
+            recordVideoUI();
+        }
     }
 
     // -------------------------------------------------------------------------------------------------

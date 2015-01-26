@@ -22,12 +22,6 @@ class RemotePeerAdapter implements RemotePeerListener {
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
-
-    }
-
-    @Override
     public void onUserData(String peerId, Object userData) {
 
     }

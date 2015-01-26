@@ -1,8 +1,5 @@
 package sg.com.temasys.skylink.sdk.listener;
 
-import android.graphics.Point;
-import android.opengl.GLSurfaceView;
-
 /**
  * Listener comprises of callbacks related to the remote peers' activities.
  */
@@ -18,16 +15,6 @@ public interface RemotePeerListener {
      */
     public void onPeerJoin(String peerId, Object userData);
 
-    /**
-     * The is triggered upon receiving the video stream of the peer if the
-     * connection is configured to have a video call.
-     *
-     * @param peerId    The id of the peer
-     * @param videoView Video of the peer
-     * @param size      Size of the peer video frame
-     */
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size);
 
     /**
      * This is triggered when an update is received in the user defined data

@@ -794,7 +794,7 @@ public class SkyLinkConnection {
                         this.iceServerArray, this.pcConstraints, pcObserver);
             }
             /*if (this.myConfig.hasAudio())
-				pc.addStream(this.localMediaStream, this.pcConstraints);*/
+                pc.addStream(this.localMediaStream, this.pcConstraints);*/
 
             this.peerConnectionPool.put(key, pc);
             this.pcObserverPool.put(key, pcObserver);
@@ -1008,7 +1008,7 @@ public class SkyLinkConnection {
                                 connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
                             connectionManager.logMessage("[SDK] Local video source: Created.");
                             // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-                            mediaListener.onGetUserMedia(localVideoView, null);
+                            mediaListener.onLocalMediaCapture(localVideoView, null);
                             connectionManager.logMessage("[SDK] Local video source: Sent to App.");
                         }
                     }
@@ -1502,7 +1502,7 @@ public class SkyLinkConnection {
                                     // If user has indicated intention to disconnect,
                                     // We should no longer process messages from signalling server.
                                     if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onToggleAudio(mid, muted);
+                                    mediaListener.onRemotePeerAudioToggle(mid, muted);
                                 }
                             }
                         });
@@ -1522,7 +1522,7 @@ public class SkyLinkConnection {
                                     // If user has indicated intention to disconnect,
                                     // We should no longer process messages from signalling server.
                                     if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onToggleVideo(mid, muted);
+                                    mediaListener.onRemotePeerVideoToggle(mid, muted);
                                 }
                             }
                         });
@@ -1591,17 +1591,17 @@ public class SkyLinkConnection {
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
                         if (true/*SkyLinkConnection.this.surfaceOnHoldPool.get(surface) == null*/) {
-                            mediaListener.onVideoSize(surface, screenDimensions);
+                            mediaListener.onVideoSizeChange(surface, screenDimensions);
                         } else {
                             String peerId = SkyLinkConnection.this.surfaceOnHoldPool
                                     .get(surface);
                             SkyLinkConnection.this.surfaceOnHoldPool
                                     .remove(surface);
                             if (peerId.compareToIgnoreCase(MY_SELF) == 0) {
-                                mediaListener.onGetUserMedia(surface,
+                                mediaListener.onLocalMediaCapture(surface,
                                         screenDimensions);
                             } else {
-                                remotePeerListener.onGetPeerMedia(peerId, surface,
+                                mediaListener.onRemotePeerMediaReceive(peerId, surface,
                                         screenDimensions);
                             }
                         }
@@ -1756,7 +1756,8 @@ public class SkyLinkConnection {
                             final GLSurfaceView rVideoView = remoteVideoView;
                             // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
                             if (!connectionManager.isPeerIdMCU(myId))
-                                remotePeerListener.onGetPeerMedia(myId, rVideoView, null);
+                                mediaListener.onRemotePeerMediaReceive(myId, rVideoView,
+                                        null);
                         }
                     }
                 }

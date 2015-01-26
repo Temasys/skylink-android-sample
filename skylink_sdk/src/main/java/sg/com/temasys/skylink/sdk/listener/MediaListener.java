@@ -17,7 +17,7 @@ public interface MediaListener {
      * @param videoView Video of oneself
      * @param size      Size of the video frame
      */
-    public void onGetUserMedia(GLSurfaceView videoView, Point size);
+    public void onLocalMediaCapture(GLSurfaceView videoView, Point size);
 
     /**
      * This is triggered when any of the given video streams' frame size
@@ -26,21 +26,33 @@ public interface MediaListener {
      * @param videoView The video view for which the frame size is changed
      * @param size      Size of the video frame
      */
-    void onVideoSize(GLSurfaceView videoView, Point size);
+    void onVideoSizeChange(GLSurfaceView videoView, Point size);
 
     /**
      * This is triggered when a peer enable / disable its audio.
      *
-     * @param peerId  The id of the peer
-     * @param isMuted Flag specifying whether the audio is muted or not
+     * @param remotePeerId The id of the peer
+     * @param isMuted      Flag specifying whether the audio is muted or not
      */
-    void onToggleAudio(String peerId, boolean isMuted);
+    void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted);
 
     /**
      * This is triggered when a peer enable / disable its video.
      *
-     * @param peerId  The id of the peer
-     * @param isMuted Flag specifying whether the video is muted or not
+     * @param remotePeerId The id of the peer
+     * @param isMuted      Flag specifying whether the video is muted or not
      */
-    void onToggleVideo(String peerId, boolean isMuted);
+    void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted);
+
+    /**
+     * The is triggered upon receiving the video stream of the peer if the
+     * connection is configured to have a video call.
+     *
+     * @param remotePeerId The id of the peer
+     * @param videoView    Video of the peer
+     * @param size         Size of the peer video frame
+     */
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView,
+                                         Point size);
+
 }
