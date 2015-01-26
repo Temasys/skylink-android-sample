@@ -669,20 +669,35 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Call this method to accept or reject the file transfer request from a
+     * Call this method to accept the file transfer request from a
      * peer.
      *
      * @param peerId   The id of the peer
-     * @param accept   Flag to indicate whether the request is accepted or not
      * @param filePath The path of the file
      */
-    public void acceptFileTransferRequest(String peerId, boolean accept,
+    public void acceptFileTransferRequest(String remotePeerId,
                                           String filePath) {
         if (this.webServerClient == null)
             return;
 
         if (myConfig.hasFileTransfer())
-            dataChannelManager.acceptFileTransfer(peerId, accept, filePath);
+            dataChannelManager.acceptFileTransfer(remotePeerId, true, filePath);
+    }
+
+    /**
+     * Call this method to reject the file transfer request from a
+     * peer.
+     *
+     * @param peerId   The id of the peer
+     * @param filePath The path of the file
+     */
+    public void rejectFileTransferRequest(String remotePeerId,
+                                          String filePath) {
+        if (this.webServerClient == null)
+            return;
+
+        if (myConfig.hasFileTransfer())
+            dataChannelManager.acceptFileTransfer(remotePeerId, false, filePath);
     }
 
     /**

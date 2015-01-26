@@ -257,7 +257,7 @@ public class RoomViewActivity extends Activity implements
                             // File save was cancelled explicitly or due to timeout
                             // at FilePermissionAlert stage.
                         } else {
-                            mConnection.acceptFileTransferRequest(peerId, true,
+                            mConnection.acceptFileTransferRequest(peerId,
                                     newDir + File.separator + fileName);
                         }
                     } else {
@@ -265,7 +265,7 @@ public class RoomViewActivity extends Activity implements
                         Utility.showShortToast(this,
                                 R.string.message_on_decline_save, fileName,
                                 RoomManager.get().getDisplayName(peerId));
-                        mConnection.acceptFileTransferRequest(peerId, false,
+                        mConnection.rejectFileTransferRequest(peerId,
                                 fileName);
                     }// END } else {//if(resultCode == this.RESULT_OK) {
                 } else {
