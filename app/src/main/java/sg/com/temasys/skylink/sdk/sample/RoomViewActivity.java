@@ -257,16 +257,16 @@ public class RoomViewActivity extends Activity implements
                             // File save was cancelled explicitly or due to timeout
                             // at FilePermissionAlert stage.
                         } else {
-                            mConnection.acceptFileTransferRequest(peerId,
-                                    newDir + File.separator + fileName);
+                            mConnection.sendFileTransferPermissionResponse(peerId,
+                                    newDir + File.separator + fileName, true);
                         }
                     } else {
                         // We cancelled file save ourselves.
                         Utility.showShortToast(this,
                                 R.string.message_on_decline_save, fileName,
                                 RoomManager.get().getDisplayName(peerId));
-                        mConnection.rejectFileTransferRequest(peerId,
-                                fileName);
+                        mConnection.sendFileTransferPermissionResponse(peerId,
+                                fileName, false);
                     }// END } else {//if(resultCode == this.RESULT_OK) {
                 } else {
                     // File save was cancelled explicitly or due to timeout at File
@@ -505,8 +505,8 @@ public class RoomViewActivity extends Activity implements
 // FileTransferListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onRequest(String peerId, String fileName, boolean isPrivate) {
-        String nick = RoomManager.get().getDisplayName(peerId);
+    public void onFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
         String strShareTemp = String.format(
                 getString(R.string.message_file_request_group), nick, fileName);
         if (isPrivate)
@@ -514,15 +514,15 @@ public class RoomViewActivity extends Activity implements
                     getString(R.string.message_file_request_private), nick,
                     fileName);
         // Put request into queue at last position.
-        String[] fileRequest = {strShareTemp, peerId, fileName};
+        String[] fileRequest = {strShareTemp, remotePeerId, fileName};
         RoomManager.get().mFileRequestList.add(fileRequest);
         // Process request list.
         processFileRequest();
     }
 
     @Override
-    public void onPermission(String peerId, String fileName, boolean isPermitted) {
-        String nick = RoomManager.get().getDisplayName(peerId);
+    public void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
         if (isPermitted) {
             String msg = String
                     .format(getString(R.string.message_permission_true), nick,
@@ -539,11 +539,11 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onDrop(String peerId, String fileName, String message,
-                       boolean isExplicit) {
+    public void onFileTransferDrop(String remotePeerId, String fileName, String message,
+                                   boolean isExplicit) {
         finishActivity(Utility.REQUEST_CODE_PICK_DIR);
         String msgAlert = "";
-        String nick = RoomManager.get().getDisplayName(peerId);
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
         if (isExplicit) {
             msgAlert = String.format(getString(R.string.message_drop_true),
                     nick, fileName);
@@ -552,10 +552,19 @@ public class RoomViewActivity extends Activity implements
                     nick, fileName, message);
         }
         // Clear UI for dropped file if any.
-        clearDroppedFileUI(peerId, fileName, msgAlert);
+        clearDroppedFileUI(remotePeerId, fileName, msgAlert);
     }
 
     @Override
+    public void onFileSendComplete(String remotePeerId, String fileName) {
+        onComplete(remotePeerId, fileName, true);
+    }
+
+    @Override
+    public void onFileReceiveComplete(String remotePeerId, String fileName) {
+        onComplete(remotePeerId, fileName, false);
+    }
+
     public void onComplete(String peerId, String fileName, boolean isSending) {
         String nick = RoomManager.get().getDisplayName(peerId);
 
@@ -581,6 +590,15 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
+    public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
+        onProgress(remotePeerId, fileName, percentage, true);
+    }
+
+    @Override
+    public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
+        onProgress(remotePeerId, fileName, percentage, false);
+    }
+
     public void onProgress(String peerId, String fileName, double percentage,
                            boolean isSending) {
         String nick = RoomManager.get().getDisplayName(peerId);

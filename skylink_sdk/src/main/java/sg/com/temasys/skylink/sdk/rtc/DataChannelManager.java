@@ -522,7 +522,7 @@ class DataChannelManager {
         connectionManager.runOnUiThread(new Runnable() {
             public void run() {
                 connectionManager.getFileTransferListener()
-                        .onRequest(dcObserver.getTid(), fileName, isPrivate);
+                        .onFileTransferPermissionRequest(dcObserver.getTid(), fileName, isPrivate);
             }
         });
     }
@@ -561,7 +561,7 @@ class DataChannelManager {
         final double pct = pctTemp;
         connectionManager.runOnUiThread(new Runnable() {
             public void run() {
-                connectionManager.getFileTransferListener().onProgress(tid, filePath, pct, false);
+                connectionManager.getFileTransferListener().onFileReceiveProgress(tid, filePath, pct);
             }
         });
 
@@ -576,7 +576,7 @@ class DataChannelManager {
             sendACK(dcObserver, chunk + 1, true);
             connectionManager.runOnUiThread(new Runnable() {
                 public void run() {
-                    connectionManager.getFileTransferListener().onComplete(dcObserver.getTid(), filePath, false);
+                    connectionManager.getFileTransferListener().onFileReceiveComplete(dcObserver.getTid(), filePath);
                 }
             });
             return;
@@ -662,7 +662,7 @@ class DataChannelManager {
                 // Transfer declined.
                 connectionManager.runOnUiThread(new Runnable() {
                     public void run() {
-                        connectionManager.getFileTransferListener().onPermission(tid, filePath, false);
+                        connectionManager.getFileTransferListener().onFileTransferPermissionResponse(tid, filePath, false);
                     }
                 });
                 return;
@@ -670,7 +670,7 @@ class DataChannelManager {
                 // Transfer accepted, notify UI.
                 connectionManager.runOnUiThread(new Runnable() {
                     public void run() {
-                        connectionManager.getFileTransferListener().onPermission(tid, filePath, true);
+                        connectionManager.getFileTransferListener().onFileTransferPermissionResponse(tid, filePath, true);
                     }
                 });
             }
@@ -685,7 +685,7 @@ class DataChannelManager {
             final double pct = pctTemp;
             connectionManager.runOnUiThread(new Runnable() {
                 public void run() {
-                    connectionManager.getFileTransferListener().onProgress(tid, filePath, pct, true);
+                    connectionManager.getFileTransferListener().onFileSendProgress(tid, filePath, pct);
                 }
             });
         }
@@ -708,7 +708,7 @@ class DataChannelManager {
             // Hence do nothing and assume the receiver will assume that we got the acknowledgement.
             connectionManager.runOnUiThread(new Runnable() {
                 public void run() {
-                    connectionManager.getFileTransferListener().onComplete(tid, filePath, true);
+                    connectionManager.getFileTransferListener().onFileSendComplete(tid, filePath);
                 }
             });
             // End of send operation
@@ -749,7 +749,7 @@ class DataChannelManager {
                         "but did not get any from Peer " + getDisplayName(tid) + " (" + tid + ").";
                 connectionManager.runOnUiThread(new Runnable() {
                     public void run() {
-                        connectionManager.getFileTransferListener().onDrop(tid, fileName, errorMessage, false);
+                        connectionManager.getFileTransferListener().onFileTransferDrop(tid, fileName, errorMessage, false);
                     }
                 });
                 sendError(errorMessage, true, tid);
@@ -821,7 +821,7 @@ class DataChannelManager {
         // Trigger callback
         connectionManager.runOnUiThread(new Runnable() {
             public void run() {
-                connectionManager.getFileTransferListener().onDrop(tid, fileName, newErrorMessage, false);
+                connectionManager.getFileTransferListener().onFileTransferDrop(tid, fileName, newErrorMessage, false);
             }
         });
     }
@@ -869,7 +869,7 @@ class DataChannelManager {
         // Trigger callback
         connectionManager.runOnUiThread(new Runnable() {
             public void run() {
-                connectionManager.getFileTransferListener().onDrop(tid, fileName, newCancelMessage, true);
+                connectionManager.getFileTransferListener().onFileTransferDrop(tid, fileName, newCancelMessage, true);
             }
         });
     }
@@ -933,7 +933,7 @@ class DataChannelManager {
                         " (" + tid + ").";
                 connectionManager.runOnUiThread(new Runnable() {
                     public void run() {
-                        connectionManager.getFileTransferListener().onDrop(tid, fileName, errorMessage, false);
+                        connectionManager.getFileTransferListener().onFileTransferDrop(tid, fileName, errorMessage, false);
                     }
                 });
                 sendError(errorMessage, true, tid);
@@ -987,7 +987,7 @@ class DataChannelManager {
                             " (" + tid + ").";
                     connectionManager.runOnUiThread(new Runnable() {
                         public void run() {
-                            connectionManager.getFileTransferListener().onDrop(tid, filePath, errorMessage, false);
+                            connectionManager.getFileTransferListener().onFileTransferDrop(tid, filePath, errorMessage, false);
                         }
                     });
                     sendError(errorMessage, false, tid);

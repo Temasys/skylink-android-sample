@@ -489,10 +489,10 @@ public class SkyLinkConnection {
      * Sends a user defined message to a peer or to all peers via signalling
      * channel.
      *
-     * @param remotePeerId  The id of the peer. Send 'null' if the message is intended to
-     *                broadcast to all of the connected peers in the room.
-     * @param message User defined data. May be a 'java.lang.String',
-     *                'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
+     *                     broadcast to all of the connected peers in the room.
+     * @param message      User defined data. May be a 'java.lang.String',
+     *                     'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public void sendServerMessage(String remotePeerId, Object message) {
         if (this.webServerClient == null)
@@ -520,10 +520,10 @@ public class SkyLinkConnection {
     /**
      * Sends a user defined message to a peer or to all peers via data channel.
      *
-     * @param remotePeerId  The id of the peer. Send 'null' if the message is intended to
-     *                broadcast to all of the connected peers in the room.
-     * @param message User defined data. May be a 'java.lang.String',
-     *                'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
+     *                     broadcast to all of the connected peers in the room.
+     * @param message      User defined data. May be a 'java.lang.String',
+     *                     'org.json.JSONObject' or 'org.json.JSONArray'.
      * @throws SkyLinkException if the system was unable to send the message.
      */
     public void sendP2PMessage(String remotePeerId, Object message)
@@ -640,8 +640,8 @@ public class SkyLinkConnection {
      * Sends file transfer request to a specified peer.
      *
      * @param remotePeerId The id of the peer
-     * @param fileName The name of the file
-     * @param filePath The path of the file in the filesystem
+     * @param fileName     The name of the file
+     * @param filePath     The path of the file in the filesystem
      */
     public void sendFileTransferPermissionRequest(String remotePeerId, String fileName,
                                                   String filePath) {
@@ -673,31 +673,17 @@ public class SkyLinkConnection {
      * peer.
      *
      * @param remotePeerId The id of the peer
-     * @param filePath The path of the file
+     * @param filePath     The path of the file
+     * @param isPermitted  Accept or reject file transfer request
      */
-    public void acceptFileTransferRequest(String remotePeerId,
-                                          String filePath) {
-        if (this.webServerClient == null)
+    public void sendFileTransferPermissionResponse(String remotePeerId,
+                                                   String filePath, boolean isPermitted) {
+        if (this.webServerClient == null) {
             return;
-
-        if (myConfig.hasFileTransfer())
-            dataChannelManager.acceptFileTransfer(remotePeerId, true, filePath);
-    }
-
-    /**
-     * Call this method to reject the file transfer request from a
-     * peer.
-     *
-     * @param remotePeerId The id of the peer
-     * @param filePath The path of the file
-     */
-    public void rejectFileTransferRequest(String remotePeerId,
-                                          String filePath) {
-        if (this.webServerClient == null)
-            return;
-
-        if (myConfig.hasFileTransfer())
-            dataChannelManager.acceptFileTransfer(remotePeerId, false, filePath);
+        }
+        if (myConfig.hasFileTransfer()) {
+            dataChannelManager.acceptFileTransfer(remotePeerId, isPermitted, filePath);
+        }
     }
 
     /**
@@ -807,7 +793,7 @@ public class SkyLinkConnection {
                 pc = this.peerConnectionFactory.createPeerConnection(
                         this.iceServerArray, this.pcConstraints, pcObserver);
             }
-			/*if (this.myConfig.hasAudio())
+            /*if (this.myConfig.hasAudio())
 				pc.addStream(this.localMediaStream, this.pcConstraints);*/
 
             this.peerConnectionPool.put(key, pc);
