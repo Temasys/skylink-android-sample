@@ -27,12 +27,16 @@ import java.io.OutputStream;
 import java.security.SignatureException;
 import java.util.Date;
 
+import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
  */
-public class FileTransferFragment extends Fragment implements SkyLinkConnection.LifeCycleDelegate, SkyLinkConnection.FileTransferDelegate, SkyLinkConnection.RemotePeerDelegate {
+public class FileTransferFragment extends Fragment implements LifeCycleListener, FileTransferListener, RemotePeerListener {
     private static final String TAG = FileTransferFragment.class.getCanonicalName();
     final String userName = "userFileTransfer";
     LinearLayout parentFragment;
@@ -67,13 +71,13 @@ public class FileTransferFragment extends Fragment implements SkyLinkConnection.
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        skyLinkConnection = new SkyLinkConnection(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity());
+        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection.init(getString(R.string.app_key),
+                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
 
-        Log.d(TAG, " lo " + this.getActivity());
-        skyLinkConnection.setLifeCycleDelegate(this);
-        skyLinkConnection.setFileTransferDelegate(this);
-        skyLinkConnection.setRemotePeerDelegate(this);
+        skyLinkConnection.setLifeCycleListener(this);
+        skyLinkConnection.setFileTransferListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
         try {
             skyLinkConnection.connectToRoom("room", userName, new Date(), 200);
         } catch (SignatureException e) {
@@ -86,8 +90,8 @@ public class FileTransferFragment extends Fragment implements SkyLinkConnection.
 
     }
 
-    private SkyLinkConnection.SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConnection.SkyLinkConfig config = new SkyLinkConnection.SkyLinkConfig();
+    private SkyLinkConfig getSkylinkConfig() {
+        SkyLinkConfig config = new SkyLinkConfig();
         config.setHasAudio(true);
         config.setHasVideo(true);
         config.setHasPeerMessaging(true);
@@ -97,7 +101,7 @@ public class FileTransferFragment extends Fragment implements SkyLinkConnection.
     }
 
 /***
- * Lifecycle delegate
+ * Lifecycle Listener
  */
 
     /**
@@ -112,13 +116,6 @@ public class FileTransferFragment extends Fragment implements SkyLinkConnection.
             Log.d(TAG, "Skylink Connected");
         else
             Log.d(TAG, "Skylink Failed");
-    }
-
-    @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
-        // TODO Auto-generated method stub
-        Log.d(TAG, videoView + "received view");
-
     }
 
     @Override

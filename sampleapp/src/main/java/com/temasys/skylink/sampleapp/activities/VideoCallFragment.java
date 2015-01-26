@@ -26,12 +26,15 @@ import java.security.SignatureException;
 import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class VideoCallFragment extends Fragment implements SkyLinkConnection.LifeCycleDelegate, SkyLinkConnection.MediaDelegate, SkyLinkConnection.RemotePeerDelegate {
+public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
     final String userName = "userVideo";
     LinearLayout parentFragment;
@@ -85,14 +88,14 @@ public class VideoCallFragment extends Fragment implements SkyLinkConnection.Lif
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        skyLinkConnection = new SkyLinkConnection(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity());
+        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection.init(getString(R.string.app_key),
+                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
 
         Log.d(TAG, " lo " + this.getActivity());
-        skyLinkConnection.setLifeCycleDelegate(this);
-        skyLinkConnection.setMediaDelegate(this);
-        skyLinkConnection.setRemotePeerDelegate(this);
-        skyLinkConnection.setMessagesDelegate(this);
+        skyLinkConnection.setLifeCycleListener(this);
+        skyLinkConnection.setMediaListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
     }
 
     private SkyLinkConfig getSkylinkConfig() {
@@ -106,7 +109,7 @@ public class VideoCallFragment extends Fragment implements SkyLinkConnection.Lif
     }
 
     /***
-     * Lifecycle delegate
+     * Lifecycle Listener
      */
 
     /**
