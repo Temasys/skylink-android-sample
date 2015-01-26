@@ -866,7 +866,7 @@ public class RoomViewActivity extends Activity implements
                 // Remove control panel, if exists.
                 setControlPanel(false);
                 // Set audio and video to none muted.
-                RoomManager.get().getConnection().muteAudio(false);
+                RoomManager.get().getConnection().muteLocalAudio(false);
                 RoomManager.get().getConnection().muteVideo(false);
             }
             break;

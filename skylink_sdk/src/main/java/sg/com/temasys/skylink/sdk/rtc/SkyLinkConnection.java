@@ -370,7 +370,7 @@ public class SkyLinkConnection {
      */
     public void onPause() {
         /*if (this.localVideoSource != null
-				&& this.localVideoSource.state() != MediaSource.State.ENDED) {
+                && this.localVideoSource.state() != MediaSource.State.ENDED) {
 			this.localVideoSource.stop();
 			videoSourceStopped = true;
 		}*/
@@ -398,7 +398,7 @@ public class SkyLinkConnection {
                         connectionState = ConnectionState.DISCONNECT;
 
   		/*if (this.webServerClient == null)
-  			return;*/
+              return;*/
                         if (this.webServerClient != null) this.webServerClient.disconnect();
 
                         logMessage("Inside TEMAConnectionManager.disconnect");
@@ -587,13 +587,14 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Mutes the client audio and intimates all the peers in the room.
+     * Mutes the client audio and notifies all the peers in the room.
      *
      * @param isMuted Flag that specify whether to mute / unmute the audio
      */
-    public void muteAudio(boolean isMuted) {
-        if (this.webServerClient == null)
+    public void muteLocalAudio(boolean isMuted) {
+        if (this.webServerClient == null) {
             return;
+        }
 
         if (myConfig.hasAudio() && (localAudioTrack.enabled() == isMuted)) {
             localAudioTrack.setEnabled(!isMuted);
@@ -611,7 +612,7 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Mutes the client video and intimates all the peers in the room.
+     * Mutes the client video and notifies all the peers in the room.
      *
      * @param isMuted Flag that specify whether to mute / unmute the audio
      */
