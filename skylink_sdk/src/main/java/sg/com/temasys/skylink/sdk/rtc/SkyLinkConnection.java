@@ -563,15 +563,16 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Sends the user data related to oneself.
+     * Sends local user data related to oneself.
      *
      * @param userData User defined data relating to the peer. May be a
      *                 'java.lang.String', 'org.json.JSONObject' or
      *                 'org.json.JSONArray'.
      */
-    public void sendUserData(Object userData) {
-        if (this.webServerClient == null)
+    public void sendLocalUserData(Object userData) {
+        if (this.webServerClient == null) {
             return;
+        }
 
         this.myUserData = userData;
         JSONObject dict = new JSONObject();
