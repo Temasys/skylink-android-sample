@@ -61,7 +61,7 @@ project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
 
 publishing {
     publications {
-        mavenSdk(MavenPublication) {
+        sdkAar(MavenPublication) {
             artifacts {
                 groupId 'sg.com.temasys.skylink.sdk'
                 artifactId 'skylink_sdk'
@@ -71,6 +71,33 @@ publishing {
                     classifier "javadoc"
                 }
             }
+        }
+        sdkJar(MavenPublication) {
+            groupId 'sg.com.temasys.skylink.sdk'
+            artifactId 'skylink_sdk_jar'
+            version currentVersion
+            artifact 'build/libs/skylink_sdk-release.jar'
+            artifact androidJavadocsJar {
+                classifier "javadoc"
+            }
+        }
+        socketIOJar(MavenPublication) {
+            groupId 'io.socket'
+            artifactId 'socketio'
+            version currentVersion
+            artifact 'libs/socketio.jar'
+        }
+        libJingleJar(MavenPublication) {
+            groupId 'sg.com.temasys.skylink.sdk'
+            artifactId 'libjingle'
+            version currentVersion
+            artifact 'libs/libjingle_peerconnection.jar'
+        }
+        libJingleSso(MavenPublication) {
+            groupId 'sg.com.temasys.skylink.sdk'
+            artifactId 'libjingle_sso_armeabi-v7a'
+            version currentVersion
+            artifact 'src/main/jniLibs/armeabi-v7a/libjingle_peerconnection_so.so'
         }
     }
     repositories {
@@ -170,3 +197,20 @@ task androidJavadocsJar(type: Jar, dependsOn: 'androidJavadoc') {
     classifier = 'javadoc'
     from androidJavadoc.destinationDir
 }
+
+/***
+ * Generate Jar file
+ */
+
+task clearJar(type: Delete) {
+    delete 'build/libs/' + "skylink_sdk-release" + '.jar'
+}
+
+task makeJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('build/libs/')
+    include('classes.jar')
+    rename('classes.jar', "skylink_sdk-release" + '.jar')
+}
+
+makeJar.dependsOn(clearJar, build)

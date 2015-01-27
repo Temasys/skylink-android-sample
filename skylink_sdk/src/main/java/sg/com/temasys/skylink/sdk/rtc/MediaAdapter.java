@@ -17,22 +17,27 @@ class MediaAdapter implements MediaListener {
     }
 
     @Override
-    public void onVideoSize(GLSurfaceView videoView, Point size) {
+    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
 
     }
 
     @Override
-    public void onToggleAudio(String peerId, boolean isMuted) {
+    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
 
     }
 
     @Override
-    public void onToggleVideo(String peerId, boolean isMuted) {
+    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
 
     }
 
     @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+
+    }
+
+    @Override
+    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
 
     }
 

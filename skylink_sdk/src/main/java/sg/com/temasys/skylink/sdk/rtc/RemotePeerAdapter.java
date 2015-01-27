@@ -1,8 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.graphics.Point;
-import android.opengl.GLSurfaceView;
-
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 
 /**
@@ -17,28 +14,22 @@ class RemotePeerAdapter implements RemotePeerListener {
     }
 
     @Override
-    public void onPeerJoin(String peerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
 
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
 
     }
 
     @Override
-    public void onUserData(String peerId, Object userData) {
+    public void onRemotePeerLeave(String remotePeerId, String message) {
 
     }
 
     @Override
-    public void onPeerLeave(String peerId, String message) {
-
-    }
-
-    @Override
-    public void onOpenDataConnection(String peerId) {
+    public void onOpenDataConnection(String remotePeerId) {
 
     }
 

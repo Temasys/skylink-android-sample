@@ -14,7 +14,7 @@ class LifeCycleAdapter implements LifeCycleListener {
     }
 
     @Override
-    public void onConnect(boolean isSuccess, String message) {
+    public void onConnect(boolean isSuccessful, String message) {
 
     }
 

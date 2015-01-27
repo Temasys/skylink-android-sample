@@ -8,54 +8,69 @@ public interface FileTransferListener {
     /**
      * This is triggered upon receiving a file transfer request from a peer.
      *
-     * @param peerId   The id of the peer
-     * @param fileName The name of the file
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
+     * @param isPrivate    Flag to specify if its private
      */
-    public void onRequest(String peerId, String fileName, boolean isPrivate);
+    public void onFileTransferPermissionRequest(String remotePeerId,
+                                                String fileName, boolean isPrivate);
 
     /**
      * This is triggered upon receiving the response of a file transfer
      * request from a peer.
      *
-     * @param peerId      The id of the peer
-     * @param fileName    The name of the file
-     * @param isPermitted Flag to specify whether the peer has accepted the request
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
+     * @param isPermitted  Flag to specify whether the peer has accepted the request
      */
-    public void onPermission(String peerId, String fileName,
-                             boolean isPermitted);
+    public void onFileTransferPermissionResponse(String remotePeerId, String fileName,
+                                                 boolean isPermitted);
 
     /**
      * This is triggered when an ongoing file transfer drops due to some
      * reason
      *
-     * @param peerId   The id of the peer
-     * @param fileName The name of the file
-     * @param message  Message that possibly tells the reason for dropping
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
+     * @param message      Message that possibly tells the reason for dropping
+     * @param isExplicit   True if user canceled the transfer explicitly
      */
-    public void onDrop(String peerId, String fileName, String message,
-                       boolean isExplicit);
+    public void onFileTransferDrop(String remotePeerId, String fileName, String message,
+                                   boolean isExplicit);
 
     /**
-     * This is triggered when a file transfer is completed successfully.
+     * This is triggered when a file is sent successfully.
      *
-     * @param peerId    The id of the peer
-     * @param fileName  The name of the file
-     * @param isSending Flag to specify whether the completed transfer is for
-     *                  sending or receiving a file
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
      */
-    public void onComplete(String peerId, String fileName, boolean isSending);
+    public void onFileSendComplete(String remotePeerId, String fileName);
 
     /**
-     * This is triggered timely to report the on going file transfer
-     * progress.
+     * This is triggered when a file is received successfully.
      *
-     * @param peerId     The id of the peer
-     * @param fileName   The name of the file
-     * @param percentage The percentage completed
-     * @param isSending  Flag to specify whether the completed transfer is for
-     *                   sending or receiving a file
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
      */
-    public void onProgress(String peerId, String fileName,
-                           double percentage, boolean isSending);
+    public void onFileReceiveComplete(String remotePeerId, String fileName);
 
+    /**
+     * This is triggered timely to report the on going progress when sending a file
+     *
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
+     * @param percentage   The percentage completed
+     */
+    public void onFileSendProgress(String remotePeerId, String fileName,
+                                   double percentage);
+
+    /**
+     * This is triggered timely to report the on going progress when sending a file
+     *
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
+     * @param percentage   The percentage completed
+     */
+    public void onFileReceiveProgress(String remotePeerId, String fileName,
+                                      double percentage);
 }

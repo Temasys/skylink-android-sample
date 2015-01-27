@@ -10,11 +10,11 @@ public interface LifeCycleListener {
      * This is the first callback to specify whether the connection was
      * successful.
      *
-     * @param isSuccess Specify success or failure
-     * @param message   A message in case of isSuccess is 'false' describing the
-     *                  reason of failure
+     * @param isSuccessful Specify success or failure
+     * @param message      A message in case of isSuccessful is 'false' describing the
+     *                     reason of failure
      */
-    public void onConnect(boolean isSuccess, String message);
+    public void onConnect(boolean isSuccessful, String message);
 
     /**
      * This is triggered when the framework issues a warning to the client.

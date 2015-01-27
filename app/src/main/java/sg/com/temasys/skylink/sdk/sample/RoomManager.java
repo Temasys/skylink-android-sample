@@ -317,7 +317,7 @@ public class RoomManager {
             mVideoPool = null;
         }
         if (mConnection != null) {
-            mConnection.disconnect();
+            mConnection.disconnectFromRoom();
             mConnection = null;
         }
         sConnectionManager = null;
