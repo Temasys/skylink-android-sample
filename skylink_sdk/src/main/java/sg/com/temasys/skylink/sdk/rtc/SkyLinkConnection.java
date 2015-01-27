@@ -424,38 +424,6 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Sends a text message to a peer or to all peers. This functionality is
-     * deprecated and will be removed eventually. One is appreciated to use
-     * 'sendServerMessage' instead.
-     *
-     * @param peerId  The id of the peer. Send 'null' if the message is intended to
-     *                broadcast to all of the connected peers in the room.
-     * @param message The message to be sent to the peer
-     */
-    @Deprecated
-    private void sendChatMessage(String peerId, String message) {
-        if (this.webServerClient == null)
-            return;
-        Log.d(TAG,
-                "TEMAConnectionManager.sendChatMessage::Sending chat::remotePeerId->"
-                        + peerId + ", message->" + message);
-        JSONObject dict = new JSONObject();
-        try {
-            dict.put("type", "chat");
-            dict.put("data", message);
-            if (peerId != null)
-                dict.put("target", peerId);
-            dict.put("nick", webServerClient.getDisplayName());
-            dict.put("mid", webServerClient.getSid());
-            dict.put("rid", webServerClient.getRoomId());
-            dict.put("cid", webServerClient.getCid());
-            webServerClient.sendMessage(dict);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-    }
-
-    /**
      * Sends a user defined message to a peer or to all peers via signalling
      * channel.
      *
