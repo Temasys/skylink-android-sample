@@ -358,7 +358,7 @@ public class SkyLinkConnection {
     /**
      * Disconnects from the room.
      */
-    public void disconnect() {
+    public void disconnectFromRoom() {
         // Prevent thread from executing with WebServerClient methods concurrently.
         synchronized (lockDisconnectMsg) {
             synchronized (lockDisconnectMedia) {
@@ -371,7 +371,7 @@ public class SkyLinkConnection {
               return;*/
                         if (this.webServerClient != null) this.webServerClient.disconnect();
 
-                        logMessage("Inside TEMAConnectionManager.disconnect");
+                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
 
                         // Dispose all DC.
                         String allPeers = null;
