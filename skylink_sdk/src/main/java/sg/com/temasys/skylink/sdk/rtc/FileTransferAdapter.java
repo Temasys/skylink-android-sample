@@ -15,25 +15,36 @@ class FileTransferAdapter implements
     }
 
     @Override
-    public void onRequest(String peerId, String fileName, boolean isPrivate) {
+    public void onFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
     }
 
     @Override
-    public void onPermission(String peerId, String fileName, boolean isPermitted) {
+    public void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted) {
     }
 
     @Override
-    public void onDrop(String peerId, String fileName, String message,
-                       boolean isExplicit) {
+    public void onFileTransferDrop(String remotePeerId, String fileName, String message,
+                                   boolean isExplicit) {
     }
 
     @Override
-    public void onComplete(String peerId, String fileName, boolean isSending) {
+    public void onFileSendComplete(String remotePeerId, String fileName) {
+
     }
 
     @Override
-    public void onProgress(String peerId, String fileName, double percentage,
-                           boolean isSending) {
+    public void onFileReceiveComplete(String remotePeerId, String fileName) {
+
+    }
+
+    @Override
+    public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
+
+    }
+
+    @Override
+    public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
+
     }
 
 }

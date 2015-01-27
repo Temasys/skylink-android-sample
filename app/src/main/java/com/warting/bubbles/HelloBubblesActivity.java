@@ -73,12 +73,12 @@ public class HelloBubblesActivity extends Activity {
                     if (peerId == null) {
                         RoomManager.get().addGroupChat(comment);
                         RoomManager.get().getConnection()
-                                .sendCustomMessage(peerId, message);
+                                .sendServerMessage(peerId, message);
                     } else {
                         RoomManager.get().addPrivateChat(peerId, comment);
                         try {
                             RoomManager.get().getConnection()
-                                    .sendPeerMessage(peerId, message);
+                                    .sendP2PMessage(peerId, message);
                         } catch (SkyLinkException e) {
                             Log.w(TAG, e.getLocalizedMessage(), e);
                         }

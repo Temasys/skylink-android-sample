@@ -178,8 +178,6 @@ public class RoomViewActivity extends Activity implements
     protected void onResume() {
         super.onResume();
         mIsRunning = true;
-        if (mConnection != null)
-            mConnection.onResume();
         if (RoomManager.get().isSplitChanged()) {
             setVideoUIFromRoomManager();
             RoomManager.get().setSplitChanged(false);
@@ -192,15 +190,8 @@ public class RoomViewActivity extends Activity implements
     protected void onPause() {
         super.onPause();
         mIsRunning = false;
-        if (mConnection != null)
-            mConnection.onPause();
         // Do not set audio path when app is not forefront.
         unregisterReceiver(mHeadSetReceiver);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
     }
 
     @Override
@@ -231,7 +222,7 @@ public class RoomViewActivity extends Activity implements
                             // Get the file path from the URI
                             final String path = FileUtils.getPath(this, uri);
                             final String fileName = new File(path).getName();
-                            mConnection.sendFileTransferRequest(RoomManager.get()
+                            mConnection.sendFileTransferPermissionRequest(RoomManager.get()
                                     .getFileTransferPeerId(), fileName, path);
                         } catch (Exception e) {
                             Log.e("FileSelectorTestActivity", "File select error",
@@ -257,16 +248,16 @@ public class RoomViewActivity extends Activity implements
                             // File save was cancelled explicitly or due to timeout
                             // at FilePermissionAlert stage.
                         } else {
-                            mConnection.acceptFileTransferRequest(peerId, true,
-                                    newDir + File.separator + fileName);
+                            mConnection.sendFileTransferPermissionResponse(peerId,
+                                    newDir + File.separator + fileName, true);
                         }
                     } else {
                         // We cancelled file save ourselves.
                         Utility.showShortToast(this,
                                 R.string.message_on_decline_save, fileName,
                                 RoomManager.get().getDisplayName(peerId));
-                        mConnection.acceptFileTransferRequest(peerId, false,
-                                fileName);
+                        mConnection.sendFileTransferPermissionResponse(peerId,
+                                fileName, false);
                     }// END } else {//if(resultCode == this.RESULT_OK) {
                 } else {
                     // File save was cancelled explicitly or due to timeout at File
@@ -313,8 +304,8 @@ public class RoomViewActivity extends Activity implements
 // LifeCycleListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onConnect(boolean isSuccess, String message) {
-        if (!isSuccess) {
+    public void onConnect(boolean isSuccessful, String message) {
+        if (!isSuccessful) {
             Log.d(TAG, "onConnect()::message->" + message);
             Intent intent = new Intent();
             intent.putExtra(JoinRoomActivity.EXTRA_RESULT_DISCONNECT_STATUS,
@@ -354,45 +345,33 @@ public class RoomViewActivity extends Activity implements
 // RemotePeerListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onUserData(String peerId, Object userData) {
-        String oldNick = RoomManager.get().getDisplayName(peerId);
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        String oldNick = RoomManager.get().getDisplayName(remotePeerId);
         String userDataStr = userData.toString();
-        RoomManager.get().putDisplayName(peerId, userDataStr);
+        RoomManager.get().putDisplayName(remotePeerId, userDataStr);
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_user_data, oldNick, userDataStr);
     }
 
     @Override
-    public void onOpenDataConnection(String peerId) {
-        Log.d(TAG, "onOpenDataConnection()::peerId->" + peerId);
+    public void onOpenDataConnection(String remotePeerId) {
+        Log.d(TAG, "onOpenDataConnection()::peerId->" + remotePeerId);
     }
 
     @Override
-    public void onPeerJoin(String peerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
         String userDataStr = getDisplayNameFromUserData(userData);
-        RoomManager.get().putDisplayName(peerId, userDataStr);
+        RoomManager.get().putDisplayName(remotePeerId, userDataStr);
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_peer_join, userDataStr);
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
-        RoomManager.get().putVideo(peerId, videoView);
-
-        // Set video UI either immediately or record the video UI required.
-        if (mIsRunning)
-            setVideoUI();
-        else
-            recordVideoUI();
-    }
-
-    @Override
-    public void onPeerLeave(String peerId, String message) {
+    public void onRemotePeerLeave(String remotePeerId, String message) {
         Utility.showShortToast(getApplicationContext(),
                 R.string.message_on_peer_leave, RoomManager.get()
-                        .getDisplayName(peerId));
-        RoomManager.get().removePeer(peerId);
+                        .getDisplayName(remotePeerId));
+        RoomManager.get().removePeer(remotePeerId);
 
         // Set video UI either immediately or record the video UI required.
         if (mIsRunning) {
@@ -441,7 +420,7 @@ public class RoomViewActivity extends Activity implements
 // MediaListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
         RoomManager.get().putVideo(null, videoView);
         FragmentManager fragmentManager = getFragmentManager();
         Fragment fragment = fragmentManager
@@ -455,7 +434,7 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onVideoSize(GLSurfaceView videoView, Point size) {
+    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
         RoomManager manager = RoomManager.get();
         if (manager != null) {
             RoomManager.get().putSize(videoView, size);
@@ -464,49 +443,54 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onToggleAudio(String peerId, boolean isMuted) {
+    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
         int messageId = isMuted ? R.string.message_on_audio_muted
                 : R.string.message_on_audio_unmuted;
         Utility.showShortToast(getApplicationContext(), messageId, RoomManager
-                .get().getDisplayName(peerId));
+                .get().getDisplayName(remotePeerId));
     }
 
     @Override
-    public void onToggleVideo(String peerId, boolean isMuted) {
+    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
         int messageId = isMuted ? R.string.message_on_video_muted
                 : R.string.message_on_video_unmuted;
         Utility.showShortToast(getApplicationContext(), messageId, RoomManager
-                .get().getDisplayName(peerId));
+                .get().getDisplayName(remotePeerId));
+    }
+
+    @Override
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+        RoomManager.get().putVideo(remotePeerId, videoView);
+        // Set video UI either immediately or record the video UI required.
+        if (mIsRunning) {
+            setVideoUI();
+        } else {
+            recordVideoUI();
+        }
     }
 
     // -------------------------------------------------------------------------------------------------
 // MessagesListener callbacks
 // -------------------------------------------------------------------------------------------------
+
     @Override
-    @Deprecated
-    public void onChatMessage(String peerId, String nick, String message,
-                              boolean isPrivate) {
-        displayChatMessage(peerId, nick, message, isPrivate);
+    public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
+        displayChatMessage(remotePeerId, nick, message, isPrivate);
     }
 
     @Override
-    public void onCustomMessage(String peerId, Object message, boolean isPrivate) {
-        String nick = RoomManager.get().getDisplayName(peerId);
-        displayChatMessage(peerId, nick, message, isPrivate);
-    }
-
-    @Override
-    public void onPeerMessage(String peerId, Object message, boolean isPrivate) {
-        String nick = RoomManager.get().getDisplayName(peerId);
-        displayChatMessage(peerId, nick, message, isPrivate);
+    public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
+        displayChatMessage(remotePeerId, nick, message, isPrivate);
     }
 
     // -------------------------------------------------------------------------------------------------
 // FileTransferListener callbacks
 // -------------------------------------------------------------------------------------------------
     @Override
-    public void onRequest(String peerId, String fileName, boolean isPrivate) {
-        String nick = RoomManager.get().getDisplayName(peerId);
+    public void onFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
         String strShareTemp = String.format(
                 getString(R.string.message_file_request_group), nick, fileName);
         if (isPrivate)
@@ -514,15 +498,15 @@ public class RoomViewActivity extends Activity implements
                     getString(R.string.message_file_request_private), nick,
                     fileName);
         // Put request into queue at last position.
-        String[] fileRequest = {strShareTemp, peerId, fileName};
+        String[] fileRequest = {strShareTemp, remotePeerId, fileName};
         RoomManager.get().mFileRequestList.add(fileRequest);
         // Process request list.
         processFileRequest();
     }
 
     @Override
-    public void onPermission(String peerId, String fileName, boolean isPermitted) {
-        String nick = RoomManager.get().getDisplayName(peerId);
+    public void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted) {
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
         if (isPermitted) {
             String msg = String
                     .format(getString(R.string.message_permission_true), nick,
@@ -539,11 +523,11 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
-    public void onDrop(String peerId, String fileName, String message,
-                       boolean isExplicit) {
+    public void onFileTransferDrop(String remotePeerId, String fileName, String message,
+                                   boolean isExplicit) {
         finishActivity(Utility.REQUEST_CODE_PICK_DIR);
         String msgAlert = "";
-        String nick = RoomManager.get().getDisplayName(peerId);
+        String nick = RoomManager.get().getDisplayName(remotePeerId);
         if (isExplicit) {
             msgAlert = String.format(getString(R.string.message_drop_true),
                     nick, fileName);
@@ -552,10 +536,19 @@ public class RoomViewActivity extends Activity implements
                     nick, fileName, message);
         }
         // Clear UI for dropped file if any.
-        clearDroppedFileUI(peerId, fileName, msgAlert);
+        clearDroppedFileUI(remotePeerId, fileName, msgAlert);
     }
 
     @Override
+    public void onFileSendComplete(String remotePeerId, String fileName) {
+        onComplete(remotePeerId, fileName, true);
+    }
+
+    @Override
+    public void onFileReceiveComplete(String remotePeerId, String fileName) {
+        onComplete(remotePeerId, fileName, false);
+    }
+
     public void onComplete(String peerId, String fileName, boolean isSending) {
         String nick = RoomManager.get().getDisplayName(peerId);
 
@@ -581,6 +574,15 @@ public class RoomViewActivity extends Activity implements
     }
 
     @Override
+    public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
+        onProgress(remotePeerId, fileName, percentage, true);
+    }
+
+    @Override
+    public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
+        onProgress(remotePeerId, fileName, percentage, false);
+    }
+
     public void onProgress(String peerId, String fileName, double percentage,
                            boolean isSending) {
         String nick = RoomManager.get().getDisplayName(peerId);
@@ -866,8 +868,8 @@ public class RoomViewActivity extends Activity implements
                 // Remove control panel, if exists.
                 setControlPanel(false);
                 // Set audio and video to none muted.
-                RoomManager.get().getConnection().muteAudio(false);
-                RoomManager.get().getConnection().muteVideo(false);
+                RoomManager.get().getConnection().muteLocalAudio(false);
+                RoomManager.get().getConnection().muteLocalVideo(false);
             }
             break;
             case 1: {

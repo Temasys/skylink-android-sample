@@ -356,39 +356,9 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Must be called to reset the context if the context is destroyed or
-     * updated.
-     *
-     * @param context The context
-     */
-    public void resetContext(Context context) {
-        this.applicationContext = context;
-    }
-
-    /**
-     * Call this method from within the onPause of the parent activity.
-     */
-    public void onPause() {
-        /*if (this.localVideoSource != null
-				&& this.localVideoSource.state() != MediaSource.State.ENDED) {
-			this.localVideoSource.stop();
-			videoSourceStopped = true;
-		}*/
-    }
-
-    /**
-     * Call this method from within the onResume of the parent activity.
-     */
-    public void onResume() {
-        if (this.localVideoSource != null && videoSourceStopped) {
-            this.localVideoSource.restart();
-        }
-    }
-
-    /**
      * Disconnects from the room.
      */
-    public void disconnect() {
+    public void disconnectFromRoom() {
         // Prevent thread from executing with WebServerClient methods concurrently.
         synchronized (lockDisconnectMsg) {
             synchronized (lockDisconnectMedia) {
@@ -398,10 +368,10 @@ public class SkyLinkConnection {
                         connectionState = ConnectionState.DISCONNECT;
 
   		/*if (this.webServerClient == null)
-  			return;*/
+              return;*/
                         if (this.webServerClient != null) this.webServerClient.disconnect();
 
-                        logMessage("Inside TEMAConnectionManager.disconnect");
+                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
 
                         // Dispose all DC.
                         String allPeers = null;
@@ -454,47 +424,15 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Sends a text message to a peer or to all peers. This functionality is
-     * deprecated and will be removed eventually. One is appreciated to use
-     * 'sendCustomMessage' instead.
-     *
-     * @param peerId  The id of the peer. Send 'null' if the message is intended to
-     *                broadcast to all of the connected peers in the room.
-     * @param message The message to be sent to the peer
-     */
-    @Deprecated
-    public void sendChatMessage(String peerId, String message) {
-        if (this.webServerClient == null)
-            return;
-        Log.d(TAG,
-                "TEMAConnectionManager.sendChatMessage::Sending chat::remotePeerId->"
-                        + peerId + ", message->" + message);
-        JSONObject dict = new JSONObject();
-        try {
-            dict.put("type", "chat");
-            dict.put("data", message);
-            if (peerId != null)
-                dict.put("target", peerId);
-            dict.put("nick", webServerClient.getDisplayName());
-            dict.put("mid", webServerClient.getSid());
-            dict.put("rid", webServerClient.getRoomId());
-            dict.put("cid", webServerClient.getCid());
-            webServerClient.sendMessage(dict);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-    }
-
-    /**
      * Sends a user defined message to a peer or to all peers via signalling
      * channel.
      *
-     * @param peerId  The id of the peer. Send 'null' if the message is intended to
-     *                broadcast to all of the connected peers in the room.
-     * @param message User defined data. May be a 'java.lang.String',
-     *                'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
+     *                     broadcast to all of the connected peers in the room.
+     * @param message      User defined data. May be a 'java.lang.String',
+     *                     'org.json.JSONObject' or 'org.json.JSONArray'.
      */
-    public void sendCustomMessage(String peerId, Object message) {
+    public void sendServerMessage(String remotePeerId, Object message) {
         if (this.webServerClient == null)
             return;
 
@@ -505,9 +443,9 @@ public class SkyLinkConnection {
             dict.put("mid", webServerClient.getSid());
             dict.put("nick", webServerClient.getDisplayName());
             dict.put("rid", webServerClient.getRoomId());
-            if (peerId != null) {
+            if (remotePeerId != null) {
                 dict.put("type", "private");
-                dict.put("target", peerId);
+                dict.put("target", remotePeerId);
             } else {
                 dict.put("type", "public");
             }
@@ -520,19 +458,19 @@ public class SkyLinkConnection {
     /**
      * Sends a user defined message to a peer or to all peers via data channel.
      *
-     * @param peerId  The id of the peer. Send 'null' if the message is intended to
-     *                broadcast to all of the connected peers in the room.
-     * @param message User defined data. May be a 'java.lang.String',
-     *                'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
+     *                     broadcast to all of the connected peers in the room.
+     * @param message      User defined data. May be a 'java.lang.String',
+     *                     'org.json.JSONObject' or 'org.json.JSONArray'.
      * @throws SkyLinkException if the system was unable to send the message.
      */
-    public void sendPeerMessage(String peerId, Object message)
+    public void sendP2PMessage(String remotePeerId, Object message)
             throws SkyLinkException {
         if (this.webServerClient == null)
             return;
 
         if (myConfig.hasPeerMessaging()) {
-            if (peerId == null) {
+            if (remotePeerId == null) {
                 Iterator<String> iPeerId = this.displayNameMap.keySet()
                         .iterator();
                 while (iPeerId.hasNext())
@@ -541,7 +479,7 @@ public class SkyLinkConnection {
                         throw new SkyLinkException(
                                 "Unable to send the message via data channel");
             } else {
-                if (!dataChannelManager.sendDcChat(true, message, peerId))
+                if (!dataChannelManager.sendDcChat(true, message, remotePeerId))
                     throw new SkyLinkException(
                             "Unable to send the message via data channel");
             }
@@ -563,15 +501,16 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Sends the user data related to oneself.
+     * Sends local user data related to oneself.
      *
      * @param userData User defined data relating to the peer. May be a
      *                 'java.lang.String', 'org.json.JSONObject' or
      *                 'org.json.JSONArray'.
      */
-    public void sendUserData(Object userData) {
-        if (this.webServerClient == null)
+    public void sendLocalUserData(Object userData) {
+        if (this.webServerClient == null) {
             return;
+        }
 
         this.myUserData = userData;
         JSONObject dict = new JSONObject();
@@ -587,13 +526,14 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Mutes the client audio and intimates all the peers in the room.
+     * Mutes the client audio and notifies all the peers in the room.
      *
      * @param isMuted Flag that specify whether to mute / unmute the audio
      */
-    public void muteAudio(boolean isMuted) {
-        if (this.webServerClient == null)
+    public void muteLocalAudio(boolean isMuted) {
+        if (this.webServerClient == null) {
             return;
+        }
 
         if (myConfig.hasAudio() && (localAudioTrack.enabled() == isMuted)) {
             localAudioTrack.setEnabled(!isMuted);
@@ -611,11 +551,11 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Mutes the client video and intimates all the peers in the room.
+     * Mutes the client video and notifies all the peers in the room.
      *
      * @param isMuted Flag that specify whether to mute / unmute the audio
      */
-    public void muteVideo(boolean isMuted) {
+    public void muteLocalVideo(boolean isMuted) {
         if (this.webServerClient == null)
             return;
 
@@ -637,17 +577,17 @@ public class SkyLinkConnection {
     /**
      * Sends file transfer request to a specified peer.
      *
-     * @param peerId   The id of the peer
-     * @param fileName The name of the file
-     * @param filePath The path of the file in the filesystem
+     * @param remotePeerId The id of the peer
+     * @param fileName     The name of the file
+     * @param filePath     The path of the file in the filesystem
      */
-    public void sendFileTransferRequest(String peerId, String fileName,
-                                        String filePath) {
+    public void sendFileTransferPermissionRequest(String remotePeerId, String fileName,
+                                                  String filePath) {
         if (this.webServerClient == null)
             return;
 
         if (myConfig.hasFileTransfer()) {
-            dataChannelManager.sendFileTransferRequest(peerId, fileName,
+            dataChannelManager.sendFileTransferRequest(remotePeerId, fileName,
                     filePath);
         } else {
             final String str = "Cannot do file transfer as it was not enabled in the configuration.\nUse "
@@ -670,17 +610,18 @@ public class SkyLinkConnection {
      * Call this method to accept or reject the file transfer request from a
      * peer.
      *
-     * @param peerId   The id of the peer
-     * @param accept   Flag to indicate whether the request is accepted or not
-     * @param filePath The path of the file
+     * @param remotePeerId The id of the peer
+     * @param filePath     The path of the file
+     * @param isPermitted  Accept or reject file transfer request
      */
-    public void acceptFileTransferRequest(String peerId, boolean accept,
-                                          String filePath) {
-        if (this.webServerClient == null)
+    public void sendFileTransferPermissionResponse(String remotePeerId,
+                                                   String filePath, boolean isPermitted) {
+        if (this.webServerClient == null) {
             return;
-
-        if (myConfig.hasFileTransfer())
-            dataChannelManager.acceptFileTransfer(peerId, accept, filePath);
+        }
+        if (myConfig.hasFileTransfer()) {
+            dataChannelManager.acceptFileTransfer(remotePeerId, isPermitted, filePath);
+        }
     }
 
     /**
@@ -790,8 +731,8 @@ public class SkyLinkConnection {
                 pc = this.peerConnectionFactory.createPeerConnection(
                         this.iceServerArray, this.pcConstraints, pcObserver);
             }
-			/*if (this.myConfig.hasAudio())
-				pc.addStream(this.localMediaStream, this.pcConstraints);*/
+            /*if (this.myConfig.hasAudio())
+                pc.addStream(this.localMediaStream, this.pcConstraints);*/
 
             this.peerConnectionPool.put(key, pc);
             this.pcObserverPool.put(key, pcObserver);
@@ -1005,7 +946,7 @@ public class SkyLinkConnection {
                                 connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
                             connectionManager.logMessage("[SDK] Local video source: Created.");
                             // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-                            mediaListener.onGetUserMedia(localVideoView, null);
+                            mediaListener.onLocalMediaCapture(localVideoView, null);
                             connectionManager.logMessage("[SDK] Local video source: Sent to App.");
                         }
                     }
@@ -1348,7 +1289,6 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                messagesListener.onChatMessage(mid, nick, text, target != null);
                             }
                         }
                     });
@@ -1374,7 +1314,7 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onPeerLeave(mid, "The peer has left the room");
+                                remotePeerListener.onRemotePeerLeave(mid, "The peer has left the room");
                             }
                         }
                     });
@@ -1464,7 +1404,7 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                messagesListener.onCustomMessage(mid, objData, value.compareTo("private") == 0);
+                                messagesListener.onServerMessageReceive(mid, objData, value.compareTo("private") == 0);
                             }
                         }
                     });
@@ -1481,7 +1421,7 @@ public class SkyLinkConnection {
                                 // If user has indicated intention to disconnect,
                                 // We should no longer process messages from signalling server.
                                 if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onUserData(mid, userData);
+                                remotePeerListener.onRemotePeerUserDataReceive(mid, userData);
                             }
                         }
                     });
@@ -1499,7 +1439,7 @@ public class SkyLinkConnection {
                                     // If user has indicated intention to disconnect,
                                     // We should no longer process messages from signalling server.
                                     if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onToggleAudio(mid, muted);
+                                    mediaListener.onRemotePeerAudioToggle(mid, muted);
                                 }
                             }
                         });
@@ -1519,7 +1459,7 @@ public class SkyLinkConnection {
                                     // If user has indicated intention to disconnect,
                                     // We should no longer process messages from signalling server.
                                     if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onToggleVideo(mid, muted);
+                                    mediaListener.onRemotePeerVideoToggle(mid, muted);
                                 }
                             }
                         });
@@ -1588,17 +1528,17 @@ public class SkyLinkConnection {
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
                         if (true/*SkyLinkConnection.this.surfaceOnHoldPool.get(surface) == null*/) {
-                            mediaListener.onVideoSize(surface, screenDimensions);
+                            mediaListener.onVideoSizeChange(surface, screenDimensions);
                         } else {
                             String peerId = SkyLinkConnection.this.surfaceOnHoldPool
                                     .get(surface);
                             SkyLinkConnection.this.surfaceOnHoldPool
                                     .remove(surface);
                             if (peerId.compareToIgnoreCase(MY_SELF) == 0) {
-                                mediaListener.onGetUserMedia(surface,
+                                mediaListener.onLocalMediaCapture(surface,
                                         screenDimensions);
                             } else {
-                                remotePeerListener.onGetPeerMedia(peerId, surface,
+                                mediaListener.onRemotePeerMediaReceive(peerId, surface,
                                         screenDimensions);
                             }
                         }
@@ -1753,7 +1693,8 @@ public class SkyLinkConnection {
                             final GLSurfaceView rVideoView = remoteVideoView;
                             // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
                             if (!connectionManager.isPeerIdMCU(myId))
-                                remotePeerListener.onGetPeerMedia(myId, rVideoView, null);
+                                mediaListener.onRemotePeerMediaReceive(myId, rVideoView,
+                                        null);
                         }
                     }
                 }
@@ -1886,7 +1827,7 @@ public class SkyLinkConnection {
                                 drainRemoteCandidates();
                                 if (!connectionManager.isPeerIdMCU(myId)) {
                                     String tid = SDPObserver.this.myId;
-                                    remotePeerListener.onPeerJoin(tid, connectionManager.displayNameMap.get(tid));
+                                    remotePeerListener.onRemotePeerJoin(tid, connectionManager.displayNameMap.get(tid));
                                 }
                             }
                         }

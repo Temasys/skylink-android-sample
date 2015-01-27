@@ -127,7 +127,7 @@ public class FilePermissionAlertFragment extends DialogFragment {
     // Decline file share request and do not proceed file explorer UI.
     private void declineFileShare() {
         RoomManager.get().getConnection()
-                .acceptFileTransferRequest(mPeerId, false, mFileName);
+                .sendFileTransferPermissionResponse(mPeerId, mFileName, false);
         RoomManager.get().setFileAlertFragment(null);
         RoomManager.get().setFileUIActive(false);
 
