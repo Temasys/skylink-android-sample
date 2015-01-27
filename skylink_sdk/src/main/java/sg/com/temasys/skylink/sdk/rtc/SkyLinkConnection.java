@@ -639,7 +639,7 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Call this method to accept the file transfer request from a
+     * Call this method to accept or reject the file transfer request from a
      * peer.
      *
      * @param remotePeerId The id of the peer
