@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
@@ -28,6 +29,7 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -35,36 +37,63 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
     private static final String TAG = ChatFragment.class.getCanonicalName();
     String peerId;
-    String myName = "usernamechat";
-    Button btnSendMessage;
+    final String myName = "usernamechat";
+    final String roomName = "room";
+    Button btnSendServerMessage;
     ListView listViewChats;
+    TextView tvRoomDetails;
     private SkyLinkConnection skyLinkConnection;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> chatMessageCollection;
+    private String peerName;
+    private Button btnSendP2PMessage;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
         listViewChats = (ListView) rootView.findViewById(R.id.lv_messages);
-        btnSendMessage = (Button) rootView.findViewById(R.id.btn_send_chat);
+        btnSendServerMessage = (Button) rootView.findViewById(R.id.btn_send_server_message);
+        btnSendP2PMessage = (Button) rootView.findViewById(R.id.btn_send_private_chat);
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
         chatMessageCollection = new ArrayList();
 
         /** Defining the ArrayAdapter to set items to ListView */
         adapter = new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_list_item_1, chatMessageCollection);
 
-        /** Defining a click event listener for the button "Add" */
-        btnSendMessage.setOnClickListener(new View.OnClickListener() {
+        /** Defining a click event listener for the button "Send Message" */
+        btnSendServerMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
-
                 String message = edit.getText().toString();
-                chatMessageCollection.add(message);
+                chatMessageCollection.add("You : " + message);
+                edit.setText("");
+                skyLinkConnection.sendCustomMessage(peerId, message);
 
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        /** Defining a click event listener for the button "Send Private Message" */
+        btnSendP2PMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(peerId==null){
+                    Toast.makeText(getActivity(),"There is no peer in the room to send a private message to",Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
+                String message = edit.getText().toString();
+                chatMessageCollection.add("You : " + message);
                 edit.setText("");
 
-                skyLinkConnection.sendCustomMessage(peerId, message);
+                try {
+                    skyLinkConnection.sendPeerMessage(peerId, message);
+                } catch (SkyLinkException e) {
+                    e.printStackTrace();
+                }
 
                 adapter.notifyDataSetChanged();
             }
@@ -88,7 +117,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         skyLinkConnection.setRemotePeerListener(this);
 
         try {
-            skyLinkConnection.connectToRoom("room", myName, new Date(), 20000);
+            skyLinkConnection.connectToRoom(roomName, myName, new Date(), 20000);
         } catch (SignatureException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -109,6 +138,17 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         return config;
     }
 
+    private void setRoomDetails(boolean isPeerInRoom){
+        String roomDetails = "Room Name : " + roomName + "\nYou are signed in as : " + myName + "\n";
+        if(isPeerInRoom)
+            roomDetails += "Peer Name : " + this.peerName;
+        else
+            roomDetails += "You are alone in this room";
+
+        tvRoomDetails.setText(roomDetails);
+
+    }
+
     /***
      * Lifecycle Listener
      */
@@ -120,33 +160,27 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     @Override
     public void onConnect(boolean isSuccess, String message) {
-        // TODO Auto-generated method stub
-        if (isSuccess)
-            Log.d(TAG, "Skylink Connected");
-        else
+        if (isSuccess){
+            setRoomDetails(false);
+        }
+        else {
             Log.d(TAG, "Skylink Failed");
+        }
     }
 
     @Override
     public void onWarning(String message) {
-        // TODO Auto-generated method stub
         Log.d(TAG, message + "warning");
-
     }
 
     @Override
     public void onDisconnect(String message) {
-        // TODO Auto-generated method stub
-
         Log.d(TAG, message + " disconnected");
     }
 
     @Override
     public void onReceiveLog(String message) {
-        // TODO Auto-generated method stub
         Log.d(TAG, message + " on receive log");
-
-
     }
 
     /**
@@ -155,53 +189,61 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     @Override
     public void onPeerJoin(String peerId, Object userData) {
+        if(this.peerId!=null) { //means there is an existing peer
+            Toast.makeText(getActivity(), "Rejected third peer from joining conversation",Toast.LENGTH_SHORT).show();
+            return;
+        }
         this.peerId = peerId;
+        if(userData instanceof String) {
+            this.peerName = (String) userData;
+            setRoomDetails(true);
+        }
 
     }
 
     @Override
     public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
                                Point size) {
-//        Toast.makeText(getActivity(), "Getting media", Toast.LENGTH_SHORT).show();
-
     }
 
     @Override
     public void onUserData(String peerId, Object userData) {
-        // TODO Auto-generated method stub
         Toast.makeText(getActivity(), "Getting user data", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onPeerLeave(String peerId, String message) {
-        // TODO Auto-generated method stub
-
+        Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        this.peerId = null;
+        this.peerName = null;
+        setRoomDetails(false);
     }
 
     @Override
     public void onOpenDataConnection(String peerId) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        skyLinkConnection.disconnect();
     }
 
     @Override
     public void onCustomMessage(String peerId, Object message, boolean isPrivate) {
-        Toast.makeText(getActivity(), "Got Message--custom", Toast.LENGTH_SHORT).show();
-        chatMessageCollection.add("message received");
-        adapter.notifyDataSetChanged();
+        String chatPrefix = "";
+        if(isPrivate)
+            chatPrefix = "<Private> ";
+
+        if(message instanceof  String) {
+            chatMessageCollection.add(this.peerName + " : " + chatPrefix+message);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override
     public void onPeerMessage(String peerId, Object message, boolean isPrivate) {
-        Toast.makeText(getActivity(), "Got Message--peer", Toast.LENGTH_SHORT).show();
-        chatMessageCollection.add("message received");
-        adapter.notifyDataSetChanged();
+        String chatPrefix = "";
+        if(isPrivate)
+            chatPrefix = "<Private> ";
+        if(message instanceof  String) {
+            chatMessageCollection.add(this.peerName + " : " + chatPrefix+message);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -215,4 +257,21 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
 
+    @Override
+    public void onDetach() {
+        if (skyLinkConnection != null) {
+            skyLinkConnection.disconnect();
+            skyLinkConnection = null;
+        }
+        super.onDetach();
+    }
+
+    @Override
+    public void onDestroy(){
+        if (skyLinkConnection != null) {
+            skyLinkConnection.disconnect();
+            skyLinkConnection = null;
+        }
+        super.onDestroy();
+    }
 }

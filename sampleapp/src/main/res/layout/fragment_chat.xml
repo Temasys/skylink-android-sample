@@ -4,32 +4,56 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/tv_room_details"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"/>
+
+
     <ListView
         android:id="@+id/lv_messages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/chatMessage"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/tv_room_details"
+        android:layout_above="@+id/chatMessage">
     </ListView>
+
 
     <EditText
         android:id="@+id/chatMessage"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
         android:hint="Enter a Message"
-        />
+        android:layout_above="@+id/btn_send_private_chat"
+        android:layout_alignParentStart="true"/>
+
+
 
     <Button
-        android:id="@+id/btn_send_chat"
+        android:id="@+id/btn_send_private_chat"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:text="Send P2P Message"
+        android:layout_alignTop="@+id/btn_send_server_message"
+        android:layout_toStartOf="@+id/btn_send_server_message"
+        android:layout_alignParentBottom="true"/>
+    <Button
+        android:id="@+id/btn_send_server_message"
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:text="New Button"
+        android:text="Send Server Message"
         />
+
 
 
 </RelativeLayout>
