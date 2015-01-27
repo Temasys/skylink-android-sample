@@ -1,7 +1,5 @@
 package com.temasys.skylink.sampleapp.activities;
 
-import android.graphics.Point;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -69,7 +67,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 String message = edit.getText().toString();
                 chatMessageCollection.add("You : " + message);
                 edit.setText("");
-                skyLinkConnection.sendCustomMessage(peerId, message);
+                skyLinkConnection.sendServerMessage(peerId, message);
 
                 adapter.notifyDataSetChanged();
             }
@@ -79,8 +77,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         btnSendP2PMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(peerId==null){
-                    Toast.makeText(getActivity(),"There is no peer in the room to send a private message to",Toast.LENGTH_SHORT).show();
+                if (peerId == null) {
+                    Toast.makeText(getActivity(), "There is no peer in the room to send a private message to", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -90,7 +88,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 edit.setText("");
 
                 try {
-                    skyLinkConnection.sendPeerMessage(peerId, message);
+                    skyLinkConnection.sendP2PMessage(peerId, message);
                 } catch (SkyLinkException e) {
                     e.printStackTrace();
                 }
@@ -138,9 +136,9 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         return config;
     }
 
-    private void setRoomDetails(boolean isPeerInRoom){
+    private void setRoomDetails(boolean isPeerInRoom) {
         String roomDetails = "Room Name : " + roomName + "\nYou are signed in as : " + myName + "\n";
-        if(isPeerInRoom)
+        if (isPeerInRoom)
             roomDetails += "Peer Name : " + this.peerName;
         else
             roomDetails += "You are alone in this room";
@@ -160,10 +158,9 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     @Override
     public void onConnect(boolean isSuccess, String message) {
-        if (isSuccess){
+        if (isSuccess) {
             setRoomDetails(false);
-        }
-        else {
+        } else {
             Log.d(TAG, "Skylink Failed");
         }
     }
@@ -188,31 +185,25 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
      */
 
     @Override
-    public void onPeerJoin(String peerId, Object userData) {
-        if(this.peerId!=null) { //means there is an existing peer
-            Toast.makeText(getActivity(), "Rejected third peer from joining conversation",Toast.LENGTH_SHORT).show();
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+        if (this.peerId != null) { //means there is an existing peer
+            Toast.makeText(getActivity(), "Rejected third peer from joining conversation", Toast.LENGTH_SHORT).show();
             return;
         }
-        this.peerId = peerId;
-        if(userData instanceof String) {
+        this.peerId = remotePeerId;
+        if (userData instanceof String) {
             this.peerName = (String) userData;
             setRoomDetails(true);
         }
-
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
-    }
-
-    @Override
-    public void onUserData(String peerId, Object userData) {
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
         Toast.makeText(getActivity(), "Getting user data", Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onPeerLeave(String peerId, String message) {
+    public void onRemotePeerLeave(String remotePeerId, String message) {
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
         this.peerId = null;
         this.peerName = null;
@@ -224,52 +215,41 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     @Override
-    public void onCustomMessage(String peerId, Object message, boolean isPrivate) {
+    public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
         String chatPrefix = "";
-        if(isPrivate)
+        if (isPrivate)
             chatPrefix = "<Private> ";
 
-        if(message instanceof  String) {
-            chatMessageCollection.add(this.peerName + " : " + chatPrefix+message);
+        if (message instanceof String) {
+            chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
             adapter.notifyDataSetChanged();
         }
     }
 
     @Override
-    public void onPeerMessage(String peerId, Object message, boolean isPrivate) {
+    public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
         String chatPrefix = "";
-        if(isPrivate)
+        if (isPrivate)
             chatPrefix = "<Private> ";
-        if(message instanceof  String) {
-            chatMessageCollection.add(this.peerName + " : " + chatPrefix+message);
+        if (message instanceof String) {
+            chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
             adapter.notifyDataSetChanged();
         }
     }
-
-    @Override
-    @Deprecated
-    public void onChatMessage(String peerId, String nick, String message,
-                              boolean isPrivate) {
-        Toast.makeText(getActivity(), "Got Message--onchat", Toast.LENGTH_SHORT).show();
-        chatMessageCollection.add("message received");
-        chatMessageCollection.add(message);
-        adapter.notifyDataSetChanged();
-    }
-
 
     @Override
     public void onDetach() {
         if (skyLinkConnection != null) {
-            skyLinkConnection.disconnect();
+            skyLinkConnection.disconnectFromRoom();
             skyLinkConnection = null;
         }
         super.onDetach();
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         if (skyLinkConnection != null) {
-            skyLinkConnection.disconnect();
+            skyLinkConnection.disconnectFromRoom();
             skyLinkConnection = null;
         }
         super.onDestroy();

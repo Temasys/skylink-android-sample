@@ -127,7 +127,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
         // TODO Auto-generated method stub
         //show media on screen
         videoView.setTag("self");
@@ -138,24 +138,17 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onWarning(String message) {
-        // TODO Auto-generated method stub
         Log.d(TAG, message + "warning");
-
     }
 
     @Override
     public void onDisconnect(String message) {
-        // TODO Auto-generated method stub
-
         Log.d(TAG, message + " disconnected");
     }
 
     @Override
     public void onReceiveLog(String message) {
-        // TODO Auto-generated method stub
         Log.d(TAG, message + " on receive log");
-
-
     }
 
     /**
@@ -163,24 +156,18 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
      */
 
     @Override
-    public void onVideoSize(GLSurfaceView videoView, Point size) {
-        // TODO Auto-generated method stub
+    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
         Log.d(TAG, videoView + " got size");
-
-
     }
 
     @Override
-    public void onToggleAudio(String peerId, boolean isMuted) {
-        // TODO Auto-generated method stub
-
-
+    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
+        Log.d(TAG, "onRemotePeerAudioToggle");
     }
 
     @Override
-    public void onToggleVideo(String peerId, boolean isMuted) {
-        // TODO Auto-generated method stub
-
+    public void onRemotePeerVideoToggle(String peerId, boolean isMuted) {
+        Log.d(TAG, "onRemotePeerVideoToggle");
     }
 
     /**
@@ -188,18 +175,16 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
      */
 
     @Override
-    public void onPeerJoin(String peerId, Object userData) {
-        // TODO Auto-generated method stub
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
-
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
 
         if (parentFragment.findViewWithTag("peer") != null) {
-            Toast.makeText(getActivity(), " You are already in connection with two peers", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), " You are already in connection with two peers",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -213,13 +198,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onUserData(String peerId, Object userData) {
-        // TODO Auto-generated method stub
-
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
     }
 
     @Override
-    public void onPeerLeave(String peerId, String message) {
+    public void onRemotePeerLeave(String remotePeerId, String message) {
         Toast.makeText(getActivity(), "Peer go bye bye", Toast.LENGTH_SHORT).show();
 
         View peer = parentFragment.findViewWithTag("video");
@@ -238,7 +222,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDetach() {
         super.onDetach();
-        skyLinkConnection.disconnect();
+        skyLinkConnection.disconnectFromRoom();
     }
 
 }

@@ -76,63 +76,50 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onConnect(boolean isSuccess, String message) {
         // TODO Auto-generated method stub
-        if (isSuccess)
+        if (isSuccess) {
             Log.d(TAG, "Skylink Connected");
-        else
+        } else {
             Log.d(TAG, "Skylink Failed");
-    }
-
-    @Override
-    public void onGetUserMedia(GLSurfaceView videoView, Point size) {
-        //show media on screen
-        Log.d(TAG, videoView + "received view");
-
+        }
     }
 
     @Override
     public void onWarning(String message) {
-        // TODO Auto-generated method stub
         Log.d(TAG, message + "warning");
-
     }
 
     @Override
     public void onDisconnect(String message) {
-        // TODO Auto-generated method stub
-
         Log.d(TAG, message + " disconnected");
     }
 
     @Override
     public void onReceiveLog(String message) {
-        // TODO Auto-generated method stub
-        Log.d(TAG, message + " on receive log");
-
-
-    }
-
-    /**
-     * Media Listeners
-     */
-
-    @Override
-    public void onVideoSize(GLSurfaceView videoView, Point size) {
-        // TODO Auto-generated method stub
-        Log.d(TAG, videoView + " got size");
+        Log.d(TAG, message + "onReceiveLog");
     }
 
     @Override
-    public void onToggleAudio(String peerId, boolean isMuted) {
-        // TODO Auto-generated method stub
-
-
+    public void onLocalMediaCapture(GLSurfaceView glSurfaceView, Point point) {
+        Log.d(TAG, "onLocalMediaCapture");
     }
 
     @Override
-    public void onToggleVideo(String peerId, boolean isMuted) {
-        // TODO Auto-generated method stub
-
+    public void onVideoSizeChange(GLSurfaceView glSurfaceView, Point point) {
+        Log.d(TAG, point.toString() + "got size");
     }
 
+    @Override
+    public void onRemotePeerAudioToggle(String s, boolean b) {
+        Log.d(TAG, "onRemotePeerAudioToggle");
+    }
 
+    @Override
+    public void onRemotePeerVideoToggle(String s, boolean b) {
+        Log.d(TAG, "onRemotePeerVideoToggle");
+    }
+
+    @Override
+    public void onRemotePeerMediaReceive(String s, GLSurfaceView glSurfaceView, Point point) {
+        Log.d(TAG, "onRemotePeerVideoToggle");
+    }
 }
