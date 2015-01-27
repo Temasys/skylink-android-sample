@@ -110,16 +110,16 @@ public class MainActivity extends ActionBarActivity
         Fragment fragmentToLaunch = null;
         switch (position) {
             case 0:
-                fragmentToLaunch = new PlaceholderFragment();
+                fragmentToLaunch = new AudioCallFragment();
                 break;
             case 1:
-                fragmentToLaunch = new PlaceholderFragment();
+                fragmentToLaunch = new VideoCallFragment();
                 break;
             case 2:
-                fragmentToLaunch = new PlaceholderFragment();
+                fragmentToLaunch = new ChatFragment();
                 break;
             case 3:
-                fragmentToLaunch = new PlaceholderFragment();
+                fragmentToLaunch = new FileTransferFragment();
                 break;
         }
 
