@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.sample;
 
 import android.content.Intent;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,11 +37,7 @@ public class ControlPanelFragment extends RoomFragment {
 
         ViewGroup parent = (ViewGroup) rootView.findViewById(R.id.self_video);
         RoomManager.VideoInfo videoInfo = RoomManager.get().getSelfVideo();
-        View child;
-        if (videoInfo != null)
-            child = videoInfo.getVideoView();
-        else
-            child = new GLSurfaceView(getActivity().getApplicationContext());
+        View child = RoomManager.get().getSelfVideo().getVideoView();
         addVideoView(parent, child, null);
 
         ImageButton audioButton = (ImageButton) rootView

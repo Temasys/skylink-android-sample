@@ -17,30 +17,47 @@ public abstract class RoomFragment extends Fragment {
 
     protected void addVideoView(ViewGroup parent, final View child,
                                 final String peerId) {
-
-        ViewGroup existingParent = (ViewGroup) child.getParent();
-        if (existingParent != null)
-            existingParent.removeView(child);
-        parent.addView(child);
-
-        ViewTreeObserver vto = child.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public void onGlobalLayout() {
-                child.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                Utility.layoutSubviews((GLSurfaceView) child, null);
+        TextView noVideotxtVw;
+        String noVideoStr;
+        final View viewToAdd;
+        if (child == null) {
+            noVideotxtVw = new TextView(parent.getContext());
+            if (peerId == null) noVideoStr = "Self video";
+            else {
+                noVideoStr = "Video of Peer " + RoomManager.get().getDisplayName(peerId) + " (" +
+                        peerId + ")";
             }
-        });
+            noVideoStr += " is not available.";
+            noVideotxtVw.setText(noVideoStr);
+            viewToAdd = noVideotxtVw;
+            parent.addView(noVideotxtVw);
+        } else {
+            viewToAdd = child;
+            ViewGroup existingParent = (ViewGroup) child.getParent();
+            if (existingParent != null)
+                existingParent.removeView(child);
+            parent.addView(child);
+            ViewTreeObserver vto = child.getViewTreeObserver();
+            vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+                @SuppressWarnings("deprecation")
+                @Override
+                public void onGlobalLayout() {
+                    child.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    Utility.layoutSubviews((GLSurfaceView) child, null);
+                }
+            });
+        }
 
-        if (peerId != null)
-            child.setOnClickListener(new OnClickListener() {
+
+        if (peerId != null) {
+            viewToAdd.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     OptionAlertFragment.newInstance(peerId).show(
                             RoomFragment.this.getFragmentManager(), TAG);
                 }
             });
+        }
     }
 
     protected void setChatNotif(ViewGroup viewGroup, VideoInfo videoInfo,

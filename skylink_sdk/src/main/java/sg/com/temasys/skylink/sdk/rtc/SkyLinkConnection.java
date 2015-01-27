@@ -398,7 +398,7 @@ public class SkyLinkConnection {
                         connectionState = ConnectionState.DISCONNECT;
 
   		/*if (this.webServerClient == null)
-  			return;*/
+              return;*/
                         if (this.webServerClient != null) this.webServerClient.disconnect();
 
                         logMessage("Inside TEMAConnectionManager.disconnect");
@@ -982,8 +982,6 @@ public class SkyLinkConnection {
                             lms.addTrack(localVideoTrack);
                             connectionManager.localVideoTrack = localVideoTrack;
                         }
-                    } else {
-//                      lms.addTrack( connectionManager.localVideoTrack );
                     }
                 }
 
@@ -1003,14 +1001,14 @@ public class SkyLinkConnection {
                                         0, 100, 100);
                                 localVideoTrack.addRenderer(new VideoRenderer(
                                         localRender));
-
-                                if (connectionManager.surfaceOnHoldPool == null)
-                                    connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
-                                connectionManager.logMessage("[SDK] Local video source: Created.");
-                                // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-                                mediaListener.onGetUserMedia(localVideoView, null);
-                                connectionManager.logMessage("[SDK] Local video source: Sent to App.");
                             }
+
+                            if (connectionManager.surfaceOnHoldPool == null)
+                                connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
+                            connectionManager.logMessage("[SDK] Local video source: Created.");
+                            // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
+                            mediaListener.onGetUserMedia(localVideoView, null);
+                            connectionManager.logMessage("[SDK] Local video source: Sent to App.");
                         }
                     }
                 });
@@ -1744,12 +1742,12 @@ public class SkyLinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        if (myConfig.hasVideoReceive()) {
+                        if (myConfig.hasVideoReceive() || myConfig.hasAudioReceive()) {
                             abortUnless(stream.audioTracks.size() <= 1
                                             && stream.videoTracks.size() <= 1,
                                     "Weird-looking stream: " + stream);
                             GLSurfaceView remoteVideoView = null;
-                            if (stream.videoTracks.size() == 1) {
+                            if (stream.videoTracks.size() >= 1) {
                                 remoteVideoView = new GLSurfaceView(applicationContext);
                                 VideoRendererGui gui = new VideoRendererGui(
                                         remoteVideoView);
@@ -1763,7 +1761,17 @@ public class SkyLinkConnection {
                                 // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
                                 if (!connectionManager.isPeerIdMCU(myId))
                                     remotePeerListener.onGetPeerMedia(myId, rVideoView, null);
+                            } else {
+                                // If this is an audio only stream, audio will be added automatically.
+                                // Still, send a null videoView to alert user stream is received. 
+                                if (!connectionManager.isPeerIdMCU(myId))
+                                    remotePeerListener.onGetPeerMedia(myId, null, null);
                             }
+                        } else {
+                            // If this is a no audio no video stream,
+                            // still send a null videoView to alert user stream is received.
+                            if (!connectionManager.isPeerIdMCU(myId))
+                                remotePeerListener.onGetPeerMedia(myId, null, null);
                         }
                     }
                 }
