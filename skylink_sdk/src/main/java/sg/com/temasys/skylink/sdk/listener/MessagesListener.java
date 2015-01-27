@@ -28,8 +28,7 @@ public interface MessagesListener {
      * @param remotePeerId The id of the peer
      * @param message      User defined message. May be a 'java.lang.String',
      *                     'org.json.JSONObject' or 'org.json.JSONArray'.
-     * @param isPrivate    Flag to specify whether the message was broadcast to all
-     *                     the peers
+     * @param isPrivate    Flag to specify whether the message is received only by the receiver
      */
     public void onP2PMessageReceive(String remotePeerId, Object message,
                                     boolean isPrivate);
