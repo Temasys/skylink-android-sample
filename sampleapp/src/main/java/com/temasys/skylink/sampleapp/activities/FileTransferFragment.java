@@ -1,9 +1,7 @@
 package com.temasys.skylink.sampleapp.activities;
 
-import android.graphics.Point;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -93,7 +91,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
                     return;
                 }
 
-                skyLinkConnection.sendFileTransferRequest(peerId, fileName, getFileToTransfer().getAbsolutePath());
+                skyLinkConnection.sendFileTransferPermissionRequest(peerId, fileName, getFileToTransfer().getAbsolutePath());
             }
         });
 
@@ -115,7 +113,15 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        skyLinkConnection.disconnectFromRoom();
+        skyLinkConnection.setLifeCycleListener(this);
+        skyLinkConnection.setFileTransferListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
     }
 
 
@@ -142,8 +148,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
     private SkyLinkConfig getSkylinkConfig() {
         SkyLinkConfig config = new SkyLinkConfig();
-        config.setHasAudio(true);
-        config.setHasVideo(true);
+        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(60);
@@ -172,7 +177,6 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     @Override
     public void onWarning(String message) {
         Log.d(TAG, message + "warning");
-
     }
 
     @Override
@@ -190,13 +194,14 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      */
 
     @Override
-    public void onRequest(String peerId, String fileName, boolean isPrivate) {
+    public void onFileTransferPermissionRequest(String peerId, String fileName, boolean isPrivate) {
         Toast.makeText(getActivity(), "Received a file request", Toast.LENGTH_LONG).show();
-        skyLinkConnection.acceptFileTransferRequest(peerId, true, getDownloadedFilePath());
+        String path = Environment.DIRECTORY_DOCUMENTS;
+        skyLinkConnection.sendFileTransferPermissionResponse(peerId, path, true);
     }
 
     @Override
-    public void onPermission(String peerId, String fileName, boolean isPermitted) {
+    public void onFileTransferPermissionResponse(String peerId, String fileName, boolean isPermitted) {
         if (isPermitted) {
             Toast.makeText(getActivity(), "Sending file", Toast.LENGTH_SHORT).show();
         } else {
@@ -204,41 +209,31 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         }
     }
 
-    @Override
-    public void onDrop(String peerId, String fileName, String message,
-                       boolean isExplicit) {
+    public void onFileTransferDrop(String remotePeerId, String fileName, String message,
+                                   boolean isExplicit) {
         Toast.makeText(getActivity(), "The file transfer was dropped.\nReason : " + message , Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onComplete(String peerId, String fileName, boolean isSending) {
-        String message;
-        if(isSending)
-            message = "Your file has been sent";
-        else {
-            message = "A file has been received";
-            tvFileTransferDetails.setText("File Transfer Successful\n\nDestination : " +getDownloadedFilePath());
-        }
+    public void onFileSendComplete(String remotePeerId, String fileName) {
+        Toast.makeText(getActivity(), "Your file has been sent" , Toast.LENGTH_SHORT).show();
 
-        Toast.makeText(getActivity(), message , Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onProgress(String peerId, String fileName, double percentage,
-                           boolean isSending) {
-        String message = null;
-        if(isSending) {
-            message = "uploading file...";
-        }
-        else{
-            message = "downloading file..";
-        }
-        if(progressToast!=null)
-            progressToast.cancel();
-        progressToast = Toast.makeText(getActivity(),
-                message,
-                Toast.LENGTH_SHORT);
-        progressToast.show();
+    public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
+        Toast.makeText(getActivity(), "Uploading... " + percentage, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onFileReceiveComplete(String remotePeerId, String fileName) {
+        Toast.makeText(getActivity(), "A file has been received : " + fileName, Toast.LENGTH_SHORT).show();
+        tvFileTransferDetails.setText("File Transfer Successful\n\nDestination : " +getDownloadedFilePath());
+    }
+
+    @Override
+    public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
+        Toast.makeText(getActivity(), "Downloading... " + percentage, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -246,12 +241,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      * Remote Peer Callbacks
      */
 
-    @Override
-    public void onPeerJoin(String peerId, Object userData) {
+    public void onRemotePeerJoin(String peerId, Object userData) {
         if(this.peerId!=null) { //means there is an existing peer
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation",Toast.LENGTH_SHORT).show();
             return;
         }
+        Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
         this.peerId = peerId;
         if(userData instanceof String) {
             this.peerName = (String) userData;
@@ -260,32 +255,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     }
 
     @Override
-    public void onGetPeerMedia(String peerId, GLSurfaceView videoView,
-                               Point size) {
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
     }
 
     @Override
-    public void onUserData(String peerId, Object userData) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void onPeerLeave(String peerId, String message) {
-        Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
-        this.peerId = null;
-        this.peerName = null;
-        setRoomDetails(false);
-    }
-
-    @Override
-    public void onOpenDataConnection(String peerId) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        skyLinkConnection.disconnect();
+    public void onOpenDataConnection(String s) {
     }
 
     File getFileToTransfer(){
@@ -294,6 +269,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         return file;
     }
 
+
+    public void onRemotePeerLeave(String peerId, String message) {
+        Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        this.peerId = null;
+        this.peerName = null;
+        setRoomDetails(false);    }
 
     void createExternalStoragePrivatePicture() {
         // Create a path where we will place our picture in our own private
