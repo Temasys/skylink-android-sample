@@ -36,11 +36,12 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
  */
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
-    final String userName = "userVideo";
-    LinearLayout parentFragment;
-    Button btnEnterRoom;
-    EditText etRoomName;
-    SkyLinkConnection skyLinkConnection;
+    public static final int WIDTH = 350;
+    public static final int HEIGHT = 350;
+    private LinearLayout parentFragment;
+    private Button btnEnterRoom;
+    private EditText etRoomName;
+    private SkyLinkConnection skyLinkConnection;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -67,16 +68,15 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 }
 
                 try {
-                    skyLinkConnection.connectToRoom(roomName, userName, new Date(), 200);
+                    skyLinkConnection.connectToRoom(Constants.ROOM_NAME,
+                            Constants.MY_USER_NAME, new Date(), Constants.DURATION);
                 } catch (SignatureException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                 }
-
-
             }
         });
 
@@ -103,7 +103,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(60);
+        config.setTimeout(Constants.TIME_OUT);
         return config;
     }
 
@@ -130,13 +130,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         if (isSuccess) {
             etRoomName.setEnabled(false);
             Toast.makeText(getActivity(), "Connected to room", Toast.LENGTH_SHORT).show();
-        } else
+        } else {
             Log.d(TAG, "Skylink Failed");
+        }
     }
 
     @Override
     public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
-        // TODO Auto-generated method stub
         if (videoView != null) {
             //show media on screen
             videoView.setTag("self");
@@ -203,7 +203,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
         View self = parentFragment.findViewWithTag("self");
         parentFragment.removeView(self);
-        self.setLayoutParams(new ViewGroup.LayoutParams(350, 350));
+        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
         parentFragment.addView(self);
 
         videoView.setTag("peer");
@@ -220,13 +220,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         Toast.makeText(getActivity(), "Peer go bye bye", Toast.LENGTH_SHORT).show();
 
         View peer = parentFragment.findViewWithTag("video");
-        if (peer != null)
+        if (peer != null) {
             parentFragment.removeView(peer);
-        //TODO: resize self
-
+        }
     }
 
     @Override
     public void onOpenDataConnection(String peerId) {
+        Log.d(TAG, "onOpenDataConnection");
     }
 }

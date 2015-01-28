@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,60 +37,55 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
  * Created by lavanyasudharsanam on 20/1/15.
  */
 public class FileTransferFragment extends Fragment implements LifeCycleListener, FileTransferListener, RemotePeerListener {
-    private static final String TAG = FileTransferFragment.class.getCanonicalName();
-    final String myName = "userFileTransfer";
-    LinearLayout parentFragment;
-    TextView tvRoomDetails;
-    EditText etSenderFilePath;
-    TextView tvFileTransferDetails;
-    ImageView ivFilePreview;
-    SkyLinkConnection skyLinkConnection;
-    String peerId;
-    Button sendFile;
-    String fileName = "demofile.png";
-    private String peerName;
-    private final String roomName = "room";
-    Toast progressToast = null;
-    private Button btnLoadImage;
 
+    private static final String TAG = FileTransferFragment.class.getCanonicalName();
+    public static final String EXTERNAL_STORAGE = "ExternalStorage";
+    private TextView tvRoomDetails;
+    private EditText etSenderFilePath;
+    private TextView tvFileTransferDetails;
+    private ImageView ivFilePreview;
+    private SkyLinkConnection skyLinkConnection;
+    private String peerId;
+    private Button sendFile;
+    private String fileName = "demofile.png";
+    private String peerName;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_file_transfer, container, false);
-        parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_file_transfer);
         sendFile = (Button) rootView.findViewById(R.id.button2);
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
-        etSenderFilePath = (EditText)rootView.findViewById(R.id.et_file_path);
+        etSenderFilePath = (EditText) rootView.findViewById(R.id.et_file_path);
         ivFilePreview = (ImageView) rootView.findViewById(R.id.iv_file_preview);
         tvFileTransferDetails = (TextView) rootView.findViewById(R.id.tv_file_transfer_details);
 
         createExternalStoragePrivatePicture();
 
-        String filePath =  getFileToTransfer().getAbsolutePath();
+        String filePath = getFileToTransfer().getAbsolutePath();
         ivFilePreview.setImageURI(Uri.parse(filePath));
         etSenderFilePath.setText(filePath);
 
         sendFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(peerId==null){
-                    Toast.makeText(getActivity(),"There is no peer in the room to send a file to",Toast.LENGTH_SHORT).show();
+                if (peerId == null) {
+                    Toast.makeText(getActivity(), "There is no peer in the room to send a file to",
+                            Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 String fName = etSenderFilePath.getText().toString();
                 File file = new File(fName);
-                if(file.exists()) {
+                if (file.exists()) {
                     ivFilePreview.setImageURI(Uri.parse(fName));
                     fileName = file.getName();
-                }
-                else {
-                    Toast.makeText(getActivity(), "Please enter a valid filename",Toast.LENGTH_SHORT ).show();
+                } else {
+                    Toast.makeText(getActivity(), "Please enter a valid filename", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                skyLinkConnection.sendFileTransferPermissionRequest(peerId, fileName, getFileToTransfer().getAbsolutePath());
+                skyLinkConnection.sendFileTransferPermissionRequest(peerId, fileName,
+                        getFileToTransfer().getAbsolutePath());
             }
         });
 
@@ -105,13 +99,14 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         initializeSkylinkConnection();
 
         try {
-            skyLinkConnection.connectToRoom(roomName, myName, new Date(), 200);
+            skyLinkConnection.connectToRoom(Constants.ROOM_NAME, Constants
+                    .MY_USER_NAME, new Date(), Constants.DURATION);
         } catch (SignatureException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
         }
     }
 
@@ -134,24 +129,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         skyLinkConnection.setFileTransferListener(this);
     }
 
-    private void setRoomDetails(boolean isPeerInRoom){
-
-        String roomDetails = "Room Name : " + roomName + "\nYou are signed in as : " + myName + "\n";
-        if(isPeerInRoom)
-            roomDetails += "Peer Name : " + this.peerName;
-        else
-            roomDetails += "You are alone in this room";
-
-        tvRoomDetails.setText(roomDetails);
-
-    }
-
     private SkyLinkConfig getSkylinkConfig() {
         SkyLinkConfig config = new SkyLinkConfig();
         config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(60);
+        config.setTimeout(Constants.TIME_OUT);
         return config;
     }
 
@@ -166,10 +149,9 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
     @Override
     public void onConnect(boolean isSuccess, String message) {
-        if (isSuccess){
-            setRoomDetails(false);
-        }
-        else {
+        if (isSuccess) {
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName);
+        } else {
             Log.d(TAG, "Skylink Failed");
         }
     }
@@ -211,12 +193,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
     public void onFileTransferDrop(String remotePeerId, String fileName, String message,
                                    boolean isExplicit) {
-        Toast.makeText(getActivity(), "The file transfer was dropped.\nReason : " + message , Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "The file transfer was dropped.\nReason : " + message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onFileSendComplete(String remotePeerId, String fileName) {
-        Toast.makeText(getActivity(), "Your file has been sent" , Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Your file has been sent", Toast.LENGTH_SHORT).show();
 
     }
 
@@ -228,7 +210,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     @Override
     public void onFileReceiveComplete(String remotePeerId, String fileName) {
         Toast.makeText(getActivity(), "A file has been received : " + fileName, Toast.LENGTH_SHORT).show();
-        tvFileTransferDetails.setText("File Transfer Successful\n\nDestination : " +getDownloadedFilePath());
+        tvFileTransferDetails.setText("File Transfer Successful\n\nDestination : " + getDownloadedFilePath());
     }
 
     @Override
@@ -242,15 +224,16 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      */
 
     public void onRemotePeerJoin(String peerId, Object userData) {
-        if(this.peerId!=null) { //means there is an existing peer
-            Toast.makeText(getActivity(), "Rejected third peer from joining conversation",Toast.LENGTH_SHORT).show();
+        if (this.peerId != null) {
+            // Means there is an existing peer
+            Toast.makeText(getActivity(), "Rejected third peer from joining conversation", Toast.LENGTH_SHORT).show();
             return;
         }
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
         this.peerId = peerId;
-        if(userData instanceof String) {
+        if (userData instanceof String) {
             this.peerName = (String) userData;
-            setRoomDetails(true);
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName);
         }
     }
 
@@ -261,12 +244,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
     @Override
     public void onOpenDataConnection(String s) {
+        Log.d(TAG, "onOpenDataConnection");
     }
 
-    File getFileToTransfer(){
+    File getFileToTransfer() {
         File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File file = new File(path, fileName);
-        return file;
+        return new File(path, fileName);
     }
 
 
@@ -274,7 +257,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
         this.peerId = null;
         this.peerName = null;
-        setRoomDetails(false);    }
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName);
+    }
 
     void createExternalStoragePrivatePicture() {
         // Create a path where we will place our picture in our own private
@@ -305,14 +289,14 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
                     new String[]{file.toString()}, null,
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
-                            Log.i("ExternalStorage", "Scanned " + path + ":");
-                            Log.i("ExternalStorage", "-> uri=" + uri);
+                            Log.i(EXTERNAL_STORAGE, "Scanned " + path + ":");
+                            Log.i(EXTERNAL_STORAGE, "-> uri=" + uri);
                         }
                     });
         } catch (IOException e) {
             // Unable to create file, likely because external storage is
             // not currently mounted.
-            Log.w("ExternalStorage", "Error writing " + file, e);
+            Log.w(EXTERNAL_STORAGE, "Error writing " + file, e);
         }
     }
 
@@ -344,5 +328,6 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
     public String getDownloadedFilePath() {
         File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-        return path.getAbsolutePath() + File.separator + "downloadFile.png";    }
+        return path.getAbsolutePath() + File.separator + "downloadFile.png";
+    }
 }

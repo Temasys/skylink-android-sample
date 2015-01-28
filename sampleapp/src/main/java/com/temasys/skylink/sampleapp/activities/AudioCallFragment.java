@@ -25,14 +25,13 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 /**
- * This class is used to demonstrate the audicall between two clients in webrtc
+ * This class is used to demonstrate the AudioCall between two clients in WebRTC
  * Created by lavanyasudharsanam on 20/1/15.
  */
 public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     LinearLayout parentFragment;
     private SkyLinkConnection skyLinkConnection;
-    private static final String ROOM_NAME = "room";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -45,13 +44,14 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 try {
-                    skyLinkConnection.connectToRoom(ROOM_NAME, "userAudio", new Date(), 200);
+                    skyLinkConnection.connectToRoom(Constants.ROOM_NAME, Constants
+                            .MY_USER_NAME, new Date(), Constants.DURATION);
                 } catch (SignatureException e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, e.getMessage(), e);
                 } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, e.getMessage(), e);
                 }
             }
         });
@@ -85,7 +85,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(60);
+        config.setTimeout(Constants.TIME_OUT);
         return config;
     }
 
@@ -100,7 +100,6 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onConnect(boolean isSuccess, String message) {
-        // TODO Auto-generated method stub
         if (isSuccess) {
             Log.d(TAG, "Skylink Connected");
         } else {

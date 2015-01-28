@@ -15,8 +15,17 @@ import com.temasys.skylink.sampleapp.R;
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    static final String ARG_SECTION_NUMBER = "section_number";
-    private static final String TAG = MainActivity.class.getCanonicalName();
+    private static final String ARG_SECTION_NUMBER = "section_number";
+    private static final int CASE_SECTION_AUDIO_CALL = 1;
+    private static final int CASE_SECTION_VIDEO_CALL = 2;
+    private static final int CASE_SECTION_CHAT = 3;
+    private static final int CASE_SECTION_FILE_TRANSFER = 4;
+
+    private static final int CASE_FRAGMENT_AUDIO_CALL = 0;
+    private static final int CASE_FRAGMENT_VIDEO_CALL = 1;
+    private static final int CASE_FRAGMENT_CHAT = 2;
+    private static final int CASE_FRAGMENT_FILE_TRANSFER = 3;
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -55,17 +64,19 @@ public class MainActivity extends ActionBarActivity
 
     public void onSectionAttached(int number) {
         switch (number) {
-            case 1:
+            case CASE_SECTION_AUDIO_CALL:
                 mTitle = getString(R.string.title_section1);
                 break;
-            case 2:
+            case CASE_SECTION_VIDEO_CALL:
                 mTitle = getString(R.string.title_section2);
                 break;
-            case 3:
+            case CASE_SECTION_CHAT:
                 mTitle = getString(R.string.title_section3);
                 break;
-            case 4:
+            case CASE_SECTION_FILE_TRANSFER:
                 mTitle = getString(R.string.title_section4);
+                break;
+            default:
                 break;
         }
     }
@@ -109,17 +120,19 @@ public class MainActivity extends ActionBarActivity
     public Fragment getFragmentToLaunch(int position) {
         Fragment fragmentToLaunch = null;
         switch (position) {
-            case 0:
+            case CASE_FRAGMENT_AUDIO_CALL:
                 fragmentToLaunch = new AudioCallFragment();
                 break;
-            case 1:
+            case CASE_FRAGMENT_VIDEO_CALL:
                 fragmentToLaunch = new VideoCallFragment();
                 break;
-            case 2:
+            case CASE_FRAGMENT_CHAT:
                 fragmentToLaunch = new ChatFragment();
                 break;
-            case 3:
+            case CASE_FRAGMENT_FILE_TRANSFER:
                 fragmentToLaunch = new FileTransferFragment();
+                break;
+            default:
                 break;
         }
 
