@@ -100,12 +100,20 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     private SkyLinkConfig getSkylinkConfig() {
         SkyLinkConfig config = new SkyLinkConfig();
-        config.setHasAudio(true);
-        config.setHasVideo(true);
+        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(60);
         return config;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        skyLinkConnection.disconnectFromRoom();
+        skyLinkConnection.setLifeCycleListener(null);
+        skyLinkConnection.setMediaListener(null);
+        skyLinkConnection.setRemotePeerListener(null);
     }
 
     /***
@@ -129,11 +137,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
         // TODO Auto-generated method stub
-        //show media on screen
-        videoView.setTag("self");
-        parentFragment.addView(videoView);
-        Log.d(TAG, videoView + "received view");
-
+        if (videoView != null) {
+            //show media on screen
+            videoView.setTag("self");
+            parentFragment.addView(videoView);
+            Log.d(TAG, "received view");
+        }
     }
 
     @Override
@@ -182,6 +191,10 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
 
+        if (videoView == null) {
+            return;
+        }
+
         if (parentFragment.findViewWithTag("peer") != null) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
@@ -215,14 +228,5 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onOpenDataConnection(String peerId) {
-        // TODO Auto-generated method stub
-
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        skyLinkConnection.disconnectFromRoom();
-    }
-
 }

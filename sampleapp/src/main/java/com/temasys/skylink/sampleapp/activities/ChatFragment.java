@@ -109,7 +109,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
         skyLinkConnection = SkyLinkConnection.getInstance();
         skyLinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
+                getString(R.string.app_secret), getSkylinkConfig(),
+                this.getActivity().getApplicationContext());
         skyLinkConnection.setLifeCycleListener(this);
         skyLinkConnection.setMessagesListener(this);
         skyLinkConnection.setRemotePeerListener(this);
@@ -128,12 +129,22 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     private SkyLinkConfig getSkylinkConfig() {
         SkyLinkConfig config = new SkyLinkConfig();
-        config.setHasAudio(true);
-        config.setHasVideo(true);
+        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(60);
         return config;
+    }
+
+    @Override
+    public void onDetach() {
+        if (skyLinkConnection != null) {
+            skyLinkConnection.disconnectFromRoom();
+            skyLinkConnection.setLifeCycleListener(null);
+            skyLinkConnection.setRemotePeerListener(null);
+            skyLinkConnection.setMessagesListener(null);
+        }
+        super.onDetach();
     }
 
     private void setRoomDetails(boolean isPeerInRoom) {
@@ -235,23 +246,5 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
             chatMessageCollection.add(this.peerName + " : " + chatPrefix + message);
             adapter.notifyDataSetChanged();
         }
-    }
-
-    @Override
-    public void onDetach() {
-        if (skyLinkConnection != null) {
-            skyLinkConnection.disconnectFromRoom();
-            skyLinkConnection = null;
-        }
-        super.onDetach();
-    }
-
-    @Override
-    public void onDestroy() {
-        if (skyLinkConnection != null) {
-            skyLinkConnection.disconnectFromRoom();
-            skyLinkConnection = null;
-        }
-        super.onDestroy();
     }
 }

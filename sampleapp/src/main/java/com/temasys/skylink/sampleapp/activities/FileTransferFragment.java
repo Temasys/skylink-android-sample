@@ -86,13 +86,20 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        skyLinkConnection.disconnectFromRoom();
+        skyLinkConnection.setLifeCycleListener(this);
+        skyLinkConnection.setFileTransferListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
     }
 
     private SkyLinkConfig getSkylinkConfig() {
         SkyLinkConfig config = new SkyLinkConfig();
-        config.setHasAudio(true);
-        config.setHasVideo(true);
+        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(60);
@@ -204,13 +211,6 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public void onOpenDataConnection(String remotePeerId) {
         Log.d(TAG, "onOpenDataConnection " + remotePeerId);
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        skyLinkConnection.disconnectFromRoom();
-    }
-
 
     void createExternalStoragePrivatePicture() {
         // Create a path where we will place our picture in our own private
