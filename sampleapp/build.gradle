@@ -1,4 +1,17 @@
 apply plugin: 'com.android.application'
+apply plugin: "sonar-runner"
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectKey", "AND-Sample"
+        property "sonar.projectName", "Skylink Android SDK - Sample App"
+        property "sonar.projectVersion", "0.9.0"
+        property "sonar.language", "java"
+        property "sonar.sources", "src"
+        property "sonar.binaries", "build"
+        property "sonar.profile", "Temasys-Android"
+    }
+}
 
 repositories {
     maven {
@@ -6,7 +19,6 @@ repositories {
     }
     maven { url 'https://maven.fabric.io/public' }
 }
-
 
 android {
     compileSdkVersion 21
@@ -30,5 +42,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
-    compile(group: 'sg.com.temasys.skylink.sdk', name: 'skylink_sdk', version: '0.9.0-SNAPSHOT', ext: 'aar')
+    compile(group: 'sg.com.temasys.skylink.sdk', name: 'skylink_sdk', version: '0.9.0.1-SNAPSHOT', ext: 'aar')
 }
