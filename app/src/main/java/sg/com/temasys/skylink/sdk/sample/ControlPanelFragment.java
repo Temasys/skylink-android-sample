@@ -36,6 +36,7 @@ public class ControlPanelFragment extends RoomFragment {
                 R.layout.fragment_control_panel, container, false);
 
         ViewGroup parent = (ViewGroup) rootView.findViewById(R.id.self_video);
+        RoomManager.VideoInfo videoInfo = RoomManager.get().getSelfVideo();
         View child = RoomManager.get().getSelfVideo().getVideoView();
         addVideoView(parent, child, null);
 

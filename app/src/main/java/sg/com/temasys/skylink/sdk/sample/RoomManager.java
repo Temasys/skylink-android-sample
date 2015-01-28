@@ -293,10 +293,12 @@ public class RoomManager {
     public void removePeer(String peerId) {
         VideoInfo videoInfo = mVideoPool.get(peerId);
         if (videoInfo != null) {
-            ViewGroup parentView = (ViewGroup) videoInfo.getVideoView()
-                    .getParent();
-            if (parentView != null)
-                parentView.removeView(videoInfo.getVideoView());
+            GLSurfaceView glSurfaceView = videoInfo.getVideoView();
+            if (glSurfaceView != null) {
+                ViewGroup parentView = (ViewGroup) glSurfaceView.getParent();
+                if (parentView != null)
+                    parentView.removeView(videoInfo.getVideoView());
+            }
         }
         mVideoPool.remove(peerId);
     }

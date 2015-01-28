@@ -11,8 +11,8 @@ public interface LifeCycleListener {
      * successful.
      *
      * @param isSuccessful Specify success or failure
-     * @param message   A message in case of isSuccessful is 'false' describing the
-     *                  reason of failure
+     * @param message      A message in case of isSuccessful is 'false' describing the
+     *                     reason of failure
      */
     public void onConnect(boolean isSuccessful, String message);
 
