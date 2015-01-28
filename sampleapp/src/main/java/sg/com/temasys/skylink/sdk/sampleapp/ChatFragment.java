@@ -1,4 +1,4 @@
-package com.temasys.skylink.sampleapp.activities;
+package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

@@ -1,4 +1,4 @@
-package com.temasys.skylink.sampleapp.activities;
+package sg.com.temasys.skylink.sdk.sampleapp;
 
 public final class Constants {
     public static final String ROOM_NAME = "room";

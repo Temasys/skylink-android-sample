@@ -1,4 +1,4 @@
-package com.temasys.skylink.sampleapp.activities;
+package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;

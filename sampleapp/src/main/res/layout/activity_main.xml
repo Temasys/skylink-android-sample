@@ -23,7 +23,7 @@
          the container. -->
     <fragment
         android:id="@+id/navigation_drawer"
-        android:name="com.temasys.skylink.sampleapp.activities.NavigationDrawerFragment"
+        android:name="sg.com.temasys.skylink.sdk.sampleapp.NavigationDrawerFragment"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"

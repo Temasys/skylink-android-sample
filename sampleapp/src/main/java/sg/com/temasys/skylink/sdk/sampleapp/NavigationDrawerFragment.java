@@ -1,4 +1,4 @@
-package com.temasys.skylink.sampleapp.activities;
+package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
 import android.content.SharedPreferences;

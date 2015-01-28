@@ -1,4 +1,4 @@
-package com.temasys.skylink.sampleapp.activities;
+package sg.com.temasys.skylink.sdk.sampleapp;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
