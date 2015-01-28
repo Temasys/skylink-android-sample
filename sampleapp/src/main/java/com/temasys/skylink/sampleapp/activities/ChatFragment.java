@@ -108,13 +108,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        skyLinkConnection = SkyLinkConnection.getInstance();
-        skyLinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
-        skyLinkConnection.setLifeCycleListener(this);
-        skyLinkConnection.setMessagesListener(this);
-        skyLinkConnection.setRemotePeerListener(this);
+        initializeSkylinkConnection();
 
         try {
             skyLinkConnection.connectToRoom(roomName, myName, new Date(), 20000);
@@ -125,7 +119,15 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
 
+    private void initializeSkylinkConnection() {
+        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection.init(getString(R.string.app_key),
+                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
+        skyLinkConnection.setLifeCycleListener(this);
+        skyLinkConnection.setMessagesListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
     }
 
     private SkyLinkConfig getSkylinkConfig() {
@@ -146,7 +148,6 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
             roomDetails += "You are alone in this room";
 
         tvRoomDetails.setText(roomDetails);
-
     }
 
     /***
