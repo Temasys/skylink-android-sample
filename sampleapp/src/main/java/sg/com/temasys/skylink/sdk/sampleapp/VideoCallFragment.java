@@ -58,12 +58,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         toggleAudioButton = (ToggleButton) rootView.findViewById(R.id.toggle_audio);
         toggleVideoButton = (ToggleButton) rootView.findViewById(R.id.toggle_video);
 
-        etRoomName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                etRoomName.setEnabled(true);
-            }
-        });
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,7 +70,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
                 try {
                     skyLinkConnection.connectToRoom(Constants.ROOM_NAME,
-                            Constants.MY_USER_NAME, new Date(), Constants.DURATION);
+                            roomName, new Date(), Constants.DURATION);
                 } catch (SignatureException e) {
                     Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
@@ -90,13 +84,15 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         toggleAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    skyLinkConnection.muteLocalAudio(!((ToggleButton)v).isChecked());
+                //if toggle is checked, audio is is on, else audio is muted
+                skyLinkConnection.muteLocalAudio(!((ToggleButton)v).isChecked());
             }
         });
 
         toggleVideoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //if toggle is checked, video is is on, else video is muted
                 skyLinkConnection.muteLocalVideo(!((ToggleButton)v).isChecked());
             }
         });
@@ -161,7 +157,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
             etRoomName.setEnabled(false);
-            Toast.makeText(getActivity(), "Connected to room", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + Constants.MY_USER_NAME  , Toast.LENGTH_SHORT).show();
         } else {
             Log.d(TAG, "Skylink Failed");
         }
