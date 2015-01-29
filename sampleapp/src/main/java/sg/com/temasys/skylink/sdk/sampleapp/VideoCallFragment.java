@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.temasys.skylink.sampleapp.R;
 
@@ -40,6 +41,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
     private LinearLayout parentFragment;
+    private ToggleButton toggleAudioButton;
+    private ToggleButton toggleVideoButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
     private SkyLinkConnection skyLinkConnection;
@@ -52,6 +55,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
+        toggleAudioButton = (ToggleButton) rootView.findViewById(R.id.toggle_audio);
+        toggleVideoButton = (ToggleButton) rootView.findViewById(R.id.toggle_video);
 
         etRoomName.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,6 +72,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                btnEnterRoom.setVisibility(View.GONE);
 
                 try {
                     skyLinkConnection.connectToRoom(Constants.ROOM_NAME,
@@ -78,6 +84,20 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
+            }
+        });
+
+        toggleAudioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    skyLinkConnection.muteLocalAudio(!((ToggleButton)v).isChecked());
+            }
+        });
+
+        toggleVideoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                skyLinkConnection.muteLocalVideo(!((ToggleButton)v).isChecked());
             }
         });
 
@@ -188,12 +208,24 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        Log.d(TAG, "onRemotePeerAudioToggle - " + isMuted);
+        String message =null;
+        if(isMuted)
+            message = "Your peer muted their audio";
+        else
+            message = "Your peer unmuted their audio";
+
+        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onRemotePeerVideoToggle(String peerId, boolean isMuted) {
-        Log.d(TAG, "onRemotePeerVideoToggle " + isMuted);
+        String message =null;
+        if(isMuted)
+            message = "Your peer muted video";
+        else
+            message = "Your peer unmuted their video";
+
+        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -207,11 +239,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
-
         if (videoView == null) {
             return;
         }
-
         if (parentFragment.findViewWithTag("peer") != null) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
@@ -237,8 +267,11 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
 
         View peer = parentFragment.findViewWithTag("video");
+        View self = parentFragment.findViewWithTag("self");
         if (peer != null) {
             parentFragment.removeView(peer);
+            parentFragment.removeView(self);
+            parentFragment.addView(self);
         }
     }
 

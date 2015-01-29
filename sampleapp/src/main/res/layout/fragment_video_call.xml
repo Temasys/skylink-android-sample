@@ -4,7 +4,6 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical">
-
     <EditText
         android:id="@+id/et_room_name"
         android:layout_width="wrap_content"
@@ -21,5 +20,37 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="5dp"
         android:text="@string/enter_room"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ll_self_video"
+        android:orientation="horizontal"
+        >
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Audio"
+            android:checked="true"
+            android:textOn="Audio On"
+            android:textOff="Audio Muted"
+            android:id="@+id/toggle_audio"
+            android:layout_weight="1"
+            />
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Video"
+            android:checked="true"
+            android:textOn="Video On"
+            android:textOff="Video Muted"
+            android:id="@+id/toggle_video"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
+
+
 
 </LinearLayout>
