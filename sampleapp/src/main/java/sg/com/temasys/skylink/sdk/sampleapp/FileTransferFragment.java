@@ -123,9 +123,9 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         //close the connection when the fragment is detached, so the streams are not open.
         if (skyLinkConnection != null) {
             skyLinkConnection.disconnectFromRoom();
-            skyLinkConnection.setLifeCycleListener(this);
-            skyLinkConnection.setFileTransferListener(this);
-            skyLinkConnection.setRemotePeerListener(this);
+            skyLinkConnection.setLifeCycleListener(null);
+            skyLinkConnection.setFileTransferListener(null);
+            skyLinkConnection.setRemotePeerListener(null);
         }
         super.onDetach();
     }
@@ -135,7 +135,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         skyLinkConnection = SkyLinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skyLinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
+                getString(R.string.app_secret), getSkylinkConfig(),
+                this.getActivity().getApplicationContext());
         //set listeners to receive callbacks when events are triggered
         skyLinkConnection.setLifeCycleListener(this);
         skyLinkConnection.setRemotePeerListener(this);
@@ -195,9 +196,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     @Override
     public void onFileTransferPermissionRequest(String peerId, String fileName, boolean isPrivate) {
         Toast.makeText(getActivity(), "Received a file request", Toast.LENGTH_LONG).show();
-        String path = Environment.DIRECTORY_DOWNLOADS;
         //send false to reject file transfer
-        skyLinkConnection.sendFileTransferPermissionResponse(peerId, path, true);
+        skyLinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
     }
 
     @Override
@@ -278,7 +278,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      * @return location to save the downloaded file on the file system
      */
     private String getDownloadedFilePath() {
-        File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         return path.getAbsolutePath() + File.separator + "downloadFile.png";
     }
 
@@ -333,32 +333,6 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
             // not currently mounted.
             Log.w(EXTERNAL_STORAGE, "Error writing " + file, e);
         }
-    }
-
-    void deleteExternalStoragePrivatePicture() {
-        // Create a path where we will place our picture in the user's
-        // public pictures directory and delete the file.  If external
-        // storage is not currently mounted this will fail.
-        File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-
-        if (path != null) {
-            File file = new File(path, fileName);
-            file.delete();
-        }
-    }
-
-    boolean hasExternalStoragePrivatePicture() {
-        // Create a path where we will place our picture in the user's
-        // public pictures directory and check if the file exists.  If
-        // external storage is not currently mounted this will think the
-        // picture doesn't exist.
-        File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-
-        if (path != null) {
-            File file = new File(path, fileName);
-            return file.exists();
-        }
-        return false;
     }
 
 }
