@@ -31,6 +31,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
  */
 public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener,RemotePeerListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
+    public static final String ROOM_NAME = "audioCallRoom";
+    public static final String MY_USER_NAME = "audioCallUser";
     LinearLayout parentFragment;
     private SkyLinkConnection skyLinkConnection;
 
@@ -45,8 +47,8 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 try {
-                    skyLinkConnection.connectToRoom(Constants.ROOM_NAME, Constants
-                            .MY_USER_NAME, new Date(), Constants.DURATION);
+                    skyLinkConnection.connectToRoom(ROOM_NAME,
+                            MY_USER_NAME, new Date(), Constants.DURATION);
                 } catch (SignatureException e) {
                     Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
