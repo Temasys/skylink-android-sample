@@ -42,7 +42,7 @@ public class SkyLinkConfig implements Serializable {
     /**
      * Creates a new SkyLinkConfig (Copy constructor).
      *
-     * @param config Configuration object with settings of the current call
+     * @param config Configuration object with settings to copy from.
      */
     public SkyLinkConfig(SkyLinkConfig config) {
         super();
