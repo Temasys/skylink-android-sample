@@ -49,13 +49,16 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
 
-        Button btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
+        final Button btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
                     skyLinkConnection.connectToRoom(ROOM_NAME,
                             MY_USER_NAME, new Date(), Constants.DURATION);
+                    btnAudioCall.setEnabled(false);
+                    Toast.makeText(getActivity(), "Connecting....",
+                            Toast.LENGTH_SHORT).show();
                 } catch (SignatureException e) {
                     Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
