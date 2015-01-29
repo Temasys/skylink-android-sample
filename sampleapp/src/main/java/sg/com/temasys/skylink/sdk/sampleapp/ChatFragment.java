@@ -39,7 +39,9 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     private static final String TAG = ChatFragment.class.getCanonicalName();
     private String remotePeerId;
-    private Button btnSendServerMessage;
+    private Button btnSendPrivateServerMessage;
+    private Button btnSendP2PPublicMessage;
+    private Button btnSendPublicServerMessage;
     private ListView listViewChats;
     private TextView tvRoomDetails;
     private SkyLinkConnection skyLinkConnection;
@@ -55,34 +57,48 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         //initialize views
         View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
         listViewChats = (ListView) rootView.findViewById(R.id.lv_messages);
-        btnSendServerMessage = (Button) rootView.findViewById(R.id.btn_send_server_message);
+        btnSendPrivateServerMessage = (Button) rootView.findViewById(R.id.btn_send_server_message);
+        btnSendPublicServerMessage = (Button) rootView.findViewById(R.id.btn_send_public_server_message);
         btnSendP2PMessage = (Button) rootView.findViewById(R.id.btn_send_private_chat);
+        btnSendP2PPublicMessage = (Button) rootView.findViewById(R.id.btn_send_p2p_public_message);
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
         chatMessageCollection = new ArrayList();
 
         /** Defining the ArrayAdapter to set items to ListView */
         adapter = new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_list_item_1, chatMessageCollection);
 
-        /** Defining a click event listener for the button "Send Server Message" */
-        btnSendServerMessage.setOnClickListener(new View.OnClickListener() {
+        /** Defining a click event listener for the button "Send Private Server Message" */
+        btnSendPrivateServerMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 //Add chat message to the listview
-                EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
-                String message = edit.getText().toString();
-                chatMessageCollection.add("You : " + message);
-                edit.setText("");
+                String message = addMessageToListView(true);
 
                 //pass null for remotePeerId to send message to send mesage to all users in the room
                 //sends message using the signalling server
                 skyLinkConnection.sendServerMessage(remotePeerId, message);
 
+            }
+        });
+
+        /** Defining a click event listener for the button "Send Public Server Message" */
+        btnSendPublicServerMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //Add chat message to the listview
+                String message = addMessageToListView(false);
+
+                //pass remotePeerId instead of null to send message to specific peer
+                //sends message using the signalling server
+                skyLinkConnection.sendServerMessage(null, message);
+
                 adapter.notifyDataSetChanged();
             }
         });
 
-        /** Defining a click event listener for the button "Send Private Message" */
+        /** Defining a click event listener for the button "Send P2P Message" */
         btnSendP2PMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,14 +108,34 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 }
 
                 //Add chat message to the listview
-                EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
-                String message = edit.getText().toString();
-                chatMessageCollection.add("You : " + message);
-                edit.setText("");
+                String message = addMessageToListView(true);
 
                 try {
-                    //sends message using the datachannel
+                    //sends p2p message using the datachannel to the specific user
                     skyLinkConnection.sendP2PMessage(remotePeerId, message);
+                } catch (SkyLinkException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        /** Defining a click event listener for the button "Send Public P2P Message" */
+        btnSendP2PPublicMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (remotePeerId == null) {
+                    Toast.makeText(getActivity(), "There is no peer in the room to send a private message to", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //Add chat message to the listview
+                String message = addMessageToListView(false);
+
+                try {
+                    //sends p2p message using the datachannel to the all users
+                    skyLinkConnection.sendP2PMessage(null, message);
                 } catch (SkyLinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
@@ -112,6 +148,23 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         listViewChats.setAdapter(adapter);
 
         return rootView;
+    }
+
+    /**
+     * Retrives message written in edit text and adds it to the chatlistview
+     * @return message that was added to the listview
+     * @param isPrivateMessage
+     */
+    private String addMessageToListView(boolean isPrivateMessage) {
+        EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
+        String message = edit.getText().toString();
+        if(isPrivateMessage)
+            message = "<Private>" + message;
+
+        chatMessageCollection.add("You : " + message);
+        edit.setText("");
+        adapter.notifyDataSetChanged();
+        return message;
     }
 
     @Override

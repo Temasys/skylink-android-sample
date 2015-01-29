@@ -36,24 +36,39 @@
 
     <Button
         android:id="@+id/btn_send_private_chat"
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="P2P Private Message"
         android:layout_alignParentStart="true"
-        android:text="Send P2P Message"
-        android:layout_alignTop="@+id/btn_send_server_message"
-        android:layout_toStartOf="@+id/btn_send_server_message"
-        android:layout_alignParentBottom="true"/>
+        android:layout_above="@+id/btn_send_server_message"
+        android:layout_toStartOf="@+id/btn_send_p2p_public_message"
+        android:layout_alignTop="@+id/btn_send_p2p_public_message"/>
     <Button
         android:id="@+id/btn_send_server_message"
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Server Private Message"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:text="Send Server Message"
-        />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/btn_send_p2p_public_message"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Server Public Message"
+        android:id="@+id/btn_send_public_server_message"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/btn_send_private_chat"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="P2P Public Message"
+        android:id="@+id/btn_send_p2p_public_message"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@+id/btn_send_public_server_message"
+        android:layout_toEndOf="@+id/btn_send_server_message"/>
 
 
 </RelativeLayout>
