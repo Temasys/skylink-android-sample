@@ -71,7 +71,7 @@ public class SkyLinkConnection {
     /**
      * Sets the specified file transfer listener object.
      *
-     * @param fileTransferListener The file transfer listener object  that will receive callbacks related to FileTransfer
+     * @param fileTransferListener The file transfer listener object that will receive callbacks related to FileTransfer
      */
     public void setFileTransferListener(
             FileTransferListener fileTransferListener) {
@@ -226,7 +226,7 @@ public class SkyLinkConnection {
 
     /***
      *
-     * @return existing instance of SkyLinkConnection Object if it exists or return a new instance if it doesn't exiting.
+     * @return Existing instance of SkyLinkConnection Object if it exists or a new instance if it doesn't exists.
      */
     public static synchronized SkyLinkConnection getInstance() {
         if (instance == null) {
