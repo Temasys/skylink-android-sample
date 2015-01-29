@@ -62,6 +62,8 @@ import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
  */
 public class SkyLinkConnection {
 
+    private static final int DURATION = 240;
+
     /**
      * @return The file transfer listener object.
      */
@@ -297,8 +299,25 @@ public class SkyLinkConnection {
      *
      * @param action the action to run on the UI thread
      */
-    public void runOnUiThread(Runnable action) {
+    void runOnUiThread(Runnable action) {
         handler.post(action);
+    }
+
+    /**
+     * Connects to a room.
+     *
+     * @param roomName The name of the room
+     * @param userData User defined data relating to oneself. May be a
+     *                 'java.lang.String', 'org.json.JSONObject' or
+     *                 'org.json.JSONArray'.
+     * @return 'false' if the connection is already established
+     * @throws SignatureException
+     * @throws IOException
+     * @throws JSONException
+     */
+    public boolean connectToRoom(String roomName, Object userData)
+            throws JSONException, SignatureException, IOException {
+        return connectToRoom(roomName, userData, new Date(), DURATION);
     }
 
     /**
@@ -315,8 +334,8 @@ public class SkyLinkConnection {
      * @throws IOException
      * @throws JSONException
      */
-    public boolean connectToRoom(String roomName, Object userData,
-                                 Date startTime, float duration) throws SignatureException,
+    private boolean connectToRoom(String roomName, Object userData,
+                                  Date startTime, float duration) throws SignatureException,
             IOException, JSONException {
         if (this.webServerClient != null)
             return false;
