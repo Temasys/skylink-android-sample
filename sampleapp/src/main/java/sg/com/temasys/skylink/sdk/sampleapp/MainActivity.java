@@ -79,7 +79,6 @@ public class MainActivity extends ActionBarActivity
             default:
                 break;
         }
-        setTitle(mTitle);
     }
 
     public void restoreActionBar() {

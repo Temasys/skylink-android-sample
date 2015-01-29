@@ -4,6 +4,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
  * Created by lavanyasudharsanam on 20/1/15.
  */
 
+import android.app.Activity;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
     public static final String ROOM_NAME = "videoCallRoom";
     public static final String MY_USER_NAME = "videoCallUser";
+    private static final String ARG_SECTION_NUMBER = "section_number";
     //set height width for self-video when in call
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
@@ -128,6 +130,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
         return config;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
     @Override

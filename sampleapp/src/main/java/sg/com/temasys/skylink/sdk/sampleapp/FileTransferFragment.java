@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.app.Activity;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,6 +43,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public static final String ROOM_NAME = "fileTransferRoom";
     public static final String MY_USER_NAME = "fileTransferUser";
     public static final String EXTERNAL_STORAGE = "ExternalStorage";
+    private static final String ARG_SECTION_NUMBER = "section_number";
     private TextView tvRoomDetails;
     private EditText etSenderFilePath;
     private TextView tvFileTransferDetails;
@@ -116,6 +118,13 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
     @Override

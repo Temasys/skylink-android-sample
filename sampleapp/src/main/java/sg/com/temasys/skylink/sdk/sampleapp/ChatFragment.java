@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -40,6 +41,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     private static final String TAG = ChatFragment.class.getCanonicalName();
     public static final String ROOM_NAME = "chatRoom";
     public static final String MY_USER_NAME = "chatRoomUser";
+    private static final String ARG_SECTION_NUMBER = "section_number";
     private String remotePeerId;
     private Button btnSendPrivateServerMessage;
     private Button btnSendP2PPublicMessage;
@@ -221,6 +223,13 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
         return config;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER));
     }
 
     @Override
