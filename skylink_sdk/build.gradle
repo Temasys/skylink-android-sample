@@ -190,7 +190,7 @@ task androidJavadoc(type: Javadoc, dependsOn: 'compileReleaseJava') {
         addStringOption "hdf project.name", "Skylink Android SDK " + currentVersion
         addStringOption "federate android", "http://d.android.com/reference"
         addStringOption "federationxml android", "http://doclava.googlecode.com/svn/static/api/android-10.xml"
-        addStringOption "d", "build/doc"
+        addStringOption "d", "build/docs/doc"
     }
 }
 
