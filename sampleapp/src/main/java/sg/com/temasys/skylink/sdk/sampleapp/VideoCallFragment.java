@@ -37,6 +37,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
  */
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
+    public static final String ROOM_NAME = "videoCallRoom";
+    public static final String MY_USER_NAME = "videoCallUser";
     //set height width for self-video when in call
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
@@ -69,7 +71,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 btnEnterRoom.setVisibility(View.GONE);
 
                 try {
-                    skyLinkConnection.connectToRoom(Constants.ROOM_NAME,
+                    skyLinkConnection.connectToRoom(ROOM_NAME,
                             roomName, new Date(), Constants.DURATION);
                 } catch (SignatureException e) {
                     Log.e(TAG, e.getMessage(), e);
@@ -157,7 +159,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
             etRoomName.setEnabled(false);
-            Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + Constants.MY_USER_NAME  , Toast.LENGTH_SHORT).show();
+            toggleAudioButton.setVisibility(View.VISIBLE);
+            toggleVideoButton.setVisibility(View.VISIBLE);
+            Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME  , Toast.LENGTH_SHORT).show();
         } else {
             Log.d(TAG, "Skylink Failed");
         }
