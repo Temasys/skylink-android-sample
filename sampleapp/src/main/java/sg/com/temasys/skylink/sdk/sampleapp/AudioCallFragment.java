@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.app.Activity;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     public static final String ROOM_NAME = "audioCallRoom";
     public static final String MY_USER_NAME = "audioCallUser";
+    private static final String ARG_SECTION_NUMBER = "section_number";
     private LinearLayout parentFragment;
     private SkyLinkConnection skyLinkConnection;
     private TextView tvRoomDetails;
@@ -85,6 +87,13 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         skyLinkConnection.setRemotePeerListener(this);
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        //update actionbar title
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER));
+    }
     @Override
     public void onDetach() {
         super.onDetach();
