@@ -56,8 +56,7 @@ import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
 import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
 
 /**
- * Main class to connect to the skyway infrastructure.
- *
+ * Main class to connect to the skylink infrastructure.
  * @author temasys
  */
 public class SkyLinkConnection {
@@ -72,7 +71,7 @@ public class SkyLinkConnection {
     /**
      * Sets the specified file transfer listener object.
      *
-     * @param fileTransferListener The file transfer listener object
+     * @param fileTransferListener The file transfer listener object  that will receive callbacks related to FileTransfer
      */
     public void setFileTransferListener(
             FileTransferListener fileTransferListener) {
@@ -92,7 +91,7 @@ public class SkyLinkConnection {
     /**
      * Sets the specified life cycle listener object.
      *
-     * @param lifeCycleListener The life cycle listener object
+     * @param lifeCycleListener The life cycle listener object that will receive callbacks related to the SDK's Lifecycle
      */
     public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
         if (lifeCycleListener == null)
@@ -102,14 +101,14 @@ public class SkyLinkConnection {
     }
 
     /**
-     * @return The media listener object.
+     * @return The media listener object
      */
     public MediaListener getMediaListener() {
         return mediaListener;
     }
 
     /**
-     * Sets the specified media listener object.
+     * Sets the specified media listener object that will receive callbacks related to Media Stream.
      *
      * @param mediaListener The media listener object
      */
@@ -130,7 +129,7 @@ public class SkyLinkConnection {
     /**
      * Sets the specified messages listener object.
      *
-     * @param messagesListener The messages listener object
+     * @param messagesListener The messages listener object that will receive callbacks related to Message Transmissions.
      */
     public void setMessagesListener(MessagesListener messagesListener) {
         if (messagesListener == null)
@@ -149,7 +148,7 @@ public class SkyLinkConnection {
     /**
      * Sets the specified remote peer listener object.
      *
-     * @param remotePeerListener The remote peer listener object
+     * @param remotePeerListener The remote peer listener object that will receive callbacks related to the RemotePeer.
      */
     public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
         if (remotePeerListener == null)
@@ -225,6 +224,10 @@ public class SkyLinkConnection {
         handler = new Handler(Looper.getMainLooper());
     }
 
+    /***
+     *
+     * @return existing instance of SkyLinkConnection Object if it exists or return a new instance if it doesn't exiting.
+     */
     public static synchronized SkyLinkConnection getInstance() {
         if (instance == null) {
             instance = new SkyLinkConnection();
@@ -235,9 +238,9 @@ public class SkyLinkConnection {
     /**
      * Creates a new SkyLinkConnection object with the specified parameters.
      *
-     * @param apiKey  The api key
-     * @param secret  The secret associated with the key
-     * @param config  The config object to configure the call itself
+     * @param apiKey  The api key from the temasys developer console
+     * @param secret  The secret associated with the key as registered with the temasys developer console
+     * @param config  The config object to configure the type of call.
      * @param context The application context
      */
     public void init(String apiKey, String secret,
@@ -424,7 +427,7 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Sends a user defined message to a peer or to all peers via signalling
+     * Sends a user defined message to a specific peer or to all peers via signalling
      * channel.
      *
      * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
@@ -526,9 +529,9 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Mutes the client audio and notifies all the peers in the room.
+     * Mutes the local user's audio and notifies all the peers in the room.
      *
-     * @param isMuted Flag that specify whether to mute / unmute the audio
+     * @param isMuted Flag that specifies whether to mute / unmute the audio
      */
     public void muteLocalAudio(boolean isMuted) {
         if (this.webServerClient == null) {
@@ -551,9 +554,9 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Mutes the client video and notifies all the peers in the room.
+     * Mutes the local user's video and notifies all the peers in the room.
      *
-     * @param isMuted Flag that specify whether to mute / unmute the audio
+     * @param isMuted Flag that specify whether to mute / unmute the video
      */
     public void muteLocalVideo(boolean isMuted) {
         if (this.webServerClient == null)
@@ -577,9 +580,9 @@ public class SkyLinkConnection {
     /**
      * Sends file transfer request to a specified peer.
      *
-     * @param remotePeerId The id of the peer
-     * @param fileName     The name of the file
-     * @param filePath     The path of the file in the filesystem
+     * @param remotePeerId The id of the remote peer to send the file to.
+     * @param fileName     The name of the file that needs to be sent.
+     * @param filePath     The absolute path of the file in the filesystem
      */
     public void sendFileTransferPermissionRequest(String remotePeerId, String fileName,
                                                   String filePath) {
@@ -610,9 +613,9 @@ public class SkyLinkConnection {
      * Call this method to accept or reject the file transfer request from a
      * peer.
      *
-     * @param remotePeerId The id of the peer
-     * @param filePath     The path of the file
-     * @param isPermitted  Accept or reject file transfer request
+     * @param remotePeerId The id of the remote peer that the user wants to send the file to
+     * @param filePath     The absolute path of the file where the user wants it to be saved
+     * @param isPermitted  Accept or reject file transfer request received.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId,
                                                    String filePath, boolean isPermitted) {
@@ -625,17 +628,17 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Retrives the user defined data object associated with a peer.
+     * Retrieves the user defined data object associated with a peer.
      *
-     * @param peerId The id of the peer
+     * @param remotePeerId The id of the remote peer whose data needes to be retrieved
      * @return May be a 'java.lang.String', 'org.json.JSONObject' or
      * 'org.json.JSONArray'.
      */
-    public Object getUserData(String peerId) {
-        if (peerId == null)
+    public Object getUserData(String remotePeerId) {
+        if (remotePeerId == null)
             return this.myUserData;
         else
-            return this.displayNameMap.get(peerId);
+            return this.displayNameMap.get(remotePeerId);
     }
 
     private void logMessage(String message) {
