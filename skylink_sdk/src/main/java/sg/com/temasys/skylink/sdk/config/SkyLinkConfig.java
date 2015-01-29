@@ -23,7 +23,7 @@ public class SkyLinkConfig implements Serializable {
 
     /**
      * List of enums that specify an audio video setting.
-     * Each option restricts controls the sending of the local user's audio or video stream
+     * Each option restricts the sending and receiving of the local user's audio and/or video stream.
      */
     public enum AudioVideoConfig {
         NO_AUDIO_NO_VIDEO,
