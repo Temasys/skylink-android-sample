@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/ll_file_transfer"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
+<LinearLayout
+    android:id="@+id/ll_file_transfer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
     >
 
     <TextView
@@ -28,6 +29,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/et_file_path"
         android:hint="Path of file to transfer"
+        android:editable="false"
         />
 
     <Button
