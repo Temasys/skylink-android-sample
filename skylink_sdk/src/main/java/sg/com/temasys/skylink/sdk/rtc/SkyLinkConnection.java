@@ -62,7 +62,7 @@ import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
  */
 public class SkyLinkConnection {
 
-    public static final int DURATION = 240;
+    private static final int DURATION = 240;
 
     /**
      * @return The file transfer listener object.
