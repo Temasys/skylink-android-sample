@@ -1,1 +1,1 @@
-include ':app', ':skylink_sdk'
+include ':app', ':skylink_sdk', ':sampleapp'
