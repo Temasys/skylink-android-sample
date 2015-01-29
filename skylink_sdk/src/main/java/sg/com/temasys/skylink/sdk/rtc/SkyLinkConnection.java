@@ -226,7 +226,7 @@ public class SkyLinkConnection {
 
     /***
      *
-     * @return Existing instance of SkyLinkConnection Object if it exists or a new instance if it doesn't exists.
+     * @return Existing instance of SkyLinkConnection Object if it exists or a new instance if it doesn't exist.
      */
     public static synchronized SkyLinkConnection getInstance() {
         if (instance == null) {
@@ -238,9 +238,9 @@ public class SkyLinkConnection {
     /**
      * Creates a new SkyLinkConnection object with the specified parameters.
      *
-     * @param apiKey  The api key from the temasys developer console
-     * @param secret  The secret associated with the key as registered with the temasys developer console
-     * @param config  The config object to configure the type of call.
+     * @param apiKey  The api key from the Skylink Developer Console
+     * @param secret  The secret associated with the key as registered with the Skylink Developer Console
+     * @param config  The SkyLinkConfig object to configure the type of call.
      * @param context The application context
      */
     public void init(String apiKey, String secret,
@@ -427,8 +427,7 @@ public class SkyLinkConnection {
     }
 
     /**
-     * Sends a user defined message to a specific peer or to all peers via signalling
-     * channel.
+     * Sends a user defined message to a specific peer or to all peers via a signalling server.
      *
      * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
      *                     broadcast to all of the connected peers in the room.
@@ -556,7 +555,7 @@ public class SkyLinkConnection {
     /**
      * Mutes the local user's video and notifies all the peers in the room.
      *
-     * @param isMuted Flag that specify whether to mute / unmute the video
+     * @param isMuted Flag that specifies whether to mute / unmute the video
      */
     public void muteLocalVideo(boolean isMuted) {
         if (this.webServerClient == null)
@@ -613,9 +612,9 @@ public class SkyLinkConnection {
      * Call this method to accept or reject the file transfer request from a
      * peer.
      *
-     * @param remotePeerId The id of the remote peer that the user wants to send the file to
+     * @param remotePeerId The id of the remote peer that the user wants to send the file to.
      * @param filePath     The absolute path of the file where the user wants it to be saved
-     * @param isPermitted  Accept or reject file transfer request received.
+     * @param isPermitted  Permission granted for the file transfer to be accepted.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId,
                                                    String filePath, boolean isPermitted) {
@@ -630,7 +629,7 @@ public class SkyLinkConnection {
     /**
      * Retrieves the user defined data object associated with a peer.
      *
-     * @param remotePeerId The id of the remote peer whose data needes to be retrieved
+     * @param remotePeerId The id of the remote peer whose data needs to be retrieved
      * @return May be a 'java.lang.String', 'org.json.JSONObject' or
      * 'org.json.JSONArray'.
      */
