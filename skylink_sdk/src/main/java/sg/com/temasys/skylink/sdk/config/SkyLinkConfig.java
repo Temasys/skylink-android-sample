@@ -23,6 +23,7 @@ public class SkyLinkConfig implements Serializable {
 
     /**
      * List of enums that specify an audio video setting.
+     * Each option restricts the sending and receiving of the local user's audio and/or video stream.
      */
     public enum AudioVideoConfig {
         NO_AUDIO_NO_VIDEO,
@@ -41,7 +42,7 @@ public class SkyLinkConfig implements Serializable {
     /**
      * Creates a new SkyLinkConfig (Copy constructor).
      *
-     * @param config Configuration object to copy from
+     * @param config Configuration object with settings to copy from.
      */
     public SkyLinkConfig(SkyLinkConfig config) {
         super();
@@ -55,28 +56,28 @@ public class SkyLinkConfig implements Serializable {
     }
 
     /**
-     * @return Audio send config value.
+     * @return true if sending user's audio stream is enabled
      */
     public boolean hasAudioSend() {
         return audioSend;
     }
 
     /**
-     * @return Video send config value.
+     * @return true if sending user's video stream is enabled
      */
     public boolean hasVideoSend() {
         return videoSend;
     }
 
     /**
-     * @return Audio receive config value.
+     * @return true if receiving remote peer's audio stream is enabled
      */
     public boolean hasAudioReceive() {
         return audioReceive;
     }
 
     /**
-     * @return Video receive config value.
+     * @return  true if receiving remote peer's video stream is enabled
      */
     public boolean hasVideoReceive() {
         return videoReceive;
@@ -198,14 +199,16 @@ public class SkyLinkConfig implements Serializable {
      * Sets advanced options. (For advanced users only).
      *
      * @param advancedOptions A map containing optional entries as follows:
-     *                        "STUN":"boolean", "TURN":"boolean", "transport":"TCP/UDP"
+     *                        "STUN":"boolean" or "STUN",boolean
+     *                        "TURN":"boolean", or "TURN":boolean
+     *                        "transport":"UDP" or "transport":"TCP"
      */
     public void setAdvancedOptions(Map<String, Object> advancedOptions) {
         this.advancedOptions = advancedOptions;
     }
 
     /**
-     * @return Stun status
+     * @return STUN is enabled or not
      */
     public boolean isStunDisabled() {
         boolean result = false;
@@ -218,7 +221,7 @@ public class SkyLinkConfig implements Serializable {
     }
 
     /**
-     * @return Turn status
+     * @return TURN is enabled or not
      */
     public boolean isTurnDisabled() {
         boolean result = false;
@@ -231,7 +234,7 @@ public class SkyLinkConfig implements Serializable {
     }
 
     /**
-     * @return transport used
+     * @return transport used. Possible values are "UDP" or "TCP"
      */
     public String getTransport() {
         String result = null;
