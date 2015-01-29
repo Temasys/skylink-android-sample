@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.SignatureException;
 import java.util.ArrayList;
-import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
@@ -161,7 +160,7 @@ public class RoomViewActivity extends Activity implements
         try {
             if (!mIsAlreadyConnected) {
                 String userData = mDisplayName;
-                mConnection.connectToRoom(mRoomName, userData, new Date(), 200);
+                mConnection.connectToRoom(mRoomName, userData);
             }
         } catch (JSONException e) {
             Log.w(TAG, e.getLocalizedMessage(), e);
