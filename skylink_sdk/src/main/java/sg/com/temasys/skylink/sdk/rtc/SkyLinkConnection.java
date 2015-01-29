@@ -61,9 +61,13 @@ import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
  */
 public class SkyLinkConnection {
 
+    /**
+     * Duration in hours after the start time when the room will be closed by the signalling server.
+     */
     private static final int DURATION = 240;
 
     /**
+     *
      * @return The file transfer listener object.
      */
     public FileTransferListener getFileTransferListener() {
@@ -93,7 +97,7 @@ public class SkyLinkConnection {
     /**
      * Sets the specified life cycle listener object.
      *
-     * @param lifeCycleListener The life cycle listener object that will receive callbacks related to the SDK's Lifecycle
+     * @param lifeCycleListener The life cycle listener object that will receive callbacks related to the SDK's Lifecycle.
      */
     public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
         if (lifeCycleListener == null)
@@ -111,6 +115,8 @@ public class SkyLinkConnection {
 
     /**
      * Sets the specified media listener object that will receive callbacks related to Media Stream.
+     *
+     * Callbacks include those for the local user and remote peers.
      *
      * @param mediaListener The media listener object
      */
