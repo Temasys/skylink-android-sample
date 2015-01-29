@@ -22,13 +22,14 @@ import java.util.Date;
 import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 /**
  * This class is used to demonstrate the AudioCall between two clients in WebRTC
  * Created by lavanyasudharsanam on 20/1/15.
  */
-public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener {
+public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener,RemotePeerListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     LinearLayout parentFragment;
     private SkyLinkConnection skyLinkConnection;
@@ -145,5 +146,24 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerMediaReceive(String s, GLSurfaceView glSurfaceView, Point point) {
         Log.d(TAG, "onRemotePeerVideoToggle");
+    }
+
+    @Override
+    public void onRemotePeerJoin(String s, Object o) {
+
+    }
+
+    @Override
+    public void onRemotePeerUserDataReceive(String s, Object o) {
+
+    }
+
+    @Override
+    public void onOpenDataConnection(String s) {
+    }
+
+    @Override
+    public void onRemotePeerLeave(String s, String s2) {
+
     }
 }
