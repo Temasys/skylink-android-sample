@@ -39,6 +39,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 public class FileTransferFragment extends Fragment implements LifeCycleListener, FileTransferListener, RemotePeerListener {
 
     private static final String TAG = FileTransferFragment.class.getCanonicalName();
+    public static final String ROOM_NAME = "fileTransferRoom";
+    public static final String MY_USER_NAME = "fileTransferUser";
     public static final String EXTERNAL_STORAGE = "ExternalStorage";
     private TextView tvRoomDetails;
     private EditText etSenderFilePath;
@@ -105,8 +107,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         initializeSkylinkConnection();
 
         try {
-            skyLinkConnection.connectToRoom(Constants.ROOM_NAME, Constants
-                    .MY_USER_NAME, new Date(), Constants.DURATION);
+            skyLinkConnection.connectToRoom(ROOM_NAME,
+                    MY_USER_NAME, new Date(), Constants.DURATION);
         } catch (SignatureException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
