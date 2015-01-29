@@ -275,7 +275,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onRemotePeerLeave(String remotePeerId, String message) {
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
 
-        View peer = parentFragment.findViewWithTag("video");
+        View peer = parentFragment.findViewWithTag("peer");
         View self = parentFragment.findViewWithTag("self");
         if (peer != null) {
             parentFragment.removeView(peer);
