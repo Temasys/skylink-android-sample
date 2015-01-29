@@ -44,7 +44,7 @@ public class MainActivity extends ActionBarActivity
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
-        // Set up the drawer.
+
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -79,6 +79,7 @@ public class MainActivity extends ActionBarActivity
             default:
                 break;
         }
+        setTitle(mTitle);
     }
 
     public void restoreActionBar() {
@@ -117,6 +118,12 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * returns fragment
+     *
+     * @param position
+     * @return fragment to launch based on the item clicked on the navigation drawer
+     */
     public Fragment getFragmentToLaunch(int position) {
         Fragment fragmentToLaunch = null;
         switch (position) {
