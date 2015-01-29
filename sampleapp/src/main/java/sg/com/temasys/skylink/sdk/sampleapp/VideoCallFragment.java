@@ -32,10 +32,11 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
 
 /**
- * A placeholder fragment containing a simple view.
+ * This class is used to demonstrate the VideoCall between two clients in WebRTC
  */
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
+    //set height width for self-video when in call
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
     private LinearLayout parentFragment;
@@ -46,6 +47,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        //initialize views
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
@@ -60,7 +62,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 String roomName = etRoomName.getText().toString();
                 if (roomName.isEmpty()) {
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
@@ -87,12 +88,15 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initializeSkylinkConnection();
+    }
 
+    private void initializeSkylinkConnection() {
         skyLinkConnection = SkyLinkConnection.getInstance();
+        //the app_key and app_secret is obtained from the temasys developer console.
         skyLinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
-
-        Log.d(TAG, " lo " + this.getActivity());
+        //set listeners to receive callbacks when events are triggered
         skyLinkConnection.setLifeCycleListener(this);
         skyLinkConnection.setMediaListener(this);
         skyLinkConnection.setRemotePeerListener(this);
@@ -100,6 +104,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     private SkyLinkConfig getSkylinkConfig() {
         SkyLinkConfig config = new SkyLinkConfig();
+        //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
         config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
@@ -109,18 +114,25 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onDetach() {
+        //close the connection when the fragment is detached, so the streams are not open.
+        if (skyLinkConnection != null) {
+            skyLinkConnection.disconnectFromRoom();
+            skyLinkConnection.setLifeCycleListener(null);
+            skyLinkConnection.setMediaListener(null);
+            skyLinkConnection.setRemotePeerListener(null);
+        }
         super.onDetach();
-        skyLinkConnection.disconnectFromRoom();
-        skyLinkConnection.setLifeCycleListener(null);
-        skyLinkConnection.setMediaListener(null);
-        skyLinkConnection.setRemotePeerListener(null);
     }
 
+
     /***
-     * Lifecycle Listener
+     * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's lifecycle
      */
 
+
     /**
+     * Triggered when connection is successful
+     *
      * @param isSuccess
      * @param message
      */
@@ -132,16 +144,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             Toast.makeText(getActivity(), "Connected to room", Toast.LENGTH_SHORT).show();
         } else {
             Log.d(TAG, "Skylink Failed");
-        }
-    }
-
-    @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
-        if (videoView != null) {
-            //show media on screen
-            videoView.setTag("self");
-            parentFragment.addView(videoView);
-            Log.d(TAG, "received view");
         }
     }
 
@@ -161,8 +163,23 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     /**
-     * Media Listeners
+     * Media Listeners Callbacks - triggered when receiving changes to Media Stream from the remote peer
      */
+
+    /**
+     * Triggered after the user's local media is captured.
+     *
+     * @param videoView
+     * @param size
+     */
+    @Override
+    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
+        if (videoView != null) {
+            //show media on screen
+            videoView.setTag("self");
+            parentFragment.addView(videoView);
+        }
+    }
 
     @Override
     public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
@@ -171,16 +188,16 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        Log.d(TAG, "onRemotePeerAudioToggle");
+        Log.d(TAG, "onRemotePeerAudioToggle - " + isMuted);
     }
 
     @Override
     public void onRemotePeerVideoToggle(String peerId, boolean isMuted) {
-        Log.d(TAG, "onRemotePeerVideoToggle");
+        Log.d(TAG, "onRemotePeerVideoToggle " + isMuted);
     }
 
     /**
-     * Remote Peer Callbacks
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
      */
 
     @Override
@@ -217,7 +234,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
-        Toast.makeText(getActivity(), "Peer go bye bye", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
 
         View peer = parentFragment.findViewWithTag("video");
         if (peer != null) {
