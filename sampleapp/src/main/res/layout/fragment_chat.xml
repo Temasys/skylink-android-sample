@@ -61,6 +61,7 @@
         android:layout_alignParentBottom="true"
         android:layout_toEndOf="@+id/btn_send_private_chat"/>
 
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,6 +70,5 @@
         android:layout_alignParentEnd="true"
         android:layout_above="@+id/btn_send_public_server_message"
         android:layout_toEndOf="@+id/btn_send_server_message"/>
-
 
 </RelativeLayout>
