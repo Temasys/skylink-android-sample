@@ -7,9 +7,9 @@ public class Utils {
     private Utils() {
     }
 
-    public static void setRoomDetails(boolean isPeerInRoom, TextView textView, String peerName) {
-        String roomDetails = "Room Name : " + Constants.ROOM_NAME
-                + "\nYou are signed in as : " + Constants.MY_USER_NAME + "\n";
+    public static void setRoomDetails(boolean isPeerInRoom, TextView textView, String peerName,String roomName,String userName) {
+        String roomDetails = "Room Name : " + roomName
+                + "\nYou are signed in as : " + userName + "\n";
         if (isPeerInRoom) {
             roomDetails += "Peer Name : " + peerName;
         } else {

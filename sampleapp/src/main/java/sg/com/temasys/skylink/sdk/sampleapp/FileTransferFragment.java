@@ -167,7 +167,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName);
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
         } else {
             Log.d(TAG, "Skylink Failed");
         }
@@ -252,7 +252,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         this.peerId = peerId;
         if (userData instanceof String) {
             this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName);
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
         }
     }
 
@@ -289,7 +289,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         this.peerId = null;
         this.peerName = null;
         //update textview to display room's status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName);
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
     }
 
     /**

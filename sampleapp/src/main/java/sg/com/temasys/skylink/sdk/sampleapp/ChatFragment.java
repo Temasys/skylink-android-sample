@@ -250,7 +250,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName);
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
         } else {
             Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : " + message, Toast.LENGTH_SHORT).show();
         }
@@ -287,7 +287,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         this.remotePeerId = remotePeerId;
         if (userData instanceof String) {
             this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName);
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
         }
     }
 
@@ -303,7 +303,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         this.remotePeerId = null;
         this.peerName = null;
         //update textview to show room status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName);
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
     }
 
     @Override
