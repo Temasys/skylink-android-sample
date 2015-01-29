@@ -173,13 +173,14 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     /**
      * Retrives message written in edit text and adds it to the chatlistview
-     * @return message that was added to the listview
+     *
      * @param isPrivateMessage
+     * @return message that was added to the listview
      */
     private String addMessageToListView(boolean isPrivateMessage) {
         EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
         String message = edit.getText().toString();
-        chatMessageCollection.add(isPrivateMessage?"You : <Private>" + message: "You : " + message);
+        chatMessageCollection.add(isPrivateMessage ? "You : <Private>" + message : "You : " + message);
         edit.setText("");
         adapter.notifyDataSetChanged();
         return message;
@@ -242,6 +243,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     /**
      * Triggered if the connection is successful
+     *
      * @param isSuccess
      * @param message
      */
@@ -250,7 +252,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
             Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : " + message, Toast.LENGTH_SHORT).show();
         }
@@ -287,7 +289,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         this.remotePeerId = remotePeerId;
         if (userData instanceof String) {
             this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         }
     }
 
@@ -303,7 +305,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         this.remotePeerId = null;
         this.peerName = null;
         //update textview to show room status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
     }
 
     @Override

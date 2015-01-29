@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
@@ -29,18 +31,23 @@ import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
  * This class is used to demonstrate the AudioCall between two clients in WebRTC
  * Created by lavanyasudharsanam on 20/1/15.
  */
-public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener,RemotePeerListener {
+public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     public static final String ROOM_NAME = "audioCallRoom";
     public static final String MY_USER_NAME = "audioCallUser";
-    LinearLayout parentFragment;
+    private LinearLayout parentFragment;
     private SkyLinkConnection skyLinkConnection;
+    private TextView tvRoomDetails;
+    private String remotePeerId;
+    private String peerName;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_audio_call);
+
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
 
         Button btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
@@ -72,6 +79,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         Log.d(TAG, " lo " + this.getActivity());
         skyLinkConnection.setLifeCycleListener(this);
         skyLinkConnection.setMediaListener(this);
+        skyLinkConnection.setRemotePeerListener(this);
     }
 
     @Override
@@ -105,6 +113,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
             Log.d(TAG, "Skylink Connected");
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
             Log.d(TAG, "Skylink Failed");
         }
@@ -151,8 +160,19 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerJoin(String s, Object o) {
-
+    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+        // If there is an existing peer, prevent new remotePeer from joining call.
+        if (this.remotePeerId != null) {
+            Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //if first remote peer to join room, keep track of user and update text-view to display details
+        this.remotePeerId = remotePeerId;
+        if (userData instanceof String) {
+            this.peerName = (String) userData;
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+        }
     }
 
     @Override
@@ -165,7 +185,12 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerLeave(String s, String s2) {
-
+    public void onRemotePeerLeave(String remotePeerId, String message) {
+        Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        //reset peerId
+        this.remotePeerId = null;
+        this.peerName = null;
+        //update textview to show room status
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
     }
 }
