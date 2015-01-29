@@ -37,6 +37,7 @@
             android:textOff="Audio Muted"
             android:id="@+id/toggle_audio"
             android:layout_weight="1"
+            android:visibility="gone"
             />
         <ToggleButton
             android:layout_width="wrap_content"
@@ -47,6 +48,7 @@
             android:textOff="Video Muted"
             android:id="@+id/toggle_video"
             android:layout_weight="1"
+            android:visibility="gone"
             />
 
     </LinearLayout>
