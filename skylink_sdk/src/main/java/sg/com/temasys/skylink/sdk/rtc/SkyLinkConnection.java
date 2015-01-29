@@ -614,7 +614,7 @@ public class SkyLinkConnection {
      *
      * @param remotePeerId The id of the remote peer that the user wants to send the file to.
      * @param filePath     The absolute path of the file where the user wants it to be saved
-     * @param isPermitted  Permission granted for the file transfer to be accepted.
+     * @param isPermitted  Whether permission was granted for the file transfer to proceed.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId,
                                                    String filePath, boolean isPermitted) {
