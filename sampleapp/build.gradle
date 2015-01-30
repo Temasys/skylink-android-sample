@@ -15,7 +15,7 @@ sonarRunner {
 
 repositories {
     maven {
-        url = 'http://archiva.temasys.com.sg/repository/snapshots'
+        url = 'http://archiva.temasys.com.sg/repository/internal'
     }
     maven { url 'https://maven.fabric.io/public' }
 }
@@ -42,5 +42,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
-    compile(group: 'sg.com.temasys.skylink.sdk', name: 'skylink_sdk', version: '0.9.0-SNAPSHOT', ext: 'aar')
+    compile(group: 'sg.com.temasys.skylink.sdk', name: 'skylink_sdk', version: '0.9.0-RELEASE', ext: 'aar')
 }
