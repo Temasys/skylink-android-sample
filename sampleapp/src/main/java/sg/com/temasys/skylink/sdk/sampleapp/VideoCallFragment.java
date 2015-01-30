@@ -25,13 +25,12 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.security.SignatureException;
-import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -49,7 +48,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private ToggleButton toggleVideoButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
-    private SkyLinkConnection skyLinkConnection;
+    private SkylinkConnection skyLinkConnection;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,8 +72,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 btnEnterRoom.setVisibility(View.GONE);
 
                 try {
-                    skyLinkConnection.connectToRoom(ROOM_NAME,
-                            roomName, new Date(), Constants.DURATION);
+                    skyLinkConnection.connectToRoom(ROOM_NAME, roomName);
                 } catch (SignatureException e) {
                     Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
@@ -89,7 +87,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 //if toggle is checked, audio is is on, else audio is muted
-                skyLinkConnection.muteLocalAudio(!((ToggleButton)v).isChecked());
+                skyLinkConnection.muteLocalAudio(!((ToggleButton) v).isChecked());
             }
         });
 
@@ -97,7 +95,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 //if toggle is checked, video is is on, else video is muted
-                skyLinkConnection.muteLocalVideo(!((ToggleButton)v).isChecked());
+                skyLinkConnection.muteLocalVideo(!((ToggleButton) v).isChecked());
             }
         });
 
@@ -112,7 +110,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     private void initializeSkylinkConnection() {
-        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skyLinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
@@ -122,10 +120,10 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         skyLinkConnection.setRemotePeerListener(this);
     }
 
-    private SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConfig config = new SkyLinkConfig();
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
         //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
-        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
@@ -170,7 +168,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             etRoomName.setEnabled(false);
             toggleAudioButton.setVisibility(View.VISIBLE);
             toggleVideoButton.setVisibility(View.VISIBLE);
-            Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME  , Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
         } else {
             Log.d(TAG, "Skylink Failed");
         }
@@ -217,24 +215,24 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        String message =null;
-        if(isMuted)
+        String message = null;
+        if (isMuted)
             message = "Your peer muted their audio";
         else
             message = "Your peer unmuted their audio";
 
-        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onRemotePeerVideoToggle(String peerId, boolean isMuted) {
-        String message =null;
-        if(isMuted)
+        String message = null;
+        if (isMuted)
             message = "Your peer muted video";
         else
             message = "Your peer unmuted their video";
 
-        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 
     /**

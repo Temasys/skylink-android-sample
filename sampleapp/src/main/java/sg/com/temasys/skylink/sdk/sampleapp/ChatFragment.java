@@ -22,15 +22,14 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.security.SignatureException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
  * This class is used to demonstrate the Chat between two clients in WebRTC
@@ -48,7 +47,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     private Button btnSendPublicServerMessage;
     private ListView listViewChats;
     private TextView tvRoomDetails;
-    private SkyLinkConnection skyLinkConnection;
+    private SkylinkConnection skyLinkConnection;
     private BaseAdapter adapter;
     private List<String> chatMessageCollection;
     private String peerName;
@@ -136,7 +135,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 try {
                     //sends p2p message using the datachannel to the specific user
                     skyLinkConnection.sendP2PMessage(remotePeerId, message);
-                } catch (SkyLinkException e) {
+                } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
 
@@ -159,7 +158,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 try {
                     //sends p2p message using the datachannel to the all users
                     skyLinkConnection.sendP2PMessage(null, message);
-                } catch (SkyLinkException e) {
+                } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
 
@@ -195,7 +194,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
         try {
             skyLinkConnection.connectToRoom(ROOM_NAME,
-                    MY_USER_NAME, new Date(), Constants.DURATION);
+                    MY_USER_NAME);
         } catch (SignatureException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
@@ -206,7 +205,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     private void initializeSkylinkConnection() {
-        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skyLinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
@@ -216,10 +215,10 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         skyLinkConnection.setRemotePeerListener(this);
     }
 
-    private SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConfig config = new SkyLinkConfig();
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
         //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
-        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);

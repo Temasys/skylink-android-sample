@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 public class RoomManager {
 
@@ -32,7 +32,7 @@ public class RoomManager {
     private Map<String, TextView> mGroupTextViewPool;
     private Map<String, TextView> mPrivateTextViewPool;
     private Map<String, VideoInfo> mVideoPool;
-    private SkyLinkConnection mConnection;
+    private SkylinkConnection mConnection;
 
     // File Related
     private boolean mIsFileUIActive = false;
@@ -50,7 +50,7 @@ public class RoomManager {
     // String[ <request msg>, <peerId>, <filename> ]
     public ArrayList<String[]> mFileRequestList;
 
-    private RoomManager(SkyLinkConnection connection) {
+    private RoomManager(SkylinkConnection connection) {
         mConnection = connection;
 
         mGroupChat = new ArrayList<OneComment>();
@@ -64,7 +64,7 @@ public class RoomManager {
         mFileRequestList = new ArrayList<String[]>();
     }
 
-    public static RoomManager getInstance(SkyLinkConnection connection) {
+    public static RoomManager getInstance(SkylinkConnection connection) {
         if (sConnectionManager == null) {
             sConnectionManager = new RoomManager(connection);
         }
@@ -156,11 +156,11 @@ public class RoomManager {
         mPrivateTextViewPool.put(peerId, txtVw);
     }
 
-    public SkyLinkConnection getConnection() {
+    public SkylinkConnection getConnection() {
         return mConnection;
     }
 
-    public void setConnection(SkyLinkConnection connection) {
+    public void setConnection(SkylinkConnection connection) {
         mConnection = connection;
     }
 

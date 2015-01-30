@@ -19,7 +19,7 @@ import java.util.Iterator;
 
 class DataChannelManager {
 
-    private SkyLinkConnection connectionManager;
+    private SkylinkConnection connectionManager;
 
     private static final String TAG = "DataChannelManager";
 
@@ -61,7 +61,7 @@ class DataChannelManager {
     private DcObserver dcObsMcu;
     private String tidMcu;
 
-    public DataChannelManager(SkyLinkConnection connectionManager, int timeout,
+    public DataChannelManager(SkylinkConnection connectionManager, int timeout,
                               boolean hasPeerMessaging, boolean hasFileTransfer) {
         this.connectionManager = connectionManager;
         if (timeout > 0) TIMEOUT = timeout;
@@ -73,7 +73,7 @@ class DataChannelManager {
 // Set and get methods
 // -------------------------------------------------------------------------------------------------
 
-    public SkyLinkConnection getConnectionManager() {
+    public SkylinkConnection getConnectionManager() {
         return connectionManager;
     }
 
@@ -89,7 +89,7 @@ class DataChannelManager {
         return isMcuRoom;
     }
 
-    public void setConnectionManager(SkyLinkConnection connectionManager) {
+    public void setConnectionManager(SkylinkConnection connectionManager) {
         this.connectionManager = connectionManager;
     }
 

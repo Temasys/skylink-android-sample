@@ -12,7 +12,7 @@ import android.widget.ListView;
 import java.util.List;
 import java.util.Random;
 
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkException;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sample.R;
 import sg.com.temasys.skylink.sdk.sample.RoomManager;
 
@@ -79,7 +79,7 @@ public class HelloBubblesActivity extends Activity {
                         try {
                             RoomManager.get().getConnection()
                                     .sendP2PMessage(peerId, message);
-                        } catch (SkyLinkException e) {
+                        } catch (SkylinkException e) {
                             Log.w(TAG, e.getLocalizedMessage(), e);
                         }
                     }

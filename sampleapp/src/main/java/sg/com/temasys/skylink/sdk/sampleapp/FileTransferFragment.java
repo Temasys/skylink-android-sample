@@ -26,13 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.SignatureException;
-import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -48,7 +47,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     private EditText etSenderFilePath;
     private TextView tvFileTransferDetails;
     private ImageView ivFilePreview;
-    private SkyLinkConnection skyLinkConnection;
+    private SkylinkConnection skyLinkConnection;
     private String peerId;
     private Button sendFile;
     private String fileName = "demofile.png";
@@ -110,7 +109,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
         try {
             skyLinkConnection.connectToRoom(ROOM_NAME,
-                    MY_USER_NAME, new Date(), Constants.DURATION);
+                    MY_USER_NAME);
         } catch (SignatureException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
@@ -141,7 +140,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
 
     private void initializeSkylinkConnection() {
-        skyLinkConnection = SkyLinkConnection.getInstance();
+        skyLinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skyLinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(),
@@ -152,10 +151,10 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         skyLinkConnection.setFileTransferListener(this);
     }
 
-    private SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConfig config = new SkyLinkConfig();
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
         //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
-        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
@@ -177,7 +176,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
             Log.d(TAG, "Skylink Failed");
         }
@@ -261,7 +260,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         this.peerId = peerId;
         if (userData instanceof String) {
             this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         }
     }
 
@@ -298,7 +297,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         this.peerId = null;
         this.peerName = null;
         //update textview to display room's status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
     }
 
     /**
