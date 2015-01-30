@@ -1,26 +1,44 @@
 apply plugin: 'com.android.application'
 
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':skylink_sdk')
+}
+
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.1"
-
     defaultConfig {
-        applicationId "com.temasys.skylink.sample"
+        applicationId 'sg.com.temasys.skylink.sdk.sample'
         minSdkVersion 17
         targetSdkVersion 21
     }
-
+    sourceSets {
+        main {
+            resources.srcDirs = ['src', 'src/main/resources', 'src/main/jniLibs/']
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // debuggable false
         }
+    }
+    productFlavors {
     }
 }
 
-dependencies {
-    compile files('libs/afilechooser.jar')
-    compile files('libs/libjingle_peerconnection.jar')
-    compile files('libs/socketio.jar')
-    compile project(':skylink_sdk')
+// Check if a local gradle file exists and if we specified to use signingConfigs from it.
+// If so, apply the gradle script from it, i.e. the signingConfigs.
+// If not, do nothing but just log some values of gradle.properties.
+if (file(project.property("appLocalConfig")).exists()
+        && project.hasProperty("appSigningConfigs")) {
+    apply from: project.property("appLocalConfig");
+    println("[app]: Applied from appLocalConfig.");
+} else {
+    println("[app]: Did NOT apply from appLocalConfig.");
+    println("[app]: project.hasProperty( \"appSigningConfigs\" ): " + project.hasProperty("appSigningConfigs"))
+    println("[app]: project.property(appLocalConfig): " + project.property("appLocalConfig"))
+    println("[app]: file( project.property(appLocalConfig) ): " + file(project.property("appLocalConfig")))
 }

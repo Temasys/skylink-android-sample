@@ -1,0 +1,27 @@
+/*
+  Instructions for using the localExample.gradle file.
+  To create local configurations for the app project:
+  MAKE A COPY of localExample.gradle (do NOT edit localExample.gradle for app usage)
+    and give it a name not used in this directory (app/), e.g. local.gradle.
+    Set this value to appLocalConfig in gradle.properties in the same directory.
+  Replace the various values below with your local values.
+*/
+
+android {
+    signingConfigs {
+        // Keystore information for release build
+        release {
+            storeFile file("/Users/Username/PathTo/Keystores/keystore.jks")
+            storePassword "KeyStorePassword"
+            keyAlias "keyAliasToUse"
+            keyPassword "KeyPassword"
+        }
+    }
+
+    buildTypes {
+        release {
+            // If building in release, use this Keystore configuration:
+            signingConfig signingConfigs.release
+        }
+    }
+}
