@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * Configuration class used to configure the parameters of conversation.
+ * Configuration class used to configure the parameters of real time communication.
  *
- * @author temasys
+ * @author Temasys Communications Pte Ltd
  */
 public class SkylinkConfig implements Serializable {
 
@@ -22,8 +22,8 @@ public class SkylinkConfig implements Serializable {
     private Map<String, Object> advancedOptions;
 
     /**
-     * List of enums that specify an audio video setting.
-     * Each option restricts the sending and receiving of the local user's audio and/or video stream.
+     * List of enums that specify an audio video setting. Each option restricts the sending and
+     * receiving of the local user's audio and/or video stream.
      */
     public enum AudioVideoConfig {
         NO_AUDIO_NO_VIDEO,
@@ -77,14 +77,14 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * @return  true if receiving remote peer's video stream is enabled
+     * @return true if receiving remote peer's video stream is enabled
      */
     public boolean hasVideoReceive() {
         return videoReceive;
     }
 
     /**
-     * Sets the audio video send flag to the indicated boolean value.
+     * Sets the audio video send and receive flag to the indicated boolean value.
      *
      * @param audioVideoConfig Audio video send config value
      */
@@ -146,8 +146,7 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * Sets the peerMessaging flag for this object to the indicated boolean
-     * value.
+     * Sets if peerMessaging is enabled.
      *
      * @param peerMessaging PeerMessaging config value
      */
@@ -163,8 +162,7 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * Sets the fileTransfer flag for this object to the indicated boolean
-     * value.
+     * Sets the fileTransfer is enabled.
      *
      * @param fileTransfer FileTransfer config value
      */
@@ -180,7 +178,7 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * Sets the timeout value of this object.
+     * Sets the timeout value (in seconds) for various operations in the SDK, for e.g. file transfer waiting time for remote peer's response.
      *
      * @param timeout Timeout config value
      */
@@ -198,10 +196,9 @@ public class SkylinkConfig implements Serializable {
     /**
      * Sets advanced options. (For advanced users only).
      *
-     * @param advancedOptions A map containing optional entries as follows:
-     *                        "STUN":"boolean" or "STUN",boolean
-     *                        "TURN":"boolean", or "TURN":boolean
-     *                        "transport":"UDP" or "transport":"TCP"
+     * @param advancedOptions A map containing optional entries as follows: "STUN":"boolean" or
+     *                        "STUN",boolean "TURN":"boolean", or "TURN":boolean "transport":"UDP"
+     *                        or "transport":"TCP"
      */
     public void setAdvancedOptions(Map<String, Object> advancedOptions) {
         this.advancedOptions = advancedOptions;

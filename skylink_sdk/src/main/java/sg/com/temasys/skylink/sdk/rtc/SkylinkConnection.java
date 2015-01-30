@@ -57,10 +57,15 @@ import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
 
 /**
  * Main class to connect to the skylink infrastructure.
- * @author temasys
+ *
+ * @author Temasys Communications Pte Ltd
  */
 public class SkylinkConnection {
 
+    /**
+     * Duration in hours after the start time when the room will be closed by the signalling
+     * server.
+     */
     private static final int DURATION = 240;
 
     /**
@@ -73,7 +78,8 @@ public class SkylinkConnection {
     /**
      * Sets the specified file transfer listener object.
      *
-     * @param fileTransferListener The file transfer listener object that will receive callbacks related to FileTransfer
+     * @param fileTransferListener The file transfer listener object that will receive callbacks
+     *                             related to FileTransfer
      */
     public void setFileTransferListener(
             FileTransferListener fileTransferListener) {
@@ -93,7 +99,8 @@ public class SkylinkConnection {
     /**
      * Sets the specified life cycle listener object.
      *
-     * @param lifeCycleListener The life cycle listener object that will receive callbacks related to the SDK's Lifecycle
+     * @param lifeCycleListener The life cycle listener object that will receive callbacks related
+     *                          to the SDK's Lifecycle.
      */
     public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
         if (lifeCycleListener == null)
@@ -110,7 +117,10 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sets the specified media listener object that will receive callbacks related to Media Stream.
+     * Sets the specified media listener object that will receive callbacks related to Media
+     * Stream.
+     * <p/>
+     * Callbacks include those for the local user and remote peers.
      *
      * @param mediaListener The media listener object
      */
@@ -131,7 +141,8 @@ public class SkylinkConnection {
     /**
      * Sets the specified messages listener object.
      *
-     * @param messagesListener The messages listener object that will receive callbacks related to Message Transmissions.
+     * @param messagesListener The messages listener object that will receive callbacks related to
+     *                         Message Transmissions.
      */
     public void setMessagesListener(MessagesListener messagesListener) {
         if (messagesListener == null)
@@ -150,7 +161,8 @@ public class SkylinkConnection {
     /**
      * Sets the specified remote peer listener object.
      *
-     * @param remotePeerListener The remote peer listener object that will receive callbacks related to the RemotePeer.
+     * @param remotePeerListener The remote peer listener object that will receive callbacks related
+     *                           to the RemotePeer.
      */
     public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
         if (remotePeerListener == null)
@@ -202,7 +214,9 @@ public class SkylinkConnection {
     private MessagesListener messagesListener;
     private RemotePeerListener remotePeerListener;
 
-    // List of Connection state types
+    /**
+     * List of Connection state types
+     */
     public enum ConnectionState {
         CONNECT, DISCONNECT
     }
@@ -226,9 +240,9 @@ public class SkylinkConnection {
         handler = new Handler(Looper.getMainLooper());
     }
 
-    /***
-     *
-     * @return Existing instance of SkylinkConnection Object if it exists or a new instance if it doesn't exist.
+    /**
+     * @return Existing instance of SkylinkConnection Object if it exists or a new instance if it
+     * doesn't exist.
      */
     public static synchronized SkylinkConnection getInstance() {
         if (instance == null) {
@@ -241,7 +255,8 @@ public class SkylinkConnection {
      * Creates a new SkylinkConnection object with the specified parameters.
      *
      * @param apiKey  The api key from the Skylink Developer Console
-     * @param secret  The secret associated with the key as registered with the Skylink Developer Console
+     * @param secret  The secret associated with the key as registered with the Skylink Developer
+     *                Console
      * @param config  The SkylinkConfig object to configure the type of call.
      * @param context The application context
      */
@@ -309,10 +324,9 @@ public class SkylinkConnection {
     /**
      * Connects to a room.
      *
-     * @param roomName The name of the room
-     * @param userData User defined data relating to oneself. May be a
-     *                 'java.lang.String', 'org.json.JSONObject' or
-     *                 'org.json.JSONArray'.
+     * @param roomName The name of the room to join.
+     * @param userData User defined data relating to oneself. May be a 'java.lang.String',
+     *                 'org.json.JSONObject' or 'org.json.JSONArray'.
      * @return 'false' if the connection is already established
      * @throws SignatureException
      * @throws IOException
@@ -327,11 +341,11 @@ public class SkylinkConnection {
      * Connects to a room.
      *
      * @param roomName  The name of the room
-     * @param userData  User defined data relating to oneself. May be a
-     *                  'java.lang.String', 'org.json.JSONObject' or
-     *                  'org.json.JSONArray'.
+     * @param userData  User defined data relating to oneself. May be a 'java.lang.String',
+     *                  'org.json.JSONObject' or 'org.json.JSONArray'.
      * @param startTime The time to start a call
-     * @param duration  The expected duration of a call
+     * @param duration  The expected duration of a call in hours, after which the room will close
+     *                  and kick out all users in the room.
      * @return 'false' if the connection is already established
      * @throws SignatureException
      * @throws IOException
@@ -378,7 +392,7 @@ public class SkylinkConnection {
     }
 
     /**
-     * Disconnects from the room.
+     * Disconnects from the room we are currently in.
      */
     public void disconnectFromRoom() {
         // Prevent thread from executing with WebServerClient methods concurrently.
@@ -446,12 +460,12 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sends a user defined message to a specific peer or to all peers via a signalling server.
+     * Sends a user defined message to a specific remote peer or to all remote peers via a server.
      *
-     * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
-     *                     broadcast to all of the connected peers in the room.
-     * @param message      User defined data. May be a 'java.lang.String',
-     *                     'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId Id of the remote peer to whom we will send a message. Use 'null' if the
+     *                     message is to be broadcast to all remote peers in the room.
+     * @param message      User defined data. May be a 'java.lang.String', 'org.json.JSONObject' or
+     *                     'org.json.JSONArray'.
      */
     public void sendServerMessage(String remotePeerId, Object message) {
         if (this.webServerClient == null)
@@ -477,12 +491,13 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sends a user defined message to a peer or to all peers via data channel.
+     * Sends a user defined message to a specific remote peer or to all remote peers in a direct
+     * peer to peer manner.
      *
-     * @param remotePeerId The id of the peer. Send 'null' if the message is intended to
-     *                     broadcast to all of the connected peers in the room.
-     * @param message      User defined data. May be a 'java.lang.String',
-     *                     'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId Id of the remote peer to whom we will send a message. Use 'null' if the
+     *                     message is to be broadcast to all remote peers in the room.
+     * @param message      User defined data. May be a 'java.lang.String', 'org.json.JSONObject' or
+     *                     'org.json.JSONArray'.
      * @throws SkylinkException if the system was unable to send the message.
      */
     public void sendP2PMessage(String remotePeerId, Object message)
@@ -522,11 +537,10 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sends local user data related to oneself.
+     * Sends local user data related to oneself, to all remote peers in our room.
      *
-     * @param userData User defined data relating to the peer. May be a
-     *                 'java.lang.String', 'org.json.JSONObject' or
-     *                 'org.json.JSONArray'.
+     * @param userData User defined data relating to the peer. May be a 'java.lang.String',
+     *                 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public void sendLocalUserData(Object userData) {
         if (this.webServerClient == null) {
@@ -549,7 +563,7 @@ public class SkylinkConnection {
     /**
      * Mutes the local user's audio and notifies all the peers in the room.
      *
-     * @param isMuted Flag that specifies whether to mute / unmute the audio
+     * @param isMuted Flag that specifies whether audio should be mute
      */
     public void muteLocalAudio(boolean isMuted) {
         if (this.webServerClient == null) {
@@ -574,7 +588,7 @@ public class SkylinkConnection {
     /**
      * Mutes the local user's video and notifies all the peers in the room.
      *
-     * @param isMuted Flag that specifies whether to mute / unmute the video
+     * @param isMuted Flag that specifies whether video should be mute
      */
     public void muteLocalVideo(boolean isMuted) {
         if (this.webServerClient == null)
@@ -596,10 +610,12 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sends file transfer request to a specified peer.
+     * Sends request(s) to share file with a specific remote peer or to all remote peers in a direct
+     * peer to peer manner in the same room.
      *
-     * @param remotePeerId The id of the remote peer to send the file to.
-     * @param fileName     The name of the file that needs to be sent.
+     * @param remotePeerId The id of the remote peer to send the file to. Use 'null' if the
+     *                     file is to be broadcast to all remote peers in the room.
+     * @param fileName     The name of the file that is to be shared.
      * @param filePath     The absolute path of the file in the filesystem
      */
     public void sendFileTransferPermissionRequest(String remotePeerId, String fileName,
@@ -628,12 +644,11 @@ public class SkylinkConnection {
     }
 
     /**
-     * Call this method to accept or reject the file transfer request from a
-     * peer.
+     * Call this method to accept or reject the file share request from a remote peer.
      *
-     * @param remotePeerId The id of the remote peer that the user wants to send the file to.
-     * @param filePath     The absolute path of the file where the user wants it to be saved
-     * @param isPermitted  Whether permission was granted for the file transfer to proceed.
+     * @param remotePeerId The id of the remote peer that requested to share with us a file.
+     * @param filePath     The absolute path of the file where we want it to be saved.
+     * @param isPermitted  Whether permission was granted for the file share to proceed.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId,
                                                    String filePath, boolean isPermitted) {
@@ -646,11 +661,10 @@ public class SkylinkConnection {
     }
 
     /**
-     * Retrieves the user defined data object associated with a peer.
+     * Retrieves the user defined data object associated with a remote peer.
      *
-     * @param remotePeerId The id of the remote peer whose data needs to be retrieved
-     * @return May be a 'java.lang.String', 'org.json.JSONObject' or
-     * 'org.json.JSONArray'.
+     * @param remotePeerId The id of the remote peer whose data is to be retrieved.
+     * @return May be a 'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public Object getUserData(String remotePeerId) {
         if (remotePeerId == null)
@@ -765,8 +779,7 @@ public class SkylinkConnection {
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
     /**
-     * Computes RFC 2104-compliant HMAC signature. * @param data The data to be
-     * signed.
+     * Computes RFC 2104-compliant HMAC signature. * @param data The data to be signed.
      *
      * @param key The signing key.
      * @return The Base64-encoded RFC 2104-compliant HMAC signature.
