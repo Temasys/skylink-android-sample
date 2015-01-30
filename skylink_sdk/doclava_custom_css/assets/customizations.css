@@ -1,0 +1,43 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,600,700,400italic);
+
+body,table {
+  font-family: "Source Sans Pro", Hevetica, Arial, sans-serif;
+}
+
+a {
+  text-decoration: none; 
+}
+
+#header {
+  background-color: #000;
+  color: #fff;
+  border-bottom: 3px solid #00AAA4;
+  height: 80px;
+  background-image: url(http://developer.temasys.com.sg/img/logo.min.svg);
+  background-repeat: no-repeat;
+  background-size: 140px;
+  background-position: 40px 25px;
+}
+
+#header #masthead-title {
+  color: #fff;
+  font-weight: 200;
+  padding-left: 200px;
+  line-height: 58px;
+}
+
+#search_filtered .jd-selected {
+  background-color: #0767a4;
+}
+
+th {
+  background-color: #e2fdfc;
+}
+
+.selected {
+  background-color: #00AAA4 !important;
+  font-weight: normal !important;
+  border-radius: 2px;
+  padding: 3px;
+  color: #fff !important;
+}
