@@ -26,13 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.SignatureException;
-import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -48,7 +47,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     private EditText etSenderFilePath;
     private TextView tvFileTransferDetails;
     private ImageView ivFilePreview;
-    private SkyLinkConnection skyLinkConnection;
+    private SkylinkConnection skylinkConnection;
     private String peerId;
     private Button sendFile;
     private String fileName = "demofile.png";
@@ -94,7 +93,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
                 }
 
                 //send request to peer requesting permission for file transfer
-                skyLinkConnection.sendFileTransferPermissionRequest(peerId, fileName,
+                skylinkConnection.sendFileTransferPermissionRequest(peerId, fileName,
                         getFileToTransfer().getAbsolutePath());
             }
         });
@@ -109,8 +108,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         initializeSkylinkConnection();
 
         try {
-            skyLinkConnection.connectToRoom(ROOM_NAME,
-                    MY_USER_NAME, new Date(), Constants.DURATION);
+            skylinkConnection.connectToRoom(ROOM_NAME,
+                    MY_USER_NAME);
         } catch (SignatureException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (IOException e) {
@@ -130,32 +129,32 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skyLinkConnection != null) {
-            skyLinkConnection.disconnectFromRoom();
-            skyLinkConnection.setLifeCycleListener(null);
-            skyLinkConnection.setFileTransferListener(null);
-            skyLinkConnection.setRemotePeerListener(null);
+        if (skylinkConnection != null) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setFileTransferListener(null);
+            skylinkConnection.setRemotePeerListener(null);
         }
         super.onDetach();
     }
 
 
     private void initializeSkylinkConnection() {
-        skyLinkConnection = SkyLinkConnection.getInstance();
+        skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skyLinkConnection.init(getString(R.string.app_key),
+        skylinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(),
                 this.getActivity().getApplicationContext());
         //set listeners to receive callbacks when events are triggered
-        skyLinkConnection.setLifeCycleListener(this);
-        skyLinkConnection.setRemotePeerListener(this);
-        skyLinkConnection.setFileTransferListener(this);
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setRemotePeerListener(this);
+        skylinkConnection.setFileTransferListener(this);
     }
 
-    private SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConfig config = new SkyLinkConfig();
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
         //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
-        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
@@ -177,7 +176,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
             Log.d(TAG, "Skylink Failed");
         }
@@ -206,7 +205,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public void onFileTransferPermissionRequest(String peerId, String fileName, boolean isPrivate) {
         Toast.makeText(getActivity(), "Received a file request", Toast.LENGTH_LONG).show();
         //send false to reject file transfer
-        skyLinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
+        skylinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
     }
 
     @Override
@@ -261,7 +260,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         this.peerId = peerId;
         if (userData instanceof String) {
             this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         }
     }
 
@@ -298,7 +297,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         this.peerId = null;
         this.peerName = null;
         //update textview to display room's status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME,MY_USER_NAME);
+        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
     }
 
     /**

@@ -17,9 +17,9 @@ import static org.mockito.Mockito.verify;
 
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
-public class SkyLinkConnectionTest {
+public class SkylinkConnectionTest {
 
-    private static final String TAG = SkyLinkConnectionTest.class.getName();
+    private static final String TAG = SkylinkConnectionTest.class.getName();
 
     @Before
     public void setUp() throws Exception {
@@ -28,15 +28,15 @@ public class SkyLinkConnectionTest {
 
     @Test
     public void testUnique() {
-        SkyLinkConnection skyLinkConnection = SkyLinkConnection.getInstance();
-        SkyLinkConnection skyLinkConnection1 = skyLinkConnection.getInstance();
-        assertEquals(true, skyLinkConnection == skyLinkConnection1);
+        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        SkylinkConnection skylinkConnection1 = skylinkConnection.getInstance();
+        assertEquals(true, skylinkConnection == skylinkConnection1);
     }
 
     @Test
     public void testVerifyRunOnUiThread() {
-        SkyLinkConnection skyLinkConnection = SkyLinkConnection.getInstance();
-        SkyLinkConnection mockSkyLinkConnection = mock(SkyLinkConnection.class);
+        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        SkylinkConnection mockSkylinkConnection = mock(SkylinkConnection.class);
 
         Runnable runnable = new Runnable() {
             @Override
@@ -44,11 +44,11 @@ public class SkyLinkConnectionTest {
 
             }
         };
-        mockSkyLinkConnection.runOnUiThread(runnable);
-        verify(mockSkyLinkConnection).runOnUiThread(runnable);
+        mockSkylinkConnection.runOnUiThread(runnable);
+        verify(mockSkylinkConnection).runOnUiThread(runnable);
 
         Runnable mockRunnable = mock(Runnable.class);
-        skyLinkConnection.runOnUiThread(mockRunnable);
+        skylinkConnection.runOnUiThread(mockRunnable);
         verify(mockRunnable).run();
     }
 
