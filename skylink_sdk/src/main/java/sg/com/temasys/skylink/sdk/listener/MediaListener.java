@@ -29,9 +29,9 @@ public interface MediaListener {
     void onVideoSizeChange(GLSurfaceView videoView, Point size);
 
     /**
-     * This is triggered when a peer enable / disable its audio.
+     * This is triggered when a remote peer enable / disable its audio.
      *
-     * @param remotePeerId The id of the peer
+     * @param remotePeerId The id of the remote peer
      * @param isMuted      Flag specifying whether the audio is muted or not
      */
     void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted);
@@ -39,14 +39,14 @@ public interface MediaListener {
     /**
      * This is triggered when a peer enable / disable its video.
      *
-     * @param remotePeerId The id of the peer
+     * @param remotePeerId The id of the remote peer
      * @param isMuted      Flag specifying whether the video is muted or not
      */
     void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted);
 
     /**
-     * The is triggered upon receiving the video stream of the peer if the
-     * connection is configured to have a video call.
+     * The is triggered upon receiving the media stream of the remote peer if the
+     * connection is configured to have a audio and/or video call.
      *
      * @param remotePeerId The id of the peer
      * @param videoView    Video of the peer

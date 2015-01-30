@@ -7,7 +7,7 @@ package sg.com.temasys.skylink.sdk.listener;
 public interface LifeCycleListener {
 
     /**
-     * This is the first callback to specify whether the connection was
+     * This is the first callback to specify whether the attempt to connect to the room was
      * successful.
      *
      * @param isSuccessful Specify success or failure
@@ -24,8 +24,7 @@ public interface LifeCycleListener {
     public void onWarning(String message);
 
     /**
-     * This is triggered whenever the connection between the client and the
-     * infrastructure drops.
+     * This is triggered when we disconnect from the room we were in.
      *
      * @param message Message specifying the reason for disconnection
      */
@@ -35,7 +34,7 @@ public interface LifeCycleListener {
      * Occasionally the framework sends some messages for the client to
      * intimate about certain happenings.
      *
-     * @param message Happening message
+     * @param message Message from framework.
      */
     public void onReceiveLog(String message);
 

@@ -6,7 +6,7 @@ import android.opengl.GLSurfaceView;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 
 /**
- * @author temasys
+ * @author Temasys Communications Pte Ltd
  */
 class MediaAdapter implements MediaListener {
 
