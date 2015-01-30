@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-->
+  Instructions for using the config-example.xml file.
+  To use your own API key and secret for this app:
+  MAKE A COPY of config_example.xml (do NOT edit config-example.xml for app usage)
+    and give it a name not used in this directory (res/value/), e.g. config.xml.
+  Uncomment the xml elements in it.
+  Replace the value "Enter your app ID here." below with your app ID.
+  Replace the value "Enter your app secret here." below with your app secret.
+  Optionally, replace the "Enter room name here." below with your default room name.
+<-->
+<resources>
+
+    <!-- API keys and secrets. -->
+
+    <!-- Uncomment in config.xml>
+      <string name="app_key">Enter your app ID here.</string>
+    <string name="app_secret">Enter your app secret here.</string>
+      <string name="room_name">Enter room name here.</string>
+    <-->
+
+</resources>
