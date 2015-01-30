@@ -19,7 +19,7 @@ Step-by-step guide
 3.  Implement Listeners in the Class which needs to receive the events
     sent from the SDK   
     -   List of Listeners and the callbacks they provide can be found
-        [here](http://cdn.temasys.com.sg/skylink/skylinksdk/android/dev/latest/doc/index.html)
+        [here](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/doc/index.html)
 
         **Initialize SkylinkConnection**
 

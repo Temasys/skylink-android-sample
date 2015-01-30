@@ -14,7 +14,7 @@ Add the following to your app's build.gradle:
 
     repositories {
         maven {
-            url = 'http://archiva.temasys.com.sg/repository/'
+            url = 'http://archiva.temasys.com.sg/repository/internal'
         }
     }
     dependencies {
@@ -30,7 +30,8 @@ You are ready go!
 For more information on the SDK usage, please refer to the sample
 application at:
 
-`Location to be confirmed later.`
+http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/sample_app.tar.gz
+
 =================================
 
 ``
