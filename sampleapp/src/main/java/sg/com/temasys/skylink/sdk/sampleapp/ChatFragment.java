@@ -47,7 +47,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     private Button btnSendPublicServerMessage;
     private ListView listViewChats;
     private TextView tvRoomDetails;
-    private SkylinkConnection skyLinkConnection;
+    private SkylinkConnection skylinkConnection;
     private BaseAdapter adapter;
     private List<String> chatMessageCollection;
     private String peerName;
@@ -80,7 +80,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
                 //pass null for remotePeerId to send message to send mesage to all users in the room
                 //sends message using the signalling server
-                skyLinkConnection.sendServerMessage(remotePeerId, message);
+                skylinkConnection.sendServerMessage(remotePeerId, message);
 
             }
         });
@@ -95,7 +95,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
                 //pass remotePeerId instead of null to send message to specific peer
                 //sends message using the signalling server
-                skyLinkConnection.sendServerMessage(null, message);
+                skylinkConnection.sendServerMessage(null, message);
 
                 adapter.notifyDataSetChanged();
             }
@@ -114,7 +114,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
                 //pass null for remotePeerId to send message to send mesage to all users in the room
                 //sends message using the signalling server
-                skyLinkConnection.sendServerMessage(null, message);
+                skylinkConnection.sendServerMessage(null, message);
 
                 adapter.notifyDataSetChanged();
             }
@@ -134,7 +134,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
                 try {
                     //sends p2p message using the datachannel to the specific user
-                    skyLinkConnection.sendP2PMessage(remotePeerId, message);
+                    skylinkConnection.sendP2PMessage(remotePeerId, message);
                 } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
@@ -157,7 +157,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
                 try {
                     //sends p2p message using the datachannel to the all users
-                    skyLinkConnection.sendP2PMessage(null, message);
+                    skylinkConnection.sendP2PMessage(null, message);
                 } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
@@ -193,7 +193,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         initializeSkylinkConnection();
 
         try {
-            skyLinkConnection.connectToRoom(ROOM_NAME,
+            skylinkConnection.connectToRoom(ROOM_NAME,
                     MY_USER_NAME);
         } catch (SignatureException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -205,14 +205,14 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     private void initializeSkylinkConnection() {
-        skyLinkConnection = SkylinkConnection.getInstance();
+        skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skyLinkConnection.init(getString(R.string.app_key),
+        skylinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
         //set listeners to receive callbacks when events are triggered
-        skyLinkConnection.setLifeCycleListener(this);
-        skyLinkConnection.setMessagesListener(this);
-        skyLinkConnection.setRemotePeerListener(this);
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setMessagesListener(this);
+        skylinkConnection.setRemotePeerListener(this);
     }
 
     private SkylinkConfig getSkylinkConfig() {
@@ -235,11 +235,11 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skyLinkConnection != null) {
-            skyLinkConnection.disconnectFromRoom();
-            skyLinkConnection.setLifeCycleListener(null);
-            skyLinkConnection.setRemotePeerListener(null);
-            skyLinkConnection.setMessagesListener(null);
+        if (skylinkConnection != null) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setRemotePeerListener(null);
+            skylinkConnection.setMessagesListener(null);
         }
         super.onDetach();
     }

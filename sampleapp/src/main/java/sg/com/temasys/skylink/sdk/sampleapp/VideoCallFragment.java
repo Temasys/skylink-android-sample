@@ -48,7 +48,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private ToggleButton toggleVideoButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
-    private SkylinkConnection skyLinkConnection;
+    private SkylinkConnection skylinkConnection;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,7 +72,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 btnEnterRoom.setVisibility(View.GONE);
 
                 try {
-                    skyLinkConnection.connectToRoom(ROOM_NAME, roomName);
+                    skylinkConnection.connectToRoom(roomName, MY_USER_NAME);
                 } catch (SignatureException e) {
                     Log.e(TAG, e.getMessage(), e);
                 } catch (IOException e) {
@@ -87,7 +87,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 //if toggle is checked, audio is is on, else audio is muted
-                skyLinkConnection.muteLocalAudio(!((ToggleButton) v).isChecked());
+                skylinkConnection.muteLocalAudio(!((ToggleButton) v).isChecked());
             }
         });
 
@@ -95,7 +95,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 //if toggle is checked, video is is on, else video is muted
-                skyLinkConnection.muteLocalVideo(!((ToggleButton) v).isChecked());
+                skylinkConnection.muteLocalVideo(!((ToggleButton) v).isChecked());
             }
         });
 
@@ -110,14 +110,14 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     private void initializeSkylinkConnection() {
-        skyLinkConnection = SkylinkConnection.getInstance();
+        skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skyLinkConnection.init(getString(R.string.app_key),
+        skylinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
         //set listeners to receive callbacks when events are triggered
-        skyLinkConnection.setLifeCycleListener(this);
-        skyLinkConnection.setMediaListener(this);
-        skyLinkConnection.setRemotePeerListener(this);
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setMediaListener(this);
+        skylinkConnection.setRemotePeerListener(this);
     }
 
     private SkylinkConfig getSkylinkConfig() {
@@ -140,11 +140,11 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skyLinkConnection != null) {
-            skyLinkConnection.disconnectFromRoom();
-            skyLinkConnection.setLifeCycleListener(null);
-            skyLinkConnection.setMediaListener(null);
-            skyLinkConnection.setRemotePeerListener(null);
+        if (skylinkConnection != null) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setMediaListener(null);
+            skylinkConnection.setRemotePeerListener(null);
         }
         super.onDetach();
     }

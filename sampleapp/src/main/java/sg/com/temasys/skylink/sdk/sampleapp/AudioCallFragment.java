@@ -37,7 +37,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public static final String MY_USER_NAME = "audioCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
     private LinearLayout parentFragment;
-    private SkylinkConnection skyLinkConnection;
+    private SkylinkConnection skylinkConnection;
     private TextView tvRoomDetails;
     private String remotePeerId;
     private String peerName;
@@ -55,7 +55,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 try {
-                    skyLinkConnection.connectToRoom(ROOM_NAME,
+                    skylinkConnection.connectToRoom(ROOM_NAME,
                             MY_USER_NAME);
                     btnAudioCall.setEnabled(false);
                     Toast.makeText(getActivity(), "Connecting....",
@@ -75,15 +75,15 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        skyLinkConnection = SkylinkConnection.getInstance();
-        skyLinkConnection.init(getString(R.string.app_key),
+        skylinkConnection = SkylinkConnection.getInstance();
+        skylinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(),
                 this.getActivity().getApplicationContext());
 
         Log.d(TAG, " lo " + this.getActivity());
-        skyLinkConnection.setLifeCycleListener(this);
-        skyLinkConnection.setMediaListener(this);
-        skyLinkConnection.setRemotePeerListener(this);
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setMediaListener(this);
+        skylinkConnection.setRemotePeerListener(this);
     }
 
     @Override
@@ -97,10 +97,10 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDetach() {
         super.onDetach();
-        skyLinkConnection.disconnectFromRoom();
-        skyLinkConnection.setLifeCycleListener(null);
-        skyLinkConnection.setMediaListener(null);
-        skyLinkConnection.setRemotePeerListener(null);
+        skylinkConnection.disconnectFromRoom();
+        skylinkConnection.setLifeCycleListener(null);
+        skylinkConnection.setMediaListener(null);
+        skylinkConnection.setRemotePeerListener(null);
     }
 
     private SkylinkConfig getSkylinkConfig() {
