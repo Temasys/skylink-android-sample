@@ -13,9 +13,4 @@
     <string name="enter_room_name">Enter Room Name</string>
     <string name="enter_room">Submit</string>
 
-    <string name="app_key">d9f0f947-4279-425b-8de9-5092d2866a89</string>
-    <string name="app_secret">4xcrx4w32zm8i</string>
-    <string name="room_name"></string>
-
-
 </resources>
