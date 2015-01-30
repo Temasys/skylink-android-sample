@@ -20,13 +20,12 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.security.SignatureException;
-import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
  * This class is used to demonstrate the AudioCall between two clients in WebRTC
@@ -38,7 +37,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public static final String MY_USER_NAME = "audioCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
     private LinearLayout parentFragment;
-    private SkyLinkConnection skyLinkConnection;
+    private SkylinkConnection skylinkConnection;
     private TextView tvRoomDetails;
     private String remotePeerId;
     private String peerName;
@@ -56,8 +55,8 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 try {
-                    skyLinkConnection.connectToRoom(ROOM_NAME,
-                            MY_USER_NAME, new Date(), Constants.DURATION);
+                    skylinkConnection.connectToRoom(ROOM_NAME,
+                            MY_USER_NAME);
                     btnAudioCall.setEnabled(false);
                     Toast.makeText(getActivity(), "Connecting....",
                             Toast.LENGTH_SHORT).show();
@@ -76,15 +75,15 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        skyLinkConnection = SkyLinkConnection.getInstance();
-        skyLinkConnection.init(getString(R.string.app_key),
+        skylinkConnection = SkylinkConnection.getInstance();
+        skylinkConnection.init(getString(R.string.app_key),
                 getString(R.string.app_secret), getSkylinkConfig(),
                 this.getActivity().getApplicationContext());
 
         Log.d(TAG, " lo " + this.getActivity());
-        skyLinkConnection.setLifeCycleListener(this);
-        skyLinkConnection.setMediaListener(this);
-        skyLinkConnection.setRemotePeerListener(this);
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setMediaListener(this);
+        skylinkConnection.setRemotePeerListener(this);
     }
 
     @Override
@@ -94,18 +93,19 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         ((MainActivity) activity).onSectionAttached(
                 getArguments().getInt(ARG_SECTION_NUMBER));
     }
+
     @Override
     public void onDetach() {
         super.onDetach();
-        skyLinkConnection.disconnectFromRoom();
-        skyLinkConnection.setLifeCycleListener(null);
-        skyLinkConnection.setMediaListener(null);
-        skyLinkConnection.setRemotePeerListener(null);
+        skylinkConnection.disconnectFromRoom();
+        skylinkConnection.setLifeCycleListener(null);
+        skylinkConnection.setMediaListener(null);
+        skylinkConnection.setRemotePeerListener(null);
     }
 
-    private SkyLinkConfig getSkylinkConfig() {
-        SkyLinkConfig config = new SkyLinkConfig();
-        config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_ONLY);
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);

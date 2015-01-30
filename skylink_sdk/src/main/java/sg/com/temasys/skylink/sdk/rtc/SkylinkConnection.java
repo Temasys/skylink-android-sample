@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
@@ -59,7 +59,7 @@ import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
  * Main class to connect to the skylink infrastructure.
  * @author temasys
  */
-public class SkyLinkConnection {
+public class SkylinkConnection {
 
     /**
      * Duration in hours after the start time when the room will be closed by the signalling server.
@@ -192,7 +192,7 @@ public class SkyLinkConnection {
     private PeerConnectionFactory peerConnectionFactory;
     private String apiKey;
     private String apiSecret;
-    private SkyLinkConfig myConfig;
+    private SkylinkConfig myConfig;
     private VideoCapturer localVideoCapturer;
     private VideoSource localVideoSource;
     private VideoTrack localVideoTrack;
@@ -217,7 +217,7 @@ public class SkyLinkConnection {
 
     // Lock objects to prevent threads from executing the following methods concurrently:
     // WebServerClient.MessageHandler.onMessage
-    // SkyLinkConnection.disconnect
+    // SkylinkConnection.disconnect
     // WebServerClient.IceServersObserver.onIceServers
     // WebServerClient.IceServersObserver.onError
     private Object lockDisconnect = new Object();
@@ -225,37 +225,37 @@ public class SkyLinkConnection {
     private Object lockDisconnectMedia = new Object();
     private Object lockDisconnectSdp = new Object();
 
-    private static SkyLinkConnection instance;
+    private static SkylinkConnection instance;
     private Handler handler;
 
-    private SkyLinkConnection() {
+    private SkylinkConnection() {
         handler = new Handler(Looper.getMainLooper());
     }
 
     /***
      *
-     * @return Existing instance of SkyLinkConnection Object if it exists or a new instance if it doesn't exist.
+     * @return Existing instance of SkylinkConnection Object if it exists or a new instance if it doesn't exist.
      */
-    public static synchronized SkyLinkConnection getInstance() {
+    public static synchronized SkylinkConnection getInstance() {
         if (instance == null) {
-            instance = new SkyLinkConnection();
+            instance = new SkylinkConnection();
         }
         return instance;
     }
 
     /**
-     * Creates a new SkyLinkConnection object with the specified parameters.
+     * Creates a new SkylinkConnection object with the specified parameters.
      *
      * @param apiKey  The api key from the Skylink Developer Console
      * @param secret  The secret associated with the key as registered with the Skylink Developer Console
-     * @param config  The SkyLinkConfig object to configure the type of call.
+     * @param config  The SkylinkConfig object to configure the type of call.
      * @param context The application context
      */
     public void init(String apiKey, String secret,
-                     SkyLinkConfig config, Context context) {
+                     SkylinkConfig config, Context context) {
         logMessage("TEMAConnectionManager::config=>" + config);
 
-        this.myConfig = new SkyLinkConfig(config);
+        this.myConfig = new SkylinkConfig(config);
         this.settingsObject = new ConstConnectionConfig();
 
         logMessage("TEMAConnectionManager::apiKey=>" + apiKey);
@@ -489,10 +489,10 @@ public class SkyLinkConnection {
      *                     broadcast to all of the connected peers in the room.
      * @param message      User defined data. May be a 'java.lang.String',
      *                     'org.json.JSONObject' or 'org.json.JSONArray'.
-     * @throws SkyLinkException if the system was unable to send the message.
+     * @throws SkylinkException if the system was unable to send the message.
      */
     public void sendP2PMessage(String remotePeerId, Object message)
-            throws SkyLinkException {
+            throws SkylinkException {
         if (this.webServerClient == null)
             return;
 
@@ -503,11 +503,11 @@ public class SkyLinkConnection {
                 while (iPeerId.hasNext())
                     if (!dataChannelManager.sendDcChat(false, message,
                             iPeerId.next()))
-                        throw new SkyLinkException(
+                        throw new SkylinkException(
                                 "Unable to send the message via data channel");
             } else {
                 if (!dataChannelManager.sendDcChat(true, message, remotePeerId))
-                    throw new SkyLinkException(
+                    throw new SkylinkException(
                             "Unable to send the message via data channel");
             }
         } else {
@@ -751,7 +751,7 @@ public class SkyLinkConnection {
                 return null;
 
             logMessage("Creating a new peer connection ...");
-            PCObserver pcObserver = new SkyLinkConnection.PCObserver();
+            PCObserver pcObserver = new SkylinkConnection.PCObserver();
             pcObserver.setMyId(key);
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
@@ -917,7 +917,7 @@ public class SkyLinkConnection {
     private class MyIceServersObserver implements
             WebServerClient.IceServersObserver {
 
-        private SkyLinkConnection connectionManager = SkyLinkConnection.this;
+        private SkylinkConnection connectionManager = SkylinkConnection.this;
 
         @SuppressLint("NewApi")
         @Override
@@ -1050,7 +1050,7 @@ public class SkyLinkConnection {
      */
     private class MyMessageHandler implements WebServerClient.MessageHandler {
 
-        private SkyLinkConnection connectionManager = SkyLinkConnection.this;
+        private SkylinkConnection connectionManager = SkylinkConnection.this;
 
         @Override
         public void onOpen() {
@@ -1259,7 +1259,7 @@ public class SkyLinkConnection {
                         .get(mid);
                 if (sdpObserver == null) {
                     connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
-                    sdpObserver = new SkyLinkConnection.SDPObserver();
+                    sdpObserver = new SkylinkConnection.SDPObserver();
                     sdpObserver.setMyId(mid);
                     connectionManager.sdpObserverPool.put(mid, sdpObserver);
                 }
@@ -1291,7 +1291,7 @@ public class SkyLinkConnection {
                         .get(mid);
                 if (sdpObserver == null) {
                     connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
-                    sdpObserver = new SkyLinkConnection.SDPObserver();
+                    sdpObserver = new SkylinkConnection.SDPObserver();
                     sdpObserver.setMyId(mid);
                     connectionManager.sdpObserverPool.put(mid, sdpObserver);
                 }
@@ -1560,12 +1560,12 @@ public class SkyLinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        if (true/*SkyLinkConnection.this.surfaceOnHoldPool.get(surface) == null*/) {
+                        if (true/*SkylinkConnection.this.surfaceOnHoldPool.get(surface) == null*/) {
                             mediaListener.onVideoSizeChange(surface, screenDimensions);
                         } else {
-                            String peerId = SkyLinkConnection.this.surfaceOnHoldPool
+                            String peerId = SkylinkConnection.this.surfaceOnHoldPool
                                     .get(surface);
-                            SkyLinkConnection.this.surfaceOnHoldPool
+                            SkylinkConnection.this.surfaceOnHoldPool
                                     .remove(surface);
                             if (peerId.compareToIgnoreCase(MY_SELF) == 0) {
                                 mediaListener.onLocalMediaCapture(surface,
@@ -1586,7 +1586,7 @@ public class SkyLinkConnection {
     // accordingly.
     private class PCObserver implements PeerConnection.Observer {
 
-        private SkyLinkConnection connectionManager = SkyLinkConnection.this;
+        private SkylinkConnection connectionManager = SkylinkConnection.this;
 
         private double myWeight;
         private String myId;
@@ -1791,7 +1791,7 @@ public class SkyLinkConnection {
     // as well as adding remote ICE candidates once the answer SDP is set.
     private class SDPObserver implements SdpObserver {
 
-        private SkyLinkConnection connectionManager = SkyLinkConnection.this;
+        private SkylinkConnection connectionManager = SkylinkConnection.this;
 
         private SessionDescription localSdp;
 

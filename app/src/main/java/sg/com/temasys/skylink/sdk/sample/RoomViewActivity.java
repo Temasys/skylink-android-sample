@@ -32,13 +32,13 @@ import java.io.IOException;
 import java.security.SignatureException;
 import java.util.ArrayList;
 
-import sg.com.temasys.skylink.sdk.config.SkyLinkConfig;
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.SkyLinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 public class RoomViewActivity extends Activity implements
         LifeCycleListener,
@@ -61,8 +61,8 @@ public class RoomViewActivity extends Activity implements
     private boolean mIsExplicitlyTerminated = false;
     private boolean mIsRunning = false;
     private float mCpWeight = 0.25f;
-    private SkyLinkConfig mConnectionConfig;
-    private SkyLinkConnection mConnection;
+    private SkylinkConfig mConnectionConfig;
+    private SkylinkConnection mConnection;
     private String mCancelMessage;
     private String mDisplayName;
     private String mRoomName;
@@ -99,7 +99,7 @@ public class RoomViewActivity extends Activity implements
         if (savedInstanceState != null) {
             mIsAlreadyConnected = savedInstanceState.getBoolean(
                     BUNDLE_IS_CONNECTED, false);
-            mConnectionConfig = (SkyLinkConfig) savedInstanceState
+            mConnectionConfig = (SkylinkConfig) savedInstanceState
                     .get(BUNDLE_CONNECTION_CONFIG);
             mCpWeight = savedInstanceState
                     .getFloat(BUNDLE_CONTROL_PANEL_WEIGHT);
@@ -118,16 +118,13 @@ public class RoomViewActivity extends Activity implements
 
 
         if (!mIsAlreadyConnected) {
-            SkyLinkConfig config = new SkyLinkConfig();
-            config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-            // config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.VIDEO_ONLY);
-            // config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_ONLY);
-            // config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+            SkylinkConfig config = new SkylinkConfig();
+            config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
             config.setHasPeerMessaging(true);
             config.setHasFileTransfer(true);
             config.setTimeout(60);
             // config.setTimeout( 10 );
-            mConnection = SkyLinkConnection.getInstance();
+            mConnection = SkylinkConnection.getInstance();
             mConnection.init(getString(R.string.app_key),
                     getString(R.string.app_secret), config, getApplicationContext());
             mConnectionConfig = config;

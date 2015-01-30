@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @author temasys
  */
-public class SkyLinkConfig implements Serializable {
+public class SkylinkConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -33,18 +33,18 @@ public class SkyLinkConfig implements Serializable {
     }
 
     /**
-     * Creates a new SkyLinkConfig object.
+     * Creates a new SkylinkConfig object.
      */
-    public SkyLinkConfig() {
+    public SkylinkConfig() {
         super();
     }
 
     /**
-     * Creates a new SkyLinkConfig (Copy constructor).
+     * Creates a new SkylinkConfig (Copy constructor).
      *
      * @param config Configuration object with settings to copy from.
      */
-    public SkyLinkConfig(SkyLinkConfig config) {
+    public SkylinkConfig(SkylinkConfig config) {
         super();
         this.audioSend = config.audioSend;
         this.videoSend = config.videoSend;
