@@ -21,7 +21,7 @@ Step-by-step guide
     -   List of Listeners and the callbacks they provide can be found
         [here](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/doc/index.html)
 
-        **Initialize SkylinkConnection**
+` 
 
             public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
 
@@ -32,28 +32,21 @@ Step-by-step guide
             .....
             .....
             }
+'
 
-        Icon
+####Always implement LifeCycleListener and RemotePeerListener
 
-        **Always implement LifeCycleListener and RemotePeerListener**
-
-        In addition to that, depending on the functionality you wish to
+   In addition to that, depending on the functionality you wish to
         achieve add the respective listener
 
         1. For Audio Call : Implement MediaListener
-
         2. For Video Call : Implement MediaListener
-
         3. For File Transfer : Implement FileTransferListener
-
         4. For Messaging : Implement MessageListener
 
-4.  Initialize SkylinkConfig to specify what features are required from
-    the SDK
+####Initialize SkylinkConfig to specify what features are required from the SDK
 
-    **Initialize SkylinkConnection**
-
-        private SkyLinkConfig getSkylinkConfig() {
+    private SkyLinkConfig getSkylinkConfig() {
                 SkyLinkConfig config = new SkyLinkConfig();
                 config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
                 config.setHasPeerMessaging(true);
@@ -62,26 +55,19 @@ Step-by-step guide
                 return config;
         }
 
-    Icon
+ There are four kinds of AudioVideoConfig
 
-    There are four kinds of AudioVideoConfig
+    01. SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO
 
-    01. SkyLinkConfig.AudioVideoConfig.AUDIO\_AND\_VIDEO
+    02. SkyLinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO
 
-    02. SkyLinkConfig.AudioVideoConfig.NO\_AUDIO\_NO\_VIDEO
+    03. SkyLinkConfig.AudioVideoConfig.AUDIO_ONLY
 
-    03. SkyLinkConfig.AudioVideoConfig.AUDIO\_ONLY
-
-    04. SkyLinkConfig.AudioVideoConfig.VIDEO\_ONLY
+    04. SkyLinkConfig.AudioVideoConfig.VIDEO_ONLY
 
       
-
-5.  Initialize SkylinkConnection object and pass the API key and secret
-    obtained from the developer portal and also the config object from
-    step 4
-
-    **Initialize SkylinkConnection**
-
+####Initialize SkylinkConnection object and pass the API key and secret obtained from the developer portal
+   
             SkylinkConnection skylinkConnection;
             .....
             ..... 
@@ -98,9 +84,7 @@ Step-by-step guide
                 .........
            }
 
-6.  Connect to a room using Skylink SDK
-
-    **Initialize SkylinkConnection**
+#### Connect to a room using Skylink SDK
 
         try {
         //you will be connected to the room named "roomKey" using the name "userName" 
@@ -113,9 +97,7 @@ Step-by-step guide
            e.printStackTrace();
          }
 
-7.  Verify if the connection works by logging on callback
-
-    **Initialize SkylinkConnection**
+####Verify if the connection works by logging on callback
 
             /***
              * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's lifecycle
