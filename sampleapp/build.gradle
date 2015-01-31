@@ -1,6 +1,17 @@
 apply plugin: 'com.android.application'
 apply plugin: "sonar-runner"
 
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.0.0'
+    }
+}
+
+
 sonarRunner {
     sonarProperties {
         property "sonar.projectKey", "AND-Sample"
