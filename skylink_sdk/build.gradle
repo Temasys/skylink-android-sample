@@ -9,6 +9,7 @@ apply plugin: 'android-library'
 configurations {
     jaxDoclet
     classpaths
+    wagon
 }
 
 dependencies {
@@ -18,6 +19,7 @@ dependencies {
     androidTestCompile 'com.android.support:support-v4:19.0.1'
     androidTestCompile 'org.mockito:mockito-all:1.9.5'
     jaxDoclet("com.google.doclava:doclava:1.0.5")
+    wagon 'org.apache.maven.wagon:wagon-http:2.2'
 }
 
 android {
@@ -81,35 +83,17 @@ publishing {
                 classifier "javadoc"
             }
         }
-        socketIOJar(MavenPublication) {
-            groupId 'io.socket'
-            artifactId 'socketio'
-            version currentVersion
-            artifact 'libs/socketio.jar'
-        }
-        libJingleJar(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle'
-            version currentVersion
-            artifact 'libs/libjingle_peerconnection.jar'
-        }
-        libJingleSso(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle_sso_armeabi-v7a'
-            version currentVersion
-            artifact 'src/main/jniLibs/armeabi-v7a/libjingle_peerconnection_so.so'
-        }
     }
     repositories {
         maven {
             if (!project.ext.isReleaseVersion) {
-                url archiva_contextUrl + "/snapshots"
+                url "http://archiva.temasys.com.sg/repository" + "/snapshots"
             } else {
-                url archiva_contextUrl + "/internal"
+                url "http://archiva.temasys.com.sg/repository" + "/internal"
             }
             credentials {
-                username archiva_username
-                password archiva_password
+                username "bamboo_user"
+                password "tema123\$"
             }
         }
     }
