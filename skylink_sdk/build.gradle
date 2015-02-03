@@ -44,17 +44,17 @@ android {
 // Check environment variables for Archiva configuration (e.g CI environment)
 if (System.getenv("bamboo_ARCHIVA_URL") != null) {
     archiva_contextUrl = "$System.env.bamboo_ARCHIVA_URL"
-    println 'Used environment variable for Archiva URL'
+    println 'Used environment variable for Archiva URL' + archiva_contextUrl
 }
 
 if (System.getenv("bamboo_ARCHIVA_USR") != null) {
     archiva_username = "$System.env.bamboo_ARCHIVA_USR"
-    println 'Used environment variable for Archiva Username'
+    println 'Used environment variable for Archiva Username' + archiva_username
 }
 
 if (System.getenv("bamboo_ARCHIVA_PWD") != null) {
     archiva_password = "$System.env.bamboo_ARCHIVA_PWD"
-    println 'Used environment variable for Archiva Password'
+    println 'Used environment variable for Archiva Password ' + archiva_password
 }
 
 project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
