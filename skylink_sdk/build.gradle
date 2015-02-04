@@ -92,8 +92,8 @@ publishing {
                 url "http://archiva.temasys.com.sg/repository" + "/internal"
             }
             credentials {
-                username "bamboo_user"
-                password "tema123\$"
+                username "bamboo"
+                password "5aebae95"
             }
         }
     }
