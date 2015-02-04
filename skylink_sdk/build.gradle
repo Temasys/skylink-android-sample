@@ -10,7 +10,7 @@ apply plugin: 'maven'
 configurations {
     jaxDoclet
     classpaths
-    wagon
+    deployerJars
 }
 
 dependencies {
@@ -20,7 +20,9 @@ dependencies {
     androidTestCompile 'com.android.support:support-v4:19.0.1'
     androidTestCompile 'org.mockito:mockito-all:1.9.5'
     jaxDoclet("com.google.doclava:doclava:1.0.5")
-    wagon 'org.apache.maven.wagon:wagon-http:2.2'
+    //wagon 'org.apache.maven.wagon:wagon-webdav-jackrabbit:2.2'
+    deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
+    //deployerJars 'org.apache.maven.wagon:wagon-webdav:1.0-beta-2'
 }
 
 android {
@@ -71,7 +73,8 @@ artifacts {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: "http://archiva.temasys.com.sg/repository/snapshots") {
+            configuration = configurations.deployerJars
+            repository(url: "dav:http://archiva.temasys.com.sg/repository/snapshots") {
                 authentication(userName: "bamboo", password: "5aebae95")
             }
             pom.version = "0.9.0-SNAPSHOT"
