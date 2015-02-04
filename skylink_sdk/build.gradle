@@ -5,6 +5,7 @@ apply plugin: 'robolectric'
 apply plugin: 'sonar-runner'
 apply plugin: 'jacoco'
 apply plugin: 'android-library'
+apply plugin: 'maven'
 
 configurations {
     jaxDoclet
@@ -61,40 +62,21 @@ if (System.getenv("bamboo_ARCHIVA_PWD") != null) {
 
 project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
 
-publishing {
-    publications {
-        sdkAar(MavenPublication) {
-            artifacts {
-                groupId 'sg.com.temasys.skylink.sdk'
-                artifactId 'skylink_sdk'
-                version currentVersion
-                artifact 'build/outputs/aar/skylink_sdk-release.aar'
-                artifact androidJavadocsJar {
-                    classifier "javadoc"
-                }
-            }
-        }
-        sdkJar(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'skylink_sdk_jar'
-            version currentVersion
-            artifact 'build/libs/skylink_sdk-release.jar'
-            artifact androidJavadocsJar {
-                classifier "javadoc"
-            }
-        }
-    }
+//def someFile = file('build/outputs/aar/skylink_sdk-release.aar')
+
+artifacts {
+  //      archives file('build/outputs/aar/skylink_sdk-release.aar')
+}
+
+uploadArchives {
     repositories {
-        maven {
-            if (!project.ext.isReleaseVersion) {
-                url "http://archiva.temasys.com.sg/repository" + "/snapshots"
-            } else {
-                url "http://archiva.temasys.com.sg/repository" + "/internal"
+        mavenDeployer {
+            repository(url: "http://archiva.temasys.com.sg/repository/snapshots") {
+                authentication(userName: "bamboo", password: "5aebae95")
             }
-            credentials {
-                username "bamboo"
-                password "5aebae95"
-            }
+            pom.version = "0.9.0-SNAPSHOT"
+            pom.artifactId = "skylink_sdk"
+            pom.groupId = "sg.com.temasys.skylink.sdk"
         }
     }
 }
