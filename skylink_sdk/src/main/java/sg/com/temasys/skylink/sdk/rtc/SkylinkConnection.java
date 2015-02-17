@@ -30,9 +30,7 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.security.SignatureException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -66,110 +64,8 @@ public class SkylinkConnection {
      * Duration in hours after the start time when the room will be closed by the signalling
      * server.
      */
-    private static final int DURATION = 240;
-
-    /**
-     * @return The file transfer listener object.
-     */
-    public FileTransferListener getFileTransferListener() {
-        return fileTransferListener;
-    }
-
-    /**
-     * Sets the specified file transfer listener object.
-     *
-     * @param fileTransferListener The file transfer listener object that will receive callbacks
-     *                             related to FileTransfer
-     */
-    public void setFileTransferListener(
-            FileTransferListener fileTransferListener) {
-        if (fileTransferListener == null)
-            this.fileTransferListener = new FileTransferAdapter();
-        else
-            this.fileTransferListener = fileTransferListener;
-    }
-
-    /**
-     * @return The life cycle listener object.
-     */
-    public LifeCycleListener getLifeCycleListener() {
-        return lifeCycleListener;
-    }
-
-    /**
-     * Sets the specified life cycle listener object.
-     *
-     * @param lifeCycleListener The life cycle listener object that will receive callbacks related
-     *                          to the SDK's Lifecycle.
-     */
-    public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
-        if (lifeCycleListener == null)
-            this.lifeCycleListener = new LifeCycleAdapter();
-        else
-            this.lifeCycleListener = lifeCycleListener;
-    }
-
-    /**
-     * @return The media listener object
-     */
-    public MediaListener getMediaListener() {
-        return mediaListener;
-    }
-
-    /**
-     * Sets the specified media listener object that will receive callbacks related to Media
-     * Stream.
-     * <p/>
-     * Callbacks include those for the local user and remote peers.
-     *
-     * @param mediaListener The media listener object
-     */
-    public void setMediaListener(MediaListener mediaListener) {
-        if (mediaListener == null)
-            this.mediaListener = new MediaAdapter();
-        else
-            this.mediaListener = mediaListener;
-    }
-
-    /**
-     * @return The messages listener object.
-     */
-    public MessagesListener getMessagesListener() {
-        return messagesListener;
-    }
-
-    /**
-     * Sets the specified messages listener object.
-     *
-     * @param messagesListener The messages listener object that will receive callbacks related to
-     *                         Message Transmissions.
-     */
-    public void setMessagesListener(MessagesListener messagesListener) {
-        if (messagesListener == null)
-            this.messagesListener = new MessagesAdapter();
-        else
-            this.messagesListener = messagesListener;
-    }
-
-    /**
-     * @return The remote peer listener object.
-     */
-    public RemotePeerListener getRemotePeerListener() {
-        return remotePeerListener;
-    }
-
-    /**
-     * Sets the specified remote peer listener object.
-     *
-     * @param remotePeerListener The remote peer listener object that will receive callbacks related
-     *                           to the RemotePeer.
-     */
-    public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
-        if (remotePeerListener == null)
-            this.remotePeerListener = new RemotePeerAdapter();
-        else
-            this.remotePeerListener = remotePeerListener;
-    }
+    public static final int DEFAULT_DURATION = 24;
+    public static final String API_SERVER = "http://api.temasys.com.sg/api/";
 
     private static final String TAG = "TEMAConnectionManager";
     private static final int MAX_PEER_CONNECTIONS = 4;
@@ -197,7 +93,6 @@ public class SkylinkConnection {
     private Object myUserData;
     private PeerConnectionFactory peerConnectionFactory;
     private String apiKey;
-    private String apiSecret;
     private SkylinkConfig myConfig;
     private VideoCapturer localVideoCapturer;
     private VideoSource localVideoSource;
@@ -252,15 +147,107 @@ public class SkylinkConnection {
     }
 
     /**
+     * Connects to a room with the default duration of 24 hours and with the current GMT time
+     * It is encouraged to use the method connectToRoom(String connectionString, Object userData)
+     *
+     * @param secret   The secret associated with the key as registered with the Skylink Developer
+     *                 Console
+     * @param roomName The name of the room
+     * @param userData User defined data relating to oneself. May be a 'java.lang.String',
+     *                 'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @return 'false' if the connection is already established
+     */
+    public boolean connectToRoom(final String secret,
+                                 final String roomName, final Object userData) {
+
+        if (isAlreadyConnected()) {
+            return false;
+        }
+
+        this.myUserData = userData;
+
+        // Fetch the current time from a server and convert it to GMT time
+        GMTService gmtService = new GMTService(new GMTServiceListener() {
+            @Override
+            public void onCurrentTimeFetched(Date date) {
+                Log.d(TAG, "onCurrentTimeFetched" + date);
+                String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
+                        secret, date, DEFAULT_DURATION);
+                connectToRoom(connectionString, userData);
+            }
+
+            @Override
+            public void onCurrentTimeFetchedFailed() {
+                Date gmt = Utils.convertTimeStampToGMT(new Date().getTime());
+                Log.d(TAG, "onCurrentTimeFetchedFailed, using device GMT time");
+                String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
+                        secret, gmt, DEFAULT_DURATION);
+                connectToRoom(connectionString, userData);
+            }
+        });
+
+        gmtService.execute();
+
+        return true;
+    }
+
+    /**
+     * Connects to a room with SkylinkConnectionString
+     *
+     * @param skylinkConnectionString SkylinkConnectionString
+     *                                Generated with room name, apiKey, secret, startTime(GMT) and duration
+     * @param userData                User defined data relating to oneself. May be a 'java.lang.String',
+     *                                'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @return 'false' if the connection is already established
+     */
+    public boolean connectToRoom(String skylinkConnectionString, Object userData) {
+
+        this.myUserData = userData;
+
+        logMessage("TEMAConnectionManager::connectingRoom userData=>" + userData);
+
+        if (isAlreadyConnected()) {
+            return false;
+        }
+
+        // Record user intention for connection to room state
+        connectionState = ConnectionState.CONNECT;
+
+        if (this.fileTransferListener == null)
+            this.fileTransferListener = new FileTransferAdapter();
+        if (this.lifeCycleListener == null)
+            this.lifeCycleListener = new LifeCycleAdapter();
+        if (this.mediaListener == null)
+            this.mediaListener = new MediaAdapter();
+        if (this.messagesListener == null)
+            this.messagesListener = new MessagesAdapter();
+        if (this.remotePeerListener == null)
+            this.remotePeerListener = new RemotePeerAdapter();
+
+        this.webServerClient = new WebServerClient(messageHandler,
+                iceServersObserver);
+
+        String url = API_SERVER + skylinkConnectionString;
+        try {
+            this.webServerClient.connectToRoom(url);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        logMessage("TEMAConnectionManager::connection url=>" + url);
+        return true;
+    }
+
+    /**
      * Creates a new SkylinkConnection object with the specified parameters.
      *
      * @param apiKey  The api key from the Skylink Developer Console
-     * @param secret  The secret associated with the key as registered with the Skylink Developer
-     *                Console
      * @param config  The SkylinkConfig object to configure the type of call.
      * @param context The application context
      */
-    public void init(String apiKey, String secret,
+    public void init(String apiKey,
                      SkylinkConfig config, Context context) {
         logMessage("TEMAConnectionManager::config=>" + config);
 
@@ -269,8 +256,6 @@ public class SkylinkConnection {
 
         logMessage("TEMAConnectionManager::apiKey=>" + apiKey);
         this.apiKey = apiKey;
-        logMessage("TEMAConnectionManager::secret=>" + secret);
-        this.apiSecret = secret;
 
         if (!factoryStaticInitialized) {
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
@@ -321,74 +306,8 @@ public class SkylinkConnection {
         handler.post(action);
     }
 
-    /**
-     * Connects to a room.
-     *
-     * @param roomName The name of the room to join.
-     * @param userData User defined data relating to oneself. May be a 'java.lang.String',
-     *                 'org.json.JSONObject' or 'org.json.JSONArray'.
-     * @return 'false' if the connection is already established
-     * @throws SignatureException
-     * @throws IOException
-     * @throws JSONException
-     */
-    public boolean connectToRoom(String roomName, Object userData)
-            throws JSONException, SignatureException, IOException {
-        return connectToRoom(roomName, userData, new Date(), DURATION);
-    }
-
-    /**
-     * Connects to a room.
-     *
-     * @param roomName  The name of the room
-     * @param userData  User defined data relating to oneself. May be a 'java.lang.String',
-     *                  'org.json.JSONObject' or 'org.json.JSONArray'.
-     * @param startTime The time to start a call
-     * @param duration  The expected duration of a call in hours, after which the room will close
-     *                  and kick out all users in the room.
-     * @return 'false' if the connection is already established
-     * @throws SignatureException
-     * @throws IOException
-     * @throws JSONException
-     */
-    private boolean connectToRoom(String roomName, Object userData,
-                                  Date startTime, float duration) throws SignatureException,
-            IOException, JSONException {
-        if (this.webServerClient != null)
-            return false;
-        // Record user intention for connection to room state
-        connectionState = ConnectionState.CONNECT;
-
-        if (this.fileTransferListener == null)
-            this.fileTransferListener = new FileTransferAdapter();
-        if (this.lifeCycleListener == null)
-            this.lifeCycleListener = new LifeCycleAdapter();
-        if (this.mediaListener == null)
-            this.mediaListener = new MediaAdapter();
-        if (this.messagesListener == null)
-            this.messagesListener = new MessagesAdapter();
-        if (this.remotePeerListener == null)
-            this.remotePeerListener = new RemotePeerAdapter();
-
-        this.webServerClient = new WebServerClient(messageHandler,
-                iceServersObserver);
-
-        logMessage("TEMAConnectionManager::room name=>" + roomName);
-        logMessage("TEMAConnectionManager::call duration=>" + duration);
-        String dateString = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:00.0'Z'")
-                .format(startTime);
-        logMessage("TEMAConnectionManager::iso start time=>" + dateString);
-        String cred = calculateRFC2104HMAC(roomName + "_" + duration + "_"
-                + dateString, this.apiSecret);
-        cred = URLEncoder.encode(cred, "UTF-8");
-        String url = "http://api.temasys.com.sg/api/" + this.apiKey + "/"
-                + roomName + "/" + dateString + "/" + duration + "?cred="
-                + cred;
-        this.myUserData = userData;
-
-        logMessage("Connecting to room ...");
-        this.webServerClient.connectToRoom(url);
-        return true;
+    private boolean isAlreadyConnected() {
+        return this.webServerClient != null;
     }
 
     /**
@@ -659,6 +578,110 @@ public class SkylinkConnection {
             dataChannelManager.acceptFileTransfer(remotePeerId, isPermitted, filePath);
         }
     }
+
+    /**
+     * @return The file transfer listener object.
+     */
+    public FileTransferListener getFileTransferListener() {
+        return fileTransferListener;
+    }
+
+    /**
+     * Sets the specified file transfer listener object.
+     *
+     * @param fileTransferListener The file transfer listener object that will receive callbacks
+     *                             related to FileTransfer
+     */
+    public void setFileTransferListener(
+            FileTransferListener fileTransferListener) {
+        if (fileTransferListener == null)
+            this.fileTransferListener = new FileTransferAdapter();
+        else
+            this.fileTransferListener = fileTransferListener;
+    }
+
+    /**
+     * @return The life cycle listener object.
+     */
+    public LifeCycleListener getLifeCycleListener() {
+        return lifeCycleListener;
+    }
+
+    /**
+     * Sets the specified life cycle listener object.
+     *
+     * @param lifeCycleListener The life cycle listener object that will receive callbacks related
+     *                          to the SDK's Lifecycle.
+     */
+    public void setLifeCycleListener(LifeCycleListener lifeCycleListener) {
+        if (lifeCycleListener == null)
+            this.lifeCycleListener = new LifeCycleAdapter();
+        else
+            this.lifeCycleListener = lifeCycleListener;
+    }
+
+    /**
+     * @return The media listener object
+     */
+    public MediaListener getMediaListener() {
+        return mediaListener;
+    }
+
+    /**
+     * Sets the specified media listener object that will receive callbacks related to Media
+     * Stream.
+     * <p/>
+     * Callbacks include those for the local user and remote peers.
+     *
+     * @param mediaListener The media listener object
+     */
+    public void setMediaListener(MediaListener mediaListener) {
+        if (mediaListener == null)
+            this.mediaListener = new MediaAdapter();
+        else
+            this.mediaListener = mediaListener;
+    }
+
+    /**
+     * @return The messages listener object.
+     */
+    public MessagesListener getMessagesListener() {
+        return messagesListener;
+    }
+
+    /**
+     * Sets the specified messages listener object.
+     *
+     * @param messagesListener The messages listener object that will receive callbacks related to
+     *                         Message Transmissions.
+     */
+    public void setMessagesListener(MessagesListener messagesListener) {
+        if (messagesListener == null)
+            this.messagesListener = new MessagesAdapter();
+        else
+            this.messagesListener = messagesListener;
+    }
+
+    /**
+     * @return The remote peer listener object.
+     */
+    public RemotePeerListener getRemotePeerListener() {
+        return remotePeerListener;
+    }
+
+    /**
+     * Sets the specified remote peer listener object.
+     *
+     * @param remotePeerListener The remote peer listener object that will receive callbacks related
+     *                           to the RemotePeer.
+     */
+    public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
+        if (remotePeerListener == null)
+            this.remotePeerListener = new RemotePeerAdapter();
+        else
+            this.remotePeerListener = remotePeerListener;
+    }
+
 
     /**
      * Retrieves the user defined data object associated with a remote peer.
