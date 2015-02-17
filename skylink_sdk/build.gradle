@@ -81,24 +81,6 @@ publishing {
                 classifier "javadoc"
             }
         }
-        socketIOJar(MavenPublication) {
-            groupId 'io.socket'
-            artifactId 'socketio'
-            version currentVersion
-            artifact 'libs/socketio.jar'
-        }
-        libJingleJar(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle'
-            version currentVersion
-            artifact 'libs/libjingle_peerconnection.jar'
-        }
-        libJingleSso(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle_sso_armeabi-v7a'
-            version currentVersion
-            artifact 'src/main/jniLibs/armeabi-v7a/libjingle_peerconnection_so.so'
-        }
     }
     repositories {
         maven {
