@@ -10,16 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.security.SignatureException;
+import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -36,7 +32,6 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public static final String ROOM_NAME = "audioCallRoom";
     public static final String MY_USER_NAME = "audioCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private LinearLayout parentFragment;
     private SkylinkConnection skylinkConnection;
     private TextView tvRoomDetails;
     private String remotePeerId;
@@ -46,7 +41,6 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
-        parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_audio_call);
 
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
 
@@ -54,19 +48,24 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    skylinkConnection.connectToRoom(ROOM_NAME,
-                            MY_USER_NAME);
-                    btnAudioCall.setEnabled(false);
-                    Toast.makeText(getActivity(), "Connecting....",
-                            Toast.LENGTH_SHORT).show();
-                } catch (SignatureException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
+
+                String apiKey = getString(R.string.app_key);
+                String apiSecret = getString(R.string.app_secret);
+
+                // Obtaining the Skylink connection string done locally
+                // In a production environment the connection string should be given
+                // by an entity external to the App, such as an App server that holds the Skylink API secret
+                // In order to avoid keeping the API secret within the application
+                String skylinkConnectionString = Utils.
+                        getSkylinkConnectionString(ROOM_NAME, apiKey,
+                                apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+
+                skylinkConnection.connectToRoom(skylinkConnectionString,
+                        MY_USER_NAME);
+
+                btnAudioCall.setEnabled(false);
+                Toast.makeText(getActivity(), "Connecting....",
+                        Toast.LENGTH_SHORT).show();
             }
         });
         return rootView;
@@ -76,8 +75,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         skylinkConnection = SkylinkConnection.getInstance();
-        skylinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(),
+        skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
                 this.getActivity().getApplicationContext());
 
         Log.d(TAG, " lo " + this.getActivity());
@@ -189,11 +187,13 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerUserDataReceive(String s, Object o) {
-
+        Log.d(TAG, "onRemotePeerUserDataReceive");
     }
 
     @Override
     public void onOpenDataConnection(String s) {
+        Log.d(TAG, "onOpenDataConnection");
+
     }
 
     @Override
