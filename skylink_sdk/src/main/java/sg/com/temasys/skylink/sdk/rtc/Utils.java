@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -21,6 +21,8 @@ class Utils {
 
     private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+    public static final String TIME_ZONE_UTC = "UTC";
+    public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
 
     /**
      * Returns the SkylinkConnectionString
@@ -28,7 +30,7 @@ class Utils {
      * @param roomName  Name of the room
      * @param apiKey    API Key
      * @param secret    API secret
-     * @param startTime Room Start Time in GMT
+     * @param startTime Room Start Time
      * @param duration  Duration of the room in Hours
      * @return
      */
@@ -42,8 +44,7 @@ class Utils {
         Log.d(TAG, "duration " + duration);
 
         // Convert the date in to ISO format
-        String dateString = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:00.0'Z'")
-                .format(startTime);
+        String dateString = Utils.getISOTimeStamp(startTime);
 
         // Compute RFC 2104-compliant HMAC signature
         String cred = calculateRFC2104HMAC(roomName + "_" + duration + "_"
@@ -92,6 +93,19 @@ class Utils {
     }
 
     /**
+     * Returns the date in ISO time format
+     *
+     * @param date
+     * @return ISO timestamp
+     */
+    public static String getISOTimeStamp(Date date) {
+        TimeZone tz = TimeZone.getTimeZone(TIME_ZONE_UTC);
+        DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
+        df.setTimeZone(tz);
+        return df.format(date);
+    }
+
+    /**
      * Converts a given input stream to String
      *
      * @param inputStream
@@ -107,21 +121,5 @@ class Utils {
         }
         inputStream.close();
         return result;
-    }
-
-    /**
-     * Converts a time stamp in local time zone to GMT
-     *
-     * @param timestamp
-     * @return
-     */
-    public static Date convertTimeStampToGMT(long timestamp) {
-        Calendar calendar = Calendar.getInstance();
-        TimeZone tz = calendar.getTimeZone();
-
-        int tzt = tz.getOffset(System.currentTimeMillis());
-        timestamp -= tzt;
-        calendar.setTimeInMillis(timestamp);
-        return calendar.getTime();
     }
 }

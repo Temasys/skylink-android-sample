@@ -147,7 +147,7 @@ public class SkylinkConnection {
     }
 
     /**
-     * Connects to a room with the default duration of 24 hours and with the current GMT time
+     * Connects to a room with the default duration of 24 hours and with the current time
      * It is encouraged to use the method connectToRoom(String connectionString, Object userData)
      *
      * @param secret   The secret associated with the key as registered with the Skylink Developer
@@ -166,8 +166,8 @@ public class SkylinkConnection {
 
         this.myUserData = userData;
 
-        // Fetch the current time from a server and convert it to GMT time
-        GMTService gmtService = new GMTService(new GMTServiceListener() {
+        // Fetch the current time from a server
+        CurrentTimeService currentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
             @Override
             public void onCurrentTimeFetched(Date date) {
                 Log.d(TAG, "onCurrentTimeFetched" + date);
@@ -178,15 +178,14 @@ public class SkylinkConnection {
 
             @Override
             public void onCurrentTimeFetchedFailed() {
-                Date gmt = Utils.convertTimeStampToGMT(new Date().getTime());
-                Log.d(TAG, "onCurrentTimeFetchedFailed, using device GMT time");
+                Log.d(TAG, "onCurrentTimeFetchedFailed, using device time");
                 String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
-                        secret, gmt, DEFAULT_DURATION);
+                        secret, new Date(), DEFAULT_DURATION);
                 connectToRoom(connectionString, userData);
             }
         });
 
-        gmtService.execute();
+        currentTimeService.execute();
 
         return true;
     }
@@ -195,7 +194,7 @@ public class SkylinkConnection {
      * Connects to a room with SkylinkConnectionString
      *
      * @param skylinkConnectionString SkylinkConnectionString
-     *                                Generated with room name, apiKey, secret, startTime(GMT) and duration
+     *                                Generated with room name, apiKey, secret, startTime and duration
      * @param userData                User defined data relating to oneself. May be a 'java.lang.String',
      *                                'org.json.JSONObject' or 'org.json.JSONArray'.
      * @return 'false' if the connection is already established

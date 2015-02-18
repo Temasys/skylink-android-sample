@@ -38,11 +38,10 @@ public class UtilsTest {
         String roomName = "testRoom";
         String apiKey = "TestKey";
         String secret = "TestSecret";
-        Date startTime = Utils.convertTimeStampToGMT(new Date().getTime());
         int duration = SkylinkConnection.DEFAULT_DURATION;
 
         String skylinkConnectionString = Utils.getSkylinkConnectionString(roomName,
-                apiKey, secret, startTime, duration);
+                apiKey, secret, new Date(), duration);
 
         assertNotNull(skylinkConnectionString);
         assertFalse("Skylink Connection should not be empty",
@@ -50,8 +49,8 @@ public class UtilsTest {
     }
 
     @Test
-    public void testConvertTimeStampToGMT() {
-        Date gmt = Utils.convertTimeStampToGMT(new Date().getTime());
-        assertNotNull(gmt);
+    public void testGetISOTimeStamp() {
+        String isoTimeStamp = Utils.getISOTimeStamp(new Date());
+        assertNotNull(isoTimeStamp);
     }
 }

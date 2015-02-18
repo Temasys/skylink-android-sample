@@ -49,16 +49,16 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
 
-                Date gmtTime = Utils.convertTimeStampToGMT(new Date().getTime());
                 String apiKey = getString(R.string.app_key);
                 String apiSecret = getString(R.string.app_secret);
 
                 // Obtaining the Skylink connection string done locally
-                // In a production environment the connection string should be received from the API
+                // In a production environment the connection string should be given
+                // by an entity external to the App, such as an App server that holds the Skylink API secret
                 // In order to avoid keeping the API secret within the application
                 String skylinkConnectionString = Utils.
                         getSkylinkConnectionString(ROOM_NAME, apiKey,
-                                apiSecret, gmtTime, SkylinkConnection.DEFAULT_DURATION);
+                                apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
                 skylinkConnection.connectToRoom(skylinkConnectionString,
                         MY_USER_NAME);

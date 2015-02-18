@@ -6,18 +6,20 @@ import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-public class Utils {
+class Utils {
 
+    private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-    private static final String TAG = Utils.class.getCanonicalName();
+    public static final String TIME_ZONE_UTC = "UTC";
+    public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
 
     private Utils() {
     }
@@ -34,13 +36,14 @@ public class Utils {
         textView.setText(roomDetails);
     }
 
+
     /**
      * Returns the SkylinkConnectionString
      *
      * @param roomName  Name of the room
      * @param apiKey    API Key
      * @param secret    API secret
-     * @param startTime Room Start Time in GMT
+     * @param startTime Room Start Time
      * @param duration  Duration of the room in Hours
      * @return
      */
@@ -54,8 +57,7 @@ public class Utils {
         Log.d(TAG, "duration " + duration);
 
         // Convert the date in to ISO format
-        String dateString = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:00.0'Z'")
-                .format(startTime);
+        String dateString = Utils.getISOTimeStamp(startTime);
 
         // Compute RFC 2104-compliant HMAC signature
         String cred = calculateRFC2104HMAC(roomName + "_" + duration + "_"
@@ -104,18 +106,15 @@ public class Utils {
     }
 
     /**
-     * Converts a time stamp in local time zone to GMT
+     * Returns the date in ISO time format
      *
-     * @param timestamp
-     * @return
+     * @param date
+     * @return ISO timestamp
      */
-    public static Date convertTimeStampToGMT(long timestamp) {
-        Calendar calendar = Calendar.getInstance();
-        TimeZone tz = calendar.getTimeZone();
-
-        int tzt = tz.getOffset(System.currentTimeMillis());
-        timestamp -= tzt;
-        calendar.setTimeInMillis(timestamp);
-        return calendar.getTime();
+    public static String getISOTimeStamp(Date date) {
+        TimeZone tz = TimeZone.getTimeZone(TIME_ZONE_UTC);
+        DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
+        df.setTimeZone(tz);
+        return df.format(date);
     }
 }

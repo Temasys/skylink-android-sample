@@ -17,11 +17,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests related to GMTService
+ * Tests related to CurrentTimeService
  */
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
-public class GMTServiceTest {
+public class CurrentTimeServiceTest {
 
     private static final String TAG = SkylinkConnectionTest.class.getName();
 
@@ -36,11 +36,11 @@ public class GMTServiceTest {
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        GMTService GMTService = new GMTService(new GMTServiceListener() {
+        CurrentTimeService CurrentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
             @Override
             public void onCurrentTimeFetched(Date date) {
                 assertNotNull("Fetched current time", date);
-                Log.d(TAG, "Current GMT time" + date.toString());
+                Log.d(TAG, "Current time" + date.toString());
                 countDownLatch.countDown();
             }
 
@@ -51,7 +51,7 @@ public class GMTServiceTest {
             }
         });
 
-        GMTService.execute();
+        CurrentTimeService.execute();
         countDownLatch.await();
     }
 }

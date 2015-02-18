@@ -6,18 +6,17 @@ import android.util.Log;
 import java.util.Date;
 
 /**
- * Retrieves date time information from a NTP server and converts from
- * local time zone to GMT
+ * Retrieves date time information from a NTP server
  */
-class GMTService extends AsyncTask<Void, Integer, Long> {
+class CurrentTimeService extends AsyncTask<Void, Integer, Long> {
 
     private static final String NTP_SERVER = "0.amazon.pool.ntp.org";
     private static final int TIME_OUT = 10000;
 
-    private GMTServiceListener listener;
-    private static final String TAG = GMTService.class.getCanonicalName();
+    private CurrentTimeServiceListener listener;
+    private static final String TAG = CurrentTimeService.class.getCanonicalName();
 
-    public GMTService(GMTServiceListener listener) {
+    public CurrentTimeService(CurrentTimeServiceListener listener) {
         this.listener = listener;
     }
 
@@ -32,7 +31,7 @@ class GMTService extends AsyncTask<Void, Integer, Long> {
             currentGmtTime = sntpClient.getNtpTime();
             Log.d(TAG, "Fetched time " + currentGmtTime);
         }
-        
+
         return currentGmtTime;
     }
 
@@ -40,8 +39,7 @@ class GMTService extends AsyncTask<Void, Integer, Long> {
     protected void onPostExecute(Long currentGmtTime) {
         if (currentGmtTime != 0) {
             // Notify that the time is successfully fetched
-            // Convert the received time from the local TimeZone to GMT
-            listener.onCurrentTimeFetched(Utils.convertTimeStampToGMT(currentGmtTime));
+            listener.onCurrentTimeFetched(new Date(currentGmtTime));
         } else {
             // Notify that the time could not be successfully fetched
             listener.onCurrentTimeFetchedFailed();
@@ -50,9 +48,9 @@ class GMTService extends AsyncTask<Void, Integer, Long> {
 }
 
 /**
- * Listener Interface for GMTService
+ * Listener Interface for CurrentTimeService
  */
-interface GMTServiceListener {
+interface CurrentTimeServiceListener {
     void onCurrentTimeFetched(Date date);
 
     void onCurrentTimeFetchedFailed();
