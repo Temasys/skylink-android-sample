@@ -16,7 +16,7 @@ sonarRunner {
     sonarProperties {
         property "sonar.projectKey", "AND-Sample"
         property "sonar.projectName", "Skylink Android SDK - Sample App"
-        property "sonar.projectVersion", "0.9.0"
+        property "sonar.projectVersion", "0.9.1"
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"

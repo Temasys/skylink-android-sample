@@ -27,7 +27,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 21
         versionCode 1
-        versionName "0.9.0"
+        versionName "0.9.1"
     }
     buildTypes {
         release {
@@ -80,24 +80,6 @@ publishing {
             artifact androidJavadocsJar {
                 classifier "javadoc"
             }
-        }
-        socketIOJar(MavenPublication) {
-            groupId 'io.socket'
-            artifactId 'socketio'
-            version currentVersion
-            artifact 'libs/socketio.jar'
-        }
-        libJingleJar(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle'
-            version currentVersion
-            artifact 'libs/libjingle_peerconnection.jar'
-        }
-        libJingleSso(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle_sso_armeabi-v7a'
-            version currentVersion
-            artifact 'src/main/jniLibs/armeabi-v7a/libjingle_peerconnection_so.so'
         }
     }
     repositories {
