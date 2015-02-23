@@ -27,7 +27,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 21
         versionCode 1
-        versionName "0.9.0"
+        versionName "0.9.1"
     }
     buildTypes {
         release {
@@ -44,17 +44,17 @@ android {
 // Check environment variables for Archiva configuration (e.g CI environment)
 if (System.getenv("bamboo_ARCHIVA_URL") != null) {
     archiva_contextUrl = "$System.env.bamboo_ARCHIVA_URL"
-    println 'Used environment variable for Archiva URL'
+    println 'Used environment variable for Archiva URL' + archiva_contextUrl
 }
 
 if (System.getenv("bamboo_ARCHIVA_USR") != null) {
     archiva_username = "$System.env.bamboo_ARCHIVA_USR"
-    println 'Used environment variable for Archiva Username'
+    println 'Used environment variable for Archiva Username' + archiva_username
 }
 
 if (System.getenv("bamboo_ARCHIVA_PWD") != null) {
     archiva_password = "$System.env.bamboo_ARCHIVA_PWD"
-    println 'Used environment variable for Archiva Password'
+    println 'Used environment variable for Archiva Password ' + archiva_password
 }
 
 project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
@@ -80,24 +80,6 @@ publishing {
             artifact androidJavadocsJar {
                 classifier "javadoc"
             }
-        }
-        socketIOJar(MavenPublication) {
-            groupId 'io.socket'
-            artifactId 'socketio'
-            version currentVersion
-            artifact 'libs/socketio.jar'
-        }
-        libJingleJar(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle'
-            version currentVersion
-            artifact 'libs/libjingle_peerconnection.jar'
-        }
-        libJingleSso(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'libjingle_sso_armeabi-v7a'
-            version currentVersion
-            artifact 'src/main/jniLibs/armeabi-v7a/libjingle_peerconnection_so.so'
         }
     }
     repositories {
