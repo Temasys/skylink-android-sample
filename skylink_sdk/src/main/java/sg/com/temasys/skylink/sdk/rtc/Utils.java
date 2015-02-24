@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Scanner;
 import java.util.TimeZone;
 
 import javax.crypto.Mac;
@@ -121,5 +122,16 @@ class Utils {
         }
         inputStream.close();
         return result;
+    }
+
+    /**
+     * Returns a string from input stream
+     *
+     * @param in
+     * @return
+     */
+    public static String drainStream(InputStream in) {
+        Scanner s = new Scanner(in).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
     }
 }
