@@ -21,10 +21,7 @@ import android.widget.ToggleButton;
 
 import com.temasys.skylink.sampleapp.R;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.security.SignatureException;
+import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -37,7 +34,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
  */
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
-    public static final String ROOM_NAME = "videoCallRoom";
     public static final String MY_USER_NAME = "videoCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
     //set height width for self-video when in call
@@ -71,15 +67,21 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 }
                 btnEnterRoom.setVisibility(View.GONE);
 
-                try {
-                    skylinkConnection.connectToRoom(roomName, MY_USER_NAME);
-                } catch (SignatureException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
+                String apiKey = getString(R.string.app_key);
+                String apiSecret = getString(R.string.app_secret);
+
+                // Obtaining the Skylink connection string done locally
+                // In a production environment the connection string should be given
+                // by an entity external to the App, such as an App server that holds the Skylink API secret
+                // In order to avoid keeping the API secret within the application
+                String skylinkConnectionString = Utils.
+                        getSkylinkConnectionString(roomName, apiKey,
+                                apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+
+                Log.d(TAG, "Connection String" + skylinkConnectionString);
+
+                skylinkConnection.connectToRoom(skylinkConnectionString,
+                        MY_USER_NAME);
             }
         });
 
@@ -113,7 +115,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skylinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
+                getSkylinkConfig(), this.getActivity().getApplicationContext());
         //set listeners to receive callbacks when events are triggered
         skylinkConnection.setLifeCycleListener(this);
         skylinkConnection.setMediaListener(this);
@@ -140,15 +142,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skylinkConnection != null) {
-            skylinkConnection.disconnectFromRoom();
-            skylinkConnection.setLifeCycleListener(null);
-            skylinkConnection.setMediaListener(null);
-            skylinkConnection.setRemotePeerListener(null);
-        }
         super.onDetach();
+        skylinkConnection.disconnectFromRoom();
+        skylinkConnection.setLifeCycleListener(null);
+        skylinkConnection.setMediaListener(null);
+        skylinkConnection.setRemotePeerListener(null);
     }
-
 
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's lifecycle
@@ -216,10 +215,11 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
         String message = null;
-        if (isMuted)
+        if (isMuted) {
             message = "Your peer muted their audio";
-        else
+        } else {
             message = "Your peer unmuted their audio";
+        }
 
         Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }

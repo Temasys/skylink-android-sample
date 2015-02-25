@@ -18,14 +18,12 @@ import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
-import org.json.JSONException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.SignatureException;
+import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
@@ -107,16 +105,19 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         super.onCreate(savedInstanceState);
         initializeSkylinkConnection();
 
-        try {
-            skylinkConnection.connectToRoom(ROOM_NAME,
-                    MY_USER_NAME);
-        } catch (SignatureException e) {
-            Log.e(TAG, e.getMessage(), e);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        String apiKey = getString(R.string.app_key);
+        String apiSecret = getString(R.string.app_secret);
+
+        // Obtaining the Skylink connection string done locally
+        // In a production environment the connection string should be given
+        // by an entity external to the App, such as an App server that holds the Skylink API secret
+        // In order to avoid keeping the API secret within the application
+        String skylinkConnectionString = Utils.
+                getSkylinkConnectionString(ROOM_NAME, apiKey,
+                        apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+
+        skylinkConnection.connectToRoom(skylinkConnectionString,
+                MY_USER_NAME);
     }
 
     @Override
@@ -142,8 +143,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(),
+        skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
                 this.getActivity().getApplicationContext());
         //set listeners to receive callbacks when events are triggered
         skylinkConnection.setLifeCycleListener(this);
