@@ -5,7 +5,7 @@ start using the SDK.
 
 ###Set up the Skylink SDK for Android
 
-#### 1. Set up build.gradle to download and use Skylink SDK
+####Set up build.gradle to download and use Skylink SDK
 
 Add the following to your app's build.gradle:
 

@@ -39,4 +39,4 @@ WebRTC .so file is now located at:
 ###You are ready go!
 
 For more information on the SDK usage, please refer to the [simple demo application](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/sample_app_adt.tar.gz)
-application. You will need to follow the same procedure described above to add the Skylink SDK for Android to the sample application.
+application. You will need to follow the same procedure described above to add the Skylink SDK for Android to the sample application. The sample application also requires [v7 appcompat](https://developer.android.com/tools/support-library/setup.html) as a dependency.
