@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +46,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private Button btnEnterRoom;
     private EditText etRoomName;
     private SkylinkConnection skylinkConnection;
+    private String peerId;
+    private ViewGroup.LayoutParams selfLayoutParams;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -249,37 +252,49 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         if (videoView == null) {
             return;
         }
-        if (parentFragment.findViewWithTag("peer") != null) {
+
+        if (!TextUtils.isEmpty(this.peerId)) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
+        this.peerId = remotePeerId;
+
         View self = parentFragment.findViewWithTag("self");
-        parentFragment.removeView(self);
+        if (this.selfLayoutParams == null) {
+            // Get the original size of the layout
+            this.selfLayoutParams = self.getLayoutParams();
+        }
         self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
+
+        parentFragment.removeView(self);
         parentFragment.addView(self);
 
         videoView.setTag("peer");
+        parentFragment.removeView(videoView);
         parentFragment.addView(videoView);
-    }
-
-    @Override
-    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
     }
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        if (remotePeerId != null && remotePeerId.equals(this.peerId)) {
+            this.peerId = null;
+            View peerView = parentFragment.findViewWithTag("peer");
+            parentFragment.removeView(peerView);
 
-        View peer = parentFragment.findViewWithTag("peer");
-        View self = parentFragment.findViewWithTag("self");
-        if (peer != null) {
-            parentFragment.removeView(peer);
-            parentFragment.removeView(self);
-            parentFragment.addView(self);
+            // Resize self view to original size
+            if (this.selfLayoutParams != null) {
+                View self = parentFragment.findViewWithTag("self");
+                self.setLayoutParams(selfLayoutParams);
+            }
         }
+    }
+
+    @Override
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
     }
 
     @Override

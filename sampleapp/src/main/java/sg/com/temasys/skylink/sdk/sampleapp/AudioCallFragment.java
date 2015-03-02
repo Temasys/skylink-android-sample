@@ -78,7 +78,6 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
                 this.getActivity().getApplicationContext());
 
-        Log.d(TAG, " lo " + this.getActivity());
         skylinkConnection.setLifeCycleListener(this);
         skylinkConnection.setMediaListener(this);
         skylinkConnection.setRemotePeerListener(this);
