@@ -1,8 +1,16 @@
 apply plugin: 'com.android.application'
 
+
+repositories {
+    maven {
+        url = 'http://archiva.temasys.com.sg/repository/internal'
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':skylink_sdk')
+    compile(group: 'sg.com.temasys.skylink.sdk', name: 'skylink_sdk',
+                                        version: '0.9.1-RELEASE', ext: 'aar')
 }
 
 android {
