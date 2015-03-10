@@ -30,20 +30,16 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnection;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 
 import io.socket.SocketIO;
 
@@ -55,29 +51,12 @@ import io.socket.SocketIO;
  * call connectToRoom().  Once that's done call sendMessage() and wait for the
  * registered handler to be called with received messages.
  */
-class WebServerClient {
-    /**
-     * Callback interface for messages delivered on the Google AppEngine channel.
-     * <p/>
-     * Methods are guaranteed to be invoked on the UI thread of |activity| passed
-     * to GAEChannelClient's constructor.
-     */
-    public interface MessageHandler {
-        public void onOpen();
+class WebServerClient implements RoomParameterServiceListener {
 
-        public void onMessage(String data);
+    private static final String TAG = WebServerClient.class.getName();
 
-        public void onClose();
-
-        public void onError(int code, String description);
-    }
-
-    private static final String TAG = "AppRTCClient";
-    // private GAEChannelClient channelClient;
-
-    private final WebServerClient.MessageHandler gaeHandler;
+    private final MessageHandler gaeHandler;
     private final IceServersObserver iceServersObserver;
-    private boolean verboseLogging;
     private SignalingServerClient socketTester;
 
     // These members are only read/written under sendQueue's lock.
@@ -92,13 +71,14 @@ class WebServerClient {
         public void onIceServers(List<PeerConnection.IceServer> iceServers);
 
         public void onError(String message);
+
+        public void onShouldConnectToRoom();
     }
 
-    public WebServerClient(WebServerClient.MessageHandler gaeHandler,
+    public WebServerClient(MessageHandler gaeHandler,
                            IceServersObserver iceServersObserver) {
         this.gaeHandler = gaeHandler;
         this.iceServersObserver = iceServersObserver;
-        verboseLogging = true;
     }
 
     /**
@@ -111,12 +91,7 @@ class WebServerClient {
      * @throws Exception
      */
     public void connectToRoom(String url) throws IOException, JSONException {
-    /*while (url.indexOf('?') < 0) {
-      // Keep redirecting until we get a room number.
-      (new RedirectResolver()).execute(url);
-      return;  // RedirectResolver above calls us back with the next URL.
-    }*/
-        (new RoomParameterGetter()).execute(url);
+        (new RoomParameterService(this)).execute(url);
     }
 
     /**
@@ -127,10 +102,12 @@ class WebServerClient {
       channelClient.close();
       channelClient = null;
     }*/
-        SocketIO socketIO = socketTester.getSocketIO();
-        if (socketIO.isConnected()) {
-            socketTester.setDelegate(null);
-            socketIO.disconnect();
+        if (socketTester != null) {
+            SocketIO socketIO = socketTester.getSocketIO();
+            if (socketIO.isConnected()) {
+                socketTester.setDelegate(null);
+                socketIO.disconnect();
+            }
         }
     }
 
@@ -146,479 +123,25 @@ class WebServerClient {
         requestQueueDrainInBackground();
     }
 
-    public boolean isInitiator() {
-        return appRTCSignalingParameters.initiator;
-    }
-
-    public MediaConstraints pcConstraints() {
-        return appRTCSignalingParameters.pcConstraints;
-    }
-
-    public MediaConstraints videoConstraints() {
-        return appRTCSignalingParameters.videoConstraints;
-    }
-
-    public MediaConstraints audioConstraints() {
-        return appRTCSignalingParameters.audioConstraints;
-    }
-
-    public String getApiOwner() {
-        return appRTCSignalingParameters.apiOwner;
-    }
-
-    public void setApiOwner(String apiOwner) {
-        this.appRTCSignalingParameters.apiOwner = apiOwner;
-    }
-
-    public String getCid() {
-        return appRTCSignalingParameters.cid;
-    }
-
-    public void setCid(String cid) {
-        this.appRTCSignalingParameters.cid = cid;
-    }
-
-    public String getDisplayName() {
-        return appRTCSignalingParameters.displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.appRTCSignalingParameters.displayName = displayName;
-    }
-
-    public String getLen() {
-        return appRTCSignalingParameters.len;
-    }
-
-    public void setLen(String len) {
-        this.appRTCSignalingParameters.len = len;
-    }
-
-    public String getRoomCred() {
-        return appRTCSignalingParameters.roomCred;
-    }
-
-    public void setRoomCred(String roomCred) {
-        this.appRTCSignalingParameters.roomCred = roomCred;
-    }
-
-    public String getRoomId() {
-        return appRTCSignalingParameters.roomId;
-    }
-
-    public void setRoomId(String roomId) {
-        this.appRTCSignalingParameters.roomId = roomId;
-    }
-
-    public String getSid() {
-        return appRTCSignalingParameters.sid;
-    }
-
-    public void setSid(String sid) {
-        this.appRTCSignalingParameters.sid = sid;
-    }
-
-    public String getStart() {
-        return appRTCSignalingParameters.start;
-    }
-
-    public void setStart(String start) {
-        this.appRTCSignalingParameters.start = start;
-    }
-
-    public String getTimeStamp() {
-        return appRTCSignalingParameters.timeStamp;
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        this.appRTCSignalingParameters.timeStamp = timeStamp;
-    }
-
-    public String getTokenTempCreated() {
-        return appRTCSignalingParameters.tokenTempCreated;
-    }
-
-    public void setTokenTempCreated(String tokenTempCreated) {
-        this.appRTCSignalingParameters.tokenTempCreated = tokenTempCreated;
-    }
-
-    public String getUserCred() {
-        return appRTCSignalingParameters.userCred;
-    }
-
-    public void setUserCred(String userCred) {
-        this.appRTCSignalingParameters.userCred = userCred;
-    }
-
-    public String getUserId() {
-        return appRTCSignalingParameters.userId;
-    }
-
-    public void setUserId(String userId) {
-        this.appRTCSignalingParameters.userId = userId;
-    }
-
-    // Struct holding the signaling parameters of an AppRTC room.
-    private class AppRTCSignalingParameters {
-        @SuppressWarnings("unused")
-        public final List<PeerConnection.IceServer> iceServers;
-        public final String gaeBaseHref;
-        @SuppressWarnings("unused")
-        public final String channelToken;
-        public final String postMessageUrl;
-        public final boolean initiator;
-        public final MediaConstraints pcConstraints;
-        public MediaConstraints videoConstraints;
-        public final MediaConstraints audioConstraints;
-
-        public AppRTCSignalingParameters() {
-            this.iceServers = null;
-            this.gaeBaseHref = null;
-            this.channelToken = null;
-            this.postMessageUrl = null;
-            this.initiator = false;
-            this.pcConstraints = null;
-            this.videoConstraints = null;
-            this.audioConstraints = null;
-        }
-
-        @SuppressWarnings("unused")
-        public AppRTCSignalingParameters(
-                List<PeerConnection.IceServer> iceServers,
-                String gaeBaseHref, String channelToken, String postMessageUrl,
-                boolean initiator, MediaConstraints pcConstraints,
-                MediaConstraints videoConstraints, MediaConstraints audioConstraints) {
-            this.iceServers = iceServers;
-            this.gaeBaseHref = gaeBaseHref;
-            this.channelToken = channelToken;
-            this.postMessageUrl = postMessageUrl;
-            this.initiator = initiator;
-            this.pcConstraints = pcConstraints;
-            this.videoConstraints = videoConstraints;
-            this.audioConstraints = audioConstraints;
-        }
-
-        public String apiOwner, cid, displayName, len, roomCred, roomId, sid, start, timeStamp, tokenTempCreated, userCred, userId, protocol, ipSigserver;
-        public int portSigserver;
-    }
-
-    // Load the given URL and return the value of the Location header of the
-    // resulting 302 response.  If the result is not a 302, throws.
-    @SuppressWarnings("unused")
-    private class RedirectResolver extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... urls) {
-            if (urls.length != 1) {
-                throw new RuntimeException("Must be called with a single URL");
-            }
-            try {
-                return followRedirect(urls[0]);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String url) {
-            try {
-                connectToRoom(url);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-        private String followRedirect(String url) throws IOException {
-            HttpURLConnection connection = (HttpURLConnection)
-                    new URL(url).openConnection();
-            connection.setInstanceFollowRedirects(false);
-            int code = connection.getResponseCode();
-            if (code != HttpURLConnection.HTTP_MOVED_TEMP) {
-                throw new IOException("Unexpected response: " + code + " for " + url +
-                        ", with contents: " + drainStream(connection.getInputStream()));
-            }
-            int n = 0;
-            String name, value;
-            while ((name = connection.getHeaderFieldKey(n)) != null) {
-                value = connection.getHeaderField(n);
-                if (name.equals("Location")) {
-                    return value;
-                }
-                ++n;
-            }
-            throw new IOException("Didn't find Location header!");
-        }
-    }
-
-    // AsyncTask that converts an AppRTC room URL into the set of signaling
-    // parameters to use with that room.
-    @SuppressWarnings("unused")
-    private class RoomParameterGetter
-            extends AsyncTask<String, Void, AppRTCSignalingParameters> {
-        @Override
-        protected AppRTCSignalingParameters doInBackground(String... urls) {
-            if (urls.length != 1) {
-                throw new RuntimeException("Must be called with a single URL");
-            }
-            try {
-                return getParametersForRoomUrl(urls[0]);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(AppRTCSignalingParameters params) {
-      /*channelClient =
-          new GAEChannelClient(activity, params.channelToken, gaeHandler);
-      synchronized (sendQueue) {
+    @Override
+    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
         appRTCSignalingParameters = params;
-      }
-      requestQueueDrainInBackground();
-      iceServersObserver.onIceServers(appRTCSignalingParameters.iceServers);*/
-            appRTCSignalingParameters = params;
-            if (params != null)
-                socketTester = new SignalingServerClient(WebServerClient.this.gaeHandler, /*params.protocol +*/ "https://" + params.ipSigserver, params.portSigserver);
-        }
-
-        // Fetches |url| and fishes the signaling parameters out of the JSON.
-        private AppRTCSignalingParameters getParametersForRoomUrl(String url)
-                throws IOException, JSONException {
-            url = url + "&t=json";
-            JSONObject roomJson = new JSONObject(
-                    drainStream((new URL(url)).openConnection().getInputStream()));
-
-            if (roomJson.has("error")) {
-                JSONArray errors = roomJson.getJSONArray("error_messages");
-                // throw new IOException(errors.toString());
-                WebServerClient.this.iceServersObserver.onError(errors.toString());
-                return null;
-            }
-
-            if (!roomJson.getBoolean("success")) {
-                WebServerClient.this.iceServersObserver.onError(roomJson.getString("info"));
-                return null;
-            }
-
-            // Will send joinRoom message.
-            WebServerClient.this.iceServersObserver.onError(null);
-      
-      /*String gaeBaseHref = url.substring(0, url.indexOf('?'));
-      String token = roomJson.getString("token");
-      String postMessageUrl = "/message?r=" +
-          roomJson.getString("room_key") + "&u=" +
-          roomJson.getString("me");
-      boolean initiator = roomJson.getInt("initiator") == 1;
-      LinkedList<PeerConnection.IceServer> iceServers =
-          iceServersFromPCConfigJSON(roomJson.getString("pc_config"));
-
-      boolean isTurnPresent = false;
-      for (PeerConnection.IceServer server : iceServers) {
-        if (server.uri.startsWith("turn:")) {
-          isTurnPresent = true;
-          break;
-        }
-      }
-      if (!isTurnPresent) {
-        iceServers.add(requestTurnServer(roomJson.getString("turn_url")));
-      }
-
-      MediaConstraints pcConstraints = constraintsFromJSON(
-          roomJson.getString("pc_constraints"));
-      addDTLSConstraintIfMissing(pcConstraints);
-      Log.d(TAG, "pcConstraints: " + pcConstraints);
-      MediaConstraints videoConstraints = constraintsFromJSON(
-          getAVConstraints("video",
-              roomJson.getString("media_constraints")));
-      Log.d(TAG, "videoConstraints: " + videoConstraints);
-      MediaConstraints audioConstraints = constraintsFromJSON(
-          getAVConstraints("audio",
-              roomJson.getString("media_constraints")));
-      Log.d(TAG, "audioConstraints: " + audioConstraints);*/
-
-            AppRTCSignalingParameters parameters = new AppRTCSignalingParameters();
-            parameters.apiOwner = roomJson.getString("apiOwner");
-            WebServerClient.this.logVerbose("apiOwner->" + parameters.apiOwner);
-            parameters.cid = roomJson.getString("cid");
-            WebServerClient.this.logVerbose("cid->" + parameters.cid);
-            parameters.displayName = roomJson.getString("displayName");
-            WebServerClient.this.logVerbose("displayName->" + parameters.displayName);
-            parameters.len = roomJson.getString("len");
-            WebServerClient.this.logVerbose("len->" + parameters.len);
-            parameters.roomCred = roomJson.getString("roomCred");
-            WebServerClient.this.logVerbose("roomCred->" + parameters.roomCred);
-            parameters.roomId = roomJson.getString("room_key");
-            WebServerClient.this.logVerbose("room_key->" + parameters.roomId);
-            parameters.start = roomJson.getString("start");
-            WebServerClient.this.logVerbose("start->" + parameters.start);
-            parameters.timeStamp = roomJson.getString("timeStamp");
-            WebServerClient.this.logVerbose("timeStamp->" + parameters.timeStamp);
-            parameters.userCred = roomJson.getString("userCred");
-            WebServerClient.this.logVerbose("userCred->" + parameters.userCred);
-            parameters.userId = roomJson.getString("username");
-            WebServerClient.this.logVerbose("username->" + parameters.userId);
-
-            String mc = roomJson.getString("media_constraints");
-            if (mc != null) {
-                WebServerClient.this.logVerbose("media_constraints JSON:\n" + mc);
-                JSONObject mcDict = new JSONObject(mc);
-
-                JSONObject manDict = mcDict.getJSONObject("mandatory");
-                MediaConstraints.KeyValuePair maxWidth = new MediaConstraints.KeyValuePair("maxWidth", manDict.getString("maxWidth"));
-                MediaConstraints.KeyValuePair maxHeight = new MediaConstraints.KeyValuePair("maxHeight", manDict.getString("maxHeight"));
-                MediaConstraints videoConstraints = new MediaConstraints();
-                videoConstraints.mandatory.add(maxWidth);
-                videoConstraints.mandatory.add(maxHeight);
-                parameters.videoConstraints = videoConstraints;
-            }
-
-            String ipSignalingServer = roomJson.getString("ipSigserver");
-            WebServerClient.this.logVerbose("ipSigserver->" + ipSignalingServer);
-            parameters.ipSigserver = ipSignalingServer;
-            int portSignalingServer = roomJson.getInt("portSigserver");
-            WebServerClient.this.logVerbose("portSigserver->" + portSignalingServer);
-            parameters.portSigserver = portSignalingServer;
-            if (ipSignalingServer == null || portSignalingServer <= 0) {
-                WebServerClient.this.logVerbose("Invalid signaling server ip and port. Returning ...");
-                WebServerClient.this.iceServersObserver.onError("Invalid signaling server ip and port. Returning ...");
-                return null;
-            }
-            parameters.protocol = roomJson.getString("protocol");
-            WebServerClient.this.logVerbose("protocol->" + parameters.protocol);
-      /*return new AppRTCSignalingParameters(
-          iceServers, gaeBaseHref, token, postMessageUrl, initiator,
-          pcConstraints, videoConstraints, audioConstraints);*/
-            return parameters;
-        }
-
-        // Mimic Chrome and set DtlsSrtpKeyAgreement to true if not set to false by
-        // the web-app.
-        private void addDTLSConstraintIfMissing(
-                MediaConstraints pcConstraints) {
-            for (MediaConstraints.KeyValuePair pair : pcConstraints.mandatory) {
-                if (pair.getKey().equals("DtlsSrtpKeyAgreement")) {
-                    return;
-                }
-            }
-            for (MediaConstraints.KeyValuePair pair : pcConstraints.optional) {
-                if (pair.getKey().equals("DtlsSrtpKeyAgreement")) {
-                    return;
-                }
-            }
-            // DTLS isn't being suppressed (e.g. for debug=loopback calls), so enable
-            // it by default.
-            pcConstraints.optional.add(
-                    new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
-        }
-
-        // Return the constraints specified for |type| of "audio" or "video" in
-        // |mediaConstraintsString|.
-        private String getAVConstraints(
-                String type, String mediaConstraintsString) {
-            try {
-                JSONObject json = new JSONObject(mediaConstraintsString);
-                // Tricksy handling of values that are allowed to be (boolean or
-                // MediaTrackConstraints) by the getUserMedia() spec.  There are three
-                // cases below.
-                if (!json.has(type) || !json.optBoolean(type, true)) {
-                    // Case 1: "audio"/"video" is not present, or is an explicit "false"
-                    // boolean.
-                    return null;
-                }
-                if (json.optBoolean(type, false)) {
-                    // Case 2: "audio"/"video" is an explicit "true" boolean.
-                    return "{\"mandatory\": {}, \"optional\": []}";
-                }
-                // Case 3: "audio"/"video" is an object.
-                return json.getJSONObject(type).toString();
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private MediaConstraints constraintsFromJSON(String jsonString) {
-            if (jsonString == null) {
-                return null;
-            }
-            try {
-                MediaConstraints constraints = new MediaConstraints();
-                JSONObject json = new JSONObject(jsonString);
-                JSONObject mandatoryJSON = json.optJSONObject("mandatory");
-                if (mandatoryJSON != null) {
-                    JSONArray mandatoryKeys = mandatoryJSON.names();
-                    if (mandatoryKeys != null) {
-                        for (int i = 0; i < mandatoryKeys.length(); ++i) {
-                            String key = mandatoryKeys.getString(i);
-                            String value = mandatoryJSON.getString(key);
-                            constraints.mandatory.add(
-                                    new MediaConstraints.KeyValuePair(key, value));
-                        }
-                    }
-                }
-                JSONArray optionalJSON = json.optJSONArray("optional");
-                if (optionalJSON != null) {
-                    for (int i = 0; i < optionalJSON.length(); ++i) {
-                        JSONObject keyValueDict = optionalJSON.getJSONObject(i);
-                        String key = keyValueDict.names().getString(0);
-                        String value = keyValueDict.getString(key);
-                        constraints.optional.add(
-                                new MediaConstraints.KeyValuePair(key, value));
-                    }
-                }
-                return constraints;
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // Requests & returns a TURN ICE Server based on a request URL.  Must be run
-        // off the main thread!
-        private PeerConnection.IceServer requestTurnServer(String url) {
-            try {
-                URLConnection connection = (new URL(url)).openConnection();
-                connection.addRequestProperty("user-agent", "Mozilla/5.0");
-                connection.addRequestProperty("origin", "https://apprtc.appspot.com");
-                String response = drainStream(connection.getInputStream());
-                JSONObject responseJSON = new JSONObject(response);
-                String uri = responseJSON.getJSONArray("uris").getString(0);
-                String username = responseJSON.getString("username");
-                String password = responseJSON.getString("password");
-                return new PeerConnection.IceServer(uri, username, password);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        if (params != null) {
+            Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
+            Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
+            socketTester = new SignalingServerClient(this.gaeHandler,
+                    "https://" + params.getIpSigserver(), params.getPortSigserver());
         }
     }
 
+    @Override
+    public void onRoomParameterError(String message) {
+        WebServerClient.this.iceServersObserver.onError(message);
+    }
 
-    // Return the list of ICE servers described by a WebRTCPeerConnection
-    // configuration string.
-    @SuppressWarnings("unused")
-    private LinkedList<PeerConnection.IceServer> iceServersFromPCConfigJSON(
-            String pcConfig) {
-        try {
-            JSONObject json = new JSONObject(pcConfig);
-            JSONArray servers = json.getJSONArray("iceServers");
-            LinkedList<PeerConnection.IceServer> ret =
-                    new LinkedList<PeerConnection.IceServer>();
-            for (int i = 0; i < servers.length(); ++i) {
-                JSONObject server = servers.getJSONObject(i);
-                String url = server.getString("urls");
-                String credential =
-                        server.has("credential") ? server.getString("credential") : "";
-                ret.add(new PeerConnection.IceServer(url, "", credential));
-            }
-            return ret;
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    public void onShouldConnectToRoom() {
+        WebServerClient.this.iceServersObserver.onShouldConnectToRoom();
     }
 
     // Request an attempt to drain the send queue, on a background thread.
@@ -640,8 +163,8 @@ class WebServerClient {
             try {
                 for (String msg : sendQueue) {
                     URLConnection connection = new URL(
-                            appRTCSignalingParameters.gaeBaseHref +
-                                    appRTCSignalingParameters.postMessageUrl).openConnection();
+                            appRTCSignalingParameters.getGaeBaseHref() +
+                                    appRTCSignalingParameters.getPostMessageUrl()).openConnection();
                     connection.setDoOutput(true);
                     connection.getOutputStream().write(msg.getBytes("UTF-8"));
                     if (!connection.getHeaderField(null).startsWith("HTTP/1.1 200 ")) {
@@ -657,22 +180,120 @@ class WebServerClient {
         }
     }
 
-    // Return the contents of an InputStream as a String.
-    private static String drainStream(InputStream in) {
-        @SuppressWarnings("resource")
-        Scanner s = new Scanner(in).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
     public void sendMessage(JSONObject dictMessage) {
-        this.logVerbose("Send message");
+        Log.d(TAG, "Send message");
         socketTester.getSocketIO().send(dictMessage.toString());
     }
 
-    private void logVerbose(String message) {
-        if (verboseLogging) {
-            Log.d(TAG, message);
-        }
+    public boolean isInitiator() {
+        return appRTCSignalingParameters.isInitiator();
     }
 
+    public MediaConstraints pcConstraints() {
+        return appRTCSignalingParameters.getPcConstraints();
+    }
+
+    public MediaConstraints videoConstraints() {
+        return appRTCSignalingParameters.getVideoConstraints();
+    }
+
+    public MediaConstraints audioConstraints() {
+        return appRTCSignalingParameters.getAudioConstraints();
+    }
+
+    public String getApiOwner() {
+        return appRTCSignalingParameters.getApiOwner();
+    }
+
+    public void setApiOwner(String apiOwner) {
+        this.appRTCSignalingParameters.setApiOwner(apiOwner);
+    }
+
+    public String getCid() {
+        return appRTCSignalingParameters.getCid();
+    }
+
+    public void setCid(String cid) {
+        this.appRTCSignalingParameters.setCid(cid);
+    }
+
+    public String getDisplayName() {
+        return appRTCSignalingParameters.getDisplayName();
+    }
+
+    public void setDisplayName(String displayName) {
+        this.appRTCSignalingParameters.setDisplayName(displayName);
+    }
+
+    public String getLen() {
+        return appRTCSignalingParameters.getLen();
+    }
+
+    public void setLen(String len) {
+        this.appRTCSignalingParameters.setLen(len);
+    }
+
+    public String getRoomCred() {
+        return appRTCSignalingParameters.getRoomCred();
+    }
+
+    public void setRoomCred(String roomCred) {
+        this.appRTCSignalingParameters.setRoomCred(roomCred);
+    }
+
+    public String getRoomId() {
+        return appRTCSignalingParameters.getRoomId();
+    }
+
+    public void setRoomId(String roomId) {
+        this.appRTCSignalingParameters.setRoomId(roomId);
+    }
+
+    public String getSid() {
+        return appRTCSignalingParameters.getSid();
+    }
+
+    public void setSid(String sid) {
+        this.appRTCSignalingParameters.setSid(sid);
+    }
+
+    public String getStart() {
+        return appRTCSignalingParameters.getStart();
+    }
+
+    public void setStart(String start) {
+        this.appRTCSignalingParameters.setStart(start);
+    }
+
+    public String getTimeStamp() {
+        return appRTCSignalingParameters.getTimeStamp();
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        this.appRTCSignalingParameters.setTimeStamp(timeStamp);
+    }
+
+    public String getTokenTempCreated() {
+        return appRTCSignalingParameters.getTokenTempCreated();
+    }
+
+    public void setTokenTempCreated(String tokenTempCreated) {
+        this.appRTCSignalingParameters.setTokenTempCreated(tokenTempCreated);
+    }
+
+    public String getUserCred() {
+        return appRTCSignalingParameters.getUserCred();
+    }
+
+    public void setUserCred(String userCred) {
+        this.appRTCSignalingParameters.setUserCred(userCred);
+    }
+
+    public String getUserId() {
+        return appRTCSignalingParameters.getUserId();
+    }
+
+    public void setUserId(String userId) {
+        this.appRTCSignalingParameters.setUserId(userId);
+    }
 }

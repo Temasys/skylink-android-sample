@@ -7,11 +7,15 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.SignatureException;
 import java.util.Date;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests related to Utils
@@ -52,5 +56,17 @@ public class UtilsTest {
     public void testGetISOTimeStamp() {
         String isoTimeStamp = Utils.getISOTimeStamp(new Date());
         assertNotNull(isoTimeStamp);
+    }
+
+    @Test
+    public void testDrainStream() {
+        String str = "This is a String ~ GoGoGo";
+        // convert String into InputStream
+        InputStream inputStream = new ByteArrayInputStream(str.getBytes());
+        try {
+            assertTrue("Should be equal", str.equals(Utils.convertInputStreamToString(inputStream)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

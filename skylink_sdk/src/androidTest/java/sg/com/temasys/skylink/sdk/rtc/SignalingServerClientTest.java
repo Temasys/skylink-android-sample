@@ -2,8 +2,6 @@ package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Log;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +19,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Created by janidu on 12/1/15.
+ * Tests related to SignalingServerClient
  */
 
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
 public class SignalingServerClientTest {
+
 
     private static final String TAG = SignalingServerClient.class.getName();
     private String mSignalingServer;
@@ -39,31 +38,30 @@ public class SignalingServerClientTest {
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        SignalingParameterHelper.retrieveSignalingParameters(Robolectric.application,
-                new SignalingParameterHelperListener() {
-                    @Override
-                    public void onSignalingParametersReceived(JSONObject jsonObject) {
-                        assertNotNull(jsonObject);
-                        Log.d(TAG, "onSignalingParametersReceived");
-                        try {
-                            mSignalingServer = jsonObject.getString(SignalingParameterHelper.
-                                    JSON_KEY_SERVER);
-                            mSignalingPort = jsonObject.getInt(SignalingParameterHelper.
-                                    JSON_KEY_PORT);
-                        } catch (JSONException e) {
-                            Log.e(TAG, e.getMessage());
-                        } finally {
-                            countDownLatch.countDown();
-                        }
-                    }
+        RoomParameterService roomParameterService = new RoomParameterService(new RoomParameterServiceListener() {
+            @Override
+            public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                assertNotNull(params);
+                Log.d(TAG, "onSignalingParametersReceived");
+                mSignalingServer = params.getIpSigserver();
+                mSignalingPort = params.getPortSigserver();
+                countDownLatch.countDown();
+            }
 
-                    @Override
-                    public void onSignalingParametersReceivedError(String error) {
-                        Log.d(TAG, "onSignalingParametersReceivedError");
-                        fail("Should receive signaling parameters successfully");
-                        countDownLatch.countDown();
-                    }
-                });
+            @Override
+            public void onRoomParameterError(String message) {
+                Log.d(TAG, "onSignalingParametersReceivedError");
+                fail("Should receive signaling parameters successfully");
+                countDownLatch.countDown();
+            }
+
+            @Override
+            public void onShouldConnectToRoom() {
+                assertTrue("Should notify to connect to room", true);
+            }
+        });
+
+        roomParameterService.execute(TestConstants.SKYLINK_CONNECTION_STRING);
         countDownLatch.await();
     }
 
@@ -74,7 +72,7 @@ public class SignalingServerClientTest {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         final SignalingServerClient signalingServerClient =
-                new SignalingServerClient(new WebServerClient.MessageHandler() {
+                new SignalingServerClient(new MessageHandler() {
                     @Override
                     public void onOpen() {
                         Log.d(TAG, "onOpen");
