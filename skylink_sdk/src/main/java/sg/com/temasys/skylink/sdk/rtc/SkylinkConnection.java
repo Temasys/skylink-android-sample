@@ -100,7 +100,7 @@ public class SkylinkConnection {
     private WebServerClient webServerClient;
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
-    private WebServerClient.MessageHandler messageHandler = new MyMessageHandler();
+    private MessageHandler messageHandler = new MyMessageHandler();
     private VideoRendererGuiListener videoRendererGuiListener = new MyVideoRendererGuiListener();
 
     private FileTransferListener fileTransferListener;
@@ -1066,18 +1066,34 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        lifeCycleListener.onConnect(message == null, message);
+                        lifeCycleListener.onConnect(false, message);
                     }
                 }
             });
         }
 
+        @Override
+        public void onShouldConnectToRoom() {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    // Prevent thread from executing with disconnect concurrently.
+                    synchronized (lockDisconnect) {
+                        // If user has indicated intention to disconnect,
+                        // We should no longer process messages from signalling server.
+                        if (connectionState == ConnectionState.DISCONNECT) {
+                            return;
+                        }
+                        lifeCycleListener.onConnect(true, null);
+                    }
+                }
+            });
+        }
     }
 
     /*
      * GAEChannelClient.MessageHandler
      */
-    private class MyMessageHandler implements WebServerClient.MessageHandler {
+    private class MyMessageHandler implements MessageHandler {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 

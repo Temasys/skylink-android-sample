@@ -33,9 +33,9 @@ class SignalingServerClient implements IOCallback {
     private String sigIP;
 
     private SocketIO socketIO = null;
-    private WebServerClient.MessageHandler delegate;
+    private MessageHandler delegate;
 
-    public SignalingServerClient(WebServerClient.MessageHandler delegate,
+    public SignalingServerClient(MessageHandler delegate,
                                  String signalingIp, int signalingPort) {
         this.delegate = delegate;
         sigIP = signalingIp;
@@ -60,7 +60,7 @@ class SignalingServerClient implements IOCallback {
         return socketIO;
     }
 
-    public void setDelegate(WebServerClient.MessageHandler delegate) {
+    public void setDelegate(MessageHandler delegate) {
         this.delegate = delegate;
     }
 
