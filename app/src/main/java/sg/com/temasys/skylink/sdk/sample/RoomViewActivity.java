@@ -28,8 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.SignatureException;
 import java.util.ArrayList;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
@@ -118,15 +116,17 @@ public class RoomViewActivity extends Activity implements
 
 
         if (!mIsAlreadyConnected) {
+
             SkylinkConfig config = new SkylinkConfig();
             config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
             config.setHasPeerMessaging(true);
             config.setHasFileTransfer(true);
             config.setTimeout(60);
-            // config.setTimeout( 10 );
+
             mConnection = SkylinkConnection.getInstance();
             mConnection.init(getString(R.string.app_key),
-                    getString(R.string.app_secret), config, getApplicationContext());
+                    getSkylinkConfig(), getApplicationContext());
+
             mConnectionConfig = config;
             RoomManager.getInstance(mConnection);
         } else {
@@ -151,22 +151,23 @@ public class RoomViewActivity extends Activity implements
         setContentView(rootView);
     }
 
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
+        //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        config.setHasPeerMessaging(true);
+        config.setHasFileTransfer(true);
+        config.setTimeout(60);
+        return config;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        try {
-            if (!mIsAlreadyConnected) {
-                String userData = mDisplayName;
-                mConnection.connectToRoom(mRoomName, userData);
-            }
-        } catch (JSONException e) {
-            Log.w(TAG, e.getLocalizedMessage(), e);
-        } catch (SignatureException e) {
-            Log.w(TAG, e.getLocalizedMessage(), e);
-        } catch (IOException e) {
-            Log.w(TAG, e.getLocalizedMessage(), e);
+        if (!mIsAlreadyConnected) {
+            String userData = mDisplayName;
+            mConnection.connectToRoom(getString(R.string.app_secret), mRoomName, mDisplayName);
         }
-
         // Prepare to set audio path
         mHeadSetReceiver = new HeadSetReceiver();
         headSetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
