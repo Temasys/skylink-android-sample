@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
@@ -343,6 +344,13 @@ class DataChannelManager {
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
+            } else {
+                final String tid = this.getTid();
+                connectionManager.runOnUiThread(new Runnable() {
+                    public void run() {
+                        connectionManager.getDataTransferListener().onDataReceive(tid, bytes);
+                    }
+                });
             }
         }
 
@@ -1336,6 +1344,7 @@ class DataChannelManager {
         // Can consider using channel open call back for this.
         // Send msg via DC.
         dc.send(buffer);
+
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -1352,4 +1361,31 @@ class DataChannelManager {
         return peerId.startsWith("MCU");
     }
 
+    /**
+     * Sends a byte array to a specified remotePeer or to all participants of the room
+     * if the remotePeerId is empty or null
+     *
+     * @param remotePeerId remotePeerID of a specified peer
+     * @param byteArray    Array of bytes
+     */
+    public void sendDataToPeer(String remotePeerId, byte[] byteArray) {
+        if (TextUtils.isEmpty(remotePeerId)) {
+            // Send to all peers as the remotePeerId is empty
+            if (dcInfoList != null && !dcInfoList.isEmpty()) {
+                for (String peerId : dcInfoList.keySet()) {
+                    Log.d(TAG, "Sending data to remotePeerID " + peerId);
+                    sendData(dcInfoList.get(peerId), byteArray);
+                }
+            }
+        } else {
+            // Send data to specified peer
+            sendData(dcInfoList.get(remotePeerId), byteArray);
+        }
+    }
+
+    private void sendData(final DcObserver dcObserver, byte[] byteArray) {
+        Log.d(TAG, "Sending data with byte array length " + byteArray.length);
+        DataChannel dc = dcObserver.getDc();
+        dc.send(new DataChannel.Buffer(ByteBuffer.wrap(byteArray), true));
+    }
 }

@@ -34,6 +34,19 @@ public class SkylinkConnectionTest {
     }
 
     @Test
+    public void testSendData() {
+        DataChannelManager mockDataChannelManager = mock(DataChannelManager.class);
+        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+
+        skylinkConnection.setDataChannelManager(mockDataChannelManager);
+
+        String remotePeerId = "test";
+        byte[] byteArray = new byte[128];
+        skylinkConnection.sendData(remotePeerId, byteArray);
+        verify(mockDataChannelManager).sendDataToPeer(remotePeerId, byteArray);
+    }
+
+    @Test
     public void testVerifyRunOnUiThread() {
         SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
         SkylinkConnection mockSkylinkConnection = mock(SkylinkConnection.class);
