@@ -25,6 +25,7 @@ import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 public class DataTransferFragment extends Fragment implements
         RemotePeerListener, DataTransferListener, LifeCycleListener {
@@ -57,7 +58,13 @@ public class DataTransferFragment extends Fragment implements
             public void onClick(View v) {
                 // Send data to peers specifying their ID's
                 for (String peerId : peerIds) {
-                    skylinkConnection.sendData(peerId, data);
+
+                    try {
+                        skylinkConnection.sendData(peerId, data);
+                    } catch (SkylinkException e) {
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+
                 }
             }
         });
@@ -67,7 +74,11 @@ public class DataTransferFragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 // Send data to all the peers
-                skylinkConnection.sendData("", data);
+                try {
+                    skylinkConnection.sendData("", data);
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
             }
         });
 

@@ -23,6 +23,7 @@ class DataChannelManager {
     private SkylinkConnection connectionManager;
 
     private static final String TAG = "DataChannelManager";
+    public static final int MAX_TRANSFER_SIZE = 65456;
 
     // Hashtable with Keys of tid (target/remote Peer id)
     // and Values of registered DcObserver.
@@ -1368,7 +1369,12 @@ class DataChannelManager {
      * @param remotePeerId remotePeerID of a specified peer
      * @param byteArray    Array of bytes
      */
-    public void sendDataToPeer(String remotePeerId, byte[] byteArray) {
+    public void sendDataToPeer(String remotePeerId, byte[] byteArray) throws SkylinkException {
+
+        if(byteArray.length > MAX_TRANSFER_SIZE){
+            throw new SkylinkException("Maximum data length is " + MAX_TRANSFER_SIZE);
+        }
+
         if (TextUtils.isEmpty(remotePeerId)) {
             // Send to all peers as the remotePeerId is empty
             if (dcInfoList != null && !dcInfoList.isEmpty()) {

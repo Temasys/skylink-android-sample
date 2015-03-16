@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
+import android.util.Log;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +10,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -42,8 +47,36 @@ public class SkylinkConnectionTest {
 
         String remotePeerId = "test";
         byte[] byteArray = new byte[128];
-        skylinkConnection.sendData(remotePeerId, byteArray);
-        verify(mockDataChannelManager).sendDataToPeer(remotePeerId, byteArray);
+        try {
+            skylinkConnection.sendData(remotePeerId, byteArray);
+            verify(mockDataChannelManager).sendDataToPeer(remotePeerId, byteArray);
+        } catch (SkylinkException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void testMaximumDataLength() throws SkylinkException {
+
+        final String expectedMessage = "Maximum data length is " +
+                DataChannelManager.MAX_TRANSFER_SIZE;
+
+        DataChannelManager mockDataChannelManager = mock(DataChannelManager.class);
+        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        skylinkConnection.setDataChannelManager(mockDataChannelManager);
+
+        String remotePeerId = "test";
+        byte[] byteArray = new byte[DataChannelManager.MAX_TRANSFER_SIZE + 1];
+
+        try {
+            doThrow(new SkylinkException(expectedMessage)
+            ).when(mockDataChannelManager).sendDataToPeer(remotePeerId, byteArray);
+
+            skylinkConnection.sendData(remotePeerId, byteArray);
+        } catch (SkylinkException e) {
+            assertNotNull(e);
+            assertTrue(e.getMessage().equals(expectedMessage));
+        }
     }
 
     @Test

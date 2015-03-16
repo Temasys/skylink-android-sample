@@ -574,8 +574,9 @@ public class SkylinkConnection {
      *
      * @param remotePeerId remotePeerID of a specified peer
      * @param data         Array of bytes
+     * @throws SkylinkException
      */
-    public void sendData(String remotePeerId, byte[] data) {
+    public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
         dataChannelManager.sendDataToPeer(remotePeerId, data);
     }
 
