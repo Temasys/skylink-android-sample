@@ -45,6 +45,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
@@ -108,6 +109,7 @@ public class SkylinkConnection {
     private MediaListener mediaListener;
     private MessagesListener messagesListener;
     private RemotePeerListener remotePeerListener;
+    private DataTransferListener dataTransferListener;
 
     /**
      * List of Connection state types
@@ -223,6 +225,10 @@ public class SkylinkConnection {
         if (this.remotePeerListener == null)
             this.remotePeerListener = new RemotePeerAdapter();
 
+        if (this.dataTransferListener == null) {
+            this.dataTransferListener = new DataTransferAdapter();
+        }
+
         this.webServerClient = new WebServerClient(messageHandler,
                 iceServersObserver);
 
@@ -288,7 +294,8 @@ public class SkylinkConnection {
         this.applicationContext = context;
 
         // Instantiate DataChannelManager.
-        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()) {
+        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()
+                || this.myConfig.hasDataTransfer()) {
             this.dataChannelManager = new DataChannelManager(this,
                     this.myConfig.getTimeout(), myConfig.hasPeerMessaging(),
                     myConfig.hasFileTransfer());
@@ -559,6 +566,18 @@ public class SkylinkConnection {
                 }
             });
         }
+    }
+
+    /**
+     * Sends a byte array to a specified remotePeer or to all participants of the room
+     * if the remotePeerId is empty or null
+     *
+     * @param remotePeerId remotePeerID of a specified peer
+     * @param data         Array of bytes
+     * @throws SkylinkException
+     */
+    public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
+        dataChannelManager.sendDataToPeer(remotePeerId, data);
     }
 
     /**
@@ -1291,7 +1310,8 @@ public class SkylinkConnection {
                             connectionManager.pcConstraints);
 
                 connectionManager.logMessage("[SDK] onMessage - create offer.");
-                if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()) {
+                if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
+                        || myConfig.hasDataTransfer()) {
                     // Create DataChannel
                     // It is stored by dataChannelManager.
                     connectionManager.dataChannelManager.createDataChannel(
@@ -1812,7 +1832,8 @@ public class SkylinkConnection {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
-                if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()) {
+                if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
+                        || myConfig.hasDataTransfer()) {
                     // Create our DataChannel based on given dc.
                     // It is stored by dataChannelManager.
                     // Get PeerConnection.
@@ -1986,4 +2007,15 @@ public class SkylinkConnection {
         }
     }
 
+    public DataTransferListener getDataTransferListener() {
+        return dataTransferListener;
+    }
+
+    public void setDataTransferListener(DataTransferListener dataTransferListener) {
+        this.dataTransferListener = dataTransferListener;
+    }
+
+    protected void setDataChannelManager(DataChannelManager dataChannelManager) {
+        this.dataChannelManager = dataChannelManager;
+    }
 }

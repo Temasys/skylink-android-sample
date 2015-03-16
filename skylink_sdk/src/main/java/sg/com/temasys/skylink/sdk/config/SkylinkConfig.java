@@ -18,6 +18,7 @@ public class SkylinkConfig implements Serializable {
     private boolean videoReceive;
     private boolean peerMessaging;
     private boolean fileTransfer;
+    private boolean dataTransfer;
     private int timeout = 60;
     private Map<String, Object> advancedOptions;
 
@@ -52,6 +53,7 @@ public class SkylinkConfig implements Serializable {
         this.videoReceive = config.videoReceive;
         this.peerMessaging = config.peerMessaging;
         this.fileTransfer = config.fileTransfer;
+        this.dataTransfer = config.dataTransfer;
         this.timeout = config.timeout;
     }
 
@@ -168,6 +170,22 @@ public class SkylinkConfig implements Serializable {
      */
     public void setHasFileTransfer(boolean fileTransfer) {
         this.fileTransfer = fileTransfer;
+    }
+
+    /**
+     * @return DataTransfer config value.
+     */
+    public boolean hasDataTransfer() {
+        return dataTransfer;
+    }
+
+    /**
+     * Sets if dataTransfer is enabled.
+     *
+     * @param dataTransfer DataTransfer config value
+     */
+    public void setHasDataTransfer(boolean dataTransfer) {
+        this.dataTransfer = dataTransfer;
     }
 
     /**
