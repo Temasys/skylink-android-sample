@@ -2,6 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -36,6 +37,8 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     private TextView tvRoomDetails;
     private String remotePeerId;
     private String peerName;
+    private boolean connected;
+    private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,6 +55,12 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
                 String apiKey = getString(R.string.app_key);
                 String apiSecret = getString(R.string.app_secret);
 
+                // Initialize the skylink connection
+                initializeSkylinkConnection();
+
+                // Initialize the audio router
+                initializeAudioRouter();
+
                 // Obtaining the Skylink connection string done locally
                 // In a production environment the connection string should be given
                 // by an entity external to the App, such as an App server that holds the Skylink API secret
@@ -62,6 +71,10 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
                 skylinkConnection.connectToRoom(skylinkConnectionString,
                         MY_USER_NAME);
+                connected = true;
+
+                // Use the Audio router to switch between headphone and headset
+                audioRouter.startAudioRouting(getActivity().getApplicationContext());
 
                 btnAudioCall.setEnabled(false);
                 Toast.makeText(getActivity(), "Connecting....",
@@ -74,13 +87,28 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        skylinkConnection = SkylinkConnection.getInstance();
-        skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
-                this.getActivity().getApplicationContext());
+        // Allow volume to be controlled using volume keys
+        getActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+    }
 
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+    private void initializeAudioRouter() {
+        if (audioRouter == null) {
+            audioRouter = AudioRouter.getInstance();
+            audioRouter.init(((AudioManager) getActivity().
+                    getSystemService(android.content.Context.AUDIO_SERVICE)));
+        }
+    }
+
+    private void initializeSkylinkConnection() {
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
+                    this.getActivity().getApplicationContext());
+
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+        }
     }
 
     @Override
@@ -94,10 +122,14 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDetach() {
         super.onDetach();
-        skylinkConnection.disconnectFromRoom();
-        skylinkConnection.setLifeCycleListener(null);
-        skylinkConnection.setMediaListener(null);
-        skylinkConnection.setRemotePeerListener(null);
+        if (skylinkConnection != null && connected) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setMediaListener(null);
+            skylinkConnection.setRemotePeerListener(null);
+            connected = false;
+            audioRouter.stopAudioRouting(getActivity().getApplicationContext());
+        }
     }
 
     private SkylinkConfig getSkylinkConfig() {
