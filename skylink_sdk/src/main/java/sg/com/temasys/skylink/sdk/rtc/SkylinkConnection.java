@@ -134,6 +134,10 @@ public class SkylinkConnection {
     private Object lockDisconnectMsg = new Object();
     private Object lockDisconnectMedia = new Object();
     private Object lockDisconnectSdp = new Object();
+    private Object lockDisconnectSdpCreate = new Object();
+    private Object lockDisconnectSdpSet = new Object();
+    private Object lockDisconnectSdpDrain = new Object();
+    private Object lockDisconnectSdpSend = new Object();
 
     private static SkylinkConnection instance;
     private Handler handler;
@@ -341,82 +345,90 @@ public class SkylinkConnection {
         // Prevent thread from executing with WebServerClient methods concurrently.
         synchronized (lockDisconnectMsg) {
             synchronized (lockDisconnectMedia) {
-                synchronized (lockDisconnectSdp) {
-                    synchronized (lockDisconnect) {
+                synchronized (lockDisconnectSdpDrain) {
+                    synchronized (lockDisconnectSdpSend) {
+                        synchronized (lockDisconnectSdpSet) {
+                            synchronized (lockDisconnectSdpCreate) {
+                                synchronized (lockDisconnectSdp) {
+                                    synchronized (lockDisconnect) {
 
-                        // Record user intention for connection to room state
-                        connectionState = ConnectionState.DISCONNECT;
+                                        // Record user intention for connection to room state
+                                        connectionState = ConnectionState.DISCONNECT;
 
-  		/*if (this.webServerClient == null)
-              return;*/
-                        if (this.webServerClient != null) this.webServerClient.disconnect();
+                                        if (this.webServerClient != null) {
+                                            this.webServerClient.disconnect();
+                                        }
 
-                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
+                                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
 
-                        // Dispose all DC.
-                        String allPeers = null;
-                        dataChannelManager.disposeDC(allPeers);
+                                        // Dispose all DC.
+                                        String allPeers = null;
+                                        dataChannelManager.disposeDC(allPeers);
 
-                        if (this.peerConnectionPool != null) {
-                            for (PeerConnection peerConnection : this.peerConnectionPool
-                                    .values()) {
-                                // Remove stream before disposing in order to prevent
-                                // localMediaStream from being disposed
-                                peerConnection.removeStream(localMediaStream);
-                                peerConnection.dispose();
+                                        if (this.peerConnectionPool != null) {
+                                            for (PeerConnection peerConnection : this.peerConnectionPool
+                                                    .values()) {
+                                                // Remove stream before disposing in order to prevent
+                                                // localMediaStream from being disposed
+                                                peerConnection.removeStream(localMediaStream);
+                                                peerConnection.dispose();
+                                            }
+
+                                            this.peerConnectionPool.clear();
+                                        }
+
+                                        this.peerConnectionPool = null;
+
+                                        if (this.pcObserverPool != null) {
+                                            this.pcObserverPool.clear();
+                                        }
+
+                                        this.pcObserverPool = null;
+
+                                        if (this.sdpObserverPool != null) {
+                                            this.sdpObserverPool.clear();
+                                        }
+                                        this.sdpObserverPool = null;
+
+                                        if (this.displayNameMap != null) {
+                                            this.displayNameMap.clear();
+                                        }
+
+                                        this.displayNameMap = null;
+
+                                        // Dispose video capturer
+                                        if (this.localVideoCapturer != null) {
+                                            this.localVideoCapturer.dispose();
+                                        }
+
+                                        this.localVideoCapturer = null;
+
+                                        //Dispose local media streams, sources and tracks
+                                        this.localMediaStream = null;
+                                        this.localAudioTrack = null;
+                                        this.localVideoTrack = null;
+
+                                        if (this.localVideoSource != null) {
+                                            // Stop the video source
+                                            this.localVideoSource.stop();
+                                            Log.d(TAG, "Stopped local Video Source");
+                                        }
+
+                                        this.localVideoSource = null;
+                                        this.localAudioSource = null;
+
+                                        if (this.peerConnectionFactory != null) {
+                                            Log.d(TAG, "Disposing Peer Connection Factory");
+                                            this.peerConnectionFactory.dispose();
+                                            Log.d(TAG, "Disposed Peer Connection Factory");
+                                        }
+
+                                        this.peerConnectionFactory = null;
+                                        this.webServerClient = null;
+                                    }
+                                }
                             }
-
-                            this.peerConnectionPool.clear();
                         }
-
-                        this.peerConnectionPool = null;
-
-                        if (this.pcObserverPool != null) {
-                            this.pcObserverPool.clear();
-                        }
-
-                        this.pcObserverPool = null;
-
-                        if (this.sdpObserverPool != null) {
-                            this.sdpObserverPool.clear();
-                        }
-                        this.sdpObserverPool = null;
-
-                        if (this.displayNameMap != null) {
-                            this.displayNameMap.clear();
-                        }
-
-                        this.displayNameMap = null;
-
-                        // Dispose video capturer
-                        if (this.localVideoCapturer != null) {
-                            this.localVideoCapturer.dispose();
-                        }
-
-                        this.localVideoCapturer = null;
-
-                        //Dispose local media streams, sources and tracks
-                        this.localMediaStream = null;
-                        this.localAudioTrack = null;
-                        this.localVideoTrack = null;
-
-                        if (this.localVideoSource != null) {
-                            // Stop the video source
-                            this.localVideoSource.stop();
-                            Log.d(TAG, "Stopped local Video Source");
-                        }
-
-                        this.localVideoSource = null;
-                        this.localAudioSource = null;
-
-                        if (this.peerConnectionFactory != null) {
-                            Log.d(TAG, "Disposing Peer Connection Factory");
-                            this.peerConnectionFactory.dispose();
-                            Log.d(TAG, "Disposed Peer Connection Factory");
-                        }
-
-                        this.peerConnectionFactory = null;
-                        this.webServerClient = null;
                     }
                 }
             }
@@ -1374,7 +1386,6 @@ public class SkylinkConnection {
                 SDPObserver sdpObserver = connectionManager.sdpObserverPool
                         .get(mid);
                 if (sdpObserver == null) {
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
                     sdpObserver = new SkylinkConnection.SDPObserver();
                     sdpObserver.setMyId(mid);
                     connectionManager.sdpObserverPool.put(mid, sdpObserver);
@@ -1409,7 +1420,6 @@ public class SkylinkConnection {
                 SDPObserver sdpObserver = connectionManager.sdpObserverPool
                         .get(mid);
                 if (sdpObserver == null) {
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
                     sdpObserver = new SkylinkConnection.SDPObserver();
                     sdpObserver.setMyId(mid);
                     connectionManager.sdpObserverPool.put(mid, sdpObserver);
@@ -1918,7 +1928,7 @@ public class SkylinkConnection {
             final PeerConnection pc;
             final SessionDescription sdp;
             // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
+            synchronized (lockDisconnectSdpCreate) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
@@ -1960,7 +1970,8 @@ public class SkylinkConnection {
             runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
+                    synchronized (lockDisconnectSdpSet) {
+
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
@@ -2022,7 +2033,7 @@ public class SkylinkConnection {
 
         private void sendLocalDescription(SessionDescription sdp) {
             // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
+            synchronized (lockDisconnectSdpSend) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
@@ -2042,7 +2053,7 @@ public class SkylinkConnection {
 
         private void drainRemoteCandidates() {
             // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
+            synchronized (lockDisconnectSdpDrain) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
