@@ -20,4 +20,14 @@
     <string name="peer_count">Peer count is %d</string>
     <string name="data_transfer_waiting">Connected to Room %s, waiting for Peers</string>
 
+    <string name="mute_audio">Mute Audio</string>
+    <string name="muted_audio">Muted Audio</string>
+    <string name="enable_audio">Enable Audio</string>
+    <string name="enabled_audio">Enabled Audio</string>
+
+    <string name="mute_video">Mute Video</string>
+    <string name="muted_video">Muted Video</string>
+
+    <string name="enable_video">Enable Video</string>
+    <string name="enabled_video">Enabled Video</string>
 </resources>
