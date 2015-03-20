@@ -396,13 +396,6 @@ public class SkylinkConnection {
 
                                         this.displayNameMap = null;
 
-                                        // Dispose video capturer
-                                        if (this.localVideoCapturer != null) {
-                                            this.localVideoCapturer.dispose();
-                                        }
-
-                                        this.localVideoCapturer = null;
-
                                         //Dispose local media streams, sources and tracks
                                         this.localMediaStream = null;
                                         this.localAudioTrack = null;
@@ -416,6 +409,13 @@ public class SkylinkConnection {
 
                                         this.localVideoSource = null;
                                         this.localAudioSource = null;
+
+                                        // Dispose video capturer
+                                        if (this.localVideoCapturer != null) {
+                                            this.localVideoCapturer.dispose();
+                                        }
+
+                                        this.localVideoCapturer = null;
 
                                         if (this.peerConnectionFactory != null) {
                                             Log.d(TAG, "Disposing Peer Connection Factory");
