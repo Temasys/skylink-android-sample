@@ -346,88 +346,91 @@ public class SkylinkConnection {
         synchronized (lockDisconnectMsg) {
             synchronized (lockDisconnectMedia) {
                 synchronized (lockDisconnectSdpDrain) {
-                synchronized (lockDisconnectSdpSend) {
-                synchronized (lockDisconnectSdpSet) {
-                synchronized (lockDisconnectSdpCreate) {
-                  synchronized (lockDisconnectSdp) {
-                      synchronized (lockDisconnect) {
+                    synchronized (lockDisconnectSdpSend) {
+                        synchronized (lockDisconnectSdpSet) {
+                            synchronized (lockDisconnectSdpCreate) {
+                                synchronized (lockDisconnectSdp) {
+                                    synchronized (lockDisconnect) {
 
-                          // Record user intention for connection to room state
-                          connectionState = ConnectionState.DISCONNECT;
+                                        // Record user intention for connection to room state
+                                        connectionState = ConnectionState.DISCONNECT;
 
-        /*if (this.webServerClient == null)
-                return;*/
-                          if (this.webServerClient != null) this.webServerClient.disconnect();
+                                        if (this.webServerClient != null) {
+                                            this.webServerClient.disconnect();
+                                        }
 
-                          logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
+                                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
 
-                          // Dispose all DC.
-                          String allPeers = null;
-                          dataChannelManager.disposeDC(allPeers);
+                                        // Dispose all DC.
+                                        String allPeers = null;
+                                        dataChannelManager.disposeDC(allPeers);
 
-                          if (this.peerConnectionPool != null) {
-                              for (PeerConnection peerConnection : this.peerConnectionPool
-                                      .values()) {
-                                  // Remove stream before disposing in order to prevent
-                                  // localMediaStream from being disposed
-                                  peerConnection.removeStream(localMediaStream);
-                                  peerConnection.dispose();
-                              }
+                                        if (this.peerConnectionPool != null) {
+                                            for (PeerConnection peerConnection : this.peerConnectionPool
+                                                    .values()) {
+                                                // Remove stream before disposing in order to prevent
+                                                // localMediaStream from being disposed
+                                                peerConnection.removeStream(localMediaStream);
+                                                peerConnection.dispose();
+                                            }
 
-                              this.peerConnectionPool.clear();
-                          }
+                                            this.peerConnectionPool.clear();
+                                        }
 
-                          this.peerConnectionPool = null;
+                                        this.peerConnectionPool = null;
 
-                          if (this.pcObserverPool != null) {
-                              this.pcObserverPool.clear();
-                          }
+                                        if (this.pcObserverPool != null) {
+                                            this.pcObserverPool.clear();
+                                        }
 
-                          this.pcObserverPool = null;
+                                        this.pcObserverPool = null;
 
-                          if (this.sdpObserverPool != null) {
-                              this.sdpObserverPool.clear();
-                          }
-                          this.sdpObserverPool = null;
+                                        if (this.sdpObserverPool != null) {
+                                            this.sdpObserverPool.clear();
+                                        }
+                                        this.sdpObserverPool = null;
 
-                          if (this.displayNameMap != null) {
-                              this.displayNameMap.clear();
-                          }
+                                        if (this.displayNameMap != null) {
+                                            this.displayNameMap.clear();
+                                        }
 
-                          this.displayNameMap = null;
+                                        this.displayNameMap = null;
 
-                          // Dispose video capturer
-                          if (this.localVideoCapturer != null) {
-                              this.localVideoCapturer.dispose();
-                          }
+                                        // Dispose video capturer
+                                        if (this.localVideoCapturer != null) {
+                                            this.localVideoCapturer.dispose();
+                                        }
 
-                          this.localVideoCapturer = null;
+                                        this.localVideoCapturer = null;
 
-                          //Dispose local media streams, sources and tracks
-                          this.localMediaStream = null;
-                          this.localAudioTrack = null;
-                          this.localVideoTrack = null;
+                                        //Dispose local media streams, sources and tracks
+                                        this.localMediaStream = null;
+                                        this.localAudioTrack = null;
+                                        this.localVideoTrack = null;
 
-                          if (this.localVideoSource != null) {
-                              // Stop the video source
-                              this.localVideoSource.stop();
-                              Log.d(TAG, "Stopped local Video Source");
-                          }
+                                        if (this.localVideoSource != null) {
+                                            // Stop the video source
+                                            this.localVideoSource.stop();
+                                            Log.d(TAG, "Stopped local Video Source");
+                                        }
 
-                          this.localVideoSource = null;
-                          this.localAudioSource = null;
+                                        this.localVideoSource = null;
+                                        this.localAudioSource = null;
 
-                          if (this.peerConnectionFactory != null) {
-                              Log.d(TAG, "Disposing Peer Connection Factory");
-                              this.peerConnectionFactory.dispose();
-                              Log.d(TAG, "Disposed Peer Connection Factory");
-                          }
+                                        if (this.peerConnectionFactory != null) {
+                                            Log.d(TAG, "Disposing Peer Connection Factory");
+                                            this.peerConnectionFactory.dispose();
+                                            Log.d(TAG, "Disposed Peer Connection Factory");
+                                        }
 
-                          this.peerConnectionFactory = null;
-                          this.webServerClient = null;
-                      }
+                                        this.peerConnectionFactory = null;
+                                        this.webServerClient = null;
+                                    }
+                                }
+                            }
+                        }
                     }
-                }}}}
+                }
             }
         }
 
@@ -1968,7 +1971,7 @@ public class SkylinkConnection {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
                     synchronized (lockDisconnectSdpSet) {
-                    // synchronized (lockDisconnect) {
+
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
