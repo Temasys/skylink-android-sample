@@ -19,7 +19,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.temasys.skylink.sampleapp.R;
 
@@ -42,13 +41,15 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
     private LinearLayout parentFragment;
-    private ToggleButton toggleAudioButton;
-    private ToggleButton toggleVideoButton;
+    private Button toggleAudioButton;
+    private Button toggleVideoButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
     private SkylinkConnection skylinkConnection;
     private String peerId;
     private ViewGroup.LayoutParams selfLayoutParams;
+	private boolean audioMuted;
+    private boolean videoMuted;
     private boolean connected;
     private AudioRouter audioRouter;
 
@@ -60,8 +61,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
-        toggleAudioButton = (ToggleButton) rootView.findViewById(R.id.toggle_audio);
-        toggleVideoButton = (ToggleButton) rootView.findViewById(R.id.toggle_video);
+
+        toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
+        toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
 
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,16 +105,42 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         toggleAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if toggle is checked, audio is is on, else audio is muted
-                skylinkConnection.muteLocalAudio(!((ToggleButton) v).isChecked());
+
+                // If audio is enabled, mute audio and if audio is enabled, mute it
+                audioMuted = !audioMuted;
+
+                if (audioMuted) {
+                    Toast.makeText(getActivity(), getString(R.string.muted_audio),
+                            Toast.LENGTH_SHORT).show();
+                    toggleAudioButton.setText(getString(R.string.enable_audio));
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.enabled_audio),
+                            Toast.LENGTH_SHORT).show();
+                    toggleAudioButton.setText(getString(R.string.mute_audio));
+                }
+
+                skylinkConnection.muteLocalAudio(audioMuted);
             }
         });
 
         toggleVideoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if toggle is checked, video is is on, else video is muted
-                skylinkConnection.muteLocalVideo(!((ToggleButton) v).isChecked());
+
+                // If video is enabled, mute video and if video is enabled, mute it
+                videoMuted = !videoMuted;
+
+                if (videoMuted) {
+                    Toast.makeText(getActivity(), getString(R.string.muted_video),
+                            Toast.LENGTH_SHORT).show();
+                    toggleVideoButton.setText(getString(R.string.enable_video));
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.enabled_video),
+                            Toast.LENGTH_SHORT).show();
+                    toggleVideoButton.setText(getString(R.string.mute_video));
+                }
+
+                skylinkConnection.muteLocalVideo(videoMuted);
             }
         });
 

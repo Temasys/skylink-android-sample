@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package sg.com.temasys.skylink.sdk.rendering;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
@@ -56,7 +56,7 @@ import javax.microedition.khronos.opengles.GL10;
  * createGui() call or VideoRenderer.Callbacks interface using create() call.
  * Only one instance of the class can be created.
  */
-public class VideoRendererGui implements GLSurfaceView.Renderer {
+class VideoRendererGui implements GLSurfaceView.Renderer {
 
     private VideoRendererGuiListener listener;
     private static Runnable eglContextReady = null;

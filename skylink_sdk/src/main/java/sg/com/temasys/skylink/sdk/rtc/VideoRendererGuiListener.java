@@ -1,8 +1,8 @@
-package sg.com.temasys.skylink.sdk.rendering;
+package sg.com.temasys.skylink.sdk.rtc;
 
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 
-public interface VideoRendererGuiListener {
+interface VideoRendererGuiListener {
     void updateDisplaySize(GLSurfaceView surface, Point screenDimensions);
 }
