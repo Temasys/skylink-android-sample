@@ -15,5 +15,8 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url = 'http://archiva.temasys.com.sg/repository/internal'
+        }
     }
 }

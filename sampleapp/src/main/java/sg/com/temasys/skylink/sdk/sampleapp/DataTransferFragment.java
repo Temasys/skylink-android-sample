@@ -40,6 +40,7 @@ public class DataTransferFragment extends Fragment implements
     private SkylinkConnection skylinkConnection;
     private byte[] data;
     private Set<String> peerIds;
+    private boolean connected;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -93,10 +94,11 @@ public class DataTransferFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initializeSkylinkConnection();
-
         String apiKey = getString(R.string.app_key);
         String apiSecret = getString(R.string.app_secret);
+
+        // Initialize the skylink connection
+        initializeSkylinkConnection();
 
         // Obtaining the Skylink connection string done locally
         // In a production environment the connection string should be given
@@ -108,6 +110,8 @@ public class DataTransferFragment extends Fragment implements
 
         skylinkConnection.connectToRoom(skylinkConnectionString,
                 MY_USER_NAME);
+
+        connected = true;
     }
 
     @Override
@@ -121,24 +125,27 @@ public class DataTransferFragment extends Fragment implements
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skylinkConnection != null) {
+        if (skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             skylinkConnection.setRemotePeerListener(null);
             skylinkConnection.setDataTransferListener(null);
             skylinkConnection.setLifeCycleListener(null);
+            connected = false;
         }
         super.onDetach();
     }
 
     private void initializeSkylinkConnection() {
-        skylinkConnection = SkylinkConnection.getInstance();
-        //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
-                this.getActivity().getApplicationContext());
-        //set listeners to receive callbacks when events are triggered
-        skylinkConnection.setRemotePeerListener(this);
-        skylinkConnection.setDataTransferListener(this);
-        skylinkConnection.setLifeCycleListener(this);
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            //the app_key and app_secret is obtained from the temasys developer console.
+            skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
+                    this.getActivity().getApplicationContext());
+            //set listeners to receive callbacks when events are triggered
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setDataTransferListener(this);
+            skylinkConnection.setLifeCycleListener(this);
+        }
     }
 
     private SkylinkConfig getSkylinkConfig() {

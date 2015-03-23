@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
+import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
+import org.webrtc.MediaCodecVideoEncoder;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
@@ -51,8 +53,6 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rendering.VideoRendererGui;
-import sg.com.temasys.skylink.sdk.rendering.VideoRendererGuiListener;
 
 /**
  * Main class to connect to the skylink infrastructure.
@@ -71,6 +71,9 @@ public class SkylinkConnection {
     private static final String TAG = "TEMAConnectionManager";
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
+
+    private static final String AUDIO_CODEC_OPUS = "opus";
+    private static final String AUDIO_CODEC_ISAC = "ISAC";
 
     private static boolean factoryStaticInitialized;
 
@@ -129,6 +132,10 @@ public class SkylinkConnection {
     private Object lockDisconnectMsg = new Object();
     private Object lockDisconnectMedia = new Object();
     private Object lockDisconnectSdp = new Object();
+    private Object lockDisconnectSdpCreate = new Object();
+    private Object lockDisconnectSdpSet = new Object();
+    private Object lockDisconnectSdpDrain = new Object();
+    private Object lockDisconnectSdpSend = new Object();
 
     private static SkylinkConnection instance;
     private Handler handler;
@@ -263,8 +270,21 @@ public class SkylinkConnection {
         this.apiKey = apiKey;
 
         if (!factoryStaticInitialized) {
+
+            boolean hardwareAccelerated = false;
+            EGLContext eglContext = null;
+
+            // Enable hardware acceleration if supported
+            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
+                hardwareAccelerated = true;
+                eglContext = VideoRendererGui.getEGLContext();
+                Log.d(TAG, "Enabled hardware acceleration");
+            }
+
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    true, true), "Failed to initializeAndroidGlobals");
+                    true, true, hardwareAccelerated, eglContext
+            ), "Failed to initializeAndroidGlobals");
+
             factoryStaticInitialized = true;
         }
 
@@ -323,65 +343,96 @@ public class SkylinkConnection {
         // Prevent thread from executing with WebServerClient methods concurrently.
         synchronized (lockDisconnectMsg) {
             synchronized (lockDisconnectMedia) {
-                synchronized (lockDisconnectSdp) {
-                    synchronized (lockDisconnect) {
-                        // Record user intention for connection to room state
-                        connectionState = ConnectionState.DISCONNECT;
+                synchronized (lockDisconnectSdpDrain) {
+                    synchronized (lockDisconnectSdpSend) {
+                        synchronized (lockDisconnectSdpSet) {
+                            synchronized (lockDisconnectSdpCreate) {
+                                synchronized (lockDisconnectSdp) {
+                                    synchronized (lockDisconnect) {
 
-  		/*if (this.webServerClient == null)
-              return;*/
-                        if (this.webServerClient != null) this.webServerClient.disconnect();
+                                        // Record user intention for connection to room state
+                                        connectionState = ConnectionState.DISCONNECT;
 
-                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
+                                        if (this.webServerClient != null) {
+                                            this.webServerClient.disconnect();
+                                        }
 
-                        // Dispose all DC.
-                        String allPeers = null;
-                        dataChannelManager.disposeDC(allPeers);
+                                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
 
-                        if (this.peerConnectionPool != null) {
-                            for (PeerConnection peerConnection : this.peerConnectionPool
-                                    .values())
-                                peerConnection.dispose();
-                            this.peerConnectionPool.clear();
+                                        // Dispose all DC.
+                                        String allPeers = null;
+                                        dataChannelManager.disposeDC(allPeers);
+
+                                        if (this.peerConnectionPool != null) {
+                                            for (PeerConnection peerConnection : this.peerConnectionPool
+                                                    .values()) {
+                                                // Remove stream before disposing in order to prevent
+                                                // localMediaStream from being disposed
+                                                peerConnection.removeStream(localMediaStream);
+                                                peerConnection.dispose();
+                                            }
+
+                                            this.peerConnectionPool.clear();
+                                        }
+
+                                        this.peerConnectionPool = null;
+
+                                        if (this.pcObserverPool != null) {
+                                            this.pcObserverPool.clear();
+                                        }
+
+                                        this.pcObserverPool = null;
+
+                                        if (this.sdpObserverPool != null) {
+                                            this.sdpObserverPool.clear();
+                                        }
+                                        this.sdpObserverPool = null;
+
+                                        if (this.displayNameMap != null) {
+                                            this.displayNameMap.clear();
+                                        }
+
+                                        this.displayNameMap = null;
+
+                                        //Dispose local media streams, sources and tracks
+                                        this.localMediaStream = null;
+                                        this.localAudioTrack = null;
+                                        this.localVideoTrack = null;
+
+                                        if (this.localVideoSource != null) {
+                                            // Stop the video source
+                                            this.localVideoSource.stop();
+                                            Log.d(TAG, "Stopped local Video Source");
+                                        }
+
+                                        this.localVideoSource = null;
+                                        this.localAudioSource = null;
+
+                                        // Dispose video capturer
+                                        if (this.localVideoCapturer != null) {
+                                            this.localVideoCapturer.dispose();
+                                        }
+
+                                        this.localVideoCapturer = null;
+
+                                        if (this.peerConnectionFactory != null) {
+                                            Log.d(TAG, "Disposing Peer Connection Factory");
+                                            this.peerConnectionFactory.dispose();
+                                            Log.d(TAG, "Disposed Peer Connection Factory");
+                                        }
+
+                                        this.peerConnectionFactory = null;
+                                        this.webServerClient = null;
+                                    }
+                                }
+                            }
                         }
-
-                        this.peerConnectionPool = null;
-                        if (this.pcObserverPool != null)
-                            this.pcObserverPool.clear();
-                        this.pcObserverPool = null;
-                        if (this.sdpObserverPool != null)
-                            this.sdpObserverPool.clear();
-                        this.sdpObserverPool = null;
-                        if (this.displayNameMap != null)
-                            this.displayNameMap.clear();
-                        this.displayNameMap = null;
-
-                        if (this.localMediaStream != null)
-                            this.localMediaStream.dispose();
-                        this.localMediaStream = null;
-                        this.localAudioTrack = null;
-                        if (this.localAudioSource != null)
-                            this.localAudioSource.dispose();
-                        this.localAudioSource = null;
-
-                        this.localVideoTrack = null;
-                        if (this.localVideoSource != null)
-                            this.localVideoSource.dispose();
-                        this.localVideoSource = null;
-
-                        if (this.localVideoCapturer != null)
-                            this.localVideoCapturer.dispose();
-                        this.localVideoCapturer = null;
-
-                        if (this.peerConnectionFactory != null)
-                            this.peerConnectionFactory.dispose();
-                        this.peerConnectionFactory = null;
-
-                        this.webServerClient = null;
                     }
                 }
             }
         }
+
+        Log.d(TAG, "Completed disconnection");
     }
 
     /**
@@ -806,6 +857,7 @@ public class SkylinkConnection {
             synchronized (lockDisconnect) {
                 pc = this.peerConnectionFactory.createPeerConnection(
                         this.iceServerArray, this.pcConstraints, pcObserver);
+                logMessage("Created a new peer connection");
             }
             /*if (this.myConfig.hasAudio())
                 pc.addStream(this.localMediaStream, this.pcConstraints);*/
@@ -854,32 +906,40 @@ public class SkylinkConnection {
     }
 
     // Mangle SDP to prefer ISAC/16000 over any other audio codec.
-    private static String preferISAC(String sdpDescription) {
+    private static String preferCodec(
+            String sdpDescription, String codec, boolean isAudio) {
         String[] lines = sdpDescription.split("\r\n");
         int mLineIndex = -1;
-        String isac16kRtpMap = null;
-        Pattern isac16kPattern = Pattern
-                .compile("^a=rtpmap:(\\d+) ISAC/16000[\r]?$");
-        for (int i = 0; (i < lines.length)
-                && (mLineIndex == -1 || isac16kRtpMap == null); ++i) {
-            if (lines[i].startsWith("m=audio ")) {
+        String codecRtpMap = null;
+        // a=rtpmap:<payload type> <encoding name>/<clock rate> [/<encoding parameters>]
+        String regex = "^a=rtpmap:(\\d+) " + codec + "(/\\d+)+[\r]?$";
+        Pattern codecPattern = Pattern.compile(regex);
+        String mediaDescription = "m=video ";
+        if (isAudio) {
+            mediaDescription = "m=audio ";
+        }
+        for (int i = 0; (i < lines.length) &&
+                (mLineIndex == -1 || codecRtpMap == null); i++) {
+            if (lines[i].startsWith(mediaDescription)) {
                 mLineIndex = i;
                 continue;
             }
-            Matcher isac16kMatcher = isac16kPattern.matcher(lines[i]);
-            if (isac16kMatcher.matches()) {
-                isac16kRtpMap = isac16kMatcher.group(1);
+            Matcher codecMatcher = codecPattern.matcher(lines[i]);
+            if (codecMatcher.matches()) {
+                codecRtpMap = codecMatcher.group(1);
                 continue;
             }
         }
         if (mLineIndex == -1) {
-            Log.d(TAG, "No m=audio line, so can't prefer iSAC");
+            Log.w(TAG, "No " + mediaDescription + " line, so can't prefer " + codec);
             return sdpDescription;
         }
-        if (isac16kRtpMap == null) {
-            Log.d(TAG, "No ISAC/16000 line, so can't prefer iSAC");
+        if (codecRtpMap == null) {
+            Log.w(TAG, "No rtpmap for " + codec);
             return sdpDescription;
         }
+        Log.d(TAG, "Found " + codec + " rtpmap " + codecRtpMap + ", prefer at " +
+                lines[mLineIndex]);
         String[] origMLineParts = lines[mLineIndex].split(" ");
         StringBuilder newMLine = new StringBuilder();
         int origPartIndex = 0;
@@ -887,13 +947,14 @@ public class SkylinkConnection {
         newMLine.append(origMLineParts[origPartIndex++]).append(" ");
         newMLine.append(origMLineParts[origPartIndex++]).append(" ");
         newMLine.append(origMLineParts[origPartIndex++]).append(" ");
-        newMLine.append(isac16kRtpMap);
-        for (; origPartIndex < origMLineParts.length; ++origPartIndex) {
-            if (!origMLineParts[origPartIndex].equals(isac16kRtpMap)) {
+        newMLine.append(codecRtpMap);
+        for (; origPartIndex < origMLineParts.length; origPartIndex++) {
+            if (!origMLineParts[origPartIndex].equals(codecRtpMap)) {
                 newMLine.append(" ").append(origMLineParts[origPartIndex]);
             }
         }
         lines[mLineIndex] = newMLine.toString();
+        Log.d(TAG, "Change media description: " + lines[mLineIndex]);
         StringBuilder newSdpDescription = new StringBuilder();
         for (String line : lines) {
             newSdpDescription.append(line).append("\r\n");
@@ -1014,7 +1075,7 @@ public class SkylinkConnection {
                                         localVideoView);
                                 gui.setListener(connectionManager.videoRendererGuiListener);
                                 VideoRenderer.Callbacks localRender = gui.create(0,
-                                        0, 100, 100);
+                                        0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
                                 localVideoTrack.addRenderer(new VideoRenderer(
                                         localRender));
                             }
@@ -1227,10 +1288,10 @@ public class SkylinkConnection {
                 }
 
                 // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly)
-                    peerConnection.addStream(
-                            connectionManager.localMediaStream,
-                            connectionManager.pcConstraints);
+                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
+                    peerConnection.addStream(connectionManager.localMediaStream);
+                    Log.d(TAG, "Added localMedia Stream");
+                }
 
                 if (peerConnection != null) {
                     setDisplayMap(userData, mid);
@@ -1304,10 +1365,10 @@ public class SkylinkConnection {
                 }
 
                 // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly)
-                    peerConnection.addStream(
-                            connectionManager.localMediaStream,
-                            connectionManager.pcConstraints);
+                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
+                    peerConnection.addStream(connectionManager.localMediaStream);
+                    Log.d(TAG, "Added localMedia Stream");
+                }
 
                 connectionManager.logMessage("[SDK] onMessage - create offer.");
                 if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
@@ -1323,7 +1384,6 @@ public class SkylinkConnection {
                 SDPObserver sdpObserver = connectionManager.sdpObserverPool
                         .get(mid);
                 if (sdpObserver == null) {
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
                     sdpObserver = new SkylinkConnection.SDPObserver();
                     sdpObserver.setMyId(mid);
                     connectionManager.sdpObserverPool.put(mid, sdpObserver);
@@ -1345,17 +1405,19 @@ public class SkylinkConnection {
                         .getPeerConnection(mid);
 
                 String sdpString = objects.getString("sdp");
-                sdpString = sdpString.replaceAll("\r\nb=AS:50\r\n", "\n");
+
+                // Set the preferred audio codec
+                sdpString = preferCodec(sdpString, AUDIO_CODEC_OPUS, true);
+
                 SessionDescription sdp = new SessionDescription(
                         SessionDescription.Type.fromCanonicalForm(value),
-                        preferISAC(sdpString));
+                        sdpString);
 
                 if (connectionManager.sdpObserverPool == null)
                     connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
                 SDPObserver sdpObserver = connectionManager.sdpObserverPool
                         .get(mid);
                 if (sdpObserver == null) {
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
                     sdpObserver = new SkylinkConnection.SDPObserver();
                     sdpObserver.setMyId(mid);
                     connectionManager.sdpObserverPool.put(mid, sdpObserver);
@@ -1423,6 +1485,8 @@ public class SkylinkConnection {
                 // Dispose DataChannel.
                 connectionManager.dataChannelManager.disposeDC(mid);
 
+                // Remove Stream so that it will not be disposed when the PeerConnection is disposed
+                peerConnection.removeStream(localMediaStream);
                 peerConnection.dispose();
 
                 connectionManager.peerConnectionPool.remove(mid);
@@ -1710,21 +1774,6 @@ public class SkylinkConnection {
         }
 
         @Override
-        public void onError() {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
-                        throw new RuntimeException("PeerConnection error!");
-                    }
-                }
-            });
-        }
-
-        @Override
         public void onSignalingChange(PeerConnection.SignalingState newState) {
         }
 
@@ -1785,7 +1834,7 @@ public class SkylinkConnection {
                                         remoteVideoView);
                                 gui.setListener(connectionManager.videoRendererGuiListener);
                                 VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
-                                        100, 100);
+                                        100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
                                 stream.videoTracks.get(0).addRenderer(
                                         new VideoRenderer(remoteRender));
 
@@ -1877,12 +1926,15 @@ public class SkylinkConnection {
             final PeerConnection pc;
             final SessionDescription sdp;
             // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
+            synchronized (lockDisconnectSdpCreate) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
                 abortUnless(this.localSdp == null, "multiple SDP create?!?");
-                sdp = new SessionDescription(origSdp.type, preferISAC(origSdp.description));
+
+                // Set the preferred audio codec
+                String sdpString = preferCodec(origSdp.description, AUDIO_CODEC_OPUS, true);
+                sdp = new SessionDescription(origSdp.type, sdpString);
                 this.localSdp = sdp;
                 pc = connectionManager.peerConnectionPool
                         .get(this.myId);
@@ -1916,7 +1968,8 @@ public class SkylinkConnection {
             runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
+                    synchronized (lockDisconnectSdpSet) {
+
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
@@ -1978,7 +2031,7 @@ public class SkylinkConnection {
 
         private void sendLocalDescription(SessionDescription sdp) {
             // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
+            synchronized (lockDisconnectSdpSend) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
@@ -1998,7 +2051,7 @@ public class SkylinkConnection {
 
         private void drainRemoteCandidates() {
             // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
+            synchronized (lockDisconnectSdpDrain) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;

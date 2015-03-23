@@ -6,6 +6,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -49,11 +50,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private ViewGroup.LayoutParams selfLayoutParams;
 	private boolean audioMuted;
     private boolean videoMuted;
+    private boolean connected;
+    private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //initialize views
+        // Initialize views
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
@@ -70,10 +73,17 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
                 btnEnterRoom.setVisibility(View.GONE);
 
                 String apiKey = getString(R.string.app_key);
                 String apiSecret = getString(R.string.app_secret);
+
+                // Initialize the skylink connection
+                initializeSkylinkConnection();
+
+                // Initialize the audio router
+                initializeAudioRouter();
 
                 // Obtaining the Skylink connection string done locally
                 // In a production environment the connection string should be given
@@ -83,10 +93,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                         getSkylinkConnectionString(roomName, apiKey,
                                 apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
-                Log.d(TAG, "Connection String" + skylinkConnectionString);
-
                 skylinkConnection.connectToRoom(skylinkConnectionString,
                         MY_USER_NAME);
+
+                // Use the Audio router to switch between headphone and headset
+                audioRouter.startAudioRouting(getActivity().getApplicationContext());
+                connected = true;
             }
         });
 
@@ -135,22 +147,32 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         return rootView;
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initializeSkylinkConnection();
+        // Allow volume to be controlled using volume keys
+        getActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+    }
+
+    private void initializeAudioRouter() {
+        if (audioRouter == null) {
+            audioRouter = AudioRouter.getInstance();
+            audioRouter.init(((AudioManager) getActivity().
+                    getSystemService(android.content.Context.AUDIO_SERVICE)));
+        }
     }
 
     private void initializeSkylinkConnection() {
-        skylinkConnection = SkylinkConnection.getInstance();
-        //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
-                getSkylinkConfig(), this.getActivity().getApplicationContext());
-        //set listeners to receive callbacks when events are triggered
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            //the app_key and app_secret is obtained from the temasys developer console.
+            skylinkConnection.init(getString(R.string.app_key),
+                    getSkylinkConfig(), this.getActivity().getApplicationContext());
+            //set listeners to receive callbacks when events are triggered
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+        }
     }
 
     private SkylinkConfig getSkylinkConfig() {
@@ -174,16 +196,19 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
         super.onDetach();
-        skylinkConnection.disconnectFromRoom();
-        skylinkConnection.setLifeCycleListener(null);
-        skylinkConnection.setMediaListener(null);
-        skylinkConnection.setRemotePeerListener(null);
+        if (skylinkConnection != null && connected) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setMediaListener(null);
+            skylinkConnection.setRemotePeerListener(null);
+            connected = false;
+            audioRouter.stopAudioRouting(getActivity().getApplicationContext());
+        }
     }
 
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's lifecycle
      */
-
 
     /**
      * Triggered when connection is successful
@@ -234,6 +259,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         if (videoView != null) {
             //show media on screen
             videoView.setTag("self");
+            parentFragment.removeView(videoView);
             parentFragment.addView(videoView);
         }
     }

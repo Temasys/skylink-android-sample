@@ -50,6 +50,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     private Button sendFile;
     private String fileName = "demofile.png";
     private String peerName;
+    private boolean connected;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -118,6 +119,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
         skylinkConnection.connectToRoom(skylinkConnectionString,
                 MY_USER_NAME);
+
+        connected = true;
     }
 
     @Override
@@ -130,11 +133,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skylinkConnection != null) {
+        if (skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             skylinkConnection.setLifeCycleListener(null);
             skylinkConnection.setFileTransferListener(null);
             skylinkConnection.setRemotePeerListener(null);
+            connected = false;
         }
         super.onDetach();
     }
