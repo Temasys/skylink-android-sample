@@ -102,7 +102,7 @@ public class SignalingServerClientTest {
 
         countDownLatch.await();
         assertNotNull(signalingServerClient.getSocketIO());
-        assertTrue(signalingServerClient.getSocketIO().isConnected());
+        assertTrue(signalingServerClient.getSocketIO().connected());
         signalingServerClient.getSocketIO().disconnect();
     }
 }

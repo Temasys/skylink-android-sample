@@ -2,20 +2,19 @@ package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Log;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
 
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
-
-class SignalingServerClient implements IOCallback {
+class SignalingServerClient {
 
     private final static String TAG = "SocketTesterClient";
 
@@ -32,7 +31,7 @@ class SignalingServerClient implements IOCallback {
     private int sigPort;
     private String sigIP;
 
-    private SocketIO socketIO = null;
+    private Socket socketIO = null;
     private MessageHandler delegate;
 
     public SignalingServerClient(MessageHandler delegate,
@@ -45,9 +44,9 @@ class SignalingServerClient implements IOCallback {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, null, null);
-            SocketIO.setDefaultSSLSocketFactory(sslContext);
+            IO.setDefaultSSLContext(sslContext);
             connectSigServer();
-        } catch (MalformedURLException e) {
+        } catch (URISyntaxException e) {
             delegate.onError(0, e.getLocalizedMessage());
         } catch (NoSuchAlgorithmException e) {
             delegate.onError(0, e.getLocalizedMessage());
@@ -56,7 +55,7 @@ class SignalingServerClient implements IOCallback {
         }
     }
 
-    public SocketIO getSocketIO() {
+    public Socket getSocketIO() {
         return socketIO;
     }
 
@@ -64,6 +63,47 @@ class SignalingServerClient implements IOCallback {
         this.delegate = delegate;
     }
 
+
+    private void connectSigServer() throws URISyntaxException {
+
+        socketIO = IO.socket(sigIP + ":" + sigPort);
+
+        socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                onConnect();
+            }
+        }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+
+                Object message = args[0];
+                if (message instanceof String) {
+                    onMessage((String) message);
+                } else if (message instanceof JSONObject) {
+                    onMessage((JSONObject) message);
+                }
+            }
+
+        }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+
+            @Override
+            public void call(Object... args) {
+                onDisconnect();
+            }
+
+        }).on(Socket.EVENT_ERROR, new Emitter.Listener() {
+
+            @Override
+            public void call(Object... args) {
+                onError(args);
+            }
+        });
+
+        socketIO.connect();
+    }
+
+    /*
     @Override
     public void on(String event, IOAcknowledge ack, Object... args) {
         Log.d(TAG, "Server triggered event '" + event + "'");
@@ -76,60 +116,49 @@ class SignalingServerClient implements IOCallback {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
-    }
+    }*/
 
-    @Override
-    public void onConnect() {
+    void onConnect() {
         Log.d(TAG, "Connection established");
         Log.d(TAG, "Connected to Signaling server.");
         isConnected = true;
         delegate.onOpen();
     }
 
-    @Override
-    public void onDisconnect() {
-        Log.d(TAG, "Connection terminated.");
-        Log.d(TAG, "Disconnected from Signaling server.");
-        if (delegate != null) delegate.onClose();
-        delegate = null;
-    }
-
-    @Override
-    public void onError(SocketIOException socketIOException) {
-        Log.d(TAG, "an Error occured", socketIOException);
-        // If it was handshake error, switch to fail over port, and connect
-        // again.
-        if (!isConnected && retry++ < RETRY_MAX) {
-            sigPort = SIG_PORT_FAILOVER;
-            try {
-                connectSigServer();
-            } catch (MalformedURLException e) {
-                delegate.onError(0, e.getLocalizedMessage());
-            }
-            return;
-        }
-        // Delegate will log message and result in UI disconnect.
-        delegate.onError(0, socketIOException.getLocalizedMessage());
-    }
-
-    @Override
-    public void onMessage(String data, IOAcknowledge ack) {
-        Log.d(TAG, "Server said: " + data);
-        Log.d(TAG, "Server message String: " + data + "\n");
-        delegate.onMessage(data);
-    }
-
-    @Override
-    public void onMessage(JSONObject json, IOAcknowledge ack) {
+    public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
         Log.d(TAG, "Server said:" + jsonStr);
         Log.d(TAG, "Server message Json: " + jsonStr + "\n");
         delegate.onMessage(jsonStr);
     }
 
-    private void connectSigServer() throws MalformedURLException {
-        socketIO = new SocketIO(sigIP + ":" + sigPort);
-        socketIO.connect(this);
+    public void onMessage(String data) {
+        Log.d(TAG, "Server said: " + data);
+        Log.d(TAG, "Server message String: " + data + "\n");
+        delegate.onMessage(data);
     }
 
+    void onDisconnect() {
+        Log.d(TAG, "Connection terminated.");
+        Log.d(TAG, "Disconnected from Signaling server.");
+        if (delegate != null) delegate.onClose();
+        //delegate = null;
+    }
+
+    void onError(Object... args) {
+        Log.d(TAG, "an Error occured");
+        // If it was handshake error, switch to fail over port, and connect
+        // again.
+        if (!isConnected && retry++ < RETRY_MAX) {
+            sigPort = SIG_PORT_FAILOVER;
+            try {
+                connectSigServer();
+            } catch (URISyntaxException e) {
+                delegate.onError(0, e.getLocalizedMessage());
+            }
+            return;
+        }
+        // Delegate will log message and result in UI disconnect.
+        delegate.onError(0, args[0].toString());
+    }
 }
