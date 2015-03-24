@@ -88,6 +88,7 @@ public class SkylinkConnection {
     private List<PeerConnection.IceServer> iceServerArray;
     private Map<GLSurfaceView, String> surfaceOnHoldPool;
     private Map<String, Object> displayNameMap;
+    private Map<String, PeerInfo> peerInfoMap;
     private Map<String, PCObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SDPObserver> sdpObserverPool;
@@ -321,6 +322,9 @@ public class SkylinkConnection {
                     myConfig.hasFileTransfer());
             this.dataChannelManager.setConnectionManager(this);
         }
+
+        // Instantiate other variables
+        peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
     /**
@@ -1020,6 +1024,12 @@ public class SkylinkConnection {
         public int video_width = 320;
     }
 
+    private class PeerInfo {
+        public boolean receiveOnly = false;
+        public boolean enableIceTrickle = false;
+        public boolean enableDataChannel = false;
+    }
+
     /*
      * AppRTCClient.IceServersObserver
      */
@@ -1287,8 +1297,13 @@ public class SkylinkConnection {
                 } catch (JSONException e) {
                 }
 
+                PeerInfo peerInfo = new PeerInfo();
+                peerInfo.receiveOnly = receiveOnly;
+
+                peerInfoMap.put(mid, peerInfo);
+
                 // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
+                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
                     peerConnection.addStream(connectionManager.localMediaStream);
                     Log.d(TAG, "Added localMedia Stream");
                 }
