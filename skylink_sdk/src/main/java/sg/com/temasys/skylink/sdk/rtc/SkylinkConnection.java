@@ -46,6 +46,7 @@ import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
@@ -1026,6 +1027,8 @@ public class SkylinkConnection {
 
     private class PeerInfo {
         public boolean receiveOnly = false;
+        public String agent = "";
+        public String version = "";
         public boolean enableIceTrickle = false;
         public boolean enableDataChannel = false;
     }
@@ -1274,8 +1277,9 @@ public class SkylinkConnection {
                         connectionManager.webServerClient.getSid());
                 enterObject.put("rid",
                         connectionManager.webServerClient.getRoomId());
+                enterObject.put("receiveOnly", false);
                 enterObject.put("agent", "Android");
-                enterObject.put("version", Build.VERSION.SDK_INT);
+                enterObject.put("version", BuildConfig.VERSION_NAME);
                 setUserInfo(enterObject);
                 connectionManager.webServerClient.sendMessage(enterObject);
 
@@ -1291,14 +1295,14 @@ public class SkylinkConnection {
                 PeerConnection peerConnection = connectionManager
                         .getPeerConnection(mid);
 
-                boolean receiveOnly = false;
+                PeerInfo peerInfo = new PeerInfo();
                 try {
-                    receiveOnly = objects.getBoolean("receiveOnly");
+                    peerInfo.receiveOnly = objects.getBoolean("receiveOnly");
+                    peerInfo.agent = objects.getString("agent");
+                    // SM0.1.0 - Browser version for web, SDK version for others.
+                    peerInfo.version = objects.getString("version");
                 } catch (JSONException e) {
                 }
-
-                PeerInfo peerInfo = new PeerInfo();
-                peerInfo.receiveOnly = receiveOnly;
 
                 peerInfoMap.put(mid, peerInfo);
 
