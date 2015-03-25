@@ -48,7 +48,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private SkylinkConnection skylinkConnection;
     private String peerId;
     private ViewGroup.LayoutParams selfLayoutParams;
-	private boolean audioMuted;
+    private boolean audioMuted;
     private boolean videoMuted;
     private boolean connected;
     private AudioRouter audioRouter;
@@ -293,7 +293,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override

@@ -24,8 +24,8 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
- * This class is used to demonstrate the AudioCall between two clients in WebRTC
- * Created by lavanyasudharsanam on 20/1/15.
+ * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
+ * lavanyasudharsanam on 20/1/15.
  */
 public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();

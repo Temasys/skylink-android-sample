@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Point;
 import android.opengl.EGLContext;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -158,8 +157,8 @@ public class SkylinkConnection {
     }
 
     /**
-     * Connects to a room with the default duration of 24 hours and with the current time
-     * It is encouraged to use the method connectToRoom(String connectionString, Object userData)
+     * Connects to a room with the default duration of 24 hours and with the current time It is
+     * encouraged to use the method connectToRoom(String connectionString, Object userData)
      *
      * @param secret   The secret associated with the key as registered with the Skylink Developer
      *                 Console
@@ -204,10 +203,11 @@ public class SkylinkConnection {
     /**
      * Connects to a room with SkylinkConnectionString
      *
-     * @param skylinkConnectionString SkylinkConnectionString
-     *                                Generated with room name, apiKey, secret, startTime and duration
-     * @param userData                User defined data relating to oneself. May be a 'java.lang.String',
-     *                                'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param skylinkConnectionString SkylinkConnectionString Generated with room name, apiKey,
+     *                                secret, startTime and duration
+     * @param userData                User defined data relating to oneself. May be a
+     *                                'java.lang.String', 'org.json.JSONObject' or
+     *                                'org.json.JSONArray'.
      * @return 'false' if the connection is already established
      */
     public boolean connectToRoom(String skylinkConnectionString, Object userData) {
@@ -594,8 +594,8 @@ public class SkylinkConnection {
      * Sends request(s) to share file with a specific remote peer or to all remote peers in a direct
      * peer to peer manner in the same room.
      *
-     * @param remotePeerId The id of the remote peer to send the file to. Use 'null' if the
-     *                     file is to be broadcast to all remote peers in the room.
+     * @param remotePeerId The id of the remote peer to send the file to. Use 'null' if the file is
+     *                     to be broadcast to all remote peers in the room.
      * @param fileName     The name of the file that is to be shared.
      * @param filePath     The absolute path of the file in the filesystem
      */
@@ -625,8 +625,8 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sends a byte array to a specified remotePeer or to all participants of the room
-     * if the remotePeerId is empty or null
+     * Sends a byte array to a specified remotePeer or to all participants of the room if the
+     * remotePeerId is empty or null
      *
      * @param remotePeerId remotePeerID of a specified peer
      * @param data         Array of bytes
@@ -1328,7 +1328,12 @@ public class SkylinkConnection {
                     welcomeObject.put("rid",
                             connectionManager.webServerClient.getRoomId());
                     welcomeObject.put("agent", "Android");
-                    welcomeObject.put("version", Build.VERSION.SDK_INT);
+                    welcomeObject.put("version", BuildConfig.VERSION_NAME);
+                    welcomeObject.put("receiveOnly", false);
+                    welcomeObject.put("enableIceTrickle", true);
+                    welcomeObject.put("enableDataChannel",
+                            (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
+                                    || myConfig.hasDataTransfer()));
                     setUserInfo(welcomeObject);
                     connectionManager.webServerClient
                             .sendMessage(welcomeObject);
@@ -1346,7 +1351,19 @@ public class SkylinkConnection {
                         .compareTo(connectionManager.webServerClient.getSid()) != 0)
                     return;
 
+                PeerInfo peerInfo = new PeerInfo();
                 String mid = objects.getString("mid");
+                try {
+                    peerInfo.receiveOnly = objects.getBoolean("receiveOnly");
+                    peerInfo.agent = objects.getString("agent");
+                    // SM0.1.0 - Browser version for web, SDK version for others.
+                    peerInfo.version = objects.getString("version");
+                    peerInfo.enableIceTrickle = objects.getBoolean("enableIceTrickle");
+                    peerInfo.enableDataChannel = objects.getBoolean("enableDataChannel");
+                } catch (JSONException e) {
+                }
+                peerInfoMap.put(mid, peerInfo);
+
                 Object userData = "";
                 try {
                     userData = ((JSONObject) objects.get("userInfo"))
@@ -1377,21 +1394,17 @@ public class SkylinkConnection {
                 }
                 setDisplayMap(userData, mid);
 
-                boolean receiveOnly = false;
-                try {
-                    receiveOnly = objects.getBoolean("receiveOnly");
-                } catch (JSONException e) {
-                }
-
                 // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
+                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
                     peerConnection.addStream(connectionManager.localMediaStream);
                     Log.d(TAG, "Added localMedia Stream");
                 }
 
                 connectionManager.logMessage("[SDK] onMessage - create offer.");
-                if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                        || myConfig.hasDataTransfer()) {
+                // Create DataChannel if both Peer and ourself desires it.
+                if (peerInfo.enableDataChannel &&
+                        (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
+                                || myConfig.hasDataTransfer())) {
                     // Create DataChannel
                     // It is stored by dataChannelManager.
                     connectionManager.dataChannelManager.createDataChannel(
@@ -1895,6 +1908,8 @@ public class SkylinkConnection {
 
         @Override
         public void onDataChannel(final DataChannel dc) {
+            PeerInfo peerInfo = peerInfoMap.get(this.myId);
+            peerInfo.enableDataChannel = true;
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
                 // If user has indicated intention to disconnect,

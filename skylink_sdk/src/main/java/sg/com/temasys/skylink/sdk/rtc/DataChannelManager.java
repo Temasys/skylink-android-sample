@@ -113,14 +113,13 @@ class DataChannelManager {
 
 
     /**
-     * Note:
-     * DcObserver allows us to implement the DataChannel methods, i.e.
-     * - onStateChange()
-     * - onMessage()
+     * Note: DcObserver allows us to implement the DataChannel methods, i.e. - onStateChange() -
+     * onMessage()
      *
      * @param {String}         createId - User id of the one creating the DataChannel
      * @param {String}         receiveId - User id of the one receiving the DataChannel
-     * @param {String}         channelName - The Name of the Channel. If null, it would be generated
+     * @param {String}         channelName - The Name of the Channel. If null, it would be
+     *                         generated
      * @param {RTCDataChannel} dc - The DataChannel object passed inside
      * @class DcObserver
      */
@@ -377,15 +376,17 @@ class DataChannelManager {
 // -------------------------------------------------------------------------------------------------
 
     /**
-     * Note:
-     * Create DataChannel - Started during createOffer,
-     * - SCTP Supported Browsers (Older chromes won't work, it will fall back to RTP)
-     * - For now, Mozilla supports Blob and Chrome supports ArrayBuffer
+     * Note: Create DataChannel - Started during createOffer, - SCTP Supported Browsers (Older
+     * chromes won't work, it will fall back to RTP) - For now, Mozilla supports Blob and Chrome
+     * supports ArrayBuffer
      *
      * @param {PeerConnection} pc - PeerConnection to generate the DataChannel.
-     * @param {String}         createId - The socketId (mid or tid) of the offerer of this DataChannel.
-     * @param {String}         receiveId - The socketId (mid or tid) of the receiver of this DataChannel.
-     * @param {String}         channelName - The Name of the Channel. If null, it would be generated.
+     * @param {String}         createId - The socketId (mid or tid) of the offerer of this
+     *                         DataChannel.
+     * @param {String}         receiveId - The socketId (mid or tid) of the receiver of this
+     *                         DataChannel.
+     * @param {String}         channelName - The Name of the Channel. If null, it would be
+     *                         generated.
      * @param {RTCDataChannel} dc - The DataChannel object passed inside.
      * @param {String}         tid - The socketId of the remote Peer of this DataChannel.
      * @method createDataChannel
@@ -434,10 +435,8 @@ class DataChannelManager {
     }
 
     /**
-     * Note:
-     * For a specific or all DataChannel(s), dispose of native resources attached.
-     * DataChannel is that of peer whose peerId is provided.
-     * If provided tid is null, all DC will be disposed.
+     * Note: For a specific or all DataChannel(s), dispose of native resources attached. DataChannel
+     * is that of peer whose peerId is provided. If provided tid is null, all DC will be disposed.
      *
      * @param {String} peerId - The socketId of the remote Peer of this DataChannel.
      * @method disposeDC
@@ -1295,12 +1294,9 @@ class DataChannelManager {
     }
 
     /**
-     * Check if a DC event is a chat message.
-     * If not a chat message, return false.
-     * If it is,
-     * Process it into a signalling channel chat message.
-     * Allow normal chat display to handle it.
-     * Return true.
+     * Check if a DC event is a chat message. If not a chat message, return false. If it is, Process
+     * it into a signalling channel chat message. Allow normal chat display to handle it. Return
+     * true.
      *
      * @param {String} dataStr DC event data of this chat message.
      * @method processDcChat
@@ -1363,15 +1359,15 @@ class DataChannelManager {
     }
 
     /**
-     * Sends a byte array to a specified remotePeer or to all participants of the room
-     * if the remotePeerId is empty or null
+     * Sends a byte array to a specified remotePeer or to all participants of the room if the
+     * remotePeerId is empty or null
      *
      * @param remotePeerId remotePeerID of a specified peer
      * @param byteArray    Array of bytes
      */
     public void sendDataToPeer(String remotePeerId, byte[] byteArray) throws SkylinkException {
 
-        if(byteArray.length > MAX_TRANSFER_SIZE){
+        if (byteArray.length > MAX_TRANSFER_SIZE) {
             throw new SkylinkException("Maximum data length is " + MAX_TRANSFER_SIZE);
         }
 

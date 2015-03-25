@@ -44,12 +44,12 @@ import java.util.List;
 import io.socket.SocketIO;
 
 /**
- * Negotiates signaling for chatting with apprtc.appspot.com "rooms".
- * Uses the client<->server specifics of the apprtc AppEngine webapp.
+ * Negotiates signaling for chatting with apprtc.appspot.com "rooms". Uses the client<->server
+ * specifics of the apprtc AppEngine webapp.
  * <p/>
- * To use: create an instance of this object (registering a message handler) and
- * call connectToRoom().  Once that's done call sendMessage() and wait for the
- * registered handler to be called with received messages.
+ * To use: create an instance of this object (registering a message handler) and call
+ * connectToRoom().  Once that's done call sendMessage() and wait for the registered handler to be
+ * called with received messages.
  */
 class WebServerClient implements RoomParameterServiceListener {
 
@@ -64,8 +64,7 @@ class WebServerClient implements RoomParameterServiceListener {
     private AppRTCSignalingParameters appRTCSignalingParameters;
 
     /**
-     * Callback fired once the room's signaling parameters specify the set of
-     * ICE servers to use.
+     * Callback fired once the room's signaling parameters specify the set of ICE servers to use.
      */
     public static interface IceServersObserver {
         public void onIceServers(List<PeerConnection.IceServer> iceServers);
@@ -82,9 +81,8 @@ class WebServerClient implements RoomParameterServiceListener {
     }
 
     /**
-     * Asynchronously connect to an AppRTC room URL, e.g.
-     * https://apprtc.appspot.com/?r=NNN and register message-handling callbacks
-     * on its GAE Channel.
+     * Asynchronously connect to an AppRTC room URL, e.g. https://apprtc.appspot.com/?r=NNN and
+     * register message-handling callbacks on its GAE Channel.
      *
      * @throws IOException
      * @throws JSONException
@@ -112,9 +110,8 @@ class WebServerClient implements RoomParameterServiceListener {
     }
 
     /**
-     * Queue a message for sending to the room's channel and send it if already
-     * connected (other wise queued messages are drained when the channel is
-     * eventually established).
+     * Queue a message for sending to the room's channel and send it if already connected (other
+     * wise queued messages are drained when the channel is eventually established).
      */
     public synchronized void sendMessage(String msg) {
         synchronized (sendQueue) {

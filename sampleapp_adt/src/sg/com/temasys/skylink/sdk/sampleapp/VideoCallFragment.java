@@ -236,7 +236,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override

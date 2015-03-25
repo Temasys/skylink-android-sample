@@ -10,13 +10,15 @@ public interface FileTransferListener {
      *
      * @param remotePeerId The id of the peer
      * @param fileName     The name of the file
-     * @param isPrivate    Flag to specify if file share was directed to only us (as opposed to all peers in the room).
+     * @param isPrivate    Flag to specify if file share was directed to only us (as opposed to all
+     *                     peers in the room).
      */
     public void onFileTransferPermissionRequest(String remotePeerId,
                                                 String fileName, boolean isPrivate);
 
     /**
-     * This is triggered upon receiving the response of a peer to our request for file transfer with the peer.
+     * This is triggered upon receiving the response of a peer to our request for file transfer with
+     * the peer.
      *
      * @param remotePeerId The id of the peer
      * @param fileName     The name of the file
@@ -31,7 +33,8 @@ public interface FileTransferListener {
      * @param remotePeerId The id of the peer
      * @param fileName     The name of the file
      * @param message      Message that possibly tells the reason for dropping
-     * @param isExplicit   True if user canceled the transfer explicitly, as opposed to being due to error in the transfer process.
+     * @param isExplicit   True if user canceled the transfer explicitly, as opposed to being due to
+     *                     error in the transfer process.
      */
     public void onFileTransferDrop(String remotePeerId, String fileName, String message,
                                    boolean isExplicit);

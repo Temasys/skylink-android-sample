@@ -196,7 +196,8 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * Sets the timeout value (in seconds) for various operations in the SDK, for e.g. file transfer waiting time for remote peer's response.
+     * Sets the timeout value (in seconds) for various operations in the SDK, for e.g. file transfer
+     * waiting time for remote peer's response.
      *
      * @param timeout Timeout config value
      */
