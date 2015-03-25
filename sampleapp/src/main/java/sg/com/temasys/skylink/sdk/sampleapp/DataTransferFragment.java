@@ -224,12 +224,12 @@ public class DataTransferFragment extends Fragment implements
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, "onWarning " + message);
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, "onDisconnect " + message);
     }
 

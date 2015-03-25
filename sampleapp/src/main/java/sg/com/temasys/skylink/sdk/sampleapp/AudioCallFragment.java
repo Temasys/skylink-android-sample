@@ -161,12 +161,12 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 

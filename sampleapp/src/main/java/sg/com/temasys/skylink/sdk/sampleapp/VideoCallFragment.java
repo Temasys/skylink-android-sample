@@ -48,7 +48,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private SkylinkConnection skylinkConnection;
     private String peerId;
     private ViewGroup.LayoutParams selfLayoutParams;
-	private boolean audioMuted;
+    private boolean audioMuted;
     private boolean videoMuted;
     private boolean connected;
     private AudioRouter audioRouter;
@@ -230,12 +230,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 

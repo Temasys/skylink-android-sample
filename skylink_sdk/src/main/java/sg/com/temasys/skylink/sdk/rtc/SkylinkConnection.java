@@ -1205,7 +1205,7 @@ public class SkylinkConnection {
 
         private void messageProcessor(String data) throws JSONException {
             String message = data;
-            JSONObject objects = new JSONObject(data);
+            final JSONObject objects = new JSONObject(data);
 
             final String value = objects.getString("type");
             connectionManager.logMessage("[SDK] onMessage type - " + value);
@@ -1535,9 +1535,6 @@ public class SkylinkConnection {
                 connectionManager.webServerClient.sendMessage(pingObject);
 
             } else if (value.compareTo("redirect") == 0) {
-
-                final String info = objects.getString("info");
-                final String action = objects.getString("action");
                 runOnUiThread(new Runnable() {
                     public void run() {
                         // Prevent thread from executing with disconnect concurrently.
@@ -1545,10 +1542,11 @@ public class SkylinkConnection {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
                             if (connectionState == ConnectionState.DISCONNECT) return;
-                            if (action.compareTo("warning") == 0)
-                                lifeCycleListener.onWarning(info);
-                            else
-                                lifeCycleListener.onDisconnect(info);
+                            try {
+                                ProtocolHelper.processRedirect(objects, lifeCycleListener);
+                            } catch (JSONException e) {
+                                Log.e(TAG, e.getMessage(), e);
+                            }
                         }
                     }
                 });
@@ -1647,7 +1645,9 @@ public class SkylinkConnection {
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
                         connectionManager.logMessage("[SDK] onClose.");
-                        lifeCycleListener.onDisconnect("Connection with the skylink server is closed");
+
+                        lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR,
+                                "Connection with the skylink server is closed");
                     }
                 }
             });
@@ -1664,7 +1664,7 @@ public class SkylinkConnection {
                         if (connectionState == ConnectionState.DISCONNECT) return;
                         final String message = "[SDK] onError: " + code + ", " + description;
                         connectionManager.logMessage(message);
-                        lifeCycleListener.onDisconnect(message);
+                        lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
                     }
                 }
             });

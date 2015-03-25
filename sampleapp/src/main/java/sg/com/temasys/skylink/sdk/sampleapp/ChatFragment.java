@@ -210,7 +210,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     private void initializeSkylinkConnection() {
-        if(skylinkConnection == null){
+        if (skylinkConnection == null) {
             skylinkConnection = SkylinkConnection.getInstance();
             //the app_key and app_secret is obtained from the temasys developer console.
             skylinkConnection.init(getString(R.string.app_key),
@@ -275,12 +275,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 
