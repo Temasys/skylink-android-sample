@@ -984,14 +984,6 @@ public class SkylinkConnection {
             dictVideo.put("resolution", resolution);
         }
 
-        JSONObject dictBandwidth = new JSONObject();
-        if (myConfig.hasAudioSend())
-            dictBandwidth.put("audio", settingsObject.audio_bandwidth);
-        if (myConfig.hasVideoSend())
-            dictBandwidth.put("video", settingsObject.video_bandwidth);
-        if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer())
-            dictBandwidth.put("data", settingsObject.data_bandwidth);
-
         JSONObject dictSettings = new JSONObject();
         if (dictAudio != null)
             dictSettings.put("audio", dictAudio);
@@ -1009,6 +1001,17 @@ public class SkylinkConnection {
                 : this.myUserData);
 
         jsonObject.put("userInfo", dictUserInfo);
+
+        // NOTE XR: dictBandwidth object is not being used.
+          // Commented out for now.
+          // Consider removing code.
+        /*JSONObject dictBandwidth = new JSONObject();
+        if (myConfig.hasAudioSend())
+            dictBandwidth.put("audio", settingsObject.audio_bandwidth);
+        if (myConfig.hasVideoSend())
+            dictBandwidth.put("video", settingsObject.video_bandwidth);
+        if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer())
+            dictBandwidth.put("data", settingsObject.data_bandwidth);*/
     }
 
     private boolean isPeerIdMCU(String peerId) {
