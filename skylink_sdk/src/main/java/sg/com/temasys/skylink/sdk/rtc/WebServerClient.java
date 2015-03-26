@@ -58,6 +58,8 @@ class WebServerClient implements RoomParameterServiceListener {
     private final MessageHandler gaeHandler;
     private final IceServersObserver iceServersObserver;
     private SignalingServerClient socketTester;
+    private SignalingServerMessageSender sigMsgSender;
+
 
     // These members are only read/written under sendQueue's lock.
     private LinkedList<String> sendQueue = new LinkedList<String>();
@@ -93,13 +95,9 @@ class WebServerClient implements RoomParameterServiceListener {
     }
 
     /**
-     * Disconnect from the GAE Channel.
+     * Disconnect from the Signaling Channel.
      */
     public void disconnect() {
-    /*if (channelClient != null) {
-      channelClient.close();
-      channelClient = null;
-    }*/
         if (socketTester != null) {
             SocketIO socketIO = socketTester.getSocketIO();
             if (socketIO.isConnected()) {
@@ -107,17 +105,6 @@ class WebServerClient implements RoomParameterServiceListener {
                 socketIO.disconnect();
             }
         }
-    }
-
-    /**
-     * Queue a message for sending to the room's channel and send it if already connected (other
-     * wise queued messages are drained when the channel is eventually established).
-     */
-    public synchronized void sendMessage(String msg) {
-        synchronized (sendQueue) {
-            sendQueue.add(msg);
-        }
-        requestQueueDrainInBackground();
     }
 
     @Override
@@ -129,6 +116,10 @@ class WebServerClient implements RoomParameterServiceListener {
             socketTester = new SignalingServerClient(this.gaeHandler,
                     "https://" + params.getIpSigserver(), params.getPortSigserver());
         }
+        // Create SignalingServerMessageSender is not yet created.
+        if (sigMsgSender == null)
+            sigMsgSender = new SignalingServerMessageSender(getSid(), getRoomId());
+        ;
     }
 
     @Override
@@ -141,45 +132,10 @@ class WebServerClient implements RoomParameterServiceListener {
         WebServerClient.this.iceServersObserver.onShouldConnectToRoom();
     }
 
-    // Request an attempt to drain the send queue, on a background thread.
-    private void requestQueueDrainInBackground() {
-        (new AsyncTask<Void, Void, Void>() {
-            public Void doInBackground(Void... unused) {
-                maybeDrainQueue();
-                return null;
-            }
-        }).execute();
-    }
-
-    // Send all queued messages if connected to the room.
-    private void maybeDrainQueue() {
-        synchronized (sendQueue) {
-            if (appRTCSignalingParameters == null) {
-                return;
-            }
-            try {
-                for (String msg : sendQueue) {
-                    URLConnection connection = new URL(
-                            appRTCSignalingParameters.getGaeBaseHref() +
-                                    appRTCSignalingParameters.getPostMessageUrl()).openConnection();
-                    connection.setDoOutput(true);
-                    connection.getOutputStream().write(msg.getBytes("UTF-8"));
-                    if (!connection.getHeaderField(null).startsWith("HTTP/1.1 200 ")) {
-                        throw new IOException(
-                                "Non-200 response to POST: " + connection.getHeaderField(null) +
-                                        " for msg: " + msg);
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            sendQueue.clear();
-        }
-    }
-
     public void sendMessage(JSONObject dictMessage) {
         Log.d(TAG, "Send message");
-        socketTester.getSocketIO().send(dictMessage.toString());
+        // socketTester.getSocketIO().send(dictMessage.toString());
+        sigMsgSender.sendMessage(socketTester, dictMessage);
     }
 
     public boolean isInitiator() {
@@ -293,4 +249,52 @@ class WebServerClient implements RoomParameterServiceListener {
     public void setUserId(String userId) {
         this.appRTCSignalingParameters.setUserId(userId);
     }
+
+    /**
+     * Queue a message for sending to the room's channel and send it if already connected (other
+     * wise queued messages are drained when the channel is eventually established).
+     */
+    public synchronized void sendGaeMessage(String msg) {
+        synchronized (sendQueue) {
+            sendQueue.add(msg);
+        }
+        requestQueueDrainInBackground();
+    }
+
+    // Request an attempt to drain the send queue, on a background thread.
+    private void requestQueueDrainInBackground() {
+        (new AsyncTask<Void, Void, Void>() {
+            public Void doInBackground(Void... unused) {
+                maybeDrainQueue();
+                return null;
+            }
+        }).execute();
+    }
+
+    // Send all queued messages if connected to the room.
+    private void maybeDrainQueue() {
+        synchronized (sendQueue) {
+            if (appRTCSignalingParameters == null) {
+                return;
+            }
+            try {
+                for (String msg : sendQueue) {
+                    URLConnection connection = new URL(
+                            appRTCSignalingParameters.getGaeBaseHref() +
+                                    appRTCSignalingParameters.getPostMessageUrl()).openConnection();
+                    connection.setDoOutput(true);
+                    connection.getOutputStream().write(msg.getBytes("UTF-8"));
+                    if (!connection.getHeaderField(null).startsWith("HTTP/1.1 200 ")) {
+                        throw new IOException(
+                                "Non-200 response to POST: " + connection.getHeaderField(null) +
+                                        " for msg: " + msg);
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            sendQueue.clear();
+        }
+    }
+
 }

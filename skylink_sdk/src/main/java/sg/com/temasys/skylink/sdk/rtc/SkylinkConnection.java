@@ -1003,8 +1003,8 @@ public class SkylinkConnection {
         jsonObject.put("userInfo", dictUserInfo);
 
         // NOTE XR: dictBandwidth object is not being used.
-          // Commented out for now.
-          // Consider removing code.
+        // Commented out for now.
+        // Consider removing code.
         /*JSONObject dictBandwidth = new JSONObject();
         if (myConfig.hasAudioSend())
             dictBandwidth.put("audio", settingsObject.audio_bandwidth);
