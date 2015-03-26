@@ -1355,6 +1355,10 @@ public class SkylinkConnection {
                 String mid = objects.getString("mid");
                 try {
                     peerInfo.receiveOnly = objects.getBoolean("receiveOnly");
+                } catch (JSONException e) {
+                }
+                // peerInfo.enableDataChannel = true;
+                try {
                     peerInfo.agent = objects.getString("agent");
                     // SM0.1.0 - Browser version for web, SDK version for others.
                     peerInfo.version = objects.getString("version");
