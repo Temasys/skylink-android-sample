@@ -33,4 +33,9 @@ class LifeCycleAdapter implements LifeCycleListener {
 
     }
 
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+
+    }
+
 }

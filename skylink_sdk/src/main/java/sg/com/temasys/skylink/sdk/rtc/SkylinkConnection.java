@@ -114,6 +114,8 @@ public class SkylinkConnection {
     private RemotePeerListener remotePeerListener;
     private DataTransferListener dataTransferListener;
 
+    private boolean roomLocked;
+
     /**
      * List of Connection state types
      */
@@ -250,6 +252,34 @@ public class SkylinkConnection {
 
         logMessage("TEMAConnectionManager::connection url=>" + url);
         return true;
+    }
+
+    /**
+     * Locks the room if its not already locked
+     */
+    public void lockRoom() {
+        if (!roomLocked) {
+            try {
+                ProtocolHelper.sendRoomLockStatus(this.webServerClient, true);
+                roomLocked = true;
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Unlocks the room if its already locked
+     */
+    public void unlockRoom() {
+        if (roomLocked) {
+            try {
+                ProtocolHelper.sendRoomLockStatus(this.webServerClient, false);
+                roomLocked = false;
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
     }
 
     /**
@@ -1586,6 +1616,24 @@ public class SkylinkConnection {
                         }
                     });
                 }
+            } else if (value.compareTo("roomLockEvent") == 0) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        // Prevent thread from executing with disconnect concurrently.
+                        synchronized (lockDisconnect) {
+                            // If user has indicated intention to disconnect,
+                            // We should no longer process messages from signalling server.
+                            if (connectionState == ConnectionState.DISCONNECT) return;
+                            try {
+                                roomLocked = ProtocolHelper.processRoomLockStatus(roomLocked,
+                                        objects, lifeCycleListener);
+                            } catch (JSONException e) {
+                                Log.e(TAG, e.getMessage(), e);
+                            }
+                        }
+                    }
+                });
+
             } else if (value.compareTo("muteAudioEvent") == 0) {
 
                 if (myConfig.hasAudioReceive()) {

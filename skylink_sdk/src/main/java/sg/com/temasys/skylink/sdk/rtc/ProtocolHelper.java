@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -9,6 +11,8 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
  * Handles Protocol related logic
  */
 class ProtocolHelper {
+
+    private static final String TAG = ProtocolHelper.class.getName();
 
     private static final String FAST_MSG = "fastmsg";
     private static final String LOCKED = "locked";
@@ -37,10 +41,33 @@ class ProtocolHelper {
         if ("warning".equals(action)) {
             // Send back the info received and the derived error code
             lifeCycleListener.onWarning(errorCode, info);
+            Log.d(TAG, "processRedirect: onWarning " + errorCode);
         } else if ("reject".equals(action)) {
             // Send back the info received and the derived error code
             lifeCycleListener.onDisconnect(errorCode, info);
+            Log.d(TAG, "processRedirect: onDisconnect " + errorCode);
         }
+    }
+
+    static boolean processRoomLockStatus(boolean currentRoomLockStatus,
+                                         JSONObject jsonObject, LifeCycleListener lifeCycleListener) throws JSONException {
+        boolean lockStatus = jsonObject.getBoolean("lock");
+        // Only post updates if received lock status is not the same
+        if (lockStatus != currentRoomLockStatus) {
+            lifeCycleListener.onLockRoomStatusChange(jsonObject.getString("mid"), lockStatus);
+            Log.d(TAG, "processRoomLockStatus: onLockRoomStatusChange " + lockStatus);
+        }
+        return lockStatus;
+    }
+
+    static void sendRoomLockStatus(WebServerClient webServerClient, boolean lockStatus) throws JSONException {
+        JSONObject dict = new JSONObject();
+        dict.put("rid", webServerClient.getRoomId());
+        dict.put("mid", webServerClient.getSid());
+        dict.put("lock", lockStatus);
+        dict.put("type", "roomLockEvent");
+        webServerClient.sendMessage(dict);
+        Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
     }
 
     private static int getRedirectCode(String reason) {
