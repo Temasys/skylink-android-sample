@@ -1,10 +1,14 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
+import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.MediaStream;
+import org.webrtc.PeerConnection;
 
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
 /**
@@ -68,6 +72,104 @@ class ProtocolHelper {
         dict.put("type", "roomLockEvent");
         webServerClient.sendMessage(dict);
         Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
+    }
+
+    static boolean processRestart(String remotePeerId, MediaStream localMediaStream,
+                                  SkylinkConnection skylinkConnection) {
+        if (skylinkConnection != null) {
+
+            // Dispose the peerConnection
+            disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+
+            // Create a new peer connection
+            PeerConnection peerConnection = skylinkConnection
+                    .getPeerConnection(remotePeerId);
+
+            return true;
+        }
+        return false;
+    }
+
+    static boolean sendRestart(String remotePeerId,
+                               SkylinkConnection skylinkConnection,
+                               WebServerClient webServerClient,
+                               MediaStream localMediaStream,
+                               SkylinkConfig myConfig) throws JSONException {
+
+        if (skylinkConnection != null) {
+
+            // Dispose the peerConnection
+            disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+
+            // Create a new peer connection
+            PeerConnection peerConnection = skylinkConnection
+                    .getPeerConnection(remotePeerId);
+
+            // TODO: use exact value
+            boolean receiveOnly = false;
+
+            // TODO: enableIceTrickle, enableDataChannel
+
+            // Add our local media stream to this PC, or not.
+            if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
+                peerConnection.addStream(localMediaStream);
+                Log.d(TAG, "Added localMedia Stream");
+            }
+
+            if (peerConnection != null) {
+
+                Log.d(TAG, "[SDK] onMessage - Sending 'welcome'.");
+
+                JSONObject welcomeObject = new JSONObject();
+                welcomeObject.put("type", "restart");
+                welcomeObject.put("weight",
+                        skylinkConnection.getPcObserverPool().get(remotePeerId)
+                                .getMyWeight());
+                welcomeObject.put("mid",
+                        webServerClient.getSid());
+                welcomeObject.put("target", remotePeerId);
+                welcomeObject.put("rid",
+                        webServerClient.getRoomId());
+                welcomeObject.put("agent", "Android");
+                welcomeObject.put("version", Build.VERSION.SDK_INT);
+                skylinkConnection.setUserInfo(welcomeObject);
+                webServerClient
+                        .sendMessage(welcomeObject);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the peer connection is disposed successfully
+     *
+     * @param remotePeerId
+     * @param localMediaStream
+     * @param skylinkConnection
+     * @return
+     */
+
+    static boolean disposePeerConnection(String remotePeerId, SkylinkConnection skylinkConnection,
+                                         MediaStream localMediaStream) {
+
+        PeerConnection peerConnection = skylinkConnection.getPeerConnectionPool().get(remotePeerId);
+        if (peerConnection != null) {
+
+            // Dispose peer connection
+            peerConnection.removeStream(localMediaStream);
+            peerConnection.dispose();
+
+            skylinkConnection.getPeerConnectionPool().remove(remotePeerId);
+            skylinkConnection.getPcObserverPool().remove(remotePeerId);
+            skylinkConnection.getSdpObserverPool().remove(remotePeerId);
+            skylinkConnection.getDisplayNameMap().remove(remotePeerId);
+            return true;
+        }
+
+        return false;
     }
 
     private static int getRedirectCode(String reason) {
