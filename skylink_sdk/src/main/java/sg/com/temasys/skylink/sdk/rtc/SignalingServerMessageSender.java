@@ -46,7 +46,6 @@ class SignalingServerMessageSender {
             case "muteAudioEvent":
             case "muteVideoEvent":
             case "public":
-            case "restart":
                 msNewMsg = System.currentTimeMillis();
                 msgNew = dictMessage;
                 processNewMessage();
@@ -93,7 +92,7 @@ class SignalingServerMessageSender {
         }
 
         // Add new msg to queue
-        msgArr.put(msgNew);
+        msgArr.put(msgNew.toString());
     }
 
     private void sendGroupMessage() {

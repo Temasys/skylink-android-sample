@@ -1466,6 +1466,16 @@ public class SkylinkConnection {
                         .logMessage("PC - setRemoteDescription. Sending "
                                 + sdp.type + " to " + mid);
 
+            } else if (value.compareTo("group") == 0) {
+                // Split up group message
+                // Format:
+                // { type: "group", lists: [<group msg>...], mid: "xxx", rid: "xxx" }
+                JSONArray msgArr = objects.getJSONArray("lists");
+                for (int i = 0; i < msgArr.length(); ++i) {
+                    String msg = (String) msgArr.get(i);
+                    // Send each message to be processed like a non-group message.
+                    if (msg != null) messageProcessor(msg);
+                }
             } else if (value.compareTo("chat") == 0) {
 
                 final String mid = objects.getString("mid");
