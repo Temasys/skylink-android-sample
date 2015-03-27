@@ -30,6 +30,7 @@ import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -92,8 +93,12 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
                 }
 
                 //send request to peer requesting permission for file transfer
-                skylinkConnection.sendFileTransferPermissionRequest(peerId, fileName,
-                        getFileToTransfer().getAbsolutePath());
+                try {
+                    skylinkConnection.sendFileTransferPermissionRequest(peerId, fileName,
+                            getFileToTransfer().getAbsolutePath());
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
             }
         });
 
@@ -255,7 +260,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      * with remote peer changes
      */
 
-    public void onRemotePeerJoin(String peerId, Object userData) {
+    public void onRemotePeerJoin(String peerId, Object userData, boolean hasDataChannel) {
         if (this.peerId != null) {
             // If there is an existing peer, prevent new remotePeer from joining call.
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation", Toast.LENGTH_SHORT).show();

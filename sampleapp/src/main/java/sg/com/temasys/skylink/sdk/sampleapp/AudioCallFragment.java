@@ -201,7 +201,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // If there is an existing peer, prevent new remotePeer from joining call.
         if (this.remotePeerId != null) {
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
