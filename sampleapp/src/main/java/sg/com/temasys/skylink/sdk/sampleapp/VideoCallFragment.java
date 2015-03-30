@@ -314,27 +314,36 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             return;
         }
 
-        if (!TextUtils.isEmpty(this.peerId)) {
+        if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
-        this.peerId = remotePeerId;
+        // Resize self view only once
+        if (TextUtils.isEmpty(this.peerId)) {
 
-        View self = parentFragment.findViewWithTag("self");
-        if (this.selfLayoutParams == null) {
-            // Get the original size of the layout
-            this.selfLayoutParams = self.getLayoutParams();
+            View self = parentFragment.findViewWithTag("self");
+            if (this.selfLayoutParams == null) {
+                // Get the original size of the layout
+                this.selfLayoutParams = self.getLayoutParams();
+            }
+            self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
+
+            parentFragment.removeView(self);
+            parentFragment.addView(self);
         }
-        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
 
-        parentFragment.removeView(self);
-        parentFragment.addView(self);
+        // Remove peer video if it exist
+        View viewToRemove = parentFragment.findViewWithTag("peer");
+        if (viewToRemove != null) {
+            parentFragment.removeView(viewToRemove);
+        }
 
         videoView.setTag("peer");
-        parentFragment.removeView(videoView);
         parentFragment.addView(videoView);
+
+        this.peerId = remotePeerId;
     }
 
     @Override
