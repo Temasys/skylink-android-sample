@@ -220,6 +220,9 @@ public class DataTransferFragment extends Fragment implements
         if (isSuccessful) {
             Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_waiting),
                     ROOM_NAME), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason :" +
+                    " " + message, Toast.LENGTH_SHORT).show();
         }
     }
 

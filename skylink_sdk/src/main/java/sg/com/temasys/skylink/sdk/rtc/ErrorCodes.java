@@ -62,4 +62,9 @@ public class ErrorCodes {
      * User is disconnected due to an unexpected error
      */
     public static final int DISCONNECT_UNEXPECTED_ERROR = 11;
+
+    /**
+     * Error message when room parameters cannot be fetched
+     */
+    public static final String UNEXPECTED_ERROR_ROOM_PARAMETERS = "Unexpected Error when fetching Room parameters";
 }

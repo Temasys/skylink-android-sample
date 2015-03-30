@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
@@ -26,7 +28,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 /**
  * Created by janidu on 3/3/15.
  */
-public class MultiPartyVideoCallFragment extends Fragment implements MediaListener, RemotePeerListener {
+public class MultiPartyVideoCallFragment extends Fragment implements
+        MediaListener, RemotePeerListener, LifeCycleListener {
 
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
     private static final String ROOM_NAME = "Hangout";
@@ -104,6 +107,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MediaListen
             skylinkConnection.disconnectFromRoom();
             skylinkConnection.setMediaListener(null);
             skylinkConnection.setRemotePeerListener(null);
+            skylinkConnection.setLifeCycleListener(null);
             connected = false;
             audioRouter.stopAudioRouting(getActivity().getApplicationContext());
         }
@@ -153,6 +157,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MediaListen
             //set listeners to receive callbacks when events are triggered
             skylinkConnection.setMediaListener(this);
             skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setLifeCycleListener(this);
         }
     }
 
@@ -242,5 +247,36 @@ public class MultiPartyVideoCallFragment extends Fragment implements MediaListen
     @Override
     public void onOpenDataConnection(String remotePeerId) {
         Log.d(TAG, "onOpenDataConnection");
+    }
+
+    @Override
+    public void onConnect(boolean isSuccessful, String message) {
+        if (isSuccessful) {
+            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_waiting),
+                    ROOM_NAME), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason :" +
+                    " " + message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
+
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String message) {
+
+    }
+
+    @Override
+    public void onReceiveLog(String message) {
+
+    }
+
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+
     }
 }

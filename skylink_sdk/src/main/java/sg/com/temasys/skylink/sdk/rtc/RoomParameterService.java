@@ -93,7 +93,14 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
         } catch (Exception e) {
             Log.e(TAG, e.getLocalizedMessage(), e);
         } finally {
-            inputStream.close();
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+
+        if (roomJson == null) {
+            roomParameterServiceListener.onRoomParameterError(ErrorCodes.UNEXPECTED_ERROR_ROOM_PARAMETERS);
+            return null;
         }
 
         if (roomJson.has(ERROR) && !roomJson.getBoolean(SUCCESS)) {
