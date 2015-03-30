@@ -77,14 +77,10 @@ class ProtocolHelper {
     static boolean processRestart(String remotePeerId, MediaStream localMediaStream,
                                   SkylinkConnection skylinkConnection) {
         if (skylinkConnection != null) {
-
             // Dispose the peerConnection
             disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
-
-            // Create a new peer connection
-            PeerConnection peerConnection = skylinkConnection
-                    .getPeerConnection(remotePeerId);
-
+            // Should not create a peer connection at this time as it will be created
+            // Later on when processing the welcome
             return true;
         }
         return false;
