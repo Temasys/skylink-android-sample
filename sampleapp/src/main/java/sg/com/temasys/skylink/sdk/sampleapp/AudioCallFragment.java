@@ -177,7 +177,8 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(getActivity(), "Room locked status is " + lockStatus, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
     @Override

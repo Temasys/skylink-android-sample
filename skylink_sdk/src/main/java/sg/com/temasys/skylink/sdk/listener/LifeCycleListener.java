@@ -43,7 +43,7 @@ public interface LifeCycleListener {
     /**
      * This is triggered when the lock status of the room that we are in changes
      *
-     * @param remotePeerId The id of the peer
+     * @param remotePeerId The id of the peer that changed the lock status.
      * @param lockStatus   True if the room is locked & false if the room has been unlocked
      */
     public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus);
