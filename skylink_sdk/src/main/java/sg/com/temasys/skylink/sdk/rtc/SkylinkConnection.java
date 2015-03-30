@@ -507,7 +507,6 @@ public class SkylinkConnection {
             dict.put("cid", webServerClient.getCid());
             dict.put("data", message);
             dict.put("mid", webServerClient.getSid());
-            dict.put("nick", webServerClient.getDisplayName());
             dict.put("rid", webServerClient.getRoomId());
             if (remotePeerId != null) {
                 dict.put("type", "private");
