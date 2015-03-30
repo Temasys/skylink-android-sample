@@ -720,6 +720,7 @@ public class ProtocolHelperTest {
         });
     }
 
+    @Test
     public void testRejectWithReasonServerError() throws JSONException {
 
         JSONObject jsonObject = new JSONObject();
@@ -742,7 +743,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_DUPLICATED_LOGIN);
+                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_SERVER_ERROR);
             }
 
             @Override
