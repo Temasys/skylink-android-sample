@@ -88,7 +88,7 @@ public class SkylinkConnection {
     private List<PeerConnection.IceServer> iceServerArray;
     private Map<GLSurfaceView, String> surfaceOnHoldPool;
     private Map<String, Object> displayNameMap;
-    private Map<String, PeerInfo> peerInfoMap;
+    private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
     private Map<String, PCObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SDPObserver> sdpObserverPool;
@@ -507,7 +507,7 @@ public class SkylinkConnection {
                                 "Unable to send the message to Peer " + tid +
                                         " as the Peer is no longer in room or has missing PeerInfo.");
                     } else {
-                        if (!peerInfo.enableDataChannel)
+                        if (!peerInfo.isEnableDataChannel())
                             throw new SkylinkException(
                                     "Unable to send the message via data channel to Peer " + tid +
                                             " as the Peer has not enabled data channel.");
@@ -524,7 +524,7 @@ public class SkylinkConnection {
                             "Unable to send the message to Peer " + tid +
                                     " as the Peer is no longer in room or has missing PeerInfo.");
                 } else {
-                    if (!peerInfo.enableDataChannel)
+                    if (!peerInfo.isEnableDataChannel())
                         throw new SkylinkException(
                                 "Unable to send the message via data channel to Peer " + tid +
                                         " as the Peer has not enabled data channel.");
@@ -639,20 +639,19 @@ public class SkylinkConnection {
 
         if (myConfig.hasFileTransfer()) {
             if (remotePeerId == null) {
-                Iterator<String> iPeerId = this.displayNameMap.keySet()
-                        .iterator();
-                while (iPeerId.hasNext()) {
-                    String tid = iPeerId.next();
+                for (String iPeerId : displayNameMap.keySet()) {
+                    String tid = iPeerId;
                     PeerInfo peerInfo = peerInfoMap.get(tid);
                     if (peerInfo == null) {
                         throw new SkylinkException(
                                 "Unable to share the file with Peer " + tid +
                                         " as the Peer is no longer in room or has missing PeerInfo.");
                     } else {
-                        if (!peerInfo.enableDataChannel)
+                        if (!peerInfo.isEnableDataChannel()) {
                             throw new SkylinkException(
                                     "Unable to share the file with Peer " + tid +
                                             " as the Peer has not enabled data channel.");
+                        }
                         dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
                     }
                 }
@@ -664,10 +663,11 @@ public class SkylinkConnection {
                             "Unable to share the file with Peer " + tid +
                                     " as the Peer is no longer in room or has missing PeerInfo.");
                 } else {
-                    if (!peerInfo.enableDataChannel)
+                    if (!peerInfo.isEnableDataChannel()) {
                         throw new SkylinkException(
                                 "Unable to share the file with Peer " + tid +
                                         " as the Peer has not enabled data channel.");
+                    }
                     dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
                 }
             }
@@ -709,7 +709,7 @@ public class SkylinkConnection {
                                 "Unable to send data to Peer " + tid +
                                         " as the Peer is no longer in room or has missing PeerInfo.");
                     } else {
-                        if (!peerInfo.enableDataChannel)
+                        if (!peerInfo.isEnableDataChannel())
                             throw new SkylinkException(
                                     "Unable to send data to Peer " + tid +
                                             " as the Peer has not enabled data channel.");
@@ -724,7 +724,7 @@ public class SkylinkConnection {
                             "Unable to send data to Peer " + tid +
                                     " as the Peer is no longer in room or has missing PeerInfo.");
                 } else {
-                    if (!peerInfo.enableDataChannel)
+                    if (!peerInfo.isEnableDataChannel())
                         throw new SkylinkException(
                                 "Unable to send data to Peer " + tid +
                                         " as the Peer has not enabled data channel.");
@@ -1140,14 +1140,6 @@ public class SkylinkConnection {
         public int video_width = 320;
     }
 
-    private class PeerInfo {
-        public boolean receiveOnly = false;
-        public String agent = "";
-        public String version = "";
-        public boolean enableIceTrickle = false;
-        public boolean enableDataChannel = false;
-    }
-
     /*
      * AppRTCClient.IceServersObserver
      */
@@ -1412,10 +1404,10 @@ public class SkylinkConnection {
 
                 PeerInfo peerInfo = new PeerInfo();
                 try {
-                    peerInfo.receiveOnly = objects.getBoolean("receiveOnly");
-                    peerInfo.agent = objects.getString("agent");
+                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
+                    peerInfo.setAgent(objects.getString("agent"));
                     // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.version = objects.getString("version");
+                    peerInfo.setVersion(objects.getString("version"));
                 } catch (JSONException e) {
                 }
 
@@ -1469,16 +1461,16 @@ public class SkylinkConnection {
                 PeerInfo peerInfo = new PeerInfo();
                 String mid = objects.getString("mid");
                 try {
-                    peerInfo.receiveOnly = objects.getBoolean("receiveOnly");
+                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
                 } catch (JSONException e) {
                 }
                 // peerInfo.enableDataChannel = true;
                 try {
-                    peerInfo.agent = objects.getString("agent");
+                    peerInfo.setAgent(objects.getString("agent"));
                     // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.version = objects.getString("version");
-                    peerInfo.enableIceTrickle = objects.getBoolean("enableIceTrickle");
-                    peerInfo.enableDataChannel = objects.getBoolean("enableDataChannel");
+                    peerInfo.setVersion(objects.getString("version"));
+                    peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
+                    peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
                 } catch (JSONException e) {
                 }
                 peerInfoMap.put(mid, peerInfo);
@@ -1521,7 +1513,7 @@ public class SkylinkConnection {
 
                 connectionManager.logMessage("[SDK] onMessage - create offer.");
                 // Create DataChannel if both Peer and ourself desires it.
-                if (peerInfo.enableDataChannel &&
+                if (peerInfo.isEnableDataChannel() &&
                         (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
                                 || myConfig.hasDataTransfer())) {
                     // Create DataChannel
@@ -2039,7 +2031,7 @@ public class SkylinkConnection {
         @Override
         public void onDataChannel(final DataChannel dc) {
             PeerInfo peerInfo = peerInfoMap.get(this.myId);
-            peerInfo.enableDataChannel = true;
+            peerInfo.setEnableDataChannel(true);
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
                 // If user has indicated intention to disconnect,
@@ -2156,7 +2148,7 @@ public class SkylinkConnection {
                                     String tid = SDPObserver.this.myId;
                                     PeerInfo peerInfo = peerInfoMap.get(SDPObserver.this.myId);
                                     boolean eDC = false;
-                                    if (peerInfo != null) eDC = peerInfo.enableDataChannel;
+                                    if (peerInfo != null) eDC = peerInfo.isEnableDataChannel();
                                     remotePeerListener.onRemotePeerJoin(tid, connectionManager.displayNameMap.get(tid), eDC);
                                 }
                             }

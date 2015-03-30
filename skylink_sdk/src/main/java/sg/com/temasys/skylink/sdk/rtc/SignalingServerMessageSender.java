@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 class SignalingServerMessageSender {
 
-    private final static String TAG = "SocketTesterClient";
+    private final static String TAG = SignalingServerMessageSender.class.getName();
 
     private final int WAIT_MS = 1000;
     private final String GROUP_TYPE_NAME = "group";
@@ -106,7 +106,7 @@ class SignalingServerMessageSender {
             msgGroup.put("mid", mid);
             msgGroup.put("rid", rid);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
         }
 
         // Send group message

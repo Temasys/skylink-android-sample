@@ -117,9 +117,9 @@ class WebServerClient implements RoomParameterServiceListener {
                     "https://" + params.getIpSigserver(), params.getPortSigserver());
         }
         // Create SignalingServerMessageSender is not yet created.
-        if (sigMsgSender == null)
+        if (sigMsgSender == null) {
             sigMsgSender = new SignalingServerMessageSender(getSid(), getRoomId());
-        ;
+        }
     }
 
     @Override
@@ -134,7 +134,6 @@ class WebServerClient implements RoomParameterServiceListener {
 
     public void sendMessage(JSONObject dictMessage) {
         Log.d(TAG, "Send message");
-        // socketTester.getSocketIO().send(dictMessage.toString());
         sigMsgSender.sendMessage(socketTester, dictMessage);
     }
 
