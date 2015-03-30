@@ -405,6 +405,11 @@ public class SkylinkConnection {
                                 synchronized (lockDisconnectSdp) {
                                     synchronized (lockDisconnect) {
 
+                                        // Disconnect only if connected
+                                        if (connectionState != ConnectionState.CONNECT) {
+                                            return;
+                                        }
+
                                         // Record user intention for connection to room state
                                         connectionState = ConnectionState.DISCONNECT;
 
@@ -1529,16 +1534,21 @@ public class SkylinkConnection {
             } else if (value.compareTo("redirect") == 0) {
                 runOnUiThread(new Runnable() {
                     public void run() {
+                        boolean shouldDisconnect = false;
                         // Prevent thread from executing with disconnect concurrently.
                         synchronized (lockDisconnect) {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
                             if (connectionState == ConnectionState.DISCONNECT) return;
                             try {
-                                ProtocolHelper.processRedirect(objects, lifeCycleListener);
+                                shouldDisconnect = ProtocolHelper.processRedirect(objects, lifeCycleListener);
                             } catch (JSONException e) {
                                 Log.e(TAG, e.getMessage(), e);
                             }
+                        }
+
+                        if (shouldDisconnect) {
+                            disconnectFromRoom();
                         }
                     }
                 });
@@ -1659,6 +1669,8 @@ public class SkylinkConnection {
                         lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR,
                                 "Connection with the skylink server is closed");
                     }
+                    // Disconnect from room
+                    disconnectFromRoom();
                 }
             });
         }
@@ -1676,6 +1688,9 @@ public class SkylinkConnection {
                         connectionManager.logMessage(message);
                         lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
                     }
+
+                    // Disconnect from room
+                    disconnectFromRoom();
                 }
             });
         }
