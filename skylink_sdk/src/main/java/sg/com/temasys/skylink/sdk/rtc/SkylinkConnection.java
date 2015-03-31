@@ -8,6 +8,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
@@ -284,15 +285,25 @@ public class SkylinkConnection {
         }
     }
 
-    public void restartConnection() {
-        // If remoteId is provided restart the specific peerConnection
-        // Else restart all the peer connections
-        if (pcObserverPool != null) {
-            // Create a new peerId set to prevent concurrent modification of the set
-            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
-            for (String peerId : peerIdSet) {
-                restartConnectionInternal(peerId);
+    /**
+     * Restarts a connection with a specific peer or all connections if remotePeerId is null
+     *
+     * @param remotePeerId Id of the remote peer to whom we will restart a message. Use 'null' if the
+     *                     message is to be broadcast to all remote peers in the room.
+     */
+    public void restartConnection(String remotePeerId) {
+        if (TextUtils.isEmpty(remotePeerId)) {
+            // If remoteId is provided restart the specific peerConnection
+            // Else restart all the peer connections
+            if (pcObserverPool != null) {
+                // Create a new peerId set to prevent concurrent modification of the set
+                Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+                for (String peerId : peerIdSet) {
+                    restartConnectionInternal(peerId);
+                }
             }
+        } else {
+            restartConnectionInternal(remotePeerId);
         }
     }
 
