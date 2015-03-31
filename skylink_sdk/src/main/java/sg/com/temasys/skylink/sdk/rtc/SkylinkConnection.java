@@ -1869,31 +1869,22 @@ public class SkylinkConnection {
         peerInfoMap.put(mid, peerInfo);
 
         Object userData = "";
-        try
 
-        {
+        try {
             userData = ((JSONObject) objects.get("userInfo"))
                     .get("userData");
-        } catch (
-                JSONException e
-                )
-
-        {
+        } catch (JSONException e) {
         }
 
         double weight = 0.0;
-        try
-
-        {
+        try {
             weight = objects.getDouble("weight");
         } catch (JSONException e) {
         }
 
         PeerConnection peerConnection = null;
         List<Object> weightedConnection = getWeightedPeerConnection(mid, weight);
-        if (!(Boolean) weightedConnection.get(0))
-
-        {
+        if (!(Boolean) weightedConnection.get(0)) {
             Log.d(TAG, "Ignoring this welcome");
             return;
         }
@@ -1901,9 +1892,8 @@ public class SkylinkConnection {
         Object secondObject = weightedConnection.get(1);
         if (secondObject instanceof PeerConnection)
             peerConnection = (PeerConnection) secondObject;
-        if (peerConnection == null)
-
-        {
+        
+        if (peerConnection == null) {
             logMessage("I only support "
                     + MAX_PEER_CONNECTIONS
                     + " connections are in this app. I am discarding this 'welcome'.");
@@ -1913,17 +1903,13 @@ public class SkylinkConnection {
         setDisplayMap(userData, mid);
 
         boolean receiveOnly = false;
-        try
-
-        {
+        try {
             receiveOnly = objects.getBoolean("receiveOnly");
         } catch (JSONException e) {
         }
 
         // Add our local media stream to this PC, or not.
-        if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly)
-
-        {
+        if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
             peerConnection.addStream(localMediaStream);
             Log.d(TAG, "Added localMedia Stream");
         }
@@ -1944,9 +1930,7 @@ public class SkylinkConnection {
             sdpObserverPool = new Hashtable<String, SDPObserver>();
         SDPObserver sdpObserver = sdpObserverPool
                 .get(mid);
-        if (sdpObserver == null)
-
-        {
+        if (sdpObserver == null) {
             sdpObserver = new SkylinkConnection.SDPObserver();
             sdpObserver.setMyId(mid);
             sdpObserverPool.put(mid, sdpObserver);
