@@ -13,7 +13,6 @@ configurations {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile(group: 'org.webrtc', name: 'libjingle_peer_connection',version: '8676')
     androidTestCompile 'junit:junit:4.11'
     androidTestCompile 'org.robolectric:robolectric:2.3'
     androidTestCompile 'com.android.support:support-v4:19.0.1'
