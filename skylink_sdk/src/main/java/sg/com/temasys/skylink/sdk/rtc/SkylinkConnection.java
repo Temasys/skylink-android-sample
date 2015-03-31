@@ -290,8 +290,8 @@ public class SkylinkConnection {
     /**
      * Restarts a connection with a specific peer or all connections if remotePeerId is null
      *
-     * @param remotePeerId Id of the remote peer to whom we will restart a message. Use 'null' if the
-     *                     message is to be broadcast to all remote peers in the room.
+     * @param remotePeerId Id of the remote peer to whom we will restart a message. Use 'null' if
+     *                     the message is to be broadcast to all remote peers in the room.
      */
     public void restartConnection(String remotePeerId) {
         if (TextUtils.isEmpty(remotePeerId)) {
@@ -973,8 +973,8 @@ public class SkylinkConnection {
     }
 
     /**
-     * Cycle through likely device names for the camera and return the first
-     * capturer that works, or crash if none do.
+     * Cycle through likely device names for the camera and return the first capturer that works, or
+     * crash if none do.
      *
      * @return
      */
@@ -1496,29 +1496,13 @@ public class SkylinkConnection {
 
                 if (peerConnection != null) {
                     setDisplayMap(userData, mid);
-                    connectionManager
-                            .logMessage("[SDK] onMessage - Sending 'welcome'.");
 
-                    JSONObject welcomeObject = new JSONObject();
-                    welcomeObject.put("type", "welcome");
-                    welcomeObject.put("weight",
-                            connectionManager.pcObserverPool.get(mid)
-                                    .getMyWeight());
-                    welcomeObject.put("mid",
-                            connectionManager.webServerClient.getSid());
-                    welcomeObject.put("target", mid);
-                    welcomeObject.put("rid",
-                            connectionManager.webServerClient.getRoomId());
-                    welcomeObject.put("agent", "Android");
-                    welcomeObject.put("version", BuildConfig.VERSION_NAME);
-                    welcomeObject.put("receiveOnly", false);
-                    welcomeObject.put("enableIceTrickle", true);
-                    welcomeObject.put("enableDataChannel",
-                            (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                                    || myConfig.hasDataTransfer()));
-                    setUserInfo(welcomeObject);
-                    connectionManager.webServerClient
-                            .sendMessage(welcomeObject);
+                    try {
+                        ProtocolHelper.sendWelcome(mid, connectionManager, webServerClient, myConfig, false);
+                    } catch (JSONException e) {
+                        Log.d(TAG, e.getMessage(), e);
+                    }
+
                 } else {
                     connectionManager
                             .logMessage("I only support "
@@ -1858,49 +1842,67 @@ public class SkylinkConnection {
                 .compareTo(webServerClient.getSid()) != 0)
             return;
 
-                PeerInfo peerInfo = new PeerInfo();
-                String mid = objects.getString("mid");
-                try {
-                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-                } catch (JSONException e) {
-                }
-                // peerInfo.enableDataChannel = true;
-                try {
-                    peerInfo.setAgent(objects.getString("agent"));
-                    // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.setVersion(objects.getString("version"));
-                    peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
-                    peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
-                } catch (JSONException e) {
-                }
-                peerInfoMap.put(mid, peerInfo);
+        PeerInfo peerInfo = new PeerInfo();
+        String mid = objects.getString("mid");
+        try {
+            peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
+        } catch (JSONException e) {
+        }
+
+        try {
+            peerInfo.setAgent(objects.getString("agent"));
+            // SM0.1.0 - Browser version for web, SDK version for others.
+            peerInfo.setVersion(objects.getString("version"));
+            if (objects.has("enableIceTrickle")) {
+                peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
+            } else {
+                // Work around for JS and/or other clients that do not yet implement this flag.
+                peerInfo.setEnableIceTrickle(true);
+            }
+            if (objects.has("enableDataChannel")) {
+                peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
+            } else {
+                // Work around for JS and/or other clients that do not yet implement this flag.
+                peerInfo.setEnableDataChannel(true);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        peerInfoMap.put(mid, peerInfo);
 
         Object userData = "";
+
         try {
             userData = ((JSONObject) objects.get("userInfo"))
                     .get("userData");
         } catch (JSONException e) {
         }
+
         double weight = 0.0;
         try {
             weight = objects.getDouble("weight");
         } catch (JSONException e) {
         }
+
         PeerConnection peerConnection = null;
         List<Object> weightedConnection = getWeightedPeerConnection(mid, weight);
         if (!(Boolean) weightedConnection.get(0)) {
             Log.d(TAG, "Ignoring this welcome");
             return;
         }
+
         Object secondObject = weightedConnection.get(1);
         if (secondObject instanceof PeerConnection)
             peerConnection = (PeerConnection) secondObject;
+        
         if (peerConnection == null) {
             logMessage("I only support "
                     + MAX_PEER_CONNECTIONS
                     + " connections are in this app. I am discarding this 'welcome'.");
             return;
         }
+
         setDisplayMap(userData, mid);
 
         boolean receiveOnly = false;
@@ -1919,7 +1921,9 @@ public class SkylinkConnection {
         // Create DataChannel if both Peer and ourself desires it.
         if (peerInfo.isEnableDataChannel() &&
                 (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                        || myConfig.hasDataTransfer())) {
+                        || myConfig.hasDataTransfer()))
+
+        {
             // It is stored by dataChannelManager.
             dataChannelManager.createDataChannel(
                     peerConnection, target, mid, "", null, mid);
@@ -1934,8 +1938,10 @@ public class SkylinkConnection {
             sdpObserver.setMyId(mid);
             sdpObserverPool.put(mid, sdpObserver);
         }
+
         peerConnection.createOffer(sdpObserver,
                 sdpMediaConstraints);
+
         logMessage("PC - createOffer for " + mid);
     }
 
@@ -1980,7 +1986,7 @@ public class SkylinkConnection {
     }
 
     // Implementation detail: observe ICE & stream changes and react
-    // accordingly.
+// accordingly.
     class PCObserver implements PeerConnection.Observer {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
@@ -2120,7 +2126,7 @@ public class SkylinkConnection {
                                     mediaListener.onRemotePeerMediaReceive(myId, rVideoView, null);
                             } else {
                                 // If this is an audio only stream, audio will be added automatically.
-                                // Still, send a null videoView to alert user stream is received. 
+                                // Still, send a null videoView to alert user stream is received.
                                 if (!connectionManager.isPeerIdMCU(myId))
                                     mediaListener.onRemotePeerMediaReceive(myId, null, null);
                             }
@@ -2180,8 +2186,8 @@ public class SkylinkConnection {
     }
 
     // Implementation detail: handle offer creation/signaling and answer
-    // setting,
-    // as well as adding remote ICE candidates once the answer SDP is set.
+// setting,
+// as well as adding remote ICE candidates once the answer SDP is set.
     private class SDPObserver implements SdpObserver {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
@@ -2339,6 +2345,7 @@ public class SkylinkConnection {
                 connectionManager.logMessage("Inside SDPObserver.drainRemoteCandidates()");
             }
         }
+
     }
 
     public DataTransferListener getDataTransferListener() {
