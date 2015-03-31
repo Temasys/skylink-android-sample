@@ -198,7 +198,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     }
 
     /**
-     * File Transfer Listener Callbacks - triggered during events that happen during file transfer between peers
+     * File Transfer Listener Callbacks - triggered during events that happen during file transfer
+     * between peers
      */
 
     @Override
@@ -246,7 +247,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     public void onRemotePeerJoin(String peerId, Object userData) {
@@ -301,7 +303,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     }
 
     /**
-     * Creates a dummy file from the apk's asset folder to the device's filepath so that there is a default file to transfer
+     * Creates a dummy file from the apk's asset folder to the device's filepath so that there is a
+     * default file to transfer
      */
     void createExternalStoragePrivatePicture() {
         // Create a path where we will place our picture in our own private

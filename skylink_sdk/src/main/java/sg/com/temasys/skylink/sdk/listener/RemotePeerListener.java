@@ -8,11 +8,11 @@ public interface RemotePeerListener {
     /**
      * This is triggered when a remote peer joins the room.
      *
-     * @param remotePeerId The id of the peer
-     * @param userData     User defined data relating to the remote peer. May be a
-     *                     'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
+     * @param remotePeerId   The id of the peer
+     * @param userData       User defined data relating to the remote peer. May be a
+     * @param hasDataChannel
      */
-    public void onRemotePeerJoin(String remotePeerId, Object userData);
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel);
 
 
     /**

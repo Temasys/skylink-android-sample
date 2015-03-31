@@ -29,8 +29,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
- * This class is used to demonstrate the Chat between two clients in WebRTC
- * Created by lavanyasudharsanam on 20/1/15.
+ * This class is used to demonstrate the Chat between two clients in WebRTC Created by
+ * lavanyasudharsanam on 20/1/15.
  */
 public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
 
@@ -210,7 +210,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     private void initializeSkylinkConnection() {
-        if(skylinkConnection == null){
+        if (skylinkConnection == null) {
             skylinkConnection = SkylinkConnection.getInstance();
             //the app_key and app_secret is obtained from the temasys developer console.
             skylinkConnection.init(getString(R.string.app_key),
@@ -290,11 +290,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // If there is an existing peer, prevent new remotePeer from joining call.
         if (this.remotePeerId != null) {
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
@@ -330,7 +331,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Message Listener Callbacks - triggered during events that happen when messages are received from remotePeer
+     * Message Listener Callbacks - triggered during events that happen when messages are received
+     * from remotePeer
      */
 
     @Override

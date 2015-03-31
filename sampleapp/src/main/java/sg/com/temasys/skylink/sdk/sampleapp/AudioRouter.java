@@ -82,9 +82,8 @@ public class AudioRouter {
     }
 
     /**
-     * Set the audio path according to whether earphone is connected.
-     * Use ear piece if earphone is connected.
-     * Use speakerphone if no earphone is connected.
+     * Set the audio path according to whether earphone is connected. Use ear piece if earphone is
+     * connected. Use speakerphone if no earphone is connected.
      */
     private void setAudioPath() {
         if (audioManager == null) {
