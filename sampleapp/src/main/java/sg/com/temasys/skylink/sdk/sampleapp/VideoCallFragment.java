@@ -225,7 +225,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             toggleVideoButton.setVisibility(View.VISIBLE);
             Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Log.e(TAG, "Skylink Failed " + message);
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -245,6 +247,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
+        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 
     @Override

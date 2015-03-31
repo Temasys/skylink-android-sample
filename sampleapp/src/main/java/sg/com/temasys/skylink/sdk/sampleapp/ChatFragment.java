@@ -270,7 +270,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         if (isSuccess) {
             Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
-            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : " + message, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 

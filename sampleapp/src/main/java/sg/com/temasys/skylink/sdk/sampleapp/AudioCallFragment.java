@@ -156,7 +156,8 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             Log.d(TAG, "Skylink Connected");
             Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
