@@ -226,7 +226,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MediaListen
     }
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         Log.d(TAG, "onRemotePeerJoin");
 
     }

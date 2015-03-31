@@ -29,8 +29,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
- * This class is used to demonstrate the Chat between two clients in WebRTC
- * Created by lavanyasudharsanam on 20/1/15.
+ * This class is used to demonstrate the Chat between two clients in WebRTC Created by
+ * lavanyasudharsanam on 20/1/15.
  */
 public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
 
@@ -282,7 +282,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override
@@ -322,7 +323,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Message Listener Callbacks - triggered during events that happen when messages are received from remotePeer
+     * Message Listener Callbacks - triggered during events that happen when messages are received
+     * from remotePeer
      */
 
     @Override

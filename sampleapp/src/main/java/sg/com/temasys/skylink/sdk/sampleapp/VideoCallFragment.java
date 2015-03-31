@@ -301,11 +301,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
     }
 

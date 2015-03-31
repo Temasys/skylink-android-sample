@@ -180,7 +180,7 @@ public class DataTransferFragment extends Fragment implements
     }
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         peerIds.add(remotePeerId);
         // Enable data send buttons
         btnSendDataPeer.setEnabled(true);

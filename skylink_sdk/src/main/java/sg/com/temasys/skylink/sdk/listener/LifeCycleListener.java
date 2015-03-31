@@ -1,8 +1,7 @@
 package sg.com.temasys.skylink.sdk.listener;
 
 /**
- * Listener comprises of callbacks related to the life cycle of the
- * connection.
+ * Listener comprises of callbacks related to the life cycle of the connection.
  */
 public interface LifeCycleListener {
 
@@ -11,8 +10,8 @@ public interface LifeCycleListener {
      * successful.
      *
      * @param isSuccessful Specify success or failure
-     * @param message      A message in case of isSuccessful is 'false' describing the
-     *                     reason of failure
+     * @param message      A message in case of isSuccessful is 'false' describing the reason of
+     *                     failure
      */
     public void onConnect(boolean isSuccessful, String message);
 
@@ -33,8 +32,8 @@ public interface LifeCycleListener {
     public void onDisconnect(int errorCode, String message);
 
     /**
-     * Occasionally the framework sends some messages for the client to
-     * intimate about certain happenings.
+     * Occasionally the framework sends some messages for the client to intimate about certain
+     * happenings.
      *
      * @param message Message from framework.
      */

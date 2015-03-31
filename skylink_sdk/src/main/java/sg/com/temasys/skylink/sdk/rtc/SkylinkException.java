@@ -9,6 +9,7 @@ public class SkylinkException extends Exception {
 
     /**
      * Exception thrown by the framework.
+     *
      * @param message Message describing this exception.
      */
     public SkylinkException(String message) {
