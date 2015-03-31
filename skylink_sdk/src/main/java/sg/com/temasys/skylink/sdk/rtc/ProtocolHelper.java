@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -8,6 +7,7 @@ import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
+import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
@@ -126,25 +126,52 @@ class ProtocolHelper {
             }
 
             if (peerConnection != null) {
-
-                Log.d(TAG, "[SDK] onMessage - Sending 'welcome'.");
-
-                JSONObject welcomeObject = new JSONObject();
-                welcomeObject.put("type", "restart");
-                welcomeObject.put("weight",
-                        skylinkConnection.getPcObserverPool().get(remotePeerId)
-                                .getMyWeight());
-                welcomeObject.put("mid",
-                        webServerClient.getSid());
-                welcomeObject.put("target", remotePeerId);
-                welcomeObject.put("rid",
-                        webServerClient.getRoomId());
-                welcomeObject.put("agent", "Android");
-                welcomeObject.put("version", Build.VERSION.SDK_INT);
-                skylinkConnection.setUserInfo(welcomeObject);
-                webServerClient
-                        .sendMessage(welcomeObject);
+                // Send "welcome".
+                sendWelcome(remotePeerId, skylinkConnection, webServerClient, myConfig, true);
             }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    // Set isRestart to true/false to create restart/welcome.
+    static boolean sendWelcome(String remotePeerId,
+                               SkylinkConnection skylinkConnection,
+                               WebServerClient webServerClient,
+                               SkylinkConfig myConfig,
+                               boolean isRestart) throws JSONException {
+
+        String typeStr = "restart";
+        if (!isRestart) {
+            typeStr = "welcome";
+        }
+
+        if (skylinkConnection != null) {
+
+            Log.d(TAG, "[SDK] onMessage - Sending '" + typeStr + "'.");
+
+            JSONObject welcomeObject = new JSONObject();
+            welcomeObject.put("type", typeStr);
+            welcomeObject.put("weight",
+                    skylinkConnection.getPcObserverPool().get(remotePeerId)
+                            .getMyWeight());
+            welcomeObject.put("mid",
+                    webServerClient.getSid());
+            welcomeObject.put("target", remotePeerId);
+            welcomeObject.put("rid",
+                    webServerClient.getRoomId());
+            welcomeObject.put("agent", "Android");
+            welcomeObject.put("version", BuildConfig.VERSION_NAME);
+            welcomeObject.put("receiveOnly", false);
+            welcomeObject.put("enableIceTrickle", true);
+            welcomeObject.put("enableDataChannel",
+                    (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
+                            || myConfig.hasDataTransfer()));
+            skylinkConnection.setUserInfo(welcomeObject);
+            webServerClient
+                    .sendMessage(welcomeObject);
 
             return true;
         }

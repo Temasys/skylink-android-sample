@@ -290,8 +290,8 @@ public class SkylinkConnection {
     /**
      * Restarts a connection with a specific peer or all connections if remotePeerId is null
      *
-     * @param remotePeerId Id of the remote peer to whom we will restart a message. Use 'null' if the
-     *                     message is to be broadcast to all remote peers in the room.
+     * @param remotePeerId Id of the remote peer to whom we will restart a message. Use 'null' if
+     *                     the message is to be broadcast to all remote peers in the room.
      */
     public void restartConnection(String remotePeerId) {
         if (TextUtils.isEmpty(remotePeerId)) {
@@ -970,8 +970,8 @@ public class SkylinkConnection {
     }
 
     /**
-     * Cycle through likely device names for the camera and return the first
-     * capturer that works, or crash if none do.
+     * Cycle through likely device names for the camera and return the first capturer that works, or
+     * crash if none do.
      *
      * @return
      */
@@ -1493,29 +1493,13 @@ public class SkylinkConnection {
 
                 if (peerConnection != null) {
                     setDisplayMap(userData, mid);
-                    connectionManager
-                            .logMessage("[SDK] onMessage - Sending 'welcome'.");
 
-                    JSONObject welcomeObject = new JSONObject();
-                    welcomeObject.put("type", "welcome");
-                    welcomeObject.put("weight",
-                            connectionManager.pcObserverPool.get(mid)
-                                    .getMyWeight());
-                    welcomeObject.put("mid",
-                            connectionManager.webServerClient.getSid());
-                    welcomeObject.put("target", mid);
-                    welcomeObject.put("rid",
-                            connectionManager.webServerClient.getRoomId());
-                    welcomeObject.put("agent", "Android");
-                    welcomeObject.put("version", BuildConfig.VERSION_NAME);
-                    welcomeObject.put("receiveOnly", false);
-                    welcomeObject.put("enableIceTrickle", true);
-                    welcomeObject.put("enableDataChannel",
-                            (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                                    || myConfig.hasDataTransfer()));
-                    setUserInfo(welcomeObject);
-                    connectionManager.webServerClient
-                            .sendMessage(welcomeObject);
+                    try {
+                        ProtocolHelper.sendWelcome(mid, connectionManager, webServerClient, myConfig, false);
+                    } catch (JSONException e) {
+                        Log.d(TAG, e.getMessage(), e);
+                    }
+
                 } else {
                     connectionManager
                             .logMessage("I only support "
@@ -1855,22 +1839,22 @@ public class SkylinkConnection {
                 .compareTo(webServerClient.getSid()) != 0)
             return;
 
-                PeerInfo peerInfo = new PeerInfo();
-                String mid = objects.getString("mid");
-                try {
-                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-                } catch (JSONException e) {
-                }
-                // peerInfo.enableDataChannel = true;
-                try {
-                    peerInfo.setAgent(objects.getString("agent"));
-                    // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.setVersion(objects.getString("version"));
-                    peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
-                    peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
-                } catch (JSONException e) {
-                }
-                peerInfoMap.put(mid, peerInfo);
+        PeerInfo peerInfo = new PeerInfo();
+        String mid = objects.getString("mid");
+        try {
+            peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
+        } catch (JSONException e) {
+        }
+        // peerInfo.enableDataChannel = true;
+        try {
+            peerInfo.setAgent(objects.getString("agent"));
+            // SM0.1.0 - Browser version for web, SDK version for others.
+            peerInfo.setVersion(objects.getString("version"));
+            peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
+            peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
+        } catch (JSONException e) {
+        }
+        peerInfoMap.put(mid, peerInfo);
 
         Object userData = "";
         try {
