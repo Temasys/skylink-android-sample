@@ -1862,9 +1862,8 @@ public class SkylinkConnection {
                 // Work around for JS and/or other clients that do not yet implement this flag.
                 peerInfo.setEnableDataChannel(true);
             }
-        } catch (JSONException e)
-
-        {
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
         }
 
         peerInfoMap.put(mid, peerInfo);
@@ -1887,11 +1886,7 @@ public class SkylinkConnection {
 
         {
             weight = objects.getDouble("weight");
-        } catch (
-                JSONException e
-                )
-
-        {
+        } catch (JSONException e) {
         }
 
         PeerConnection peerConnection = null;
@@ -1922,11 +1917,7 @@ public class SkylinkConnection {
 
         {
             receiveOnly = objects.getBoolean("receiveOnly");
-        } catch (
-                JSONException e
-                )
-
-        {
+        } catch (JSONException e) {
         }
 
         // Add our local media stream to this PC, or not.
