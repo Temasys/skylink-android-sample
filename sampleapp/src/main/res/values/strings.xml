@@ -10,8 +10,7 @@
     <string name="title_section6"> Multi-Party Video Call </string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="action_example">Example action</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_build_info">Build information</string>
     <string name="enter_room_name">Enter Room Name</string>
     <string name="enter_room">Submit</string>
     <string name="send_data_peer">Send to Peer</string>
