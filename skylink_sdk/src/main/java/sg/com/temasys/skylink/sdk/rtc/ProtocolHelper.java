@@ -32,8 +32,16 @@ class ProtocolHelper {
     private ProtocolHelper() {
     }
 
-    static void processRedirect(JSONObject jsonObject,
-                                LifeCycleListener lifeCycleListener) throws JSONException {
+    /**
+     * Processes a redirect message
+     *
+     * @param jsonObject
+     * @param lifeCycleListener
+     * @return true if its a disconnection(reject) false if its a warning
+     * @throws JSONException
+     */
+    static boolean processRedirect(JSONObject jsonObject,
+                                   LifeCycleListener lifeCycleListener) throws JSONException {
 
         String info = jsonObject.getString("info");
         String action = jsonObject.getString("action");
@@ -41,6 +49,8 @@ class ProtocolHelper {
         // If the reason key exist, get the relevant error code
         String reason = jsonObject.getString("reason");
         int errorCode = ProtocolHelper.getRedirectCode(reason);
+
+        boolean shouldDisconnect = false;
 
         if ("warning".equals(action)) {
             // Send back the info received and the derived error code
@@ -50,7 +60,10 @@ class ProtocolHelper {
             // Send back the info received and the derived error code
             lifeCycleListener.onDisconnect(errorCode, info);
             Log.d(TAG, "processRedirect: onDisconnect " + errorCode);
+            shouldDisconnect = true;
         }
+
+        return shouldDisconnect;
     }
 
     static boolean processRoomLockStatus(boolean currentRoomLockStatus,

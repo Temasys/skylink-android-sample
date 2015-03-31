@@ -26,7 +26,7 @@ import org.webrtc.PeerConnection.IceServer;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
-import org.webrtc.VideoCapturer;
+import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
@@ -102,7 +102,7 @@ public class SkylinkConnection {
     private PeerConnectionFactory peerConnectionFactory;
     private String apiKey;
     private SkylinkConfig myConfig;
-    private VideoCapturer localVideoCapturer;
+    private VideoCapturerAndroid localVideoCapturer;
     private VideoSource localVideoSource;
     private VideoTrack localVideoTrack;
     private WebServerClient webServerClient;
@@ -429,6 +429,11 @@ public class SkylinkConnection {
                             synchronized (lockDisconnectSdpCreate) {
                                 synchronized (lockDisconnectSdp) {
                                     synchronized (lockDisconnect) {
+
+                                        // Disconnect only if connected
+                                        if (connectionState != ConnectionState.CONNECT) {
+                                            return;
+                                        }
 
                                         // Record user intention for connection to room state
                                         connectionState = ConnectionState.DISCONNECT;
@@ -965,26 +970,17 @@ public class SkylinkConnection {
         this.displayNameMap.put(key, userData);
     }
 
-    // Cycle through likely device names for the camera and return the first
-    // capturer that works, or crash if none do.
-    private VideoCapturer getVideoCapturer() {
-        String[] cameraFacing = {"front", "back"};
-        int[] cameraIndex = {0, 1};
-        int[] cameraOrientation = {0, 90, 180, 270};
-        for (String facing : cameraFacing) {
-            for (int index : cameraIndex) {
-                for (int orientation : cameraOrientation) {
-                    String name = "Camera " + index + ", Facing " + facing
-                            + ", Orientation " + orientation;
-                    VideoCapturer capturer = VideoCapturer.create(name);
-                    if (capturer != null) {
-                        logMessage("Using camera: " + name);
-                        return capturer;
-                    }
-                }
-            }
-        }
-        throw new RuntimeException("Failed to open capturer");
+    /**
+     * Cycle through likely device names for the camera and return the first
+     * capturer that works, or crash if none do.
+     *
+     * @return
+     */
+    private VideoCapturerAndroid getVideoCapturer() {
+        String frontCameraDeviceName =
+                VideoCapturerAndroid.getNameOfFrontFacingDevice();
+        Log.d(TAG, "Opening camera: " + frontCameraDeviceName);
+        return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 
     private List<Object> getWeightedPeerConnection(String key, double weight) {
@@ -1224,71 +1220,82 @@ public class SkylinkConnection {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
                     if (connectionState == ConnectionState.DISCONNECT) return;
-                    connectionManager.peerConnectionFactory = new PeerConnectionFactory();
 
-                    connectionManager.logMessage("[SDK] Local video source: Creating...");
-                    lms = connectionManager.peerConnectionFactory
-                            .createLocalMediaStream("ARDAMS");
-                    connectionManager.localMediaStream = lms;
+                    if (connectionManager.peerConnectionFactory == null) {
 
-                    if (myConfig.hasVideoSend()) {
-                        VideoCapturer capturer = getVideoCapturer();
-                        connectionManager.localVideoCapturer = capturer;
-                        connectionManager.localVideoSource = connectionManager.peerConnectionFactory
-                                .createVideoSource(capturer,
-                                        connectionManager.webServerClient
-                                                .videoConstraints());
-                        final VideoTrack localVideoTrack = connectionManager.peerConnectionFactory
-                                .createVideoTrack("ARDAMSv0",
-                                        connectionManager.localVideoSource);
-                        if (localVideoTrack != null) {
-                            lms.addTrack(localVideoTrack);
-                            connectionManager.localVideoTrack = localVideoTrack;
+                        connectionManager.peerConnectionFactory = new PeerConnectionFactory();
+
+                        connectionManager.logMessage("[SDK] Local video source: Creating...");
+                        lms = connectionManager.peerConnectionFactory
+                                .createLocalMediaStream("ARDAMS");
+                        connectionManager.localMediaStream = lms;
+
+                        if (myConfig.hasVideoSend()) {
+
+                            connectionManager.localVideoCapturer = getVideoCapturer();
+
+                            if (connectionManager.localVideoCapturer == null) {
+                                throw new RuntimeException("Failed to open capturer");
+                            }
+
+                            connectionManager.localVideoSource = connectionManager.peerConnectionFactory
+                                    .createVideoSource(connectionManager.localVideoCapturer,
+                                            connectionManager.webServerClient
+                                                    .videoConstraints());
+                            final VideoTrack localVideoTrack = connectionManager.peerConnectionFactory
+                                    .createVideoTrack("ARDAMSv0",
+                                            connectionManager.localVideoSource);
+                            if (localVideoTrack != null) {
+                                lms.addTrack(localVideoTrack);
+                                connectionManager.localVideoTrack = localVideoTrack;
+                            }
                         }
-                    }
-                }
 
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnectMedia) {
+
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                // Prevent thread from executing with disconnect concurrently.
+                                synchronized (lockDisconnectMedia) {
+                                    // If user has indicated intention to disconnect,
+                                    // We should no longer process messages from signalling server.
+                                    if (connectionState == ConnectionState.DISCONNECT) return;
+                                    if (myConfig.hasVideoSend()) {
+                                        localVideoView = new GLSurfaceView(applicationContext);
+                                        VideoRendererGui gui = new VideoRendererGui(
+                                                localVideoView);
+                                        gui.setListener(connectionManager.videoRendererGuiListener);
+                                        VideoRenderer.Callbacks localRender = gui.create(0,
+                                                0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
+                                        localVideoTrack.addRenderer(new VideoRenderer(
+                                                localRender));
+                                    }
+
+                                    if (connectionManager.surfaceOnHoldPool == null)
+                                        connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
+                                    connectionManager.logMessage("[SDK] Local video source: Created.");
+                                    // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
+                                    mediaListener.onLocalMediaCapture(localVideoView, null);
+                                    connectionManager.logMessage("[SDK] Local video source: Sent to App.");
+                                }
+                            }
+                        });
+
+
+                        synchronized (lockDisconnect) {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
                             if (connectionState == ConnectionState.DISCONNECT) return;
-                            if (myConfig.hasVideoSend()) {
-                                localVideoView = new GLSurfaceView(applicationContext);
-                                VideoRendererGui gui = new VideoRendererGui(
-                                        localVideoView);
-                                gui.setListener(connectionManager.videoRendererGuiListener);
-                                VideoRenderer.Callbacks localRender = gui.create(0,
-                                        0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                                localVideoTrack.addRenderer(new VideoRenderer(
-                                        localRender));
+                            if (myConfig.hasAudioSend()) {
+                                connectionManager.logMessage("[SDK] Local audio source: Creating...");
+                                connectionManager.localAudioSource = connectionManager.peerConnectionFactory
+                                        .createAudioSource(new MediaConstraints());
+                                connectionManager.localAudioTrack = connectionManager.peerConnectionFactory
+                                        .createAudioTrack("ARDAMSa0",
+                                                connectionManager.localAudioSource);
+                                lms.addTrack(connectionManager.localAudioTrack);
+                                connectionManager.logMessage("[SDK] Local audio source: Created.");
                             }
-
-                            if (connectionManager.surfaceOnHoldPool == null)
-                                connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
-                            connectionManager.logMessage("[SDK] Local video source: Created.");
-                            // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-                            mediaListener.onLocalMediaCapture(localVideoView, null);
-                            connectionManager.logMessage("[SDK] Local video source: Sent to App.");
                         }
-                    }
-                });
-
-                synchronized (lockDisconnect) {
-                    // If user has indicated intention to disconnect,
-                    // We should no longer process messages from signalling server.
-                    if (connectionState == ConnectionState.DISCONNECT) return;
-                    if (myConfig.hasAudioSend()) {
-                        connectionManager.logMessage("[SDK] Local audio source: Creating...");
-                        connectionManager.localAudioSource = connectionManager.peerConnectionFactory
-                                .createAudioSource(new MediaConstraints());
-                        connectionManager.localAudioTrack = connectionManager.peerConnectionFactory
-                                .createAudioTrack("ARDAMSa0",
-                                        connectionManager.localAudioSource);
-                        lms.addTrack(connectionManager.localAudioTrack);
-                        connectionManager.logMessage("[SDK] Local audio source: Created.");
                     }
 
                     try {
@@ -1680,16 +1687,21 @@ public class SkylinkConnection {
             } else if (value.compareTo("redirect") == 0) {
                 runOnUiThread(new Runnable() {
                     public void run() {
+                        boolean shouldDisconnect = false;
                         // Prevent thread from executing with disconnect concurrently.
                         synchronized (lockDisconnect) {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
                             if (connectionState == ConnectionState.DISCONNECT) return;
                             try {
-                                ProtocolHelper.processRedirect(objects, lifeCycleListener);
+                                shouldDisconnect = ProtocolHelper.processRedirect(objects, lifeCycleListener);
                             } catch (JSONException e) {
                                 Log.e(TAG, e.getMessage(), e);
                             }
+                        }
+
+                        if (shouldDisconnect) {
+                            disconnectFromRoom();
                         }
                     }
                 });
@@ -1810,6 +1822,8 @@ public class SkylinkConnection {
                         lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR,
                                 "Connection with the skylink server is closed");
                     }
+                    // Disconnect from room
+                    disconnectFromRoom();
                 }
             });
         }
@@ -1827,6 +1841,9 @@ public class SkylinkConnection {
                         connectionManager.logMessage(message);
                         lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
                     }
+
+                    // Disconnect from room
+                    disconnectFromRoom();
                 }
             });
         }
