@@ -697,7 +697,7 @@ public class SkylinkConnection {
      * @throws SkylinkException
      */
     public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
-        if (myConfig.hasDataTransfer()) {
+        if (myConfig != null && myConfig.hasDataTransfer()) {
             if (remotePeerId == null) {
                 Iterator<String> iPeerId = this.displayNameMap.keySet()
                         .iterator();
