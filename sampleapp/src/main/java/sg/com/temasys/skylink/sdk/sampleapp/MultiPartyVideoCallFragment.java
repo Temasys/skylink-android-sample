@@ -186,18 +186,15 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     private void addRemotePeerViews(String remotePeerId, GLSurfaceView videoView) {
-
-        if (surfaceViews.containsKey(remotePeerId)) {
-            removePeerViews(remotePeerId);
-        }
-
-        // Add peer view if its not already added
-        // Find the frame layout that's empty
-        for (FrameLayout peerFrameLayout : peerLayouts) {
-            if (peerFrameLayout.getChildCount() == 0) {
-                peerFrameLayout.addView(videoView);
-                surfaceViews.put(remotePeerId, videoView);
-                break;
+        if (!surfaceViews.containsKey(remotePeerId)) {
+            // Add peer view if its not already added
+            // Find the frame layout that's empty
+            for (FrameLayout peerFrameLayout : peerLayouts) {
+                if (peerFrameLayout.getChildCount() == 0) {
+                    peerFrameLayout.addView(videoView);
+                    surfaceViews.put(remotePeerId, videoView);
+                    break;
+                }
             }
         }
     }

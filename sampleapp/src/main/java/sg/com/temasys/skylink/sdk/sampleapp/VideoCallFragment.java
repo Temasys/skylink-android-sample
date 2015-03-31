@@ -325,19 +325,16 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             return;
         }
 
-        // Resize self view only once
-        if (TextUtils.isEmpty(this.peerId)) {
-
-            View self = parentFragment.findViewWithTag("self");
-            if (this.selfLayoutParams == null) {
-                // Get the original size of the layout
-                this.selfLayoutParams = self.getLayoutParams();
-            }
-            self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
-
-            parentFragment.removeView(self);
-            parentFragment.addView(self);
+        // Resize self view
+        View self = parentFragment.findViewWithTag("self");
+        if (this.selfLayoutParams == null) {
+            // Get the original size of the layout
+            this.selfLayoutParams = self.getLayoutParams();
         }
+
+        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
+        parentFragment.removeView(self);
+        parentFragment.addView(self);
 
         // Remove peer video if it exist
         View viewToRemove = parentFragment.findViewWithTag("peer");

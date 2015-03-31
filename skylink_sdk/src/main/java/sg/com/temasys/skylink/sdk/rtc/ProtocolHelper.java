@@ -28,6 +28,7 @@ class ProtocolHelper {
     private static final String ROOM_CLOSE = "roomclose";
     private static final String TO_CLOSE = "toclose";
     private static final String SEAT_QUOTA = "seatquota";
+    public static final String PEER_CONNECTION_RESTART = "Peer connection is restarting";
 
     private ProtocolHelper() {
     }
@@ -87,11 +88,21 @@ class ProtocolHelper {
         Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
     }
 
-    static boolean processRestart(String remotePeerId, MediaStream localMediaStream,
-                                  SkylinkConnection skylinkConnection) {
+    static boolean processRestart(final String remotePeerId, MediaStream localMediaStream,
+                                  final SkylinkConnection skylinkConnection) {
         if (skylinkConnection != null) {
             // Dispose the peerConnection
             disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+
+            // Notify that the connection is restarting
+            skylinkConnection.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
+                            remotePeerId, PEER_CONNECTION_RESTART);
+                }
+            });
+
             // Should not create a peer connection at this time as it will be created
             // Later on when processing the welcome
             return true;
@@ -99,8 +110,8 @@ class ProtocolHelper {
         return false;
     }
 
-    static boolean sendRestart(String remotePeerId,
-                               SkylinkConnection skylinkConnection,
+    static boolean sendRestart(final String remotePeerId,
+                               final SkylinkConnection skylinkConnection,
                                WebServerClient webServerClient,
                                MediaStream localMediaStream,
                                SkylinkConfig myConfig) throws JSONException {
@@ -109,6 +120,15 @@ class ProtocolHelper {
 
             // Dispose the peerConnection
             disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+
+            // Notify that the connection is restarting
+            skylinkConnection.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
+                            remotePeerId, PEER_CONNECTION_RESTART);
+                }
+            });
 
             // Create a new peer connection
             PeerConnection peerConnection = skylinkConnection

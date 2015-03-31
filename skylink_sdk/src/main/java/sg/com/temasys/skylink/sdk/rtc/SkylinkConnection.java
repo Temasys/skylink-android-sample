@@ -310,6 +310,9 @@ public class SkylinkConnection {
     }
 
     private void restartConnectionInternal(String remotePeerId) {
+        if (connectionState == ConnectionState.DISCONNECT) {
+            return;
+        }
         synchronized (lockDisconnect) {
             try {
                 ProtocolHelper.sendRestart(remotePeerId, this, webServerClient, localMediaStream,
