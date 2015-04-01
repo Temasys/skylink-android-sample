@@ -76,7 +76,7 @@ public class DataTransferFragment extends Fragment implements
             public void onClick(View v) {
                 // Send data to all the peers
                 try {
-                    skylinkConnection.sendData("", data);
+                    skylinkConnection.sendData(null, data);
                 } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
