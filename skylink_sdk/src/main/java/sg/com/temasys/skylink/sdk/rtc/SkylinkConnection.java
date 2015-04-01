@@ -71,7 +71,7 @@ public class SkylinkConnection {
     public static final int DEFAULT_DURATION = 24;
     public static final String API_SERVER = "http://api.temasys.com.sg/api/";
 
-    private static final String TAG = "TEMAConnectionManager";
+    private static final String TAG = "SkylinkConnection";
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
 
@@ -219,7 +219,7 @@ public class SkylinkConnection {
 
         this.myUserData = userData;
 
-        logMessage("TEMAConnectionManager::connectingRoom userData=>" + userData);
+        logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
 
         if (isAlreadyConnected()) {
             return false;
@@ -255,7 +255,7 @@ public class SkylinkConnection {
             Log.e(TAG, e.getMessage(), e);
         }
 
-        logMessage("TEMAConnectionManager::connection url=>" + url);
+        logMessage("SkylinkConnection::connection url=>" + url);
         return true;
     }
 
@@ -332,12 +332,12 @@ public class SkylinkConnection {
      */
     public void init(String apiKey,
                      SkylinkConfig config, Context context) {
-        logMessage("TEMAConnectionManager::config=>" + config);
+        logMessage("SkylinkConnection::config=>" + config);
 
         this.myConfig = new SkylinkConfig(config);
         this.settingsObject = new ConstConnectionConfig();
 
-        logMessage("TEMAConnectionManager::apiKey=>" + apiKey);
+        logMessage("SkylinkConnection::apiKey=>" + apiKey);
         this.apiKey = apiKey;
 
         if (!factoryStaticInitialized) {
@@ -445,11 +445,13 @@ public class SkylinkConnection {
                                             this.webServerClient.disconnect();
                                         }
 
-                                        logMessage("Inside TEMAConnectionManager.disconnectFromRoom");
+                                        logMessage("Inside SkylinkConnection.disconnectFromRoom");
 
                                         // Dispose all DC.
                                         String allPeers = null;
-                                        dataChannelManager.disposeDC(allPeers);
+                                        if (dataChannelManager != null) {
+                                            dataChannelManager.disposeDC(allPeers);
+                                        }
 
                                         if (this.peerConnectionPool != null) {
                                             for (PeerConnection peerConnection : this.peerConnectionPool
@@ -608,7 +610,7 @@ public class SkylinkConnection {
             }
         } else {
             final String str = "Cannot send P2P message as it was not enabled in the configuration.\nUse "
-                    + "hasP2PMessage( true ) on TEMAConnectionConfig before creating TEMAConnectionManager.";
+                    + "setHasPeerMessaging( true ) on SkylinkConfig before creating SkylinkConnection.";
             runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
@@ -746,7 +748,7 @@ public class SkylinkConnection {
             }
         } else {
             final String str = "Cannot do file transfer as it was not enabled in the configuration.\nUse "
-                    + "hasFileTransfer( true ) on TEMAConnectionConfig before creating TEMAConnectionManager.";
+                    + "setHasFileTransfer( true ) on SkylinkConfig before creating SkylinkConnection.";
             runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
@@ -806,7 +808,7 @@ public class SkylinkConnection {
             }
         } else {
             final String str = "Cannot do data transfer as it was not enabled in the configuration.\nUse "
-                    + "hasDataTransfer( true ) on TEMAConnectionConfig before creating TEMAConnectionManager.";
+                    + "setHasDataTransfer( true ) on SkylinkConfig before creating SkylinkConnection.";
             runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
@@ -989,7 +991,9 @@ public class SkylinkConnection {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
             this.isMCUConnection = isPeerIdMCU(key);
-            dataChannelManager.setIsMcuRoom(isMCUConnection);
+            if (dataChannelManager != null) {
+                dataChannelManager.setIsMcuRoom(isMCUConnection);
+            }
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
@@ -1020,7 +1024,9 @@ public class SkylinkConnection {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
             this.isMCUConnection = isPeerIdMCU(key);
-            dataChannelManager.setIsMcuRoom(isMCUConnection);
+            if (dataChannelManager != null) {
+                dataChannelManager.setIsMcuRoom(isMCUConnection);
+            }
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
@@ -1618,7 +1624,9 @@ public class SkylinkConnection {
                         .getPeerConnection(mid);
 
                 // Dispose DataChannel.
-                connectionManager.dataChannelManager.disposeDC(mid);
+                if (dataChannelManager != null) {
+                    connectionManager.dataChannelManager.disposeDC(mid);
+                }
 
                 // Remove Stream so that it will not be disposed when the PeerConnection is disposed
                 peerConnection.removeStream(localMediaStream);
@@ -1895,7 +1903,7 @@ public class SkylinkConnection {
         Object secondObject = weightedConnection.get(1);
         if (secondObject instanceof PeerConnection)
             peerConnection = (PeerConnection) secondObject;
-        
+
         if (peerConnection == null) {
             logMessage("I only support "
                     + MAX_PEER_CONNECTIONS
