@@ -220,16 +220,25 @@ public class DataTransferFragment extends Fragment implements
         if (isSuccessful) {
             Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_waiting),
                     ROOM_NAME), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason :" +
+                    " " + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, "onWarning " + message);
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, "onDisconnect " + message);
     }
 

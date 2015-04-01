@@ -156,23 +156,30 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             Log.d(TAG, "Skylink Connected");
             Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 
     @Override
     public void onReceiveLog(String message) {
         Log.d(TAG, message + "onReceiveLog");
+    }
+
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
     @Override

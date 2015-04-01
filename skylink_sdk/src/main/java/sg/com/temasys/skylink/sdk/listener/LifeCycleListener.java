@@ -18,16 +18,18 @@ public interface LifeCycleListener {
     /**
      * This is triggered when the framework issues a warning to the client.
      *
-     * @param message Warning message
+     * @param errorCode @see sg.com.temasys.skylink.sdk.rtc.ErrorCodes
+     * @param message   Warning message
      */
-    public void onWarning(String message);
+    public void onWarning(int errorCode, String message);
 
     /**
      * This is triggered when we disconnect from the room we were in.
      *
-     * @param message Message specifying the reason for disconnection
+     * @param errorCode @see sg.com.temasys.skylink.sdk.rtc.ErrorCodes
+     * @param message   Message specifying the reason for disconnection
      */
-    public void onDisconnect(String message);
+    public void onDisconnect(int errorCode, String message);
 
     /**
      * Occasionally the framework sends some messages for the client to intimate about certain
@@ -36,5 +38,13 @@ public interface LifeCycleListener {
      * @param message Message from framework.
      */
     public void onReceiveLog(String message);
+
+    /**
+     * This is triggered when the lock status of the room that we are in changes
+     *
+     * @param remotePeerId The id of the peer that changed the lock status.
+     * @param lockStatus   True if the room is locked & false if the room has been unlocked
+     */
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus);
 
 }

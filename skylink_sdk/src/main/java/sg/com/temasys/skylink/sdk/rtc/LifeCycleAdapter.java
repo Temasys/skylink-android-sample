@@ -19,17 +19,22 @@ class LifeCycleAdapter implements LifeCycleListener {
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
 
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
 
     }
 
     @Override
     public void onReceiveLog(String message) {
+
+    }
+
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
 
     }
 

@@ -225,18 +225,29 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             toggleVideoButton.setVisibility(View.VISIBLE);
             Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Log.e(TAG, "Skylink Failed " + message);
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
-        Log.d(TAG, message + "warning");
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onWarning(int errorCode, String message) {
+        Log.d(TAG, message + "warning");
+
+        Toast.makeText(getActivity(), "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
+        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -308,27 +319,33 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             return;
         }
 
-        if (!TextUtils.isEmpty(this.peerId)) {
+        if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
-        this.peerId = remotePeerId;
-
+        // Resize self view
         View self = parentFragment.findViewWithTag("self");
         if (this.selfLayoutParams == null) {
             // Get the original size of the layout
             this.selfLayoutParams = self.getLayoutParams();
         }
-        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
 
+        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
         parentFragment.removeView(self);
         parentFragment.addView(self);
 
+        // Remove peer video if it exist
+        View viewToRemove = parentFragment.findViewWithTag("peer");
+        if (viewToRemove != null) {
+            parentFragment.removeView(viewToRemove);
+        }
+
         videoView.setTag("peer");
-        parentFragment.removeView(videoView);
         parentFragment.addView(videoView);
+
+        this.peerId = remotePeerId;
     }
 
     @Override
