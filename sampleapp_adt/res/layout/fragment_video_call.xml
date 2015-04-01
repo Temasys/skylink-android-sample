@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/ll_video_call"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+<LinearLayout
+    android:id="@+id/ll_video_call"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
     <EditText
         android:id="@+id/et_room_name"
         android:layout_width="wrap_content"
@@ -28,24 +30,20 @@
         android:id="@+id/ll_self_video"
         android:orientation="horizontal"
         >
-        <ToggleButton
+
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Audio"
-            android:checked="true"
-            android:textOn="Audio On"
-            android:textOff="Audio Muted"
+            android:text="@string/mute_audio"
             android:id="@+id/toggle_audio"
             android:layout_weight="1"
             android:visibility="gone"
             />
-        <ToggleButton
+
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Video"
-            android:checked="true"
-            android:textOn="Video On"
-            android:textOff="Video Muted"
+            android:text="@string/mute_video"
             android:id="@+id/toggle_video"
             android:layout_weight="1"
             android:visibility="gone"
