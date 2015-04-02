@@ -14,7 +14,7 @@ class RemotePeerAdapter implements RemotePeerListener {
     }
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
 
     }
 

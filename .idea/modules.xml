@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/engineering-sdk-android.iml" filepath="$PROJECT_DIR$/engineering-sdk-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/sampleapp/sampleapp.iml" filepath="$PROJECT_DIR$/sampleapp/sampleapp.iml" />
       <module fileurl="file://$PROJECT_DIR$/skylink_sdk/skylink_sdk.iml" filepath="$PROJECT_DIR$/skylink_sdk/skylink_sdk.iml" />

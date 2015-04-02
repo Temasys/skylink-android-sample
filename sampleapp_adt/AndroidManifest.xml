@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.temasys.skylink.sampleapp" >
+    package="com.temasys.skylink.sampleapp"
+    android:versionName="0.9.2" >
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -8,10 +9,6 @@
         android:glEsVersion="0x00020000"
         android:required="true" >
     </uses-feature>
-
-    <uses-sdk
-        android:minSdkVersion="17"
-        android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_margin="30dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/data_transfer_status"
+        android:id="@+id/txt_data_transfer_status"/>
+
+    <Button
+        android:id="@+id/btn_send_data_to_peer"
+        android:enabled="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/send_data_peer"/>
+
+    <Button
+        android:id="@+id/btn_send_data_to_room"
+        android:enabled="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/send_data_room"/>
+
+</LinearLayout>

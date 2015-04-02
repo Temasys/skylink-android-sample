@@ -2,6 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,16 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.security.SignatureException;
+import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -28,25 +25,25 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
- * This class is used to demonstrate the AudioCall between two clients in WebRTC
- * Created by lavanyasudharsanam on 20/1/15.
+ * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
+ * lavanyasudharsanam on 20/1/15.
  */
 public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     public static final String ROOM_NAME = "audioCallRoom";
     public static final String MY_USER_NAME = "audioCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private LinearLayout parentFragment;
     private SkylinkConnection skylinkConnection;
     private TextView tvRoomDetails;
     private String remotePeerId;
     private String peerName;
+    private boolean connected;
+    private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
-        parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_audio_call);
 
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
 
@@ -54,19 +51,34 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    skylinkConnection.connectToRoom(ROOM_NAME,
-                            MY_USER_NAME);
-                    btnAudioCall.setEnabled(false);
-                    Toast.makeText(getActivity(), "Connecting....",
-                            Toast.LENGTH_SHORT).show();
-                } catch (SignatureException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
+
+                String apiKey = getString(R.string.app_key);
+                String apiSecret = getString(R.string.app_secret);
+
+                // Initialize the skylink connection
+                initializeSkylinkConnection();
+
+                // Initialize the audio router
+                initializeAudioRouter();
+
+                // Obtaining the Skylink connection string done locally
+                // In a production environment the connection string should be given
+                // by an entity external to the App, such as an App server that holds the Skylink API secret
+                // In order to avoid keeping the API secret within the application
+                String skylinkConnectionString = Utils.
+                        getSkylinkConnectionString(ROOM_NAME, apiKey,
+                                apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+
+                skylinkConnection.connectToRoom(skylinkConnectionString,
+                        MY_USER_NAME);
+                connected = true;
+
+                // Use the Audio router to switch between headphone and headset
+                audioRouter.startAudioRouting(getActivity().getApplicationContext());
+
+                btnAudioCall.setEnabled(false);
+                Toast.makeText(getActivity(), "Connecting....",
+                        Toast.LENGTH_SHORT).show();
             }
         });
         return rootView;
@@ -75,15 +87,28 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        skylinkConnection = SkylinkConnection.getInstance();
-        skylinkConnection.init(getString(R.string.app_key),
-                getString(R.string.app_secret), getSkylinkConfig(),
-                this.getActivity().getApplicationContext());
+        // Allow volume to be controlled using volume keys
+        getActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+    }
 
-        Log.d(TAG, " lo " + this.getActivity());
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+    private void initializeAudioRouter() {
+        if (audioRouter == null) {
+            audioRouter = AudioRouter.getInstance();
+            audioRouter.init(((AudioManager) getActivity().
+                    getSystemService(android.content.Context.AUDIO_SERVICE)));
+        }
+    }
+
+    private void initializeSkylinkConnection() {
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
+                    this.getActivity().getApplicationContext());
+
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+        }
     }
 
     @Override
@@ -97,10 +122,14 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDetach() {
         super.onDetach();
-        skylinkConnection.disconnectFromRoom();
-        skylinkConnection.setLifeCycleListener(null);
-        skylinkConnection.setMediaListener(null);
-        skylinkConnection.setRemotePeerListener(null);
+        if (skylinkConnection != null && connected) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setMediaListener(null);
+            skylinkConnection.setRemotePeerListener(null);
+            connected = false;
+            audioRouter.stopAudioRouting(getActivity().getApplicationContext());
+        }
     }
 
     private SkylinkConfig getSkylinkConfig() {
@@ -127,23 +156,30 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             Log.d(TAG, "Skylink Connected");
             Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 
     @Override
     public void onReceiveLog(String message) {
         Log.d(TAG, message + "onReceiveLog");
+    }
+
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -172,7 +208,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // If there is an existing peer, prevent new remotePeer from joining call.
         if (this.remotePeerId != null) {
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
@@ -189,11 +225,13 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerUserDataReceive(String s, Object o) {
-
+        Log.d(TAG, "onRemotePeerUserDataReceive");
     }
 
     @Override
     public void onOpenDataConnection(String s) {
+        Log.d(TAG, "onOpenDataConnection");
+
     }
 
     @Override

@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /**
- * Created by janidu on 20/1/15.
+ * Tests related to SkylinkConnection
  */
 
 @Config(emulateSdk = 18)

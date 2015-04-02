@@ -21,22 +21,34 @@ The Skylink SDK Jar should now be located at:
 
 ###Set up WebRTC native dependencies
 
-#### 1. [Download](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/armeabi-v7a/libjingle_peerconnection_so.so) the WebRTC native dependencies
+##### 1.1 [Download armeabi-v7a](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/armeabi-v7a/libjingle_peerconnection_so.so)
+##### 1.2 [Download x86](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/x86/libjingle_peerconnection_so.so)
+##### 1.3 [Download x86-64](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/x86-64/libjingle_peerconnection_so.so)
 
 
-#### 2. Set up libjingle\_peerconnection\_so.so in armeabi-v7a
+#### 2. Set up libjingle\_peerconnection\_so.so in relevant architecture folders
 
-#### Make an architecture specific directory inside libs folder:
+#### Make architecture specific directories inside libs folder:
 
     /libs/armeabi-v7a
+    /libs/x86
+    /libs/x86-64
 
-#### 3. Copy [libjingle\_peerconnection\_so.so](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/armeabi-v7a/libjingle_peerconnection_so.so) into the new directory
+#### 3. Copy the relevant libjingle\_peerconnection\_so.so files on to the proper directories
 
-WebRTC .so file is now located at:
+WebRTC .so (armeabi-v7a) file is now located at:
 
     /libs/armeabi-v7a/libjingle_peerconnection_so.so
+
+WebRTC .so (x86) file is now located at:
+
+    /libs/x86/libjingle_peerconnection_so.so
+
+WebRTC .so (x86-64) file is now located at:
+
+    /libs/x86-64/libjingle_peerconnection_so.so
 
 ###You are ready go!
 
 For more information on the SDK usage, please refer to the [simple demo application](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/sample_app_adt.tar.gz)
-application. You will need to follow the same procedure described above to add the Skylink SDK for Android to the sample application.
+application. You will need to follow the same procedure described above to add the Skylink SDK for Android to the sample application. The sample application also requires [v7 appcompat](https://developer.android.com/tools/support-library/setup.html) as a dependency.

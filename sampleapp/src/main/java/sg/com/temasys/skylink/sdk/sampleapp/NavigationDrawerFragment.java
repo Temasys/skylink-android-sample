@@ -21,14 +21,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
 /**
- * Fragment used for managing interactions for and presentation of a navigation drawer.
- * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
- * design guidelines</a> for a complete explanation of the behaviors implemented here.
+ * Fragment used for managing interactions for and presentation of a navigation drawer. See the <a
+ * href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction"> design
+ * guidelines</a> for a complete explanation of the behaviors implemented here.
  */
 public class NavigationDrawerFragment extends Fragment {
 
@@ -107,6 +106,8 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.title_section2),
                         getString(R.string.title_section3),
                         getString(R.string.title_section4),
+                        getString(R.string.title_section5),
+                        getString(R.string.title_section6)
                 }));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
 
@@ -243,7 +244,7 @@ public class NavigationDrawerFragment extends Fragment {
         // If the drawer is open, show the global app actions in the action bar. See also
         // showGlobalContextActionBar, which controls the top-left area of the action bar.
         if (mDrawerLayout != null && isDrawerOpen()) {
-            inflater.inflate(R.menu.global, menu);
+            inflater.inflate(R.menu.main, menu);
             showGlobalContextActionBar();
         }
         super.onCreateOptionsMenu(menu, inflater);
@@ -254,12 +255,6 @@ public class NavigationDrawerFragment extends Fragment {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
