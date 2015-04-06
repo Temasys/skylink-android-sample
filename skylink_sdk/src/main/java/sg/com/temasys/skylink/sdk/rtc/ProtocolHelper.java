@@ -132,7 +132,7 @@ class ProtocolHelper {
 
             // Create a new peer connection
             PeerConnection peerConnection = skylinkConnection
-                    .getPeerConnection(remotePeerId);
+                    .getPeerConnection(remotePeerId, HealthChecker.ANSWERER);
 
             // TODO: use exact value
             boolean receiveOnly = false;

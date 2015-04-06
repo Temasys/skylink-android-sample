@@ -1003,24 +1003,32 @@ public class SkylinkConnection {
             PCObserver pc = this.pcObserverPool.get(key);
             if (pc != null) {
                 if (pc.getMyWeight() > weight) {
+                    // Use this welcome (ours will be discarded on peer's side).
                     resultList.add(new Boolean(true));
-                    resultList.add(getPeerConnection(key));
+                    resultList.add(getPeerConnection(key, HealthChecker.OFFERER));
                 } else {
+                    // Discard this welcome (ours will be used on peer's side).
                     resultList.add(new Boolean(false));
                     resultList.add(new Boolean(false));
                 }
             } else {
+                // Use this welcome (we did not send one to the peer).
                 resultList.add(new Boolean(true));
-                resultList.add(getPeerConnection(key));
+                resultList.add(getPeerConnection(key, HealthChecker.OFFERER));
             }
         } else {
+            // Peer did not send a weight, use peer's welcome.
             resultList.add(new Boolean(true));
-            resultList.add(getPeerConnection(key));
+            resultList.add(getPeerConnection(key, HealthChecker.OFFERER));
         }
         return resultList;
     }
 
     PeerConnection getPeerConnection(String key) {
+        getPeerConnection(key, "");
+    }
+
+    PeerConnection getPeerConnection(String key, String iceRole) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
             this.isMCUConnection = isPeerIdMCU(key);
@@ -1038,8 +1046,17 @@ public class SkylinkConnection {
                 return null;
 
             logMessage("Creating a new peer connection ...");
+            if ("".equals(iceRole)) {
+                throw new SkylinkException(
+                        "Trying to get an existing PeerConnection for " + key +
+                                ", but which does not exist!");
+            }
             PCObserver pcObserver = new SkylinkConnection.PCObserver();
             pcObserver.setMyId(key);
+            // Initialise and start Health Checker.
+            pcObserver.initialiseHealthChecker(
+                    skylinkConnection, webServerClient, localMediaStream, myConfig, iceRole);
+
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
                 pc = this.peerConnectionFactory.createPeerConnection(
@@ -1481,7 +1498,7 @@ public class SkylinkConnection {
                 } catch (JSONException e) {
                 }
                 PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
+                        .getPeerConnection(mid, HealthChecker.ANSWERER);
 
                 PeerInfo peerInfo = new PeerInfo();
                 try {
@@ -2001,6 +2018,7 @@ public class SkylinkConnection {
 
         private double myWeight;
         private String myId;
+        private HealthChecker healthChecker;
 
         public double getMyWeight() {
             return myWeight;
@@ -2024,6 +2042,16 @@ public class SkylinkConnection {
             super();
             this.myWeight = new Random(new Date().getTime()).nextDouble()
                     * (double) 1000000;
+        }
+
+        public initialiseHealthChecker(final SkylinkConnection skylinkConnection,
+                                       WebServerClient webServerClient,
+                                       MediaStream localMediaStream,
+                                       SkylinkConfig myConfig,
+                                       String iceRole) {
+            healthChecker = new HealthChecker(skylinkConnection, webServerClient, localMediaStream, myConfig);
+            healthChecker.setIceRole(iceRole);
+            healthChecker.startRestartTimer();
         }
 
         @Override
@@ -2062,9 +2090,22 @@ public class SkylinkConnection {
         @Override
         public void onIceConnectionChange(PeerConnection.IceConnectionState newState) {
             switch (newState) {
+                case CONNECTED:
+                    healthChecker.setIceState(HealthChecker.ICE_CONNECTED);
+                    Log.d(TAG, "onIceConnectionChange : Connected");
+                    break;
+                case COMPLETED:
+                    healthChecker.setIceState(HealthChecker.ICE_COMPLETED);
+                    Log.d(TAG, "onIceConnectionChange : Connected");
+                    break;
                 case FAILED:
+                    healthChecker.setIceState(HealthChecker.ICE_FAILED);
                     Log.d(TAG, "onIceConnectionChange : Failed - Restarting");
                     restartConnectionInternal(PCObserver.this.myId);
+                    break;
+                case DISCONNECTED:
+                    healthChecker.setIceState(HealthChecker.ICE_DISCONNECTED);
+                    Log.d(TAG, "onIceConnectionChange : Disconnected - Restarting");
                     break;
                 default:
                     break;
