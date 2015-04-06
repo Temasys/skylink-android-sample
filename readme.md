@@ -8,7 +8,7 @@ Step-by-step guide
 
  
 
-1.  Add the SDK to your project.   
+1.  Add the SDK to your project. 
     1.  Getting started with SkylinkSDK using Android Studio <<< see SkylinkSDK_Android_Studio_Setup.md >>>
     2.  Getting started with SkylinkSDK using Eclipse (ADT) <<< see SkylinkSDK_Eclipse_ADT_Setup.md >>>
     3.  Note the Android SDK version required for the SkylinkSDK used <<< see Android_SDK_Version_Required.md >>>
@@ -17,16 +17,16 @@ Step-by-step guide
     Portal](https://developer.temasys.com.sg/) To receive your
     application key and secret. 
 3.  Implement Listeners in the Class which needs to receive the events
-    sent from the SDK   
+    sent from the SDK 
     -   List of Listeners and the callbacks they provide can be found
         [here](http://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/doc/index.html)
 
-` 
+`
 
             public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
 
             .....
-            /**Implementation of callbacks provided the listeners 
+            /**Implementation of callbacks provided the listeners
             **/
              
             .....
@@ -42,7 +42,8 @@ Step-by-step guide
         1. For Audio Call : Implement MediaListener
         2. For Video Call : Implement MediaListener
         3. For File Transfer : Implement FileTransferListener
-        4. For Messaging : Implement MessageListener
+        4. For Data Transfer : Implement DataTransferListener
+        5. For Messaging : Implement MessageListener
 
 ####Initialize SkylinkConfig to specify what features are required from the SDK
 
@@ -51,6 +52,7 @@ Step-by-step guide
                 config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
                 config.setHasPeerMessaging(true);
                 config.setHasFileTransfer(true);
+                config.setHasDataTransfer(true);
                 config.setTimeout(60);
                 return config;
         }
@@ -65,18 +67,18 @@ Step-by-step guide
 
     04. SkyLinkConfig.AudioVideoConfig.VIDEO_ONLY
 
-      
-####Initialize SkylinkConnection object and pass the API key and secret obtained from the developer portal
-   
+
+####Initialize SkylinkConnection object and pass the API key from the developer portal
+
             SkylinkConnection skylinkConnection;
             .....
-            ..... 
+            .....
             public void onCreate(Bundle savedInstanceState) {
-                super.onCreate();  
+                super.onCreate();
                 skyLinkConnection = SkyLinkConnection.getInstance();
-                skyLinkConnection.init(getString(R.string.app_key),
-                        getString(R.string.app_secret), getSkylinkConfig(), this.getActivity().getApplicationContext());
-            //register respective listeners
+                skyLinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
+                                                        this.getActivity().getApplicationContext());
+                // register respective listeners
                 skyLinkConnection.setLifeCycleListener(this);
                 skyLinkConnection.setMediaListener(this);
                 skyLinkConnection.setRemotePeerListener(this);
@@ -84,18 +86,15 @@ Step-by-step guide
                 .........
            }
 
-#### Connect to a room using Skylink SDK
+#### Connect to a room using Skylink SDK - using the secret key obtained from the developer portal
 
-        try {
-        //you will be connected to the room named "roomKey" using the name "userName" 
-           skyLinkConnection.connectToRoom("roomKey", "userName");
-         } catch (SignatureException e) {
-           e.printStackTrace();
-         } catch (IOException e) {
-           e.printStackTrace();
-         } catch (JSONException e) {
-           e.printStackTrace();
-         }
+           // you will be connected to the room named "roomKey" using the name "userName"
+           skyLinkConnection.connectToRoom("secret", "roomKey", "userName");
+
+#### Connect to a room using Skylink SDK - using a connection string (recommended to use in production, refer to sample app for more details)
+
+           // SkylinkConnectionString Generated with room name, apiKey, secret, startTime and duration
+           skyLinkConnection.connectToRoom(skylinkConnectionString, "userName");
 
 ####Verify if the connection works by logging on callback
 

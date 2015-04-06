@@ -25,8 +25,8 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
- * This class is used to demonstrate the AudioCall between two clients in WebRTC
- * Created by lavanyasudharsanam on 20/1/15.
+ * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
+ * lavanyasudharsanam on 20/1/15.
  */
 public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
@@ -156,23 +156,30 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             Log.d(TAG, "Skylink Connected");
             Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 
     @Override
     public void onReceiveLog(String message) {
         Log.d(TAG, message + "onReceiveLog");
+    }
+
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -201,7 +208,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // If there is an existing peer, prevent new remotePeer from joining call.
         if (this.remotePeerId != null) {
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation",

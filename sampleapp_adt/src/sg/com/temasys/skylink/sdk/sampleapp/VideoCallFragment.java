@@ -6,9 +6,11 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +19,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.temasys.skylink.sampleapp.R;
 
@@ -40,22 +41,29 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
     private LinearLayout parentFragment;
-    private ToggleButton toggleAudioButton;
-    private ToggleButton toggleVideoButton;
+    private Button toggleAudioButton;
+    private Button toggleVideoButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
     private SkylinkConnection skylinkConnection;
+    private String peerId;
+    private ViewGroup.LayoutParams selfLayoutParams;
+    private boolean audioMuted;
+    private boolean videoMuted;
+    private boolean connected;
+    private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //initialize views
+        // Initialize views
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
         parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
-        toggleAudioButton = (ToggleButton) rootView.findViewById(R.id.toggle_audio);
-        toggleVideoButton = (ToggleButton) rootView.findViewById(R.id.toggle_video);
+
+        toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
+        toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
 
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,10 +73,17 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
                 btnEnterRoom.setVisibility(View.GONE);
 
                 String apiKey = getString(R.string.app_key);
                 String apiSecret = getString(R.string.app_secret);
+
+                // Initialize the skylink connection
+                initializeSkylinkConnection();
+
+                // Initialize the audio router
+                initializeAudioRouter();
 
                 // Obtaining the Skylink connection string done locally
                 // In a production environment the connection string should be given
@@ -78,48 +93,86 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                         getSkylinkConnectionString(roomName, apiKey,
                                 apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
-                Log.d(TAG, "Connection String" + skylinkConnectionString);
-
                 skylinkConnection.connectToRoom(skylinkConnectionString,
                         MY_USER_NAME);
+
+                // Use the Audio router to switch between headphone and headset
+                audioRouter.startAudioRouting(getActivity().getApplicationContext());
+                connected = true;
             }
         });
 
         toggleAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if toggle is checked, audio is is on, else audio is muted
-                skylinkConnection.muteLocalAudio(!((ToggleButton) v).isChecked());
+
+                // If audio is enabled, mute audio and if audio is enabled, mute it
+                audioMuted = !audioMuted;
+
+                if (audioMuted) {
+                    Toast.makeText(getActivity(), getString(R.string.muted_audio),
+                            Toast.LENGTH_SHORT).show();
+                    toggleAudioButton.setText(getString(R.string.enable_audio));
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.enabled_audio),
+                            Toast.LENGTH_SHORT).show();
+                    toggleAudioButton.setText(getString(R.string.mute_audio));
+                }
+
+                skylinkConnection.muteLocalAudio(audioMuted);
             }
         });
 
         toggleVideoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if toggle is checked, video is is on, else video is muted
-                skylinkConnection.muteLocalVideo(!((ToggleButton) v).isChecked());
+
+                // If video is enabled, mute video and if video is enabled, mute it
+                videoMuted = !videoMuted;
+
+                if (videoMuted) {
+                    Toast.makeText(getActivity(), getString(R.string.muted_video),
+                            Toast.LENGTH_SHORT).show();
+                    toggleVideoButton.setText(getString(R.string.enable_video));
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.enabled_video),
+                            Toast.LENGTH_SHORT).show();
+                    toggleVideoButton.setText(getString(R.string.mute_video));
+                }
+
+                skylinkConnection.muteLocalVideo(videoMuted);
             }
         });
 
         return rootView;
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initializeSkylinkConnection();
+        // Allow volume to be controlled using volume keys
+        getActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+    }
+
+    private void initializeAudioRouter() {
+        if (audioRouter == null) {
+            audioRouter = AudioRouter.getInstance();
+            audioRouter.init(((AudioManager) getActivity().
+                    getSystemService(android.content.Context.AUDIO_SERVICE)));
+        }
     }
 
     private void initializeSkylinkConnection() {
-        skylinkConnection = SkylinkConnection.getInstance();
-        //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
-                getSkylinkConfig(), this.getActivity().getApplicationContext());
-        //set listeners to receive callbacks when events are triggered
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            //the app_key and app_secret is obtained from the temasys developer console.
+            skylinkConnection.init(getString(R.string.app_key),
+                    getSkylinkConfig(), this.getActivity().getApplicationContext());
+            //set listeners to receive callbacks when events are triggered
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+        }
     }
 
     private SkylinkConfig getSkylinkConfig() {
@@ -143,16 +196,19 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
         super.onDetach();
-        skylinkConnection.disconnectFromRoom();
-        skylinkConnection.setLifeCycleListener(null);
-        skylinkConnection.setMediaListener(null);
-        skylinkConnection.setRemotePeerListener(null);
+        if (skylinkConnection != null && connected) {
+            skylinkConnection.disconnectFromRoom();
+            skylinkConnection.setLifeCycleListener(null);
+            skylinkConnection.setMediaListener(null);
+            skylinkConnection.setRemotePeerListener(null);
+            connected = false;
+            audioRouter.stopAudioRouting(getActivity().getApplicationContext());
+        }
     }
 
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's lifecycle
      */
-
 
     /**
      * Triggered when connection is successful
@@ -169,18 +225,29 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             toggleVideoButton.setVisibility(View.VISIBLE);
             Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
         } else {
-            Log.d(TAG, "Skylink Failed");
+            Log.e(TAG, "Skylink Failed " + message);
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
-        Log.d(TAG, message + "warning");
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onWarning(int errorCode, String message) {
+        Log.d(TAG, message + "warning");
+
+        Toast.makeText(getActivity(), "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
+        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -203,6 +270,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         if (videoView != null) {
             //show media on screen
             videoView.setTag("self");
+            parentFragment.removeView(videoView);
             parentFragment.addView(videoView);
         }
     }
@@ -236,11 +304,12 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
     }
 
@@ -249,37 +318,55 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         if (videoView == null) {
             return;
         }
-        if (parentFragment.findViewWithTag("peer") != null) {
+
+        if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Resize self view
         View self = parentFragment.findViewWithTag("self");
-        parentFragment.removeView(self);
+        if (this.selfLayoutParams == null) {
+            // Get the original size of the layout
+            this.selfLayoutParams = self.getLayoutParams();
+        }
+
         self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
+        parentFragment.removeView(self);
         parentFragment.addView(self);
+
+        // Remove peer video if it exist
+        View viewToRemove = parentFragment.findViewWithTag("peer");
+        if (viewToRemove != null) {
+            parentFragment.removeView(viewToRemove);
+        }
 
         videoView.setTag("peer");
         parentFragment.addView(videoView);
-    }
 
-    @Override
-    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
+        this.peerId = remotePeerId;
     }
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        if (remotePeerId != null && remotePeerId.equals(this.peerId)) {
+            this.peerId = null;
+            View peerView = parentFragment.findViewWithTag("peer");
+            parentFragment.removeView(peerView);
 
-        View peer = parentFragment.findViewWithTag("peer");
-        View self = parentFragment.findViewWithTag("self");
-        if (peer != null) {
-            parentFragment.removeView(peer);
-            parentFragment.removeView(self);
-            parentFragment.addView(self);
+            // Resize self view to original size
+            if (this.selfLayoutParams != null) {
+                View self = parentFragment.findViewWithTag("self");
+                self.setLayoutParams(selfLayoutParams);
+            }
         }
+    }
+
+    @Override
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
     }
 
     @Override

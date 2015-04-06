@@ -29,8 +29,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
- * This class is used to demonstrate the Chat between two clients in WebRTC
- * Created by lavanyasudharsanam on 20/1/15.
+ * This class is used to demonstrate the Chat between two clients in WebRTC Created by
+ * lavanyasudharsanam on 20/1/15.
  */
 public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
 
@@ -49,6 +49,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     private List<String> chatMessageCollection;
     private String peerName;
     private Button btnSendP2PMessage;
+    private boolean connected;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -187,10 +188,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initializeSkylinkConnection();
 
         String apiKey = getString(R.string.app_key);
         String apiSecret = getString(R.string.app_secret);
+
+        // Initialize the skylink connection
+        initializeSkylinkConnection();
 
         // Obtaining the Skylink connection string done locally
         // In a production environment the connection string should be given
@@ -202,17 +205,21 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
         skylinkConnection.connectToRoom(skylinkConnectionString,
                 MY_USER_NAME);
+
+        connected = true;
     }
 
     private void initializeSkylinkConnection() {
-        skylinkConnection = SkylinkConnection.getInstance();
-        //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
-                getSkylinkConfig(), this.getActivity().getApplicationContext());
-        //set listeners to receive callbacks when events are triggered
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMessagesListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            //the app_key and app_secret is obtained from the temasys developer console.
+            skylinkConnection.init(getString(R.string.app_key),
+                    getSkylinkConfig(), this.getActivity().getApplicationContext());
+            //set listeners to receive callbacks when events are triggered
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMessagesListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+        }
     }
 
     private SkylinkConfig getSkylinkConfig() {
@@ -235,11 +242,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
-        if (skylinkConnection != null) {
+        if (skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             skylinkConnection.setLifeCycleListener(null);
             skylinkConnection.setRemotePeerListener(null);
             skylinkConnection.setMessagesListener(null);
+            connected = false;
         }
         super.onDetach();
     }
@@ -262,17 +270,24 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         if (isSuccess) {
             Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
         } else {
-            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : " + message, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onWarning(String message) {
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
     }
 
     @Override
-    public void onDisconnect(String message) {
+    public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
     }
 
@@ -282,11 +297,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection with remote peer changes
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
      */
 
     @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData) {
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // If there is an existing peer, prevent new remotePeer from joining call.
         if (this.remotePeerId != null) {
             Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
@@ -322,7 +338,8 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Message Listener Callbacks - triggered during events that happen when messages are received from remotePeer
+     * Message Listener Callbacks - triggered during events that happen when messages are received
+     * from remotePeer
      */
 
     @Override

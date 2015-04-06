@@ -4,15 +4,13 @@ import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 
 /**
- * Listener comprises of callbacks related to audio / video manipulation
- * during the call.
+ * Listener comprises of callbacks related to audio / video manipulation during the call.
  */
 public interface MediaListener {
 
     /**
-     * This is triggered when the framework successfully captures the camera
-     * input from one's device if the connection is configured to have a
-     * video call.
+     * This is triggered when the framework successfully captures the camera input from one's device
+     * if the connection is configured to have a video call.
      *
      * @param videoView Video of oneself
      * @param size      Size of the video frame
@@ -20,8 +18,8 @@ public interface MediaListener {
     public void onLocalMediaCapture(GLSurfaceView videoView, Point size);
 
     /**
-     * This is triggered when any of the given video streams' frame size
-     * changes. It includes the self stream also.
+     * This is triggered when any of the given video streams' frame size changes. It includes the
+     * self stream also.
      *
      * @param videoView The video view for which the frame size is changed
      * @param size      Size of the video frame
@@ -45,8 +43,8 @@ public interface MediaListener {
     void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted);
 
     /**
-     * The is triggered upon receiving the media stream of the remote peer if the
-     * connection is configured to have a audio and/or video call.
+     * The is triggered upon receiving the media stream of the remote peer if the connection is
+     * configured to have a audio and/or video call.
      *
      * @param remotePeerId The id of the peer
      * @param videoView    Video of the peer
