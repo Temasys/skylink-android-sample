@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -74,9 +72,6 @@ public class SkylinkConnection {
     private static final String TAG = "SkylinkConnection";
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
-
-    private static final String AUDIO_CODEC_OPUS = "opus";
-    private static final String AUDIO_CODEC_ISAC = "ISAC";
 
     private static boolean factoryStaticInitialized;
 
@@ -1092,63 +1087,6 @@ public class SkylinkConnection {
         return result.substring(0, result.length() - 1);
     }
 
-    // Mangle SDP to prefer ISAC/16000 over any other audio codec.
-    private static String preferCodec(
-            String sdpDescription, String codec, boolean isAudio) {
-        String[] lines = sdpDescription.split("\r\n");
-        int mLineIndex = -1;
-        String codecRtpMap = null;
-        // a=rtpmap:<payload type> <encoding name>/<clock rate> [/<encoding parameters>]
-        String regex = "^a=rtpmap:(\\d+) " + codec + "(/\\d+)+[\r]?$";
-        Pattern codecPattern = Pattern.compile(regex);
-        String mediaDescription = "m=video ";
-        if (isAudio) {
-            mediaDescription = "m=audio ";
-        }
-        for (int i = 0; (i < lines.length) &&
-                (mLineIndex == -1 || codecRtpMap == null); i++) {
-            if (lines[i].startsWith(mediaDescription)) {
-                mLineIndex = i;
-                continue;
-            }
-            Matcher codecMatcher = codecPattern.matcher(lines[i]);
-            if (codecMatcher.matches()) {
-                codecRtpMap = codecMatcher.group(1);
-                continue;
-            }
-        }
-        if (mLineIndex == -1) {
-            Log.w(TAG, "No " + mediaDescription + " line, so can't prefer " + codec);
-            return sdpDescription;
-        }
-        if (codecRtpMap == null) {
-            Log.w(TAG, "No rtpmap for " + codec);
-            return sdpDescription;
-        }
-        Log.d(TAG, "Found " + codec + " rtpmap " + codecRtpMap + ", prefer at " +
-                lines[mLineIndex]);
-        String[] origMLineParts = lines[mLineIndex].split(" ");
-        StringBuilder newMLine = new StringBuilder();
-        int origPartIndex = 0;
-        // Format is: m=<media> <port> <proto> <fmt> ...
-        newMLine.append(origMLineParts[origPartIndex++]).append(" ");
-        newMLine.append(origMLineParts[origPartIndex++]).append(" ");
-        newMLine.append(origMLineParts[origPartIndex++]).append(" ");
-        newMLine.append(codecRtpMap);
-        for (; origPartIndex < origMLineParts.length; origPartIndex++) {
-            if (!origMLineParts[origPartIndex].equals(codecRtpMap)) {
-                newMLine.append(" ").append(origMLineParts[origPartIndex]);
-            }
-        }
-        lines[mLineIndex] = newMLine.toString();
-        Log.d(TAG, "Change media description: " + lines[mLineIndex]);
-        StringBuilder newSdpDescription = new StringBuilder();
-        for (String line : lines) {
-            newSdpDescription.append(line).append("\r\n");
-        }
-        return newSdpDescription.toString();
-    }
-
     void setUserInfo(JSONObject jsonObject) throws JSONException {
         JSONObject dictAudio = null;
         if (myConfig.hasAudioSend()) {
@@ -1538,7 +1476,8 @@ public class SkylinkConnection {
                 String sdpString = objects.getString("sdp");
 
                 // Set the preferred audio codec
-                sdpString = preferCodec(sdpString, AUDIO_CODEC_OPUS, true);
+                sdpString = Utils.preferCodec(sdpString, myConfig.getPreferredAudioCodec()
+                        .toString(), true);
 
                 SessionDescription sdp = new SessionDescription(
                         SessionDescription.Type.fromCanonicalForm(value),
@@ -2225,7 +2164,8 @@ public class SkylinkConnection {
                 abortUnless(this.localSdp == null, "multiple SDP create?!?");
 
                 // Set the preferred audio codec
-                String sdpString = preferCodec(origSdp.description, AUDIO_CODEC_OPUS, true);
+                String sdpString = Utils.preferCodec(origSdp.description,
+                        myConfig.getPreferredAudioCodec().toString(), true);
                 sdp = new SessionDescription(origSdp.type, sdpString);
                 this.localSdp = sdp;
                 pc = connectionManager.peerConnectionPool

@@ -21,6 +21,30 @@ public class SkylinkConfig implements Serializable {
     private boolean dataTransfer;
     private int timeout = 60;
     private Map<String, Object> advancedOptions;
+    private AudioCodec preferredAudioCodec = AudioCodec.OPUS;
+
+    /**
+     * Audio codec to be used
+     */
+    public enum AudioCodec {
+
+        OPUS("opus"), ISAC("ISAC");
+
+        private final String value;
+
+        AudioCodec(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return this.getValue();
+        }
+    }
 
     /**
      * List of enums that specify an audio video setting. Each option restricts the sending and
@@ -54,6 +78,7 @@ public class SkylinkConfig implements Serializable {
         this.peerMessaging = config.peerMessaging;
         this.fileTransfer = config.fileTransfer;
         this.dataTransfer = config.dataTransfer;
+        this.preferredAudioCodec = config.preferredAudioCodec;
         this.timeout = config.timeout;
     }
 
@@ -262,11 +287,30 @@ public class SkylinkConfig implements Serializable {
         return result;
     }
 
+    /**
+     * @return preferred audio codec used.
+     * Possible values {@link sg.com.temasys.skylink.sdk.config.SkylinkConfig.AudioCodec}
+     */
+    public AudioCodec getPreferredAudioCodec() {
+        return preferredAudioCodec;
+    }
+
+    /**
+     * Sets the preferredAudioCodec.
+     * Possible values {@link sg.com.temasys.skylink.sdk.config.SkylinkConfig.AudioCodec}
+     *
+     * @param preferredAudioCodec
+     */
+    public void setPreferredAudioCodec(AudioCodec preferredAudioCodec) {
+        this.preferredAudioCodec = preferredAudioCodec;
+    }
+
     @Override
     public String toString() {
         return "TEMAConnectionConfig [videoSend=" + videoSend + ", audioSend=" + audioSend
                 + ",videoReceive=" + videoReceive + ", audioReceive=" + audioReceive
                 + ", p2PMessage=" + peerMessaging + ", fileTransfer=" + fileTransfer
+                + ", preferredAudioCodec=" + preferredAudioCodec
                 + ", timeout=" + timeout + "]";
     }
 
