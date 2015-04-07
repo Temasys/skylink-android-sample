@@ -1005,7 +1005,7 @@ public class SkylinkConnection {
                 if (pc.getMyWeight() > weight) {
                     // Use this welcome (ours will be discarded on peer's side).
                     resultList.add(new Boolean(true));
-                    resultList.add(getPeerConnection(key, HealthChecker.OFFERER));
+                    resultList.add(getPeerConnection(key, HealthChecker.ICE_ROLE_OFFERER));
                 } else {
                     // Discard this welcome (ours will be used on peer's side).
                     resultList.add(new Boolean(false));
@@ -1014,18 +1014,18 @@ public class SkylinkConnection {
             } else {
                 // Use this welcome (we did not send one to the peer).
                 resultList.add(new Boolean(true));
-                resultList.add(getPeerConnection(key, HealthChecker.OFFERER));
+                resultList.add(getPeerConnection(key, HealthChecker.ICE_ROLE_OFFERER));
             }
         } else {
             // Peer did not send a weight, use peer's welcome.
             resultList.add(new Boolean(true));
-            resultList.add(getPeerConnection(key, HealthChecker.OFFERER));
+            resultList.add(getPeerConnection(key, HealthChecker.ICE_ROLE_OFFERER));
         }
         return resultList;
     }
 
     PeerConnection getPeerConnection(String key) {
-        getPeerConnection(key, "");
+        return getPeerConnection(key, "");
     }
 
     PeerConnection getPeerConnection(String key, String iceRole) {
@@ -1047,15 +1047,18 @@ public class SkylinkConnection {
 
             logMessage("Creating a new peer connection ...");
             if ("".equals(iceRole)) {
-                throw new SkylinkException(
-                        "Trying to get an existing PeerConnection for " + key +
-                                ", but which does not exist!");
+                try {
+                    throw new SkylinkException(
+                            "Trying to get an existing PeerConnection for " + key +
+                                    ", but which does not exist!");
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
             }
             PCObserver pcObserver = new SkylinkConnection.PCObserver();
             pcObserver.setMyId(key);
             // Initialise and start Health Checker.
-            pcObserver.initialiseHealthChecker(
-                    skylinkConnection, webServerClient, localMediaStream, myConfig, iceRole);
+            pcObserver.initialiseHealthChecker(iceRole);
 
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
@@ -1429,6 +1432,7 @@ public class SkylinkConnection {
             connectionManager.logMessage("[SDK] onMessage type - " + value);
 
             if (value.compareTo("inRoom") == 0) {
+
                 String mid = objects.getString("sid");
                 connectionManager.webServerClient.setSid(mid);
                 JSONObject pcConfigJSON = objects.getJSONObject("pc_config");
@@ -1475,6 +1479,16 @@ public class SkylinkConnection {
                                     .toString());
                 }
 
+                // Remove all existing peers, if any exist,
+                  // for e.g., if this is a rejoin after disconnection.
+                  // Notify that all existing peers are leaving.
+                ProtocolHelper.notifyPeerLeaveAll(connectionManager,
+                  "Removing all remote peers to join room again.");
+                ProtocolHelper.disposePeerConnectionAll(connectionManager, localMediaStream);
+                // Create afresh all PC related maps.
+                // initializePcRelatedMaps();
+
+                if( peerConnectionPool != null )
                 connectionManager.logMessage("*** SendEnter");
                 JSONObject enterObject = new JSONObject();
                 enterObject.put("type", "enter");
@@ -1498,7 +1512,7 @@ public class SkylinkConnection {
                 } catch (JSONException e) {
                 }
                 PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid, HealthChecker.ANSWERER);
+                        .getPeerConnection(mid, HealthChecker.ICE_ROLE_ANSWERER);
 
                 PeerInfo peerInfo = new PeerInfo();
                 try {
@@ -2044,12 +2058,9 @@ public class SkylinkConnection {
                     * (double) 1000000;
         }
 
-        public initialiseHealthChecker(final SkylinkConnection skylinkConnection,
-                                       WebServerClient webServerClient,
-                                       MediaStream localMediaStream,
-                                       SkylinkConfig myConfig,
-                                       String iceRole) {
-            healthChecker = new HealthChecker(skylinkConnection, webServerClient, localMediaStream, myConfig);
+        void initialiseHealthChecker(String iceRole) {
+            healthChecker = new HealthChecker(myId, connectionManager,
+                    connectionManager.webServerClient, connectionManager.localMediaStream, connectionManager.myConfig);
             healthChecker.setIceRole(iceRole);
             healthChecker.startRestartTimer();
         }
@@ -2101,7 +2112,7 @@ public class SkylinkConnection {
                 case FAILED:
                     healthChecker.setIceState(HealthChecker.ICE_FAILED);
                     Log.d(TAG, "onIceConnectionChange : Failed - Restarting");
-                    restartConnectionInternal(PCObserver.this.myId);
+                    // restartConnectionInternal(PCObserver.this.myId);
                     break;
                 case DISCONNECTED:
                     healthChecker.setIceState(HealthChecker.ICE_DISCONNECTED);
@@ -2409,6 +2420,14 @@ public class SkylinkConnection {
         this.dataChannelManager = dataChannelManager;
     }
 
+    private void initializePcRelatedMaps() {
+      peerConnectionPool = new Hashtable<String, PeerConnection>();
+      pcObserverPool = new Hashtable<String, PCObserver>();
+      sdpObserverPool = new Hashtable<String, SDPObserver>();
+      displayNameMap = new Hashtable<String, Object>();
+      peerInfoMap = new Hashtable<String, PeerInfo>();
+    }
+
     protected Map<String, Object> getDisplayNameMap() {
         return displayNameMap;
     }
@@ -2423,6 +2442,10 @@ public class SkylinkConnection {
 
     Map<String, PeerConnection> getPeerConnectionPool() {
         return peerConnectionPool;
+    }
+
+    Map<String, PeerInfo> getPeerInfoMap() {
+        return peerInfoMap;
     }
 
 }

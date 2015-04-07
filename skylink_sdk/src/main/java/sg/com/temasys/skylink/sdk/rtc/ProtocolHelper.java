@@ -7,6 +7,10 @@ import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
+
 import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -122,17 +126,18 @@ class ProtocolHelper {
             disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
 
             // Notify that the connection is restarting
-            skylinkConnection.runOnUiThread(new Runnable() {
+            notifyPeerLeave(skylinkConnection, remotePeerId, PEER_CONNECTION_RESTART);
+            /*skylinkConnection.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
                             remotePeerId, PEER_CONNECTION_RESTART);
                 }
-            });
+            });*/
 
             // Create a new peer connection
             PeerConnection peerConnection = skylinkConnection
-                    .getPeerConnection(remotePeerId, HealthChecker.ANSWERER);
+                    .getPeerConnection(remotePeerId, HealthChecker.ICE_ROLE_ANSWERER);
 
             // TODO: use exact value
             boolean receiveOnly = false;
@@ -155,6 +160,31 @@ class ProtocolHelper {
 
         return false;
     }
+
+    // Notify that all remote peers are leaving.
+    static void notifyPeerLeaveAll(SkylinkConnection skylinkConnection, String reason) {
+        Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
+        if (pcObserverPool != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+            for (String peerId : peerIdSet) {
+                notifyPeerLeave(skylinkConnection, peerId, reason);
+            }
+        }
+    }
+
+    // Notify that a specific remote peer is leaving.
+    static void notifyPeerLeave(final SkylinkConnection skylinkConnection, final String remotePeerId,
+                                final String reason) {
+        skylinkConnection.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
+                        remotePeerId, reason);
+            }
+        });
+    }
+
 
     // Set isRestart to true/false to create restart/welcome.
     static boolean sendWelcome(String remotePeerId,
@@ -199,6 +229,19 @@ class ProtocolHelper {
         return false;
     }
 
+    // Dispose all PeerConnections
+    static void disposePeerConnectionAll(SkylinkConnection skylinkConnection, MediaStream localMediaStream) {
+        Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
+        if (pcObserverPool != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+            for (String peerId : peerIdSet) {
+                // Dispose the peerConnection
+                disposePeerConnection(peerId, skylinkConnection, localMediaStream);
+            }
+        }
+    }
+
     /**
      * Returns true if the peer connection is disposed successfully
      *
@@ -222,6 +265,7 @@ class ProtocolHelper {
             skylinkConnection.getPcObserverPool().remove(remotePeerId);
             skylinkConnection.getSdpObserverPool().remove(remotePeerId);
             skylinkConnection.getDisplayNameMap().remove(remotePeerId);
+            skylinkConnection.getPeerInfoMap().remove(remotePeerId);
             return true;
         }
 
