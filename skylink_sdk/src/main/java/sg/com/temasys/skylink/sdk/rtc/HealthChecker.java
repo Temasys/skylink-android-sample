@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.webrtc.MediaStream;
+import org.webrtc.PeerConnection;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,11 +29,13 @@ class HealthChecker {
     private final long WAIT_ANSWERER = 10000;
     private final long WAIT_ICE_TRICKLE_OFF = 50000;
 
-    private String iceState = "";
+    private PeerConnection.IceConnectionState iceState;
     // Offerer (sent enter) or Answerer (sent welcome).
     private String iceRole = "";
     // No. of seconds to wait before triggering next restart
     private long waitMs = WAIT_OFFERER;
+    // No. of times restarting.
+    private int restartNumber = 0;
 
     // Required for restart.
     private String remotePeerId;
@@ -40,18 +43,21 @@ class HealthChecker {
     private WebServerClient webServerClient;
     private MediaStream localMediaStream;
     private SkylinkConfig myConfig;
+    private PeerConnection pc;
 
     // Initialise all required parameters
     HealthChecker(final String remotePeerId,
                   final SkylinkConnection skylinkConnection,
                   WebServerClient webServerClient,
                   MediaStream localMediaStream,
-                  SkylinkConfig myConfig) {
+                  SkylinkConfig myConfig,
+                  PeerConnection pc) {
         this.remotePeerId = remotePeerId;
         this.skylinkConnection = skylinkConnection;
         this.webServerClient = webServerClient;
         this.localMediaStream = localMediaStream;
         this.myConfig = myConfig;
+        this.pc = pc;
     }
 
     // Initiate a restart loop for the appropriate time span.
@@ -74,13 +80,25 @@ class HealthChecker {
     // Send restart if it is needed.
     // Return true if needed.
     private boolean tryRestart() {
+        // Check actual IceConnectionState
+        /*PeerConnection.IceConnectionState currentIceState = pc.iceConnectionState();
+        Log.d(TAG, "Peer " + remotePeerId + " : iceState : " + iceState + ".");
+        Log.d(TAG, "Peer " + remotePeerId + " : currentIceState : " + currentIceState + ".");
+        Log.d(TAG, "Peer " + remotePeerId + " : setting iceState to currentIceState.");
+        iceState = currentIceState;*/
+
         switch (iceState) {
-            case ICE_CONNECTED:
-            case ICE_COMPLETED:
-            case ICE_DISCONNECTED:
+            case NEW:
+            case CHECKING:
+            case CONNECTED:
+            case COMPLETED:
+            case DISCONNECTED:
+            case CLOSED:
+                restartNumber = 0;
                 return false;
-            case ICE_FAILED:
+            case FAILED:
             default:
+                ++restartNumber;
                 sendRestart();
                 return true;
         }
@@ -106,19 +124,28 @@ class HealthChecker {
     // Send the restart call
     private void sendRestart() {
         try {
-            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, webServerClient,
-                    localMediaStream, myConfig);
+          Log.d(TAG, "Peer " + remotePeerId + " : IceConnectionState : " + iceState + 
+            " - Restarting (" + restartNumber + ").");
+            PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(remotePeerId);
+            if(peerInfo != null && peerInfo.getAgent().equals("Android")) {
+              // If it is Android, send restart.
+                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, webServerClient,
+                        localMediaStream, myConfig);
+            } else {
+              // If web or others, send directed enter
+                ProtocolHelper.sendEnter(remotePeerId, skylinkConnection, webServerClient);
+            }
         } catch (JSONException e) {
             Log.d(TAG, e.getMessage(), e);
         }
     }
 
-    String getIceState() {
+    PeerConnection.IceConnectionState getIceState() {
         return iceState;
     }
 
     // Set the iceState and also waitMs
-    void setIceState(String iceState) {
+    void setIceState(PeerConnection.IceConnectionState iceState) {
         this.iceState = iceState;
         setWaitMs();
     }

@@ -127,13 +127,6 @@ class ProtocolHelper {
 
             // Notify that the connection is restarting
             notifyPeerLeave(skylinkConnection, remotePeerId, PEER_CONNECTION_RESTART);
-            /*skylinkConnection.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
-                            remotePeerId, PEER_CONNECTION_RESTART);
-                }
-            });*/
 
             // Create a new peer connection
             PeerConnection peerConnection = skylinkConnection
@@ -185,6 +178,29 @@ class ProtocolHelper {
         });
     }
 
+
+    // Send enter
+        // Params remotePeerId:
+            // Set to null if sending to all Peers in room.
+            // Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+    static void sendEnter(String remotePeerId,
+                               SkylinkConnection skylinkConnection,
+                               WebServerClient webServerClient) throws JSONException {
+
+        skylinkConnection.logMessage("*** SendEnter");
+        JSONObject enterObject = new JSONObject();
+        enterObject.put("type", "enter");
+        enterObject.put("mid", webServerClient.getSid());
+        enterObject.put("rid", webServerClient.getRoomId());
+        enterObject.put("receiveOnly", false);
+        enterObject.put("agent", "Android");
+        enterObject.put("version", BuildConfig.VERSION_NAME);
+        if(remotePeerId != null) {
+            enterObject.put("target", remotePeerId);
+        }
+        skylinkConnection.setUserInfo(enterObject);
+        webServerClient.sendMessage(enterObject);
+    }
 
     // Set isRestart to true/false to create restart/welcome.
     static boolean sendWelcome(String remotePeerId,
@@ -265,7 +281,7 @@ class ProtocolHelper {
             skylinkConnection.getPcObserverPool().remove(remotePeerId);
             skylinkConnection.getSdpObserverPool().remove(remotePeerId);
             skylinkConnection.getDisplayNameMap().remove(remotePeerId);
-            skylinkConnection.getPeerInfoMap().remove(remotePeerId);
+            // skylinkConnection.getPeerInfoMap().remove(remotePeerId);
             return true;
         }
 

@@ -48,7 +48,6 @@ import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
@@ -291,7 +290,7 @@ public class SkylinkConnection {
      * Restarts a connection with a specific peer or all connections if remotePeerId is null
      *
      * @param remotePeerId Id of the remote peer to whom we will restart a message. Use 'null' if
-     *                     the message is to be broadcast to all remote peers in the room.
+     *                     the message is to be sent to all our remote peers in the room.
      */
     public void restartConnection(String remotePeerId) {
         if (TextUtils.isEmpty(remotePeerId)) {
@@ -317,6 +316,43 @@ public class SkylinkConnection {
             try {
                 ProtocolHelper.sendRestart(remotePeerId, this, webServerClient, localMediaStream,
                         myConfig);
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    // Restart all connections when rejoining room.
+    private void rejoinRestart() {
+        if (pcObserverPool != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+            for (String peerId : peerIdSet) {
+                rejoinRestart(peerId);
+            }
+        }
+    }
+
+    // Restart specific connection when rejoining room.
+        // Sends targeted "enter" for non-Android peers.
+    private void rejoinRestart(String remotePeerId) {
+        if (connectionState == ConnectionState.DISCONNECT) {
+            return;
+        }
+        synchronized (lockDisconnect) {
+            try {
+                Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
+                PeerInfo peerInfo = getPeerInfoMap().get(remotePeerId);
+                if(peerInfo != null && peerInfo.getAgent().equals("Android")) {
+                    // If it is Android, send restart.
+                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
+                    ProtocolHelper.sendRestart(remotePeerId, this, webServerClient,
+                            localMediaStream, myConfig);
+                } else {
+                    // If web or others, send directed enter
+                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
+                    ProtocolHelper.sendEnter(remotePeerId, this, webServerClient);
+                }
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage(), e);
             }
@@ -560,7 +596,7 @@ public class SkylinkConnection {
      * peer to peer manner.
      *
      * @param remotePeerId Id of the remote peer to whom we will send a message. Use 'null' if the
-     *                     message is to be broadcast to all remote peers in the room.
+     *                     message is to be sent to all our remote peers in the room.
      * @param message      User defined data. May be a 'java.lang.String', 'org.json.JSONObject' or
      *                     'org.json.JSONArray'.
      * @throws SkylinkException if the system was unable to send the message.
@@ -703,7 +739,7 @@ public class SkylinkConnection {
      * peer to peer manner in the same room.
      *
      * @param remotePeerId The id of the remote peer to send the file to. Use 'null' if the file is
-     *                     to be broadcast to all remote peers in the room.
+     *                     to be sent to all our remote peers in the room.
      * @param fileName     The name of the file that is to be shared.
      * @param filePath     The absolute path of the file in the filesystem
      */
@@ -957,7 +993,7 @@ public class SkylinkConnection {
             return this.displayNameMap.get(remotePeerId);
     }
 
-    private void logMessage(String message) {
+    void logMessage(String message) {
         Log.d(TAG, message);
     }
 
@@ -1057,8 +1093,6 @@ public class SkylinkConnection {
             }
             PCObserver pcObserver = new SkylinkConnection.PCObserver();
             pcObserver.setMyId(key);
-            // Initialise and start Health Checker.
-            pcObserver.initialiseHealthChecker(iceRole);
 
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
@@ -1068,6 +1102,10 @@ public class SkylinkConnection {
             }
             /*if (this.myConfig.hasAudio())
                 pc.addStream(this.localMediaStream, this.pcConstraints);*/
+
+            pcObserver.setPc(pc);
+            // Initialise and start Health Checker.
+            pcObserver.initialiseHealthChecker(iceRole);
 
             this.peerConnectionPool.put(key, pc);
             this.pcObserverPool.put(key, pcObserver);
@@ -1479,28 +1517,23 @@ public class SkylinkConnection {
                                     .toString());
                 }
 
-                // Remove all existing peers, if any exist,
-                  // for e.g., if this is a rejoin after disconnection.
-                  // Notify that all existing peers are leaving.
-                ProtocolHelper.notifyPeerLeaveAll(connectionManager,
-                  "Removing all remote peers to join room again.");
-                ProtocolHelper.disposePeerConnectionAll(connectionManager, localMediaStream);
-                // Create afresh all PC related maps.
-                // initializePcRelatedMaps();
+                // Check if pcObserverPool has been populated.
+                if (pcObserverPool != null) {
+                    // If so, chances are this is a rejoin of room.
+                    // Send restart to all.
+                    rejoinRestart();
+                } else {
+                    // If not, chances are this is a first join room, or there were no peers from before.
+                    // Create afresh all PC related maps.
+                    initializePcRelatedMaps();
+                    // Send enter.
+                    try {
+                        ProtocolHelper.sendEnter(null, connectionManager, webServerClient);
+                    } catch (JSONException e) {
+                        Log.d(TAG, e.getMessage(), e);
+                    }
+                }
 
-                if( peerConnectionPool != null )
-                connectionManager.logMessage("*** SendEnter");
-                JSONObject enterObject = new JSONObject();
-                enterObject.put("type", "enter");
-                enterObject.put("mid",
-                        connectionManager.webServerClient.getSid());
-                enterObject.put("rid",
-                        connectionManager.webServerClient.getRoomId());
-                enterObject.put("receiveOnly", false);
-                enterObject.put("agent", "Android");
-                enterObject.put("version", BuildConfig.VERSION_NAME);
-                setUserInfo(enterObject);
-                connectionManager.webServerClient.sendMessage(enterObject);
 
             } else if (value.compareTo("enter") == 0) {
 
@@ -2030,9 +2063,18 @@ public class SkylinkConnection {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 
+        private PeerConnection pc;
         private double myWeight;
         private String myId;
         private HealthChecker healthChecker;
+
+        public PeerConnection getPc() {
+            return pc;
+        }
+
+        public void setPc(PeerConnection pc) {
+            this.pc = pc;
+        }
 
         public double getMyWeight() {
             return myWeight;
@@ -2059,8 +2101,7 @@ public class SkylinkConnection {
         }
 
         void initialiseHealthChecker(String iceRole) {
-            healthChecker = new HealthChecker(myId, connectionManager,
-                    connectionManager.webServerClient, connectionManager.localMediaStream, connectionManager.myConfig);
+            healthChecker = new HealthChecker(myId, connectionManager, connectionManager.webServerClient, connectionManager.localMediaStream, connectionManager.myConfig, pc);
             healthChecker.setIceRole(iceRole);
             healthChecker.startRestartTimer();
         }
@@ -2100,23 +2141,23 @@ public class SkylinkConnection {
 
         @Override
         public void onIceConnectionChange(PeerConnection.IceConnectionState newState) {
+            healthChecker.setIceState(newState);
+            Log.d(TAG, "Peer " + myId + " : onIceConnectionChange : iceState : " + newState + ".");
             switch (newState) {
+                case NEW:
+                    break;
+                case CHECKING:
+                    break;
                 case CONNECTED:
-                    healthChecker.setIceState(HealthChecker.ICE_CONNECTED);
-                    Log.d(TAG, "onIceConnectionChange : Connected");
                     break;
                 case COMPLETED:
-                    healthChecker.setIceState(HealthChecker.ICE_COMPLETED);
-                    Log.d(TAG, "onIceConnectionChange : Connected");
-                    break;
-                case FAILED:
-                    healthChecker.setIceState(HealthChecker.ICE_FAILED);
-                    Log.d(TAG, "onIceConnectionChange : Failed - Restarting");
-                    // restartConnectionInternal(PCObserver.this.myId);
                     break;
                 case DISCONNECTED:
-                    healthChecker.setIceState(HealthChecker.ICE_DISCONNECTED);
-                    Log.d(TAG, "onIceConnectionChange : Disconnected - Restarting");
+                    break;
+                case CLOSED:
+                    break;
+                case FAILED:
+                    // restartConnectionInternal(PCObserver.this.myId);
                     break;
                 default:
                     break;
@@ -2421,11 +2462,11 @@ public class SkylinkConnection {
     }
 
     private void initializePcRelatedMaps() {
-      peerConnectionPool = new Hashtable<String, PeerConnection>();
-      pcObserverPool = new Hashtable<String, PCObserver>();
-      sdpObserverPool = new Hashtable<String, SDPObserver>();
-      displayNameMap = new Hashtable<String, Object>();
-      peerInfoMap = new Hashtable<String, PeerInfo>();
+        peerConnectionPool = new Hashtable<String, PeerConnection>();
+        pcObserverPool = new Hashtable<String, PCObserver>();
+        sdpObserverPool = new Hashtable<String, SDPObserver>();
+        displayNameMap = new Hashtable<String, Object>();
+        peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
     protected Map<String, Object> getDisplayNameMap() {
