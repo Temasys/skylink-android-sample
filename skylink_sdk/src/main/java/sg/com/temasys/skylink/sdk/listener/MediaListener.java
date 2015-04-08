@@ -13,18 +13,17 @@ public interface MediaListener {
      * if the connection is configured to have a video call.
      *
      * @param videoView Video of oneself
-     * @param size      Size of the video frame
      */
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size);
+    public void onLocalMediaCapture(GLSurfaceView videoView);
 
     /**
      * This is triggered when any of the given video streams' frame size changes. It includes the
      * self stream also.
      *
-     * @param videoView The video view for which the frame size is changed
-     * @param size      Size of the video frame
+     * @param peerId The id of the peer
+     * @param size   Size of the video frame
      */
-    void onVideoSizeChange(GLSurfaceView videoView, Point size);
+    void onVideoSizeChange(String peerId, Point size);
 
     /**
      * This is triggered when a remote peer enable / disable its audio.
@@ -48,9 +47,7 @@ public interface MediaListener {
      *
      * @param remotePeerId The id of the peer
      * @param videoView    Video of the peer
-     * @param size         Size of the peer video frame
      */
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView,
-                                         Point size);
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView);
 
 }

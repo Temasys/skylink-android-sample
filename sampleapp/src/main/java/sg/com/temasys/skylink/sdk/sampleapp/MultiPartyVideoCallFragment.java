@@ -172,7 +172,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView) {
         if (!surfaceViews.containsKey(KEY_SELF)) {
             // Add self view if its not already added
             peerLayouts[0].addView(videoView);
@@ -181,7 +181,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
         addRemotePeerViews(remotePeerId, videoView);
     }
 
@@ -216,7 +216,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
+    public void onVideoSizeChange(String peerId, Point size) {
         Log.d(TAG, "onVideoSizeChange");
     }
 
