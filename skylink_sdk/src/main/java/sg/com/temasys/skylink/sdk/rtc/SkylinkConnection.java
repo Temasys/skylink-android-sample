@@ -334,7 +334,10 @@ public class SkylinkConnection {
     }
 
     // Restart specific connection when rejoining room.
-        // Sends targeted "enter" for non-Android peers.
+    // Sends targeted "enter" for non-Android peers.
+    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
+    // This is esp. so for the JS clients which do not allow restarts
+    // for PeerIds without PeerConnection.
     private void rejoinRestart(String remotePeerId) {
         if (connectionState == ConnectionState.DISCONNECT) {
             return;
@@ -343,13 +346,14 @@ public class SkylinkConnection {
             try {
                 Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
                 PeerInfo peerInfo = getPeerInfoMap().get(remotePeerId);
-                if(peerInfo != null && peerInfo.getAgent().equals("Android")) {
+                if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
                     // If it is Android, send restart.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
                     ProtocolHelper.sendRestart(remotePeerId, this, webServerClient,
                             localMediaStream, myConfig);
                 } else {
                     // If web or others, send directed enter
+                    // TODO XR: Remove after JS client update to compatible restart protocol.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
                     ProtocolHelper.sendEnter(remotePeerId, this, webServerClient);
                 }
@@ -2461,6 +2465,7 @@ public class SkylinkConnection {
         this.dataChannelManager = dataChannelManager;
     }
 
+    // Initialize all PC related maps.
     private void initializePcRelatedMaps() {
         peerConnectionPool = new Hashtable<String, PeerConnection>();
         pcObserverPool = new Hashtable<String, PCObserver>();

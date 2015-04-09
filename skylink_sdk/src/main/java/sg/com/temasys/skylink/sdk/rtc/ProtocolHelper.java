@@ -135,8 +135,6 @@ class ProtocolHelper {
             // TODO: use exact value
             boolean receiveOnly = false;
 
-            // TODO: enableIceTrickle, enableDataChannel
-
             // Add our local media stream to this PC, or not.
             if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
                 peerConnection.addStream(localMediaStream);
@@ -180,12 +178,15 @@ class ProtocolHelper {
 
 
     // Send enter
-        // Params remotePeerId:
-            // Set to null if sending to all Peers in room.
-            // Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+    // Params remotePeerId:
+    // Set to null if sending to all Peers in room.
+    // Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
+    // This is esp. so for the JS clients which do not allow restarts
+    // for PeerIds without PeerConnection.
     static void sendEnter(String remotePeerId,
-                               SkylinkConnection skylinkConnection,
-                               WebServerClient webServerClient) throws JSONException {
+                          SkylinkConnection skylinkConnection,
+                          WebServerClient webServerClient) throws JSONException {
 
         skylinkConnection.logMessage("*** SendEnter");
         JSONObject enterObject = new JSONObject();
@@ -195,7 +196,8 @@ class ProtocolHelper {
         enterObject.put("receiveOnly", false);
         enterObject.put("agent", "Android");
         enterObject.put("version", BuildConfig.VERSION_NAME);
-        if(remotePeerId != null) {
+        // TODO XR: Can remove after JS client update to compatible restart protocol.
+        if (remotePeerId != null) {
             enterObject.put("target", remotePeerId);
         }
         skylinkConnection.setUserInfo(enterObject);
@@ -281,10 +283,12 @@ class ProtocolHelper {
             skylinkConnection.getPcObserverPool().remove(remotePeerId);
             skylinkConnection.getSdpObserverPool().remove(remotePeerId);
             skylinkConnection.getDisplayNameMap().remove(remotePeerId);
+            // This commenting is a hack to accommodate the non-Android clients until the update to SM 0.1.1.
+            // PeerInfo of peer is required for sender of restart.
+            // TODO XR: Remove commenting after JS client update to compatible restart protocol.
             // skylinkConnection.getPeerInfoMap().remove(remotePeerId);
             return true;
         }
-
         return false;
     }
 

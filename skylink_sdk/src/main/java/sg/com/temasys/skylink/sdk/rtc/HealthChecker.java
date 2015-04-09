@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +30,14 @@ class HealthChecker {
     private final long WAIT_ANSWERER = 10000;
     private final long WAIT_ICE_TRICKLE_OFF = 50000;
 
-    private PeerConnection.IceConnectionState iceState;
+    // Max number of times to try for restart.
+    private final int MAX_RESTART_ATTEMPTS = 100;
+
+    // Default value to avoid null exceptions when iceState is not yet updated.
+    private PeerConnection.IceConnectionState iceState = PeerConnection.IceConnectionState.CHECKING;
     // Offerer (sent enter) or Answerer (sent welcome).
-    private String iceRole = "";
+    // Default is the Offerer (longer wait duration).
+    private String iceRole = ICE_ROLE_OFFERER;
     // No. of seconds to wait before triggering next restart
     private long waitMs = WAIT_OFFERER;
     // No. of times restarting.
@@ -80,26 +86,29 @@ class HealthChecker {
     // Send restart if it is needed.
     // Return true if needed.
     private boolean tryRestart() {
-        // Check actual IceConnectionState
-        /*PeerConnection.IceConnectionState currentIceState = pc.iceConnectionState();
-        Log.d(TAG, "Peer " + remotePeerId + " : iceState : " + iceState + ".");
-        Log.d(TAG, "Peer " + remotePeerId + " : currentIceState : " + currentIceState + ".");
-        Log.d(TAG, "Peer " + remotePeerId + " : setting iceState to currentIceState.");
-        iceState = currentIceState;*/
-
+        // Stop trying to restarting after certain number of attempts.
+        if (restartNumber >= MAX_RESTART_ATTEMPTS) {
+            Log.e(TAG, "Stop trying to restarting as already tried " + restartNumber + " times.");
+            return false;
+        }
         switch (iceState) {
+            // Continue to monitor but do not restart
             case NEW:
             case CHECKING:
+                return true;
+            // Stop monitoring
             case CONNECTED:
             case COMPLETED:
             case DISCONNECTED:
             case CLOSED:
                 restartNumber = 0;
                 return false;
+            // Restart and continue monitoring
             case FAILED:
-            default:
                 ++restartNumber;
                 sendRestart();
+                return true;
+            default:
                 return true;
         }
     }
@@ -124,19 +133,12 @@ class HealthChecker {
     // Send the restart call
     private void sendRestart() {
         try {
-          Log.d(TAG, "Peer " + remotePeerId + " : IceConnectionState : " + iceState + 
-            " - Restarting (" + restartNumber + ").");
-            PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(remotePeerId);
-            if(peerInfo != null && peerInfo.getAgent().equals("Android")) {
-              // If it is Android, send restart.
-                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, webServerClient,
-                        localMediaStream, myConfig);
-            } else {
-              // If web or others, send directed enter
-                ProtocolHelper.sendEnter(remotePeerId, skylinkConnection, webServerClient);
-            }
+            Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : IceConnectionState : " + iceState +
+                    " - Restarting (" + restartNumber + ").");
+            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, webServerClient,
+                    localMediaStream, myConfig);
         } catch (JSONException e) {
-            Log.d(TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         }
     }
 
@@ -157,6 +159,21 @@ class HealthChecker {
 
     void setIceRole(String iceRole) {
         this.iceRole = iceRole;
-    }
+        // Check if ICE trickle is enable.
+        Map<String, PeerInfo> peerInfoMap = skylinkConnection.getPeerInfoMap();
+        if (peerInfoMap != null) {
+            PeerInfo peerInfo = peerInfoMap.get(remotePeerId);
+            if (peerInfo != null) {
+                boolean enableIceTrickle = peerInfo.isEnableIceTrickle();
+                if (!enableIceTrickle) {
+                    iceRole = ICE_ROLE_TRICKLE_OFF;
+                    Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : has NOT enabled ICE trickle.");
+                } else {
+                    Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : has enabled ICE trickle.");
+                }
+            }
 
+        }
+        Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : iceRole set to " + iceRole + ".");
+    }
 }
