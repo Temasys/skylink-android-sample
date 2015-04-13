@@ -30,10 +30,12 @@ class HealthChecker {
     private final long WAIT_ANSWERER = 10000;
     private final long WAIT_ICE_TRICKLE_OFF = 50000;
 
-    // Max number of times to try for restart.
+    /**
+     * Max number of times to try for restart.
+     */
     private final int MAX_RESTART_ATTEMPTS = 100;
 
-    // Default value to avoid null exceptions when iceState is not yet updated.
+    // Has a default value to avoid null exceptions when iceState is not yet updated.
     private PeerConnection.IceConnectionState iceState = PeerConnection.IceConnectionState.CHECKING;
     // Offerer (sent enter) or Answerer (sent welcome).
     // Default is the Offerer (longer wait duration).
@@ -51,7 +53,16 @@ class HealthChecker {
     private SkylinkConfig myConfig;
     private PeerConnection pc;
 
-    // Initialise all required parameters
+    /**
+     * Initialise all required parameters
+     *
+     * @param remotePeerId
+     * @param skylinkConnection
+     * @param webServerClient
+     * @param localMediaStream
+     * @param myConfig
+     * @param pc
+     */
     HealthChecker(final String remotePeerId,
                   final SkylinkConnection skylinkConnection,
                   WebServerClient webServerClient,
@@ -66,7 +77,9 @@ class HealthChecker {
         this.pc = pc;
     }
 
-    // Initiate a restart loop for the appropriate time span.
+    /**
+     * Initiate a restart loop for the appropriate time span.
+     */
     void startRestartTimer() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.schedule(
@@ -76,17 +89,19 @@ class HealthChecker {
                             if (tryRestart()) {
                                 startRestartTimer();
                             }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                        } catch (Exception e) {
+                            Log.e(TAG, e.getMessage(), e);
                         }
                     }
                 }, waitMs, TimeUnit.MILLISECONDS);
     }
 
-    // Send restart if it is needed.
-    // Return true if needed.
+    /**
+     * Send restart if it is needed.
+     * @return true if restart needed, false otherwise.
+     */
     private boolean tryRestart() {
-        // Stop trying to restarting after certain number of attempts.
+        // Stop trying to restart after certain number of attempts.
         if (restartNumber >= MAX_RESTART_ATTEMPTS) {
             Log.e(TAG, "Stop trying to restarting as already tried " + restartNumber + " times.");
             return false;
@@ -113,7 +128,9 @@ class HealthChecker {
         }
     }
 
-    // Set the right waitMs based on iceRole
+    /**
+     * Set the right waitMs based on iceRole
+     */
     private void setWaitMs() {
         switch (iceRole) {
             case ICE_ROLE_OFFERER:
@@ -130,7 +147,9 @@ class HealthChecker {
         }
     }
 
-    // Send the restart call
+    /**
+     * Send the restart call
+     */
     private void sendRestart() {
         try {
             Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : IceConnectionState : " + iceState +
@@ -142,21 +161,35 @@ class HealthChecker {
         }
     }
 
+    /**
+     *
+     * @return iceState
+     */
     PeerConnection.IceConnectionState getIceState() {
         return iceState;
     }
 
-    // Set the iceState and also waitMs
+    /**
+     * Set the iceState and also sets waitMs
+     * @param iceState
+     */
     void setIceState(PeerConnection.IceConnectionState iceState) {
         this.iceState = iceState;
         setWaitMs();
     }
 
-
+    /**
+     *
+     * @return iceRole
+     */
     String getIceRole() {
         return iceRole;
     }
 
+    /**
+     * Set iceRole based on role given and whether ICE trickle has been enabled.
+     * @param iceRole
+     */
     void setIceRole(String iceRole) {
         this.iceRole = iceRole;
         // Check if ICE trickle is enable.
