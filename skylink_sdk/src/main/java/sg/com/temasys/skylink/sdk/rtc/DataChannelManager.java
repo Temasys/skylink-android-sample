@@ -18,6 +18,9 @@ import java.nio.charset.Charset;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import sg.com.temasys.skylink.sdk.BuildConfig;
+
+
 class DataChannelManager {
 
     private SkylinkConnection connectionManager;
@@ -35,7 +38,7 @@ class DataChannelManager {
     }
 
     // UserAgent string.
-    private String uA = "Android";
+    private final String agentStr = "Android";
     // Maximum size (bytes) of chunk in each transfer.
     private int CHUNK_SIZE_POST = 65536;
     private int CHUNK_SIZE_PRE = CHUNK_SIZE_POST * 6 / 8;
@@ -640,15 +643,12 @@ class DataChannelManager {
         final int chunk;
         int chunkTemp = -2;
         final String fileName = dcObserver.getFileName();
-        // String fileNameTemp = "";
         try {
-            // fileNameTemp = dataJson.getString( "name" );
             chunkTemp = dataJson.getInt("ackN");
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
         chunk = chunkTemp;
-        // fileName = fileNameTemp;
 
         final String filePath = dcObserver.getFilePath();
         long fileSize = dcObserver.getFileSize();
@@ -887,7 +887,7 @@ class DataChannelManager {
 // -------------------------------------------------------------------------------------------------
     // Send a WRQ message via DC.
     // Format a WRQ message into DC WRQ format.
-    private void sendWRQ(final DcObserver dcObserver, String uA, final String fileName,
+    private void sendWRQ(final DcObserver dcObserver, String agentStr, final String fileName,
                          int timeOut, boolean isPrivate) {
         // Create DC WRQ message in JSON format
     /*
@@ -908,14 +908,18 @@ class DataChannelManager {
         try {
             msgJson.put("type", "WRQ");
             msgJson.put("sender", mid);
-            msgJson.put("agent", uA);
+            msgJson.put("agent", agentStr);
+            msgJson.put("version", BuildConfig.VERSION_NAME);
             msgJson.put("name", fileName);
             msgJson.put("size", fileSizeEncoded);
             msgJson.put("chunkSize", chunkSize);
             msgJson.put("timeout", timeOut);
             msgJson.put("isPrivate", isPrivate);
+            /* For DT 0.1.1
             // IFF MCU room and Private message, include target.
-            if (isMcuRoom && isPrivate)
+            if (isMcuRoom && isPrivate)*/
+            // DT 0.1.0 Include target for all private messages.
+            if (isPrivate)
                 msgJson.put("target", tid);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -973,8 +977,6 @@ class DataChannelManager {
         try {
             msgJson.put("type", "ACK");
             msgJson.put("sender", mid);
-            msgJson.put("name", dcObserver.getSaveFileName());
-            msgJson.put("agent", uA);
             msgJson.put("ackN", chunk);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1034,9 +1036,6 @@ class DataChannelManager {
                 msgJson.put("name", dcObserver.getSaveFileName());
             msgJson.put("content", errorMessage);
             msgJson.put("isUploadError", isUploadError);
-            // IFF MCU room, include target.
-            if (isMcuRoom)
-                msgJson.put("target", remotePeerId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1138,7 +1137,7 @@ class DataChannelManager {
         long fileSizeEncoded = adjustedSize * 4 / 3;
         dcObserver.setFileSizeEncoded(fileSizeEncoded);
         // Send WRQ to Peer.
-        sendWRQ(dcObserver, uA, fileName, timeOut, isPrivate);
+        sendWRQ(dcObserver, agentStr, fileName, timeOut, isPrivate);
     /*// Start send timer.
       // Runnable to execute on timeout:
     Runnable run = new Runnable() {
@@ -1277,8 +1276,11 @@ class DataChannelManager {
         try {
             msgJson.put("type", "MESSAGE");
             msgJson.put("sender", mid);
-            // if MCU room and Public message, do not include target.
-            if (!isMcuRoom || isPrivate)
+            /* For DT 0.1.1
+            // IFF MCU room and Private message, include target.
+            if (isMcuRoom && isPrivate)*/
+            // DT 0.1.0 Include target for all private messages.
+            if (isPrivate)
                 msgJson.put("target", tid);
             msgJson.put("data", msg);
             msgJson.put("isPrivate", isPrivate);
