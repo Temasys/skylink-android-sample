@@ -174,7 +174,7 @@ class Utils {
             return sdpDescription;
         }
         if (codecRtpMap == null) {
-            Log.w(TAG, "No rtpmap for " + codec);
+            Log.w(TAG, "No rtpmap for " + codec + ", so can't prefer " + codec);
             return sdpDescription;
         }
         Log.d(TAG, "Found " + codec + " rtpmap " + codecRtpMap + ", prefer at " +
