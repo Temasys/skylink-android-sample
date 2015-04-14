@@ -39,7 +39,6 @@ public class SkylinkConfigTest {
     @Test
     public void testDefaultPreferredAudioCodec() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.OPUS);
         assertEquals(skylinkConfig.getPreferredAudioCodec(), SkylinkConfig.AudioCodec.OPUS);
     }
 }
