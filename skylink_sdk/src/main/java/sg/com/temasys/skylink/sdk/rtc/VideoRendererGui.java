@@ -74,14 +74,6 @@ class VideoRendererGui implements GLSurfaceView.Renderer {
     private int yuvProgram;
     private int oesProgram;
 
-    public VideoRendererGuiListener getListener() {
-        return listener;
-    }
-
-    public void setListener(VideoRendererGuiListener listener) {
-        this.listener = listener;
-    }
-
     // Types of video scaling:
     // SCALE_ASPECT_FIT - video frame is scaled to fit the size of the view by
     //    maintaining the aspect ratio (black borders may be displayed).
@@ -570,7 +562,7 @@ class VideoRendererGui implements GLSurfaceView.Renderer {
                 yuvFrameToRender = new I420Frame(width, height, strides, null);
                 textureFrameToRender = new I420Frame(width, height, null, -1);
                 updateTextureProperties = true;
-                listener.updateDisplaySize(surface, new Point(width, height));
+                listener.updateDisplaySize(new Point(width, height));
             }
         }
 
@@ -791,4 +783,11 @@ class VideoRendererGui implements GLSurfaceView.Renderer {
         }
     }
 
+    public VideoRendererGuiListener getListener() {
+        return listener;
+    }
+
+    public void setListener(VideoRendererGuiListener listener) {
+        this.listener = listener;
+    }
 }

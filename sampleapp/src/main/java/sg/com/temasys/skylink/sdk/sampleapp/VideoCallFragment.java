@@ -263,10 +263,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
      * Triggered after the user's local media is captured.
      *
      * @param videoView
-     * @param size
      */
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView) {
         if (videoView != null) {
             //show media on screen
             videoView.setTag("self");
@@ -276,8 +275,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
-        Log.d(TAG, videoView + " got size");
+    public void onVideoSizeChange(String peerId, Point size) {
+        Log.d(TAG, "PeerId: " + peerId + " got size " + size.toString());
     }
 
     @Override
@@ -314,7 +313,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
         if (videoView == null) {
             return;
         }

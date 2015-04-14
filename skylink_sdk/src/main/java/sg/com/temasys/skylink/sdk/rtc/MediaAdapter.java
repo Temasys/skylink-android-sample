@@ -16,10 +16,6 @@ class MediaAdapter implements MediaListener {
     public MediaAdapter() {
     }
 
-    @Override
-    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
-
-    }
 
     @Override
     public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
@@ -32,12 +28,17 @@ class MediaAdapter implements MediaListener {
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
 
     }
 
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView) {
+
+    }
+
+    @Override
+    public void onVideoSizeChange(String peerId, Point size) {
 
     }
 
