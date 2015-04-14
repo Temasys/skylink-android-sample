@@ -30,7 +30,7 @@ public class SkylinkConfigTest {
     }
 
     @Test
-    public void testSetPreferredAudioCodec() {
+    public void testSetPreferredAudioCodecISAC() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.ISAC);
         assertEquals(skylinkConfig.getPreferredAudioCodec(), SkylinkConfig.AudioCodec.ISAC);
