@@ -109,7 +109,6 @@ public class SkylinkConnection {
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
     private MessageHandler messageHandler = new MyMessageHandler();
-    private VideoRendererGuiListener videoRendererGuiListener = new MyVideoRendererGuiListener();
 
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
@@ -1271,7 +1270,12 @@ public class SkylinkConnection {
                                     if (myConfig.hasVideoSend()) {
                                         localVideoView = new GLSurfaceView(applicationContext);
                                         localVideoRendererGui = new VideoRendererGui(localVideoView);
-                                        localVideoRendererGui.setListener(connectionManager.videoRendererGuiListener);
+
+                                        MyVideoRendererGuiListener myVideoRendererGuiListener =
+                                                new MyVideoRendererGuiListener();
+                                        localVideoRendererGui.setListener(myVideoRendererGuiListener);
+
+
                                         VideoRenderer.Callbacks localRender = localVideoRendererGui.create(0,
                                                 0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
                                         localVideoTrack.addRenderer(new VideoRenderer(
@@ -1414,9 +1418,6 @@ public class SkylinkConnection {
             if (value.compareTo("inRoom") == 0) {
                 String mid = objects.getString("sid");
                 connectionManager.webServerClient.setSid(mid);
-
-                // Set the peerID of the local video renderer
-                localVideoRendererGui.setPeerId(mid);
 
                 JSONObject pcConfigJSON = objects.getJSONObject("pc_config");
                 String username = "";// pcConfigJSON.getString("username");
@@ -1964,9 +1965,18 @@ public class SkylinkConnection {
     private class MyVideoRendererGuiListener implements
             VideoRendererGuiListener {
 
+        private String peerId = null;
+
+        public String getPeerId() {
+            return peerId;
+        }
+
+        public void setPeerId(String peerId) {
+            this.peerId = peerId;
+        }
+
         @Override
-        public void updateDisplaySize(final GLSurfaceView surface,
-                                      final Point screenDimensions, final String peerId) {
+        public void updateDisplaySize(final Point screenDimensions) {
             runOnUiThread(new Runnable() {
                 @SuppressWarnings("unused")
                 public void run() {
@@ -1980,7 +1990,6 @@ public class SkylinkConnection {
                 }
             });
         }
-
     }
 
     // Implementation detail: observe ICE & stream changes and react
@@ -2112,9 +2121,10 @@ public class SkylinkConnection {
                                 remoteVideoView = new GLSurfaceView(applicationContext);
 
                                 VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
-                                gui.setListener(connectionManager.videoRendererGuiListener);
-                                // Set the peerID of the local video renderer
-                                gui.setPeerId(myId);
+                                MyVideoRendererGuiListener myVideoRendererGuiListener =
+                                        new MyVideoRendererGuiListener();
+                                myVideoRendererGuiListener.setPeerId(myId);
+                                gui.setListener(myVideoRendererGuiListener);
 
                                 VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
                                         100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);

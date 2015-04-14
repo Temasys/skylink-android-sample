@@ -217,7 +217,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onVideoSizeChange(String peerId, Point size) {
-        Log.d(TAG, "onVideoSizeChange");
+        Log.d(TAG, "[onVideoSizeChange] Peer:" + peerId + ", size:" + size.x + "," + size.y + ".");
     }
 
     @Override

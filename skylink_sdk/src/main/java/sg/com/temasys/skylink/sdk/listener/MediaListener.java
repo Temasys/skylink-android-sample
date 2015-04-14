@@ -20,7 +20,7 @@ public interface MediaListener {
      * This is triggered when any of the given video streams' frame size changes. It includes the
      * self stream also.
      *
-     * @param peerId The id of the peer
+     * @param peerId The id of the peer. If null, it indicates self stream.
      * @param size   Size of the video frame
      */
     void onVideoSizeChange(String peerId, Point size);

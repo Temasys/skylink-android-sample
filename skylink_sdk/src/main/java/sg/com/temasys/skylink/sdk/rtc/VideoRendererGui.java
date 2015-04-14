@@ -58,7 +58,6 @@ import javax.microedition.khronos.opengles.GL10;
 class VideoRendererGui implements GLSurfaceView.Renderer {
 
     private VideoRendererGuiListener listener;
-    private String peerId;
     private static Runnable eglContextReady = null;
     private static final String TAG = "VideoRendererGui";
     private GLSurfaceView surface;
@@ -563,7 +562,7 @@ class VideoRendererGui implements GLSurfaceView.Renderer {
                 yuvFrameToRender = new I420Frame(width, height, strides, null);
                 textureFrameToRender = new I420Frame(width, height, null, -1);
                 updateTextureProperties = true;
-                listener.updateDisplaySize(surface, new Point(width, height), peerId);
+                listener.updateDisplaySize(new Point(width, height));
             }
         }
 
@@ -790,9 +789,5 @@ class VideoRendererGui implements GLSurfaceView.Renderer {
 
     public void setListener(VideoRendererGuiListener listener) {
         this.listener = listener;
-    }
-
-    public void setPeerId(String peerId) {
-        this.peerId = peerId;
     }
 }
