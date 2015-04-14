@@ -108,7 +108,6 @@ public class SkylinkConnection {
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
     private MessageHandler messageHandler = new MyMessageHandler();
-    private VideoRendererGuiListener videoRendererGuiListener = new MyVideoRendererGuiListener();
 
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
@@ -118,6 +117,7 @@ public class SkylinkConnection {
     private DataTransferListener dataTransferListener;
 
     private boolean roomLocked;
+    private VideoRendererGui localVideoRendererGui;
 
     /**
      * List of Connection state types
@@ -1331,10 +1331,14 @@ public class SkylinkConnection {
                                     if (connectionState == ConnectionState.DISCONNECT) return;
                                     if (myConfig.hasVideoSend()) {
                                         localVideoView = new GLSurfaceView(applicationContext);
-                                        VideoRendererGui gui = new VideoRendererGui(
-                                                localVideoView);
-                                        gui.setListener(connectionManager.videoRendererGuiListener);
-                                        VideoRenderer.Callbacks localRender = gui.create(0,
+                                        localVideoRendererGui = new VideoRendererGui(localVideoView);
+
+                                        MyVideoRendererGuiListener myVideoRendererGuiListener =
+                                                new MyVideoRendererGuiListener();
+                                        localVideoRendererGui.setListener(myVideoRendererGuiListener);
+
+
+                                        VideoRenderer.Callbacks localRender = localVideoRendererGui.create(0,
                                                 0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
                                         localVideoTrack.addRenderer(new VideoRenderer(
                                                 localRender));
@@ -1344,7 +1348,7 @@ public class SkylinkConnection {
                                         connectionManager.surfaceOnHoldPool = new Hashtable<GLSurfaceView, String>();
                                     connectionManager.logMessage("[SDK] Local video source: Created.");
                                     // connectionManager.surfaceOnHoldPool.put(localVideoView, MY_SELF);
-                                    mediaListener.onLocalMediaCapture(localVideoView, null);
+                                    mediaListener.onLocalMediaCapture(localVideoView);
                                     connectionManager.logMessage("[SDK] Local video source: Sent to App.");
                                 }
                             }
@@ -1477,6 +1481,7 @@ public class SkylinkConnection {
 
                 String mid = objects.getString("sid");
                 connectionManager.webServerClient.setSid(mid);
+
                 JSONObject pcConfigJSON = objects.getJSONObject("pc_config");
                 String username = "";// pcConfigJSON.getString("username");
                 username = username != null ? username : "";
@@ -2028,9 +2033,18 @@ public class SkylinkConnection {
     private class MyVideoRendererGuiListener implements
             VideoRendererGuiListener {
 
+        private String peerId = null;
+
+        public String getPeerId() {
+            return peerId;
+        }
+
+        public void setPeerId(String peerId) {
+            this.peerId = peerId;
+        }
+
         @Override
-        public void updateDisplaySize(final GLSurfaceView surface,
-                                      final Point screenDimensions) {
+        public void updateDisplaySize(final Point screenDimensions) {
             runOnUiThread(new Runnable() {
                 @SuppressWarnings("unused")
                 public void run() {
@@ -2039,26 +2053,11 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        if (true/*SkylinkConnection.this.surfaceOnHoldPool.get(surface) == null*/) {
-                            mediaListener.onVideoSizeChange(surface, screenDimensions);
-                        } else {
-                            String peerId = SkylinkConnection.this.surfaceOnHoldPool
-                                    .get(surface);
-                            SkylinkConnection.this.surfaceOnHoldPool
-                                    .remove(surface);
-                            if (peerId.compareToIgnoreCase(MY_SELF) == 0) {
-                                mediaListener.onLocalMediaCapture(surface,
-                                        screenDimensions);
-                            } else {
-                                mediaListener.onRemotePeerMediaReceive(peerId, surface,
-                                        screenDimensions);
-                            }
-                        }
+                        mediaListener.onVideoSizeChange(peerId, screenDimensions);
                     }
                 }
             });
         }
-
     }
 
     // Implementation detail: observe ICE & stream changes and react
@@ -2217,9 +2216,13 @@ public class SkylinkConnection {
                             GLSurfaceView remoteVideoView = null;
                             if (stream.videoTracks.size() >= 1) {
                                 remoteVideoView = new GLSurfaceView(applicationContext);
-                                VideoRendererGui gui = new VideoRendererGui(
-                                        remoteVideoView);
-                                gui.setListener(connectionManager.videoRendererGuiListener);
+
+                                VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
+                                MyVideoRendererGuiListener myVideoRendererGuiListener =
+                                        new MyVideoRendererGuiListener();
+                                myVideoRendererGuiListener.setPeerId(myId);
+                                gui.setListener(myVideoRendererGuiListener);
+
                                 VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
                                         100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
                                 stream.videoTracks.get(0).addRenderer(
@@ -2228,18 +2231,18 @@ public class SkylinkConnection {
                                 final GLSurfaceView rVideoView = remoteVideoView;
                                 // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
                                 if (!connectionManager.isPeerIdMCU(myId))
-                                    mediaListener.onRemotePeerMediaReceive(myId, rVideoView, null);
+                                    mediaListener.onRemotePeerMediaReceive(myId, rVideoView);
                             } else {
                                 // If this is an audio only stream, audio will be added automatically.
                                 // Still, send a null videoView to alert user stream is received.
                                 if (!connectionManager.isPeerIdMCU(myId))
-                                    mediaListener.onRemotePeerMediaReceive(myId, null, null);
+                                    mediaListener.onRemotePeerMediaReceive(myId, null);
                             }
                         } else {
                             // If this is a no audio no video stream,
                             // still send a null videoView to alert user stream is received.
                             if (!connectionManager.isPeerIdMCU(myId))
-                                mediaListener.onRemotePeerMediaReceive(myId, null, null);
+                                mediaListener.onRemotePeerMediaReceive(myId, null);
                         }
                     }
                 }
