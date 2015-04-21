@@ -43,18 +43,31 @@ public class SkylinkConnectionTest {
     }
 
     @Test
+    public void testMaximumValues() {
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setVideoWidth(SkylinkConfig.MAX_VIDEO_WIDTH);
+        assertEquals(skylinkConfig.getVideoWidth(), SkylinkConfig.MAX_VIDEO_WIDTH);
+
+        skylinkConfig.setVideoHeight(SkylinkConfig.MAX_VIDEO_HEIGHT);
+        assertEquals(skylinkConfig.getVideoHeight(), SkylinkConfig.MAX_VIDEO_HEIGHT);
+
+        skylinkConfig.setVideoHeight(SkylinkConfig.MAX_VIDEO_FPS);
+        assertEquals(skylinkConfig.getVideoFps(), SkylinkConfig.MAX_VIDEO_FPS);
+    }
+
+    @Test
     public void testVideoHeight() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        skylinkConfig.setVideoHeight(200);
+        skylinkConfig.setVideoHeight(SkylinkConfig.MAX_VIDEO_HEIGHT - 1);
 
         SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
-        assertEquals(newConfig.getVideoHeight(), 200);
+        assertEquals(newConfig.getVideoHeight(), SkylinkConfig.MAX_VIDEO_HEIGHT - 1);
     }
 
     @Test
     public void testVideoHeightMax() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        skylinkConfig.setVideoHeight(20000);
+        skylinkConfig.setVideoHeight(SkylinkConfig.MAX_VIDEO_HEIGHT + 1);
 
         SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
         assertEquals(newConfig.getVideoHeight(), SkylinkConfig.MAX_VIDEO_HEIGHT);
@@ -63,16 +76,16 @@ public class SkylinkConnectionTest {
     @Test
     public void testVideoWidth() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        skylinkConfig.setVideoWidth(200);
+        skylinkConfig.setVideoWidth(SkylinkConfig.MAX_VIDEO_WIDTH - 1);
 
         SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
-        assertEquals(newConfig.getVideoWidth(), 200);
+        assertEquals(newConfig.getVideoWidth(), SkylinkConfig.MAX_VIDEO_WIDTH - 1);
     }
 
     @Test
     public void testVideoWidthMax() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        skylinkConfig.setVideoWidth(20000);
+        skylinkConfig.setVideoWidth(SkylinkConfig.MAX_VIDEO_WIDTH + 1);
 
         SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
         assertEquals(newConfig.getVideoWidth(), SkylinkConfig.MAX_VIDEO_WIDTH);
@@ -85,8 +98,11 @@ public class SkylinkConnectionTest {
     }
 
     @Test
-    public void testAudioStereoTrue() {
+    public void testAudioStereo() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(false);
+        assertFalse(skylinkConfig.isStereoAudio());
+
         skylinkConfig.setStereoAudio(true);
         assertTrue(skylinkConfig.isStereoAudio());
     }
@@ -100,8 +116,8 @@ public class SkylinkConnectionTest {
     @Test
     public void testVideoFPSMax() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        skylinkConfig.setVideoFps(4000);
-        assertEquals(new SkylinkConfig(skylinkConfig).getVideoFps(), SkylinkConfig.MAX_VIDEO_FPS);
+        skylinkConfig.setVideoFps(SkylinkConfig.MAX_VIDEO_FPS - 1);
+        assertEquals(new SkylinkConfig(skylinkConfig).getVideoFps(), SkylinkConfig.MAX_VIDEO_FPS - 1);
     }
 
     @Test

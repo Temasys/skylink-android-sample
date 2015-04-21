@@ -121,6 +121,20 @@ public class UtilsTest {
     }
 
     @Test
+    public void testWillNotAddStereoIfSdpHasNoOpus() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:13 CN/8000" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(true);
+        skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.OPUS);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+        assertFalse(lines[0].contains("stereo=1"));
+    }
+
+    @Test
     public void testAddStereo() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");

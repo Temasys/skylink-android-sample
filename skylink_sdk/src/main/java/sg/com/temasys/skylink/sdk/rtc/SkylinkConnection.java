@@ -1051,7 +1051,7 @@ public class SkylinkConnection {
         }
     }
 
-    private void setDisplayMap(Object userInfo, String key) {
+    private void setUserInfoMap(Object userInfo, String key) {
         if (this.userInfoMap == null) {
             this.userInfoMap = new Hashtable<String, Object>();
         }
@@ -1551,7 +1551,7 @@ public class SkylinkConnection {
                 }
 
                 if (peerConnection != null) {
-                    setDisplayMap(userInfo, mid);
+                    setUserInfoMap(userInfo, mid);
 
                     try {
                         ProtocolHelper.sendWelcome(mid, connectionManager, webServerClient, myConfig, false);
@@ -1963,7 +1963,7 @@ public class SkylinkConnection {
             return;
         }
 
-        setDisplayMap(userInfo, mid);
+        setUserInfoMap(userInfo, mid);
 
         boolean receiveOnly = false;
         try {

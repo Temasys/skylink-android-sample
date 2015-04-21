@@ -204,7 +204,7 @@ class Utils {
     }
 
     /**
-     * Mangle SDP to prefer stereo audio or not
+     * Mangle SDP to prefer stereo audio for Opus
      *
      * @param sdpDescription
      * @param skylinkConfig
@@ -218,7 +218,7 @@ class Utils {
         }
 
         String[] lines = sdpDescription.split("\r\n");
-        Pattern codecPattern = Pattern.compile("^a=fmtp:(\\d+) ");
+        Pattern codecPattern = Pattern.compile("^a=fmtp:(111) ");
 
         boolean sdpModified = false;
 
