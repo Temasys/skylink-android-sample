@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+
 class Utils {
 
     private static final String TAG = Utils.class.getName();
@@ -199,5 +201,56 @@ class Utils {
             newSdpDescription.append(line).append("\r\n");
         }
         return newSdpDescription.toString();
+    }
+
+    /**
+     * Mangle SDP to prefer stereo audio for Opus
+     *
+     * @param sdpDescription
+     * @param skylinkConfig
+     * @return
+     */
+    public static String modifyStereoAudio(String sdpDescription, SkylinkConfig skylinkConfig) {
+
+        if (skylinkConfig.getPreferredAudioCodec() != SkylinkConfig.AudioCodec.OPUS) {
+            Log.d(TAG, "Cannot add stereo configuration due to preferred audio codec is not opus");
+            return sdpDescription;
+        }
+
+        String[] lines = sdpDescription.split("\r\n");
+        Pattern codecPattern = Pattern.compile("^a=fmtp:(111) ");
+
+        boolean sdpModified = false;
+
+        for (int i = 0; i < lines.length; i++) {
+            Matcher matcher = codecPattern.matcher(lines[i]);
+            if (matcher.find()) {
+                if (skylinkConfig.isStereoAudio() && !lines[i].contains("stereo=1")) {
+                    // If the user requires stereo but if its not on SDP, add it to the end
+                    lines[i] += ";stereo=1";
+                    Log.d(TAG, "Added stereo to the sdp");
+                    sdpModified = true;
+                } else if (!skylinkConfig.isStereoAudio() && lines[i].contains("stereo=1")) {
+                    // If the user does not require stereo but if its on SDP, replace it
+                    lines[i] = lines[i].replace("stereo=1;", "");
+                    // Include this if stereo is at the end
+                    lines[i] = lines[i].replace("stereo=1", "");
+                    Log.d(TAG, "Removed stereo from the sdp");
+                    sdpModified = true;
+                }
+                break;
+            }
+        }
+
+        if (sdpModified) {
+            // If the SDP is modified use the new modified string
+            StringBuilder newSdpDescription = new StringBuilder();
+            for (String line : lines) {
+                newSdpDescription.append(line).append("\r\n");
+            }
+            sdpDescription = newSdpDescription.toString();
+        }
+
+        return sdpDescription;
     }
 }

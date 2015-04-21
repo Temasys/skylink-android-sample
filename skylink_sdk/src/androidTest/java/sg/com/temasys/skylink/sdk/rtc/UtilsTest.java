@@ -104,4 +104,106 @@ public class UtilsTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void testWillNotAddStereoIfNotOpus() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
+        stringBuilder.append("a=fmtp:111 minptime=10; useinbandfec=1" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(true);
+        skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.ISAC);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+        assertFalse(lines[1].contains("stereo=1"));
+    }
+
+    @Test
+    public void testWillNotAddStereoIfSdpHasNoOpus() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:13 CN/8000" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(true);
+        skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.OPUS);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+        assertFalse(lines[0].contains("stereo=1"));
+    }
+
+    @Test
+    public void testAddStereo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
+        stringBuilder.append("a=fmtp:111 minptime=10; useinbandfec=1" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(true);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+
+        assertTrue(lines[1].equals("a=fmtp:111 minptime=10; useinbandfec=1;stereo=1"));
+    }
+
+    @Test
+    public void testWillNotAddStereoIfExist() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
+        stringBuilder.append("a=fmtp:111 minptime=10; stereo=1; useinbandfec=1" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(true);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+
+        assertTrue(lines[1].equals("a=fmtp:111 minptime=10; stereo=1; useinbandfec=1"));
+    }
+
+    @Test
+    public void testWillNotAddStereoIfAtEnd() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
+        stringBuilder.append("a=fmtp:111 minptime=10; useinbandfec=1; stereo=1;" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(true);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+
+        assertTrue(lines[1].equals("a=fmtp:111 minptime=10; useinbandfec=1; stereo=1;"));
+    }
+
+    @Test
+    public void testRemoveStereo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
+        stringBuilder.append("a=fmtp:111 minptime=10; stereo=1; useinbandfec=1;" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(false);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+        assertFalse(lines[1].contains("stereo=1"));
+    }
+
+    @Test
+    public void testRemoveStereoIfAtEnd() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
+        stringBuilder.append("a=fmtp:111 minptime=10; useinbandfec=1; stereo=1" + "\r\n");
+
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        skylinkConfig.setStereoAudio(false);
+
+        String modifiedSdp = Utils.modifyStereoAudio(stringBuilder.toString(), skylinkConfig);
+        String[] lines = modifiedSdp.split("\r\n");
+        assertFalse(lines[1].contains("stereo=1"));
+    }
 }

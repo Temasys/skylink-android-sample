@@ -12,6 +12,15 @@ public class SkylinkConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static int MAX_VIDEO_HEIGHT = 480;
+    public static int MAX_VIDEO_WIDTH = 640;
+    public static int MAX_VIDEO_FPS = 30;
+
+    private int videoHeight = MAX_VIDEO_HEIGHT;
+    private int videoWidth = MAX_VIDEO_WIDTH;
+    private int videoFps = MAX_VIDEO_FPS;
+
+    private boolean stereoAudio = true;
     private boolean audioSend;
     private boolean videoSend;
     private boolean audioReceive;
@@ -80,6 +89,15 @@ public class SkylinkConfig implements Serializable {
         this.dataTransfer = config.dataTransfer;
         this.preferredAudioCodec = config.preferredAudioCodec;
         this.timeout = config.timeout;
+
+        if (config.videoWidth > 0 && config.videoHeight > 0) {
+            this.videoWidth = Math.min(config.videoWidth, MAX_VIDEO_WIDTH);
+            this.videoHeight = Math.min(config.videoHeight, MAX_VIDEO_HEIGHT);
+        }
+
+        if (config.videoFps > 0) {
+            this.videoFps = Math.min(config.videoFps, MAX_VIDEO_FPS);
+        }
     }
 
     /**
@@ -303,6 +321,70 @@ public class SkylinkConfig implements Serializable {
      */
     public void setPreferredAudioCodec(AudioCodec preferredAudioCodec) {
         this.preferredAudioCodec = preferredAudioCodec;
+    }
+
+    /**
+     *
+     * @return the video height
+     */
+    public int getVideoHeight() {
+        return videoHeight;
+    }
+
+    /***
+     * Sets the video height.
+     * @param videoHeight
+     */
+    public void setVideoHeight(int videoHeight) {
+        this.videoHeight = videoHeight;
+    }
+
+    /**
+     *
+     * @return the video width
+     */
+    public int getVideoWidth() {
+        return videoWidth;
+    }
+
+    /**
+     * Sets the video width
+     * @param videoWidth
+     */
+    public void setVideoWidth(int videoWidth) {
+        this.videoWidth = videoWidth;
+    }
+
+    /**
+     *
+     * @return true if stereo audio is used
+     */
+    public boolean isStereoAudio() {
+        return stereoAudio;
+    }
+
+    /**
+     * Sets if stereo audio is enabled.
+     * @param stereoAudio configuration value
+     */
+    public void setStereoAudio(boolean stereoAudio) {
+        this.stereoAudio = stereoAudio;
+    }
+
+    /**
+     *
+     * @return the video FPS
+     */
+    public int getVideoFps() {
+        return videoFps;
+    }
+
+    /**
+     * Sets the video FPS
+     * @param videoFPS
+     */
+    public void setVideoFps(int videoFPS) {
+        this.videoFps = videoFPS;
     }
 
     @Override
