@@ -396,34 +396,34 @@ public class SkylinkConnection {
             }
 
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    true, true, hardwareAccelerated, eglContext
+                    myConfig.hasAudioSend(), myConfig.hasVideoSend(), hardwareAccelerated, eglContext
             ), "Failed to initializeAndroidGlobals");
 
             factoryStaticInitialized = true;
         }
 
+        MediaConstraints[] constraintsArray = new MediaConstraints[2];
         this.sdpMediaConstraints = new MediaConstraints();
-        this.sdpMediaConstraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                        String.valueOf(this.myConfig.hasAudioReceive())));
-        this.sdpMediaConstraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                        String.valueOf(this.myConfig.hasVideoReceive())));
+        this.pcConstraints = new MediaConstraints();
+        constraintsArray[0] = this.sdpMediaConstraints;
+        constraintsArray[1] = this.pcConstraints;
 
-        MediaConstraints constraints = new MediaConstraints();
-        constraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                        String.valueOf(this.myConfig.hasAudioReceive())));
-        constraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                        String.valueOf(this.myConfig.hasVideoReceive())));
-        constraints.optional.add(new MediaConstraints.KeyValuePair(
+        for (MediaConstraints mediaConstranits : constraintsArray) {
+            mediaConstranits.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
+                            String.valueOf(this.myConfig.hasAudioReceive())));
+            mediaConstranits.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
+                            String.valueOf(this.myConfig.hasVideoReceive())));
+        }
+
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "internalSctpDataChannels", "true"));
-        constraints.optional.add(new MediaConstraints.KeyValuePair(
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "DtlsSrtpKeyAgreement", "true"));
-        constraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
                 "true"));
-        this.pcConstraints = constraints;
+
         setVideoConstrains(this.myConfig);
 
         this.applicationContext = context;
@@ -441,7 +441,7 @@ public class SkylinkConnection {
         peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
-    private void setVideoConstrains(SkylinkConfig skylinkConfig){
+    private void setVideoConstrains(SkylinkConfig skylinkConfig) {
         videoConstraints = new MediaConstraints();
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
@@ -456,7 +456,7 @@ public class SkylinkConnection {
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
     }
-    
+
     /**
      * Runs the specified action on the UI thread
      *
@@ -1029,13 +1029,14 @@ public class SkylinkConnection {
 
     /**
      * Retrieves the user defined info object associated with a remote peer.
+     *
      * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.
      * @return 'org.json.JSONObject'
      */
-    public Object getUserInfo(String remotePeerId){
+    public Object getUserInfo(String remotePeerId) {
         if (remotePeerId == null) {
             return this.myUserData;
-        }else {
+        } else {
             return this.userInfoMap.get(remotePeerId);
         }
     }
@@ -2188,12 +2189,16 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
+                        AudioTrack audioTrack = stream.audioTracks.get(0);
+                        if ((audioTrack != null && !myConfig.hasAudioReceive())) {
+                            audioTrack.dispose();
+                        }
                         if (myConfig.hasVideoReceive() || myConfig.hasAudioReceive()) {
                             abortUnless(stream.audioTracks.size() <= 1
                                             && stream.videoTracks.size() <= 1,
                                     "Weird-looking stream: " + stream);
                             GLSurfaceView remoteVideoView = null;
-                            if (stream.videoTracks.size() >= 1) {
+                            if ((stream.videoTracks.size() >= 1) && myConfig.hasVideoReceive()) {
                                 remoteVideoView = new GLSurfaceView(applicationContext);
 
                                 VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
@@ -2212,8 +2217,11 @@ public class SkylinkConnection {
                                 if (!connectionManager.isPeerIdMCU(myId))
                                     mediaListener.onRemotePeerMediaReceive(myId, rVideoView);
                             } else {
-                                // If this is an audio only stream, audio will be added automatically.
-                                // Still, send a null videoView to alert user stream is received.
+                                // If:
+                                // This is an audio only stream (audio will be added automatically)
+                                // OR
+                                // VideoTrack exists but no audio receive config is set,
+                                // Send a null videoView to alert remote Peer stream is received.
                                 if (!connectionManager.isPeerIdMCU(myId))
                                     mediaListener.onRemotePeerMediaReceive(myId, null);
                             }

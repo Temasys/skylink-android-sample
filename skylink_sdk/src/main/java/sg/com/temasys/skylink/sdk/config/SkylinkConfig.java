@@ -154,7 +154,7 @@ public class SkylinkConfig implements Serializable {
         }
 
         // Set audio video receive with the same settings.
-        setAudioVideoReceiveConfig(audioVideoConfig);
+        // setAudioVideoReceiveConfig(audioVideoConfig);
     }
 
     /**
@@ -162,7 +162,7 @@ public class SkylinkConfig implements Serializable {
      *
      * @param audioVideoConfig Audio video receive config value
      */
-    private void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) {
+    public void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) {
         switch (audioVideoConfig) {
             case NO_AUDIO_NO_VIDEO:
                 this.audioReceive = false;
