@@ -22,6 +22,8 @@ import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
+import org.json.JSONObject;
+
 import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
@@ -263,10 +265,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
      * Triggered after the user's local media is captured.
      *
      * @param videoView
-     * @param size
      */
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView) {
         if (videoView != null) {
             //show media on screen
             videoView.setTag("self");
@@ -276,8 +277,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
-        Log.d(TAG, videoView + " got size");
+    public void onVideoSizeChange(String peerId, Point size) {
+        Log.d(TAG, "PeerId: " + peerId + " got size " + size.toString());
     }
 
     @Override
@@ -311,10 +312,16 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
+        RemotePeerUserInfo remotePeerUserInfo = new RemotePeerUserInfo((JSONObject)
+                skylinkConnection.getUserInfo(remotePeerId));
+        Log.d(TAG, "isAudioStereo " + remotePeerUserInfo.isAudioStereo());
+        Log.d(TAG, "video height " + remotePeerUserInfo.getVideoHeight());
+        Log.d(TAG, "video width " + remotePeerUserInfo.getVideoHeight());
+        Log.d(TAG, "video frameRate " + remotePeerUserInfo.getVideoFps());
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
         if (videoView == null) {
             return;
         }

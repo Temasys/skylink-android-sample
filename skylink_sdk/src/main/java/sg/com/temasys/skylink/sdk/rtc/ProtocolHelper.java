@@ -7,6 +7,10 @@ import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Set;
+
 import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -122,22 +126,14 @@ class ProtocolHelper {
             disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
 
             // Notify that the connection is restarting
-            skylinkConnection.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
-                            remotePeerId, PEER_CONNECTION_RESTART);
-                }
-            });
+            notifyPeerLeave(skylinkConnection, remotePeerId, PEER_CONNECTION_RESTART);
 
             // Create a new peer connection
             PeerConnection peerConnection = skylinkConnection
-                    .getPeerConnection(remotePeerId);
+                    .getPeerConnection(remotePeerId, HealthChecker.ICE_ROLE_ANSWERER);
 
             // TODO: use exact value
             boolean receiveOnly = false;
-
-            // TODO: enableIceTrickle, enableDataChannel
 
             // Add our local media stream to this PC, or not.
             if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
@@ -154,6 +150,58 @@ class ProtocolHelper {
         }
 
         return false;
+    }
+
+    // Notify that all remote peers are leaving.
+    static void notifyPeerLeaveAll(SkylinkConnection skylinkConnection, String reason) {
+        Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
+        if (pcObserverPool != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+            for (String peerId : peerIdSet) {
+                notifyPeerLeave(skylinkConnection, peerId, reason);
+            }
+        }
+    }
+
+    // Notify that a specific remote peer is leaving.
+    static void notifyPeerLeave(final SkylinkConnection skylinkConnection, final String remotePeerId,
+                                final String reason) {
+        skylinkConnection.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
+                        remotePeerId, reason);
+            }
+        });
+    }
+
+
+    // Send enter
+    // Params remotePeerId:
+    // Set to null if sending to all Peers in room.
+    // Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
+    // This is esp. so for the JS clients which do not allow restarts
+    // for PeerIds without PeerConnection.
+    static void sendEnter(String remotePeerId,
+                          SkylinkConnection skylinkConnection,
+                          WebServerClient webServerClient) throws JSONException {
+
+        skylinkConnection.logMessage("*** SendEnter");
+        JSONObject enterObject = new JSONObject();
+        enterObject.put("type", "enter");
+        enterObject.put("mid", webServerClient.getSid());
+        enterObject.put("rid", webServerClient.getRoomId());
+        enterObject.put("receiveOnly", false);
+        enterObject.put("agent", "Android");
+        enterObject.put("version", BuildConfig.VERSION_NAME);
+        // TODO XR: Can remove after JS client update to compatible restart protocol.
+        if (remotePeerId != null) {
+            enterObject.put("target", remotePeerId);
+        }
+        skylinkConnection.setUserInfo(enterObject);
+        webServerClient.sendMessage(enterObject);
     }
 
     // Set isRestart to true/false to create restart/welcome.
@@ -199,6 +247,19 @@ class ProtocolHelper {
         return false;
     }
 
+    // Dispose all PeerConnections
+    static void disposePeerConnectionAll(SkylinkConnection skylinkConnection, MediaStream localMediaStream) {
+        Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
+        if (pcObserverPool != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+            for (String peerId : peerIdSet) {
+                // Dispose the peerConnection
+                disposePeerConnection(peerId, skylinkConnection, localMediaStream);
+            }
+        }
+    }
+
     /**
      * Returns true if the peer connection is disposed successfully
      *
@@ -221,10 +282,13 @@ class ProtocolHelper {
             skylinkConnection.getPeerConnectionPool().remove(remotePeerId);
             skylinkConnection.getPcObserverPool().remove(remotePeerId);
             skylinkConnection.getSdpObserverPool().remove(remotePeerId);
-            skylinkConnection.getDisplayNameMap().remove(remotePeerId);
+            skylinkConnection.getUserInfoMap().remove(remotePeerId);
+   			// This commenting is a hack to accommodate the non-Android clients until the update to SM 0.1.1.
+            // PeerInfo of peer is required for sender of restart.
+            // TODO XR: Remove commenting after JS client update to compatible restart protocol.
+            // skylinkConnection.getPeerInfoMap().remove(remotePeerId);
             return true;
         }
-
         return false;
     }
 
