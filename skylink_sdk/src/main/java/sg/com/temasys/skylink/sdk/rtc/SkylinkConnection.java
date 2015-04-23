@@ -2189,16 +2189,28 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        AudioTrack audioTrack = stream.audioTracks.get(0);
+                        /*AudioTrack audioTrack = stream.audioTracks.get(0);
                         if ((audioTrack != null && !myConfig.hasAudioReceive())) {
-                            audioTrack.dispose();
-                        }
-                        if (myConfig.hasVideoReceive() || myConfig.hasAudioReceive()) {
+                            audioTrack.setEnabled(false);
+                            // audioTrack.dispose();
+                            // audioTrack = null;
+                        }*/
+                        /*if(!myConfig.hasAudioReceive()) {
+                            while (!stream.audioTracks.isEmpty()) {
+                                AudioTrack track = stream.audioTracks.getFirst();
+                                stream.removeTrack(track);
+                                track.dispose();
+                            }
+                        }*/
+
+                        // if (myConfig.hasVideoReceive() || myConfig.hasAudioReceive()) {
+                        if (true) {
                             abortUnless(stream.audioTracks.size() <= 1
                                             && stream.videoTracks.size() <= 1,
                                     "Weird-looking stream: " + stream);
                             GLSurfaceView remoteVideoView = null;
-                            if ((stream.videoTracks.size() >= 1) && myConfig.hasVideoReceive()) {
+                            if ((stream.videoTracks.size() >= 1) ) {
+//                            if ((stream.videoTracks.size() >= 1) && myConfig.hasVideoReceive()) {
                                 remoteVideoView = new GLSurfaceView(applicationContext);
 
                                 VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
@@ -2422,10 +2434,25 @@ public class SkylinkConnection {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
+                /* The webrtc designed behaviour is that if an offerer SDP indicates to send media, the answerer will generate an SDP to accept it, even if the answerer had put in its media constraint not to accept that media:
+                https://code.google.com/p/webrtc/issues/detail?id=2404
+                Hence, for our answerer to respect its own MediaConstraints, the answer SDP will be mangled if needed to respect the MediaConstraints (sdpMediaConstraints).*/
+                String sdpType = sdp.type.canonicalForm();
+                String sdpStr = sdp.description;
+                // If answer, may need to mangle:
+                if("answer".equals(sdpType)) {
+                    if(!myConfig.hasAudioReceive()) {
+                        sdpStr = Utils.sdpAudioRecvOnly(sdpStr);
+                    }
+                    if(!myConfig.hasVideoReceive()) {
+                        sdpStr = Utils.sdpVideoRecvOnly(sdpStr);
+                    }
+                }
+
                 JSONObject json = new JSONObject();
                 try {
-                    json.put("type", sdp.type.canonicalForm());
-                    json.put("sdp", sdp.description);
+                    json.put("type", sdpType);
+                    json.put("sdp", sdpStr);
                     json.put("mid", connectionManager.webServerClient.getSid());
                     json.put("target", this.myId);
                     json.put("rid", connectionManager.webServerClient.getRoomId());
