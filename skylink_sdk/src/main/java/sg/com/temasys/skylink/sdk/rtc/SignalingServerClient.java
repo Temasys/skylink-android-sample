@@ -16,11 +16,11 @@ import javax.net.ssl.SSLContext;
 
 class SignalingServerClient {
 
-    private final static String TAG = "SocketTesterClient";
+    private final static String TAG = SignalingServerClient.class.getName();
 
-    private final int RETRY_MAX = 3;
-    private final int SIG_PORT_DEFAULT = 443;
-    private final int SIG_PORT_FAILOVER = 3443;
+    private final static int RETRY_MAX = 3;
+    private final static int SIG_PORT_DEFAULT = 443;
+    private final static int SIG_PORT_FAILOVER = 3443;
     // private final int SIG_PORT_DEFAULT = 9000;
     // private final int SIG_PORT_FAILOVER = 9000;
     // private final int SIG_PORT_DEFAULT = 8018;
@@ -29,9 +29,9 @@ class SignalingServerClient {
     private boolean isConnected;
     private int retry = 0;
     private int sigPort;
-    private String sigIP;
+    private final String sigIP;
 
-    private Socket socketIO = null;
+    private Socket socketIO;
     private MessageHandler delegate;
 
     public SignalingServerClient(MessageHandler delegate,
@@ -42,15 +42,19 @@ class SignalingServerClient {
         // sigIP = "http://sgbeta.signaling.temasys.com.sg";
         sigPort = SIG_PORT_DEFAULT;
         try {
+            // Initialize SSL
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, null, null);
             IO.setDefaultSSLContext(sslContext);
             connectSigServer();
         } catch (URISyntaxException e) {
+            Log.e(TAG, e.getMessage(), e);
             delegate.onError(0, e.getLocalizedMessage());
         } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, e.getMessage(), e);
             delegate.onError(0, e.getLocalizedMessage());
         } catch (KeyManagementException e) {
+            Log.e(TAG, e.getMessage(), e);
             delegate.onError(0, e.getLocalizedMessage());
         }
     }
@@ -63,9 +67,9 @@ class SignalingServerClient {
         this.delegate = delegate;
     }
 
-
     private void connectSigServer() throws URISyntaxException {
 
+        // Initialize SocketIO
         socketIO = IO.socket(sigIP + ":" + sigPort);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
@@ -103,21 +107,6 @@ class SignalingServerClient {
         socketIO.connect();
     }
 
-    /*
-    @Override
-    public void on(String event, IOAcknowledge ack, Object... args) {
-        Log.d(TAG, "Server triggered event '" + event + "'");
-        Log.d(TAG, "Server Event: " + event + "\n");
-        if (event.equals("message")) {
-            try {
-                String jsonStr = (String) args[0];
-                delegate.onMessage(jsonStr);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-        }
-    }*/
-
     void onConnect() {
         Log.d(TAG, "Connection established");
         Log.d(TAG, "Connected to Signaling server.");
@@ -141,8 +130,9 @@ class SignalingServerClient {
     void onDisconnect() {
         Log.d(TAG, "Connection terminated.");
         Log.d(TAG, "Disconnected from Signaling server.");
-        if (delegate != null) delegate.onClose();
-        //delegate = null;
+        if (delegate != null) {
+            delegate.onClose();
+        }
     }
 
     void onError(Object... args) {
@@ -154,6 +144,7 @@ class SignalingServerClient {
             try {
                 connectSigServer();
             } catch (URISyntaxException e) {
+                Log.e(TAG, e.getMessage(), e);
                 delegate.onError(0, e.getLocalizedMessage());
             }
             return;

@@ -100,10 +100,9 @@ class WebServerClient implements RoomParameterServiceListener {
     public void disconnect() {
         if (socketTester != null) {
             Socket socketIO = socketTester.getSocketIO();
+            socketIO.off();
             if (socketIO.connected()) {
-                socketTester.setDelegate(null);
                 socketIO.disconnect();
-                socketIO.off();
             }
         }
     }
