@@ -5,19 +5,31 @@ apply plugin: 'robolectric'
 apply plugin: 'sonar-runner'
 apply plugin: 'jacoco'
 apply plugin: 'android-library'
+apply plugin: 'maven'
 
 configurations {
     jaxDoclet
     classpaths
 }
 
+repositories {
+    maven {
+        url = 'http://archiva.temasys.com.sg/repository/internal'
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'org.webrtc:libjingle_peer_connection:8676'
+    compile 'com.github.nkzawa:socket.io-client:0.4.2'
     androidTestCompile 'junit:junit:4.11'
     androidTestCompile 'org.robolectric:robolectric:2.3'
     androidTestCompile 'com.android.support:support-v4:19.0.1'
     androidTestCompile 'org.mockito:mockito-all:1.9.5'
+
     jaxDoclet("com.google.doclava:doclava:1.0.5")
+    classpaths files('build/classes/release')
+    classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-17/android.jar'))
 }
 
 android {
@@ -33,66 +45,6 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-/***
- * Publishing to maven repository
- */
-
-// Check environment variables for Archiva configuration (e.g CI environment)
-if (System.getenv("bamboo_ARCHIVA_URL") != null) {
-    archiva_contextUrl = "$System.env.bamboo_ARCHIVA_URL"
-    println 'Used environment variable for Archiva URL' + archiva_contextUrl
-}
-
-if (System.getenv("bamboo_ARCHIVA_USR") != null) {
-    archiva_username = "$System.env.bamboo_ARCHIVA_USR"
-    println 'Used environment variable for Archiva Username' + archiva_username
-}
-
-if (System.getenv("bamboo_ARCHIVA_PWD") != null) {
-    archiva_password = "$System.env.bamboo_ARCHIVA_PWD"
-    println 'Used environment variable for Archiva Password ' + archiva_password
-}
-
-project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
-
-publishing {
-    publications {
-        sdkAar(MavenPublication) {
-            artifacts {
-                groupId 'sg.com.temasys.skylink.sdk'
-                artifactId 'skylink_sdk'
-                version currentVersion
-                artifact 'build/outputs/aar/skylink_sdk-release.aar'
-                artifact androidJavadocsJar {
-                    classifier "javadoc"
-                }
-            }
-        }
-        sdkJar(MavenPublication) {
-            groupId 'sg.com.temasys.skylink.sdk'
-            artifactId 'skylink_sdk_jar'
-            version currentVersion
-            artifact 'build/libs/skylink_sdk-release.jar'
-            artifact androidJavadocsJar {
-                classifier "javadoc"
-            }
-        }
-    }
-    repositories {
-        maven {
-            if (!project.ext.isReleaseVersion) {
-                url archiva_contextUrl + "/snapshots"
-            } else {
-                url archiva_contextUrl + "/internal"
-            }
-            credentials {
-                username archiva_username
-                password archiva_password
-            }
         }
     }
 }
@@ -179,13 +131,12 @@ task androidJavadoc(type: Javadoc, dependsOn: 'compileReleaseJava') {
 
 task androidJavadocsJar(type: Jar, dependsOn: 'androidJavadoc') {
     classifier = 'javadoc'
-    from androidJavadoc.destinationDir
+    from 'build/docs/doc/reference/'
 }
 
 /***
  * Generate Jar file
  */
-
 task clearJar(type: Delete) {
     delete 'build/libs/' + "skylink_sdk-release" + '.jar'
 }
@@ -198,3 +149,48 @@ task makeJar(type: Copy) {
 }
 
 makeJar.dependsOn(clearJar, build)
+
+/***
+ * Publishing to maven repository
+ */
+// Check environment variables for Archiva configuration (e.g CI environment)
+if (System.getenv("bamboo_ARCHIVA_URL") != null) {
+    archiva_contextUrl = "$System.env.bamboo_ARCHIVA_URL"
+    println 'Used environment variable for Archiva URL' + archiva_contextUrl
+}
+
+if (System.getenv("bamboo_ARCHIVA_USR") != null) {
+    archiva_username = "$System.env.bamboo_ARCHIVA_USR"
+    println 'Used environment variable for Archiva Username' + archiva_username
+}
+
+if (System.getenv("bamboo_ARCHIVA_PWD") != null) {
+    archiva_password = "$System.env.bamboo_ARCHIVA_PWD"
+    println 'Used environment variable for Archiva Password ' + archiva_password
+}
+
+project.ext.isReleaseVersion = !currentVersion.endsWith("SNAPSHOT")
+
+artifacts {
+    archives androidJavadocsJar
+    archives file('build/libs/skylink_sdk-release.jar')
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            def repositoryUrl = ""
+            if (!project.ext.isReleaseVersion) {
+                repositoryUrl = archiva_contextUrl + "/snapshots"
+            } else {
+                repositoryUrl = archiva_contextUrl + "/internal"
+            }
+            repository(url: repositoryUrl) {
+                authentication(userName: archiva_username, password: archiva_password)
+            }
+            pom.version = currentVersion
+            pom.artifactId = "skylink_sdk"
+            pom.groupId = "sg.com.temasys.skylink.sdk"
+        }
+    }
+}
