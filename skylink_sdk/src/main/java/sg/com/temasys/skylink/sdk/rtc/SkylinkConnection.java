@@ -396,7 +396,10 @@ public class SkylinkConnection {
             }
 
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    myConfig.hasAudioSend(), myConfig.hasVideoSend(), hardwareAccelerated, eglContext
+                    true, true, hardwareAccelerated, eglContext
+                    /* // Note XR:
+                       // PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
+                    // myConfig.hasAudioSend(), myConfig.hasVideoSend(), hardwareAccelerated, eglContext*/
             ), "Failed to initializeAndroidGlobals");
 
             factoryStaticInitialized = true;
@@ -2189,56 +2192,39 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        /*AudioTrack audioTrack = stream.audioTracks.get(0);
-                        if ((audioTrack != null && !myConfig.hasAudioReceive())) {
-                            audioTrack.setEnabled(false);
-                            // audioTrack.dispose();
-                            // audioTrack = null;
-                        }*/
-                        /*if(!myConfig.hasAudioReceive()) {
-                            while (!stream.audioTracks.isEmpty()) {
-                                AudioTrack track = stream.audioTracks.getFirst();
-                                stream.removeTrack(track);
-                                track.dispose();
-                            }
-                        }*/
 
-                        // if (myConfig.hasVideoReceive() || myConfig.hasAudioReceive()) {
-                        if (true) {
-                            abortUnless(stream.audioTracks.size() <= 1
-                                            && stream.videoTracks.size() <= 1,
-                                    "Weird-looking stream: " + stream);
-                            GLSurfaceView remoteVideoView = null;
-                            if ((stream.videoTracks.size() >= 1) ) {
-//                            if ((stream.videoTracks.size() >= 1) && myConfig.hasVideoReceive()) {
-                                remoteVideoView = new GLSurfaceView(applicationContext);
+                        /* Note XR:
+                        Do not handle Audio or video tracks manually to satisfy hasVideoReceive() and hasAudioReceive(),
+                        as webrtc sdp will take care of it, albeit possibly with us doing SDP mangling when we are the answerer.
+                        */
+                        abortUnless(stream.audioTracks.size() <= 1
+                                        && stream.videoTracks.size() <= 1,
+                                "Weird-looking stream: " + stream);
+                        GLSurfaceView remoteVideoView = null;
+                        // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
+                        if ((stream.videoTracks.size() >= 1)) {
+                            remoteVideoView = new GLSurfaceView(applicationContext);
 
-                                VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
-                                MyVideoRendererGuiListener myVideoRendererGuiListener =
-                                        new MyVideoRendererGuiListener();
-                                myVideoRendererGuiListener.setPeerId(myId);
-                                gui.setListener(myVideoRendererGuiListener);
+                            VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
+                            MyVideoRendererGuiListener myVideoRendererGuiListener =
+                                    new MyVideoRendererGuiListener();
+                            myVideoRendererGuiListener.setPeerId(myId);
+                            gui.setListener(myVideoRendererGuiListener);
 
-                                VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
-                                        100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                                stream.videoTracks.get(0).addRenderer(
-                                        new VideoRenderer(remoteRender));
+                            VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
+                                    100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
+                            stream.videoTracks.get(0).addRenderer(
+                                    new VideoRenderer(remoteRender));
 
-                                final GLSurfaceView rVideoView = remoteVideoView;
-                                // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
-                                if (!connectionManager.isPeerIdMCU(myId))
-                                    mediaListener.onRemotePeerMediaReceive(myId, rVideoView);
-                            } else {
-                                // If:
-                                // This is an audio only stream (audio will be added automatically)
-                                // OR
-                                // VideoTrack exists but no audio receive config is set,
-                                // Send a null videoView to alert remote Peer stream is received.
-                                if (!connectionManager.isPeerIdMCU(myId))
-                                    mediaListener.onRemotePeerMediaReceive(myId, null);
-                            }
+                            final GLSurfaceView rVideoView = remoteVideoView;
+                            // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
+                            if (!connectionManager.isPeerIdMCU(myId))
+                                mediaListener.onRemotePeerMediaReceive(myId, rVideoView);
                         } else {
-                            // If this is a no audio no video stream,
+                            // If:
+                            // This is an audio only stream (audio will be added automatically)
+                            // OR
+                            // This is a no audio and no video stream
                             // still send a null videoView to alert user stream is received.
                             if (!connectionManager.isPeerIdMCU(myId))
                                 mediaListener.onRemotePeerMediaReceive(myId, null);
@@ -2323,6 +2309,8 @@ public class SkylinkConnection {
                 if (connectionState == ConnectionState.DISCONNECT) return;
                 abortUnless(this.localSdp == null, "multiple SDP create?!?");
 
+                String sdpType = origSdp.type.canonicalForm();
+
                 // Set the preferred audio codec
                 String sdpString = Utils.preferCodec(origSdp.description,
                         myConfig.getPreferredAudioCodec().toString(), true);
@@ -2330,7 +2318,26 @@ public class SkylinkConnection {
                 // Modify stereo audio in the SDP if required
                 sdpString = Utils.modifyStereoAudio(sdpString, myConfig);
 
+                // If answer, may need to mangle to respect our own MediaConstraints:
+                /* Note XR:
+                The webrtc designed behaviour seems to be that if an offerer SDP indicates to send media,
+                the answerer will generate an SDP to accept it, even if the answerer had put in its
+                MediaConstraints not to accept that media (provided it sends that media):
+                https://code.google.com/p/webrtc/issues/detail?id=2404
+                Hence, for our answerer to respect its own MediaConstraints, the answer SDP will be
+                mangled (if required) to respect the MediaConstraints (sdpMediaConstraints).
+                */
+                if ("answer".equals(sdpType)) {
+                    if (!myConfig.hasAudioReceive() && myConfig.hasAudioSend()) {
+                        sdpString = Utils.sdpAudioSendOnly(sdpString);
+                    }
+                    if (!myConfig.hasVideoReceive() && myConfig.hasVideoSend()) {
+                        sdpString = Utils.sdpVideoSendOnly(sdpString);
+                    }
+                }
+
                 sdp = new SessionDescription(origSdp.type, sdpString);
+
                 this.localSdp = sdp;
                 pc = connectionManager.peerConnectionPool
                         .get(this.myId);
@@ -2434,25 +2441,10 @@ public class SkylinkConnection {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
                 if (connectionState == ConnectionState.DISCONNECT) return;
-                /* The webrtc designed behaviour is that if an offerer SDP indicates to send media, the answerer will generate an SDP to accept it, even if the answerer had put in its media constraint not to accept that media:
-                https://code.google.com/p/webrtc/issues/detail?id=2404
-                Hence, for our answerer to respect its own MediaConstraints, the answer SDP will be mangled if needed to respect the MediaConstraints (sdpMediaConstraints).*/
-                String sdpType = sdp.type.canonicalForm();
-                String sdpStr = sdp.description;
-                // If answer, may need to mangle:
-                if("answer".equals(sdpType)) {
-                    if(!myConfig.hasAudioReceive()) {
-                        sdpStr = Utils.sdpAudioRecvOnly(sdpStr);
-                    }
-                    if(!myConfig.hasVideoReceive()) {
-                        sdpStr = Utils.sdpVideoRecvOnly(sdpStr);
-                    }
-                }
-
                 JSONObject json = new JSONObject();
                 try {
-                    json.put("type", sdpType);
-                    json.put("sdp", sdpStr);
+                    json.put("type", sdp.type.canonicalForm());
+                    json.put("sdp", sdp.description);
                     json.put("mid", connectionManager.webServerClient.getSid());
                     json.put("target", this.myId);
                     json.put("rid", connectionManager.webServerClient.getRoomId());

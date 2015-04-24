@@ -306,16 +306,14 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * @return preferred audio codec used.
-     * Possible values {@link sg.com.temasys.skylink.sdk.config.SkylinkConfig.AudioCodec}
+     * @return preferred audio codec used. Possible values {@link sg.com.temasys.skylink.sdk.config.SkylinkConfig.AudioCodec}
      */
     public AudioCodec getPreferredAudioCodec() {
         return preferredAudioCodec;
     }
 
     /**
-     * Sets the preferredAudioCodec.
-     * Possible values {@link sg.com.temasys.skylink.sdk.config.SkylinkConfig.AudioCodec}
+     * Sets the preferredAudioCodec. Possible values {@link sg.com.temasys.skylink.sdk.config.SkylinkConfig.AudioCodec}
      *
      * @param preferredAudioCodec
      */
@@ -324,15 +322,15 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     *
      * @return the video height
      */
     public int getVideoHeight() {
         return videoHeight;
     }
 
-    /***
+    /**
      * Sets the video height.
+     *
      * @param videoHeight
      */
     public void setVideoHeight(int videoHeight) {
@@ -340,7 +338,6 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     *
      * @return the video width
      */
     public int getVideoWidth() {
@@ -349,6 +346,7 @@ public class SkylinkConfig implements Serializable {
 
     /**
      * Sets the video width
+     *
      * @param videoWidth
      */
     public void setVideoWidth(int videoWidth) {
@@ -356,7 +354,6 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     *
      * @return true if stereo audio is used
      */
     public boolean isStereoAudio() {
@@ -365,6 +362,7 @@ public class SkylinkConfig implements Serializable {
 
     /**
      * Sets if stereo audio is enabled.
+     *
      * @param stereoAudio configuration value
      */
     public void setStereoAudio(boolean stereoAudio) {
@@ -372,7 +370,6 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     *
      * @return the video FPS
      */
     public int getVideoFps() {
@@ -381,6 +378,7 @@ public class SkylinkConfig implements Serializable {
 
     /**
      * Sets the video FPS
+     *
      * @param videoFPS
      */
     public void setVideoFps(int videoFPS) {

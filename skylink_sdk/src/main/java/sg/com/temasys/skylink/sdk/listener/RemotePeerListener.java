@@ -9,8 +9,8 @@ public interface RemotePeerListener {
      * This is triggered when a remote peer joins the room.
      *
      * @param remotePeerId   The id of the peer
-     * @param userData       User defined data relating to the remote peer. May be a
-     * @param hasDataChannel
+     * @param userData       User defined data relating to the remote peer.
+     * @param hasDataChannel Whether peer has enabled DataChannel.
      */
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel);
 

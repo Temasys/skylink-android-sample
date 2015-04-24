@@ -20,7 +20,7 @@ public class RemotePeerUserInfo {
     }
 
     public RemotePeerUserInfo(JSONObject jsonObject) {
-        if(jsonObject != null && jsonObject.has("settings")){
+        if (jsonObject != null && jsonObject.has("settings")) {
             try {
                 JSONObject settings = jsonObject.getJSONObject("settings");
                 audioStereo = settings.getJSONObject("audio").getBoolean("stereo");
