@@ -2369,7 +2369,7 @@ public class SkylinkConnection {
                                     PeerInfo peerInfo = peerInfoMap.get(SDPObserver.this.myId);
                                     boolean eDC = false;
                                     if (peerInfo != null) eDC = peerInfo.isEnableDataChannel();
-                                    remotePeerListener.onRemotePeerJoin(tid, connectionManager.getUserInfo(tid), eDC);
+                                    remotePeerListener.onRemotePeerJoin(tid, connectionManager.getUserData(tid), eDC);
                                 }
                             }
                         }
