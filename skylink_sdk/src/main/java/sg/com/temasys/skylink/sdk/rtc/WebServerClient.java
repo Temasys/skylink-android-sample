@@ -30,6 +30,8 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.github.nkzawa.socketio.client.Socket;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.MediaConstraints;
@@ -40,8 +42,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.LinkedList;
 import java.util.List;
-
-import io.socket.SocketIO;
 
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms". Uses the client<->server
@@ -99,9 +99,9 @@ class WebServerClient implements RoomParameterServiceListener {
      */
     public void disconnect() {
         if (socketTester != null) {
-            SocketIO socketIO = socketTester.getSocketIO();
-            if (socketIO.isConnected()) {
-                socketTester.setDelegate(null);
+            Socket socketIO = socketTester.getSocketIO();
+            socketIO.off();
+            if (socketIO.connected()) {
                 socketIO.disconnect();
             }
         }
