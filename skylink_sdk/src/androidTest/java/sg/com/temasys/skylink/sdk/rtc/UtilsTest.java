@@ -106,6 +106,170 @@ public class UtilsTest {
     }
 
     @Test
+    public void testSdpSegmentFindsAudioWhenAudioPresent() {
+        String strBefore =
+                "a=mid:audioo\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=sendonly\r\n";
+        String strAudio =
+                "a=mid:audio\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:111 opus/48000/2\r\n" +
+                        "a=fmtp:111 minptime=10; useinbandfec=1\r\n";
+        String strVideo =
+                "a=mid:video\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:100 VP8/90000\r\n";
+        String strAfter =
+                "a=mid:videoo\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n";
+
+        String sdpTest = strBefore + strAudio + strVideo + strAfter;
+
+        // Perform method
+        String[] sdpSegments = Utils.sdpSegment(sdpTest, "audio");
+
+        // Check results
+        // Before segment is correct.
+        assertTrue(strBefore.equals(sdpSegments[0]));
+        // Found segment is correct.
+        assertTrue(strAudio.equals(sdpSegments[1]));
+        // After segment is correct.
+        assertTrue((strVideo + strAfter).equals(sdpSegments[2]));
+    }
+
+    @Test
+    public void testSdpSegmentFindsNoAudioWhenAudioNotPresent() {
+        String strBefore =
+                "a=mid:audiooo\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=sendonly\r\n";
+        String strAudioo =
+                "a=mid:audioo\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:111 opus/48000/2\r\n" +
+                        "a=fmtp:111 minptime=10; useinbandfec=1\r\n";
+        String strVideo =
+                "a=mid:video\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:100 VP8/90000\r\n";
+        String strAfter =
+                "a=mid:videooo\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n";
+
+        String sdpTest = strBefore + strAudioo + strVideo + strAfter;
+
+        // Perform method
+        String[] sdpSegments = Utils.sdpSegment(sdpTest, "audio");
+
+        // Check results
+        // Before segment is correct.
+        assertTrue(sdpTest.equals(sdpSegments[0]));
+        // Found segment is correct.
+        assertTrue("".equals(sdpSegments[1]));
+        // After segment is correct.
+        assertTrue(("").equals(sdpSegments[2]));
+    }
+
+    @Test
+    public void testSdpSegmentFindsVideoWhenVideoPresent() {
+        String strBefore =
+                "a=mid:audioo\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=sendonly\r\n";
+        String strAudio =
+                "a=mid:audio\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:111 opus/48000/2\r\n" +
+                        "a=fmtp:111 minptime=10; useinbandfec=1\r\n";
+        String strVideo =
+                "a=mid:video\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:100 VP8/90000\r\n";
+        String strAfter =
+                "a=mid:videoo\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n";
+
+        String sdpTest = strBefore + strAudio + strVideo + strAfter;
+
+        // Perform method
+        String[] sdpSegments = Utils.sdpSegment(sdpTest, "video");
+
+        // Check results
+        // Before segment is correct.
+        assertTrue((strBefore + strAudio).equals(sdpSegments[0]));
+        // Found segment is correct.
+        assertTrue(strVideo.equals(sdpSegments[1]));
+        // After segment is correct.
+        assertTrue(strAfter.equals(sdpSegments[2]));
+    }
+
+    @Test
+    public void testSdpSegmentFindsNoVideoWhenVideoNotPresent() {
+        String strBefore =
+                "a=mid:audiooo\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=sendonly\r\n";
+        String strAudio =
+                "a=mid:audio\r\n" +
+                        "a=extmap:1 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:111 opus/48000/2\r\n" +
+                        "a=fmtp:111 minptime=10; useinbandfec=1\r\n";
+        String strVideoo =
+                "a=mid:videoo\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n" +
+                        "a=rtcp-mux\r\n" +
+                        "a=rtpmap:100 VP8/90000\r\n";
+        String strAfter =
+                "a=mid:videooo\r\n" +
+                        "a=extmap:2 urn:ietf:params:rtp-hdrext:toffset\r\n" +
+                        "a=extmap:3 http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time\r\n" +
+                        "a=sendonly\r\n";
+
+        String sdpTest = strBefore + strAudio + strVideoo + strAfter;
+
+        // Perform method
+        String[] sdpSegments = Utils.sdpSegment(sdpTest, "video");
+
+        // Check results
+        // Before segment is correct.
+        assertTrue(sdpTest.equals(sdpSegments[0]));
+        // Found segment is correct.
+        assertTrue("".equals(sdpSegments[1]));
+        // After segment is correct.
+        assertTrue(("").equals(sdpSegments[2]));
+    }
+
+    @Test
     public void testWillNotAddStereoIfNotOpus() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("a=rtpmap:111 opus/48000/2" + "\r\n");
