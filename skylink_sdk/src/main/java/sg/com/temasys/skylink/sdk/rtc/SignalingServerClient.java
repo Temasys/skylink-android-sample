@@ -108,7 +108,6 @@ class SignalingServerClient {
     }
 
     void onConnect() {
-        Log.d(TAG, "Connection established");
         Log.d(TAG, "Connected to Signaling server.");
         isConnected = true;
         delegate.onOpen();
@@ -117,18 +116,15 @@ class SignalingServerClient {
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
         Log.d(TAG, "Server said:" + jsonStr);
-        Log.d(TAG, "Server message Json: " + jsonStr + "\n");
         delegate.onMessage(jsonStr);
     }
 
     public void onMessage(String data) {
         Log.d(TAG, "Server said: " + data);
-        Log.d(TAG, "Server message String: " + data + "\n");
         delegate.onMessage(data);
     }
 
     void onDisconnect() {
-        Log.d(TAG, "Connection terminated.");
         Log.d(TAG, "Disconnected from Signaling server.");
         if (delegate != null) {
             delegate.onClose();
