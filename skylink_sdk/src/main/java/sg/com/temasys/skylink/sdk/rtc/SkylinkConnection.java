@@ -395,11 +395,12 @@ public class SkylinkConnection {
                 Log.d(TAG, "Enabled hardware acceleration");
             }
 
+            /*
+            Note XR:
+             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
+            */
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
                     true, true, hardwareAccelerated, eglContext
-                    /* // Note XR:
-                       // PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
-                    // myConfig.hasAudioSend(), myConfig.hasVideoSend(), hardwareAccelerated, eglContext*/
             ), "Failed to initializeAndroidGlobals");
 
             factoryStaticInitialized = true;

@@ -169,7 +169,7 @@ class Utils {
      * @param sdpDescription
      * @return Mangled or original SDP.
      */
-    public static String sdpAudioRecvOnly(String sdpDescription) {
+    public static String sdpAudioReceiveOnly(String sdpDescription) {
         String sdp = sdpSendReceiveOnly(sdpDescription, false, true);
         return sdp;
     }
@@ -180,7 +180,7 @@ class Utils {
      * @param sdpDescription
      * @return Mangled or original SDP.
      */
-    public static String sdpVideoRecvOnly(String sdpDescription) {
+    public static String sdpVideoReceiveOnly(String sdpDescription) {
         String sdp = sdpSendReceiveOnly(sdpDescription, false, false);
         return sdp;
     }
@@ -300,14 +300,15 @@ class Utils {
     /**
      * Replaces a particular SDP line with another one.
      *
-     * @param sdpDescription SDP description string.
-     * @param regex          Regex string specifying the line to be replaced.
-     * @param newStr         String to be replaced.
-     * @param firstOnly      Boolean for replacing first occurrence only.
+     * @param sdpDescription     SDP description string.
+     * @param regex              Regex string specifying the line to be replaced.
+     * @param newLine            String to be replace the line matching regex.
+     * @param firstOccurenceOnly Boolean for replacing first occurrence only. Replace all occurences
+     *                           if false.
      * @return The replaced SDP or "" if no replacement occurred.
      */
 
-    public static String sdpReplace(String sdpDescription, String regex, String newStr, boolean firstOnly) {
+    public static String sdpReplace(String sdpDescription, String regex, String newLine, boolean firstOccurenceOnly) {
         String lineReturn = "";
         String[] lines = sdpDescription.split("\r\n");
         boolean found = false;
@@ -315,7 +316,7 @@ class Utils {
         Pattern sdpPattern = Pattern.compile(regex);
         for (String lineCur : lines) {
             // If only first occurrence needed, and it has been found, simply add line to return line.
-            if (firstOnly && found) {
+            if (firstOccurenceOnly && found) {
                 lineReturn += lineCur + "\r\n";
                 continue;
             }
@@ -323,7 +324,7 @@ class Utils {
             Matcher sdoMatcher = sdpPattern.matcher(lineCur);
             if (sdoMatcher.matches()) {
                 found = true;
-                lineReturn += newStr + "\r\n";
+                lineReturn += newLine + "\r\n";
             } else {
                 lineReturn += lineCur + "\r\n";
             }

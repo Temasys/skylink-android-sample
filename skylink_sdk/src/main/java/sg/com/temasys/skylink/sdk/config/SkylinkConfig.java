@@ -152,9 +152,6 @@ public class SkylinkConfig implements Serializable {
                 this.videoSend = true;
                 break;
         }
-
-        // Set audio video receive with the same settings.
-        // setAudioVideoReceiveConfig(audioVideoConfig);
     }
 
     /**
