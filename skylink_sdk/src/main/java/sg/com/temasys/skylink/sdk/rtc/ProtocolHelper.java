@@ -283,7 +283,7 @@ class ProtocolHelper {
             skylinkConnection.getPcObserverPool().remove(remotePeerId);
             skylinkConnection.getSdpObserverPool().remove(remotePeerId);
             skylinkConnection.getUserInfoMap().remove(remotePeerId);
-   			// This commenting is a hack to accommodate the non-Android clients until the update to SM 0.1.1.
+            // This commenting is a hack to accommodate the non-Android clients until the update to SM 0.1.1.
             // PeerInfo of peer is required for sender of restart.
             // TODO XR: Remove commenting after JS client update to compatible restart protocol.
             // skylinkConnection.getPeerInfoMap().remove(remotePeerId);

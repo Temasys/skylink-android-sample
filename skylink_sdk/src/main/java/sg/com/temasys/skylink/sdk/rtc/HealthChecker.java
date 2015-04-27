@@ -98,6 +98,7 @@ class HealthChecker {
 
     /**
      * Send restart if it is needed.
+     *
      * @return true if restart needed, false otherwise.
      */
     private boolean tryRestart() {
@@ -162,7 +163,6 @@ class HealthChecker {
     }
 
     /**
-     *
      * @return iceState
      */
     PeerConnection.IceConnectionState getIceState() {
@@ -171,6 +171,7 @@ class HealthChecker {
 
     /**
      * Set the iceState and also sets waitMs
+     *
      * @param iceState
      */
     void setIceState(PeerConnection.IceConnectionState iceState) {
@@ -179,7 +180,6 @@ class HealthChecker {
     }
 
     /**
-     *
      * @return iceRole
      */
     String getIceRole() {
@@ -188,6 +188,7 @@ class HealthChecker {
 
     /**
      * Set iceRole based on role given and whether ICE trickle has been enabled.
+     *
      * @param iceRole
      */
     void setIceRole(String iceRole) {
