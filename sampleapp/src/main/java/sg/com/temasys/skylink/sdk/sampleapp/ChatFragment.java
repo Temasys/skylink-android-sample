@@ -225,8 +225,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
         // AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
+        try {
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        } catch (SkylinkException e) {
+            e.printStackTrace();
+        }
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);

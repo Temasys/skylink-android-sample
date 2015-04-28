@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="rules">
+    <option name="sonarRulesByRuleKey">
+      <map>
+        <entry key="squid:SwitchLastCaseIsDefaultCheck">
+          <value>
+            <Rule>
+              <option name="htmlDesc" value="&lt;p&gt;&#10;The requirement for a final default clause is defensive programming.&#10;This clause should either take appropriate action or contain a suitable comment as to why no action is taken.&#10;&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;The following code snippet illustrates this rule:&#10;&lt;/p&gt;&#10;&#10;&lt;pre&gt;&#10;switch (state) {                       // Non-Compliant - must have a default case&#10;  case 0:&#10;  case 1:&#10;    System.out.println(&quot;0 or 1!&quot;);&#10;    break;&#10;}&#10;&#10;switch (state) {&#10;  default:                             // Non-Compliant - must be last for better readability&#10;    throw new IllegalStateException();&#10;  case 0:&#10;  case 1:&#10;    System.out.println(&quot;0 or 1!&quot;);&#10;    break;&#10;}&#10;&#10;switch (state) {&#10;  case 0:&#10;  case 1:&#10;    System.out.println(&quot;0 or 1!&quot;);&#10;    break;&#10;  default:                             // Compliant&#10;    throw new IllegalStateException();&#10;&lt;/pre&gt;" />
+              <option name="key" value="squid:SwitchLastCaseIsDefaultCheck" />
+              <option name="langName" value="Java" />
+              <option name="name" value="Switch statements should end with a default case" />
+              <option name="severity" value="MAJOR" />
+            </Rule>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

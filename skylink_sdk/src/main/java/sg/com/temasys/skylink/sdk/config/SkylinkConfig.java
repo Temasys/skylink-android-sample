@@ -3,6 +3,8 @@ package sg.com.temasys.skylink.sdk.config;
 import java.io.Serializable;
 import java.util.Map;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
+
 /**
  * Configuration class used to configure the parameters of real time communication.
  *
@@ -133,7 +135,7 @@ public class SkylinkConfig implements Serializable {
      *
      * @param audioVideoConfig Audio video send config value
      */
-    public void setAudioVideoSendConfig(AudioVideoConfig audioVideoConfig) {
+    public void setAudioVideoSendConfig(AudioVideoConfig audioVideoConfig) throws SkylinkException {
         switch (audioVideoConfig) {
             case NO_AUDIO_NO_VIDEO:
                 this.audioSend = false;
@@ -151,6 +153,9 @@ public class SkylinkConfig implements Serializable {
                 this.audioSend = true;
                 this.videoSend = true;
                 break;
+            default:
+                throw new SkylinkException("Unable to set " + audioVideoConfig +
+                        " as the send Audio and Video config.");
         }
     }
 
@@ -159,7 +164,7 @@ public class SkylinkConfig implements Serializable {
      *
      * @param audioVideoConfig Audio video receive config value
      */
-    public void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) {
+    public void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) throws SkylinkException {
         switch (audioVideoConfig) {
             case NO_AUDIO_NO_VIDEO:
                 this.audioReceive = false;
@@ -177,6 +182,9 @@ public class SkylinkConfig implements Serializable {
                 this.audioReceive = true;
                 this.videoReceive = true;
                 break;
+            default:
+                throw new SkylinkException("Unable to set " + audioVideoConfig +
+                        " as the receive Audio and Video config.");
         }
     }
 
