@@ -46,6 +46,12 @@ import java.util.Set;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import sg.com.temasys.skylink.sdk.adapter.DataTransferAdapter;
+import sg.com.temasys.skylink.sdk.adapter.FileTransferAdapter;
+import sg.com.temasys.skylink.sdk.adapter.LifeCycleAdapter;
+import sg.com.temasys.skylink.sdk.adapter.MediaAdapter;
+import sg.com.temasys.skylink.sdk.adapter.MessagesAdapter;
+import sg.com.temasys.skylink.sdk.adapter.RemotePeerAdapter;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;

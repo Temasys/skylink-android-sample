@@ -1,11 +1,11 @@
-package sg.com.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.adapter;
 
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 
 /**
  * @author Temasys Communications Pte Ltd
  */
-class RemotePeerAdapter implements RemotePeerListener {
+public class RemotePeerAdapter implements RemotePeerListener {
 
     /**
      *

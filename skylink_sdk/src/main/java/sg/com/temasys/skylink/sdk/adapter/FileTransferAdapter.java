@@ -1,11 +1,11 @@
-package sg.com.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.adapter;
 
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 
 /**
  * @author Temasys Communications Pte Ltd
  */
-class FileTransferAdapter implements
+public class FileTransferAdapter implements
         FileTransferListener {
 
     /**

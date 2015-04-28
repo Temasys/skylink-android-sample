@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.adapter;
 
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
@@ -8,7 +8,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 /**
  * @author Temasys Communications Pte Ltd
  */
-class MediaAdapter implements MediaListener {
+public class MediaAdapter implements MediaListener {
 
     /**
      *
