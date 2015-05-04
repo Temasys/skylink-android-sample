@@ -51,6 +51,8 @@ class MessageProcessorFactory {
 
         MessageProcessor messageProcessor = null;
 
+        // TODO: Use switch or use a map
+
         if (IN_ROOM.equalsIgnoreCase(messageType)) {
             messageProcessor = new InRoomMessageProcessor();
         } else if (ENTER.equalsIgnoreCase(messageType)) {
@@ -77,6 +79,7 @@ class MessageProcessorFactory {
 
     /**
      * Returns the appropriate message processor for the message
+     *
      * @param messageType Signaling message
      * @return Message processor or null for unsupported message types
      */

@@ -116,7 +116,9 @@ public class SkylinkConnection {
     private WebServerClient webServerClient;
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
-    private MessageHandler messageHandler = new MyMessageHandler();
+
+    // TODO: Remove this
+    public MyMessageHandler messageHandler = new MyMessageHandler();
 
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
@@ -128,6 +130,7 @@ public class SkylinkConnection {
     private boolean roomLocked;
     private VideoRendererGui localVideoRendererGui;
     private MediaConstraints videoConstraints;
+    private SignalingMessageProcessingService signalingMessageProcessingService;
 
     /**
      * List of Connection state types
@@ -252,8 +255,12 @@ public class SkylinkConnection {
             this.dataTransferListener = new DataTransferAdapter();
         }
 
-        this.webServerClient = new WebServerClient(messageHandler,
-                iceServersObserver);
+        if (this.signalingMessageProcessingService == null) {
+            this.signalingMessageProcessingService = new SignalingMessageProcessingService(this);
+        }
+
+        this.webServerClient = new WebServerClient(iceServersObserver,
+                this.signalingMessageProcessingService);
 
         String url = API_SERVER + skylinkConnectionString;
         try {
@@ -333,7 +340,7 @@ public class SkylinkConnection {
     }
 
     // Restart all connections when rejoining room.
-    private void rejoinRestart() {
+    void rejoinRestart() {
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
@@ -447,7 +454,7 @@ public class SkylinkConnection {
         peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
-    private void setVideoConstrains(SkylinkConfig skylinkConfig){
+    private void setVideoConstrains(SkylinkConfig skylinkConfig) {
         videoConstraints = new MediaConstraints();
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
@@ -462,7 +469,7 @@ public class SkylinkConnection {
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
     }
-    
+
     /**
      * Runs the specified action on the UI thread
      *
@@ -1035,13 +1042,14 @@ public class SkylinkConnection {
 
     /**
      * Retrieves the user defined info object associated with a remote peer.
+     *
      * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.
      * @return 'org.json.JSONObject'
      */
-    public Object getUserInfo(String remotePeerId){
+    public Object getUserInfo(String remotePeerId) {
         if (remotePeerId == null) {
             return this.myUserData;
-        }else {
+        } else {
             return this.userInfoMap.get(remotePeerId);
         }
     }
@@ -1423,37 +1431,13 @@ public class SkylinkConnection {
     /*
      * GAEChannelClient.MessageHandler
      */
-    private class MyMessageHandler implements MessageHandler {
+    //TODO: Remove
+    class MyMessageHandler {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 
-        @Override
-        public void onOpen() {
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
-                connectionManager.iceServersObserver.onIceServers(null);
-            }
-        }
-
-        @Override
-        public void onMessage(String data) {
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnectMsg) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
-                try {
-                    messageProcessor(data);
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
-        }
-
-        private void messageProcessor(String data) throws JSONException {
+        //TODO: Should remove this method
+        public void messageProcessor(String data) throws JSONException {
             String message = data;
             final JSONObject objects = new JSONObject(data);
 
@@ -1462,77 +1446,13 @@ public class SkylinkConnection {
 
             if (value.compareTo("inRoom") == 0) {
 
-                String mid = objects.getString("sid");
-                connectionManager.webServerClient.setSid(mid);
-
-                JSONObject pcConfigJSON = objects.getJSONObject("pc_config");
-                String username = "";// pcConfigJSON.getString("username");
-                username = username != null ? username : "";
-                List<PeerConnection.IceServer> result = new ArrayList<PeerConnection.IceServer>();
-                JSONArray iceServers = pcConfigJSON.getJSONArray("iceServers");
-                for (int i = 0; i < iceServers.length(); i++) {
-                    JSONObject iceServer = iceServers.getJSONObject(i);
-                    String url = iceServer.getString("url");
-                    if (myConfig.isStunDisabled() && url.startsWith("stun:")) {
-                        connectionManager.logMessage(
-                                "[SDK] Not adding stun server as stun disabled in config.");
-                        continue;
-                    }
-                    if (myConfig.isTurnDisabled() && url.startsWith("turn:")) {
-                        connectionManager.logMessage(
-                                "[SDK] Not adding turn server as turn disabled in config.");
-                        continue;
-                    }
-                    if (myConfig.getTransport() != null)
-                        url = url + "?transport=" + myConfig.getTransport();
-                    String credential = "";
-                    try {
-                        credential = iceServer.getString("credential");
-                    } catch (JSONException e) {
-
-                    }
-                    credential = credential != null ? credential : "";
-                    connectionManager.logMessage("[SDK] url [" + url
-                            + "] - credential [" + credential + "]");
-                    PeerConnection.IceServer server = new PeerConnection.IceServer(
-                            url, username, credential);
-                    result.add(server);
-                }
-
-                connectionManager.iceServersObserver.onIceServers(result);
-
-                // Set mid and displayName in DataChannelManager
-                if (connectionManager.dataChannelManager != null) {
-                    connectionManager.dataChannelManager.setMid(mid);
-                    connectionManager.dataChannelManager
-                            .setDisplayName(connectionManager.myUserData
-                                    .toString());
-                }
-
-                // Check if pcObserverPool has been populated.
-                if (pcObserverPool != null) {
-                    // If so, chances are this is a rejoin of room.
-                    // Send restart to all.
-                    rejoinRestart();
-                } else {
-                    // If not, chances are this is a first join room, or there were no peers from before.
-                    // Create afresh all PC related maps.
-                    initializePcRelatedMaps();
-                    // Send enter.
-                    try {
-                        ProtocolHelper.sendEnter(null, connectionManager, webServerClient);
-                    } catch (JSONException e) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-                }
-
 
             } else if (value.compareTo("enter") == 0) {
 
                 String mid = objects.getString("mid");
                 Object userInfo = "";
                 try {
-                    userInfo = ((JSONObject) objects.get("userInfo"));
+                    userInfo = objects.get("userInfo");
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
@@ -1859,46 +1779,6 @@ public class SkylinkConnection {
 
         }
 
-        @Override
-        public void onClose() {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
-                        connectionManager.logMessage("[SDK] onClose.");
-
-                        lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR,
-                                "Connection with the skylink server is closed");
-                    }
-                    // Disconnect from room
-                    disconnectFromRoom();
-                }
-            });
-        }
-
-        @Override
-        public void onError(final int code, final String description) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
-                        final String message = "[SDK] onError: " + code + ", " + description;
-                        connectionManager.logMessage(message);
-                        lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
-                    }
-
-                    // Disconnect from room
-                    disconnectFromRoom();
-                }
-            });
-        }
-
     }
 
     void processWelcome(JSONObject objects) throws JSONException {
@@ -1939,7 +1819,7 @@ public class SkylinkConnection {
         Object userInfo = "";
 
         try {
-            userInfo = ((JSONObject) objects.get("userInfo"));
+            userInfo = objects.get("userInfo");
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -2459,7 +2339,7 @@ public class SkylinkConnection {
     }
 
     // Initialize all PC related maps.
-    private void initializePcRelatedMaps() {
+    void initializePcRelatedMaps() {
         peerConnectionPool = new Hashtable<String, PeerConnection>();
         pcObserverPool = new Hashtable<String, PCObserver>();
         sdpObserverPool = new Hashtable<String, SDPObserver>();
@@ -2487,4 +2367,31 @@ public class SkylinkConnection {
         return peerInfoMap;
     }
 
+    Object getLockDisconnect() {
+        return lockDisconnect;
+    }
+
+    ConnectionState getConnectionState() {
+        return connectionState;
+    }
+
+    WebServerClient.IceServersObserver getIceServersObserver() {
+        return iceServersObserver;
+    }
+
+    WebServerClient getWebServerClient() {
+        return webServerClient;
+    }
+
+    SkylinkConfig getMyConfig() {
+        return myConfig;
+    }
+
+    DataChannelManager getDataChannelManager() {
+        return dataChannelManager;
+    }
+
+    Object getMyUserData() {
+        return myUserData;
+    }
 }
