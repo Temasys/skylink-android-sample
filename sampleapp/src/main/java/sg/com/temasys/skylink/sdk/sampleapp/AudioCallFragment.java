@@ -23,7 +23,6 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
  * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
@@ -135,12 +134,8 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
-        try {
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);

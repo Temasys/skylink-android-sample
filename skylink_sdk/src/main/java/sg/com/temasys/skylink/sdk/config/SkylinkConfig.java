@@ -1,9 +1,10 @@
 package sg.com.temasys.skylink.sdk.config;
 
+import android.util.Log;
+
 import java.io.Serializable;
 import java.util.Map;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
  * Configuration class used to configure the parameters of real time communication.
@@ -12,6 +13,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
  */
 public class SkylinkConfig implements Serializable {
 
+    private static final String TAG = SkylinkConfig.class.getName();
     private static final long serialVersionUID = 1L;
 
     public static int MAX_VIDEO_HEIGHT = 480;
@@ -135,7 +137,7 @@ public class SkylinkConfig implements Serializable {
      *
      * @param audioVideoConfig Audio video send config value
      */
-    public void setAudioVideoSendConfig(AudioVideoConfig audioVideoConfig) throws SkylinkException {
+    public void setAudioVideoSendConfig(AudioVideoConfig audioVideoConfig) {
         switch (audioVideoConfig) {
             case NO_AUDIO_NO_VIDEO:
                 this.audioSend = false;
@@ -154,7 +156,7 @@ public class SkylinkConfig implements Serializable {
                 this.videoSend = true;
                 break;
             default:
-                throw new SkylinkException("Unable to set " + audioVideoConfig +
+                Log.e(TAG, "Unable to set " + audioVideoConfig +
                         " as the send Audio and Video config.");
         }
     }
@@ -164,7 +166,7 @@ public class SkylinkConfig implements Serializable {
      *
      * @param audioVideoConfig Audio video receive config value
      */
-    public void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) throws SkylinkException {
+    public void setAudioVideoReceiveConfig(AudioVideoConfig audioVideoConfig) {
         switch (audioVideoConfig) {
             case NO_AUDIO_NO_VIDEO:
                 this.audioReceive = false;
@@ -183,7 +185,7 @@ public class SkylinkConfig implements Serializable {
                 this.videoReceive = true;
                 break;
             default:
-                throw new SkylinkException("Unable to set " + audioVideoConfig +
+                Log.e(TAG, "Unable to set " + audioVideoConfig +
                         " as the receive Audio and Video config.");
         }
     }

@@ -33,7 +33,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         MediaListener, RemotePeerListener, LifeCycleListener {
 
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
-    private static final String ROOM_NAME = "Hangout";
+    //    private static final String ROOM_NAME = "Hangout";
+    private static final String ROOM_NAME = "xr";
     private static final String MY_USER_NAME = "videoCallUser";
     public static final String KEY_SELF = "self";
     private static final String ARG_SECTION_NUMBER = "section_number";

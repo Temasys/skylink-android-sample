@@ -27,11 +27,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoSendConfigNoAudioNoVideo() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         assertFalse(skylinkConfig.hasAudioSend());
         assertFalse(skylinkConfig.hasVideoSend());
     }
@@ -39,11 +35,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoSendConfigAudioOnly() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         assertTrue(skylinkConfig.hasAudioSend());
         assertFalse(skylinkConfig.hasVideoSend());
     }
@@ -51,11 +43,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoSendConfigVideoOnly() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.VIDEO_ONLY);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.VIDEO_ONLY);
         assertFalse(skylinkConfig.hasAudioSend());
         assertTrue(skylinkConfig.hasVideoSend());
     }
@@ -63,11 +51,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoSendConfigAudioAndVideo() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         assertTrue(skylinkConfig.hasAudioSend());
         assertTrue(skylinkConfig.hasVideoSend());
     }
@@ -75,11 +59,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoReceiveConfigNoAudioNoVideo() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         assertFalse(skylinkConfig.hasAudioReceive());
         assertFalse(skylinkConfig.hasVideoReceive());
     }
@@ -87,11 +67,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoReceiveConfigAudioOnly() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         assertTrue(skylinkConfig.hasAudioReceive());
         assertFalse(skylinkConfig.hasVideoReceive());
     }
@@ -99,11 +75,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoReceiveConfigVideoOnly() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.VIDEO_ONLY);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.VIDEO_ONLY);
         assertFalse(skylinkConfig.hasAudioReceive());
         assertTrue(skylinkConfig.hasVideoReceive());
     }
@@ -111,11 +83,7 @@ public class SkylinkConfigTest {
     @Test
     public void testSetAudioVideoReceiveConfigAudioAndVideo() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        try {
-            skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        } catch (SkylinkException e) {
-            e.printStackTrace();
-        }
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         assertTrue(skylinkConfig.hasAudioReceive());
         assertTrue(skylinkConfig.hasVideoReceive());
     }
