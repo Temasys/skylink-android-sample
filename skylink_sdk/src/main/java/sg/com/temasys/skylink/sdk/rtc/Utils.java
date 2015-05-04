@@ -194,9 +194,9 @@ class Utils {
      * @return Mangled or original SDP.
      */
     public static String sdpSendReceiveOnly(String sdpDescription, boolean isSendOnly, boolean isAudio) {
-        String sendrecv = "sendrecv";
-        String sendonly = "sendonly";
-        String recvonly = "recvonly";
+        String strSR = "sendrecv";
+        String strS = "sendonly";
+        String strR = "recvonly";
 
         String[] segments;
         String segment;
@@ -206,11 +206,11 @@ class Utils {
             mediaType = "video";
         }
 
-        String regex = "^a=(" + sendrecv + "|" + sendonly + "|" + recvonly + ")$";
+        String regex = "^a=(" + strSR + "|" + strS + "|" + strR + ")$";
 
-        String newStr = "a=" + sendonly;
+        String newStr = "a=" + strS;
         if (!isSendOnly) {
-            newStr = "a=" + recvonly;
+            newStr = "a=" + strR;
         }
 
         // Get segment to search and replace.
@@ -302,7 +302,9 @@ class Utils {
      *
      * @param sdpDescription     SDP description string.
      * @param regex              Regex string specifying the line to be replaced.
-     * @param newLine            String to be replace the line matching regex.
+     * @param newLine            String to be replace the line matching regex. Newline characters
+     *                           will be automatically provided, so do not add these unless you
+     *                           really want multiple newline characters.
      * @param firstOccurenceOnly Boolean for replacing first occurrence only. Replace all occurences
      *                           if false.
      * @return The replaced SDP or "" if no replacement occurred.

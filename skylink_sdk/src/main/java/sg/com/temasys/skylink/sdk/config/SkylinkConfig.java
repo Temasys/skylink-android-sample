@@ -1,7 +1,10 @@
 package sg.com.temasys.skylink.sdk.config;
 
+import android.util.Log;
+
 import java.io.Serializable;
 import java.util.Map;
+
 
 /**
  * Configuration class used to configure the parameters of real time communication.
@@ -10,6 +13,7 @@ import java.util.Map;
  */
 public class SkylinkConfig implements Serializable {
 
+    private static final String TAG = SkylinkConfig.class.getName();
     private static final long serialVersionUID = 1L;
 
     public static int MAX_VIDEO_HEIGHT = 480;
@@ -151,6 +155,9 @@ public class SkylinkConfig implements Serializable {
                 this.audioSend = true;
                 this.videoSend = true;
                 break;
+            default:
+                Log.e(TAG, "Unable to set " + audioVideoConfig +
+                        " as the send Audio and Video config.");
         }
     }
 
@@ -177,6 +184,9 @@ public class SkylinkConfig implements Serializable {
                 this.audioReceive = true;
                 this.videoReceive = true;
                 break;
+            default:
+                Log.e(TAG, "Unable to set " + audioVideoConfig +
+                        " as the receive Audio and Video config.");
         }
     }
 

@@ -24,6 +24,7 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
 /**
  * Created by janidu on 3/3/15.
@@ -32,7 +33,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         MediaListener, RemotePeerListener, LifeCycleListener {
 
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
-    private static final String ROOM_NAME = "Hangout";
+    //    private static final String ROOM_NAME = "Hangout";
+    private static final String ROOM_NAME = "xr";
     private static final String MY_USER_NAME = "videoCallUser";
     public static final String KEY_SELF = "self";
     private static final String ARG_SECTION_NUMBER = "section_number";
@@ -164,8 +166,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
         // AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
+        try {
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        } catch (SkylinkException e) {
+            e.printStackTrace();
+        }
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
