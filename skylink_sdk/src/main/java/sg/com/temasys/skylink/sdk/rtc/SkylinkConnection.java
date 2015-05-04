@@ -75,6 +75,7 @@ public class SkylinkConnection {
     public static final String API_SERVER = "http://api.temasys.com.sg/api/";
 
     private static final String TAG = "SkylinkConnection";
+
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
 
@@ -105,6 +106,7 @@ public class SkylinkConnection {
     private Map<String, SDPObserver> sdpObserverPool;
     private MediaConstraints pcConstraints;
     private MediaConstraints sdpMediaConstraints;
+
     private MediaStream localMediaStream;
     private Object myUserData;
     private PeerConnectionFactory peerConnectionFactory;
@@ -131,6 +133,8 @@ public class SkylinkConnection {
     private VideoRendererGui localVideoRendererGui;
     private MediaConstraints videoConstraints;
     private SignalingMessageProcessingService signalingMessageProcessingService;
+
+    private SkylinkPeerService skylinkPeerService;
 
     /**
      * List of Connection state types
@@ -257,6 +261,10 @@ public class SkylinkConnection {
 
         if (this.signalingMessageProcessingService == null) {
             this.signalingMessageProcessingService = new SignalingMessageProcessingService(this);
+        }
+
+        if (this.skylinkPeerService == null) {
+            this.skylinkPeerService = new SkylinkPeerService(this);
         }
 
         this.webServerClient = new WebServerClient(iceServersObserver,
@@ -1065,7 +1073,7 @@ public class SkylinkConnection {
         }
     }
 
-    private void setUserInfoMap(Object userInfo, String key) {
+    void setUserInfoMap(Object userInfo, String key) {
         if (this.userInfoMap == null) {
             this.userInfoMap = new Hashtable<String, Object>();
         }
@@ -1480,7 +1488,7 @@ public class SkylinkConnection {
                     setUserInfoMap(userInfo, mid);
 
                     try {
-                        ProtocolHelper.sendWelcome(mid, connectionManager, webServerClient, myConfig, false);
+                        ProtocolHelper.sendWelcome(mid, connectionManager, false);
                     } catch (JSONException e) {
                         Log.d(TAG, e.getMessage(), e);
                     }
@@ -2324,6 +2332,28 @@ public class SkylinkConnection {
             }
         }
 
+    }
+
+    // Getter and Setters
+
+    public SkylinkPeerService getSkylinkPeerService() {
+        return skylinkPeerService;
+    }
+
+    public void setSkylinkPeerService(SkylinkPeerService skylinkPeerService) {
+        this.skylinkPeerService = skylinkPeerService;
+    }
+
+    public MediaStream getLocalMediaStream() {
+        return localMediaStream;
+    }
+
+    public void setLocalMediaStream(MediaStream localMediaStream) {
+        this.localMediaStream = localMediaStream;
+    }
+
+    public static int getMaxPeerConnections() {
+        return MAX_PEER_CONNECTIONS;
     }
 
     public DataTransferListener getDataTransferListener() {

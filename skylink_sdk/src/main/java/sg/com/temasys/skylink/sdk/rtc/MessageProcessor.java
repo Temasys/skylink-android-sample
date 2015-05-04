@@ -4,8 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Purpose of this method is to define the interface of a MessageProcessor
- * Created by janidu on 27/4/15.
+ * Purpose of this method is to define the interface of a MessageProcessor Created by janidu on
+ * 27/4/15.
  */
 interface MessageProcessor {
 

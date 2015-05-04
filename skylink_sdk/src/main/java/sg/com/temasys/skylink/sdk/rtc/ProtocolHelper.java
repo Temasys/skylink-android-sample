@@ -143,7 +143,7 @@ class ProtocolHelper {
 
             if (peerConnection != null) {
                 // Send "welcome".
-                sendWelcome(remotePeerId, skylinkConnection, webServerClient, myConfig, true);
+                sendWelcome(remotePeerId, skylinkConnection, true);
             }
 
             return true;
@@ -207,9 +207,10 @@ class ProtocolHelper {
     // Set isRestart to true/false to create restart/welcome.
     static boolean sendWelcome(String remotePeerId,
                                SkylinkConnection skylinkConnection,
-                               WebServerClient webServerClient,
-                               SkylinkConfig myConfig,
                                boolean isRestart) throws JSONException {
+
+        WebServerClient webServerClient = skylinkConnection.getWebServerClient();
+        SkylinkConfig myConfig = skylinkConnection.getMyConfig();
 
         String typeStr = "restart";
         if (!isRestart) {
@@ -283,7 +284,7 @@ class ProtocolHelper {
             skylinkConnection.getPcObserverPool().remove(remotePeerId);
             skylinkConnection.getSdpObserverPool().remove(remotePeerId);
             skylinkConnection.getUserInfoMap().remove(remotePeerId);
-   			// This commenting is a hack to accommodate the non-Android clients until the update to SM 0.1.1.
+            // This commenting is a hack to accommodate the non-Android clients until the update to SM 0.1.1.
             // PeerInfo of peer is required for sender of restart.
             // TODO XR: Remove commenting after JS client update to compatible restart protocol.
             // skylinkConnection.getPeerInfoMap().remove(remotePeerId);
