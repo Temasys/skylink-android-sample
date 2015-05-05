@@ -5,9 +5,14 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -21,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class EnterMessageProcessorTest {
 
     private static final String TAG = EnterMessageProcessorTest.class.getSimpleName();
-    private enterMessageProcessor EnterMessageProcessor;
+    private EnterMessageProcessor enterMessageProcessor;
 
     // Test values
     private String mid = "mid";
@@ -31,6 +36,7 @@ public class EnterMessageProcessorTest {
     private String version = "version";
     private String remotePeerId = "remotePeerId";
     private String userData = "userData";
+    private Object userInfo = null;
 
 
     @Before
@@ -50,44 +56,49 @@ public class EnterMessageProcessorTest {
         // Create enter JSON for testing
         JSONObject enterObject = new JSONObject();
         enterObject.put("type", "enter");
-        enterObject.put("mid", webServerClient.getSid());
-        enterObject.put("rid", webServerClient.getRoomId());
-        enterObject.put("receiveOnly", false);
-        enterObject.put("agent", "Android");
-        enterObject.put("version", BuildConfig.VERSION_NAME);
+        enterObject.put("mid", remotePeerId);
+        enterObject.put("rid", rid);
+        enterObject.put("receiveOnly", receiveOnly);
+        enterObject.put("agent", agent);
+        enterObject.put("version", version);
         // TODO XR: Can remove after JS client update to compatible restart protocol.
-        enterObject.put("target", remotePeerId);
-        enterObject.put("userData", userData);
+        enterObject.put("target", mid);
 
+        // Create userInfo
+        SkylinkConfig configTest = new SkylinkConfig();
+        UserInfo userInfo = new UserInfo(configTest, userData);
+        // Set userInfo into enterObject.
+        UserInfo.setUserInfo(enterObject, userInfo);
 
         // Mock test objects
         SkylinkConnection mockSkylinkConnection = mock(SkylinkConnection.class);
         SkylinkPeerService mockSkylinkPeerService = mock(SkylinkPeerService.class);
-        WebServerClient.IceServersObserver mockIceServersObserver = mock(WebServerClient.IceServersObserver.class);
-
-        DataChannelManager mockDataChannelManager = mock(DataChannelManager.class);
 
         // Stub for mock object methods to be called
         when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(mockSkylinkPeerService);
 
-
         enterMessageProcessor.setSkylinkConnection(mockSkylinkConnection);
 
-
+        // Test method
         enterMessageProcessor.process(enterObject);
 
-        ArgumentCaptor<PeerInfo> peerInfo = ArgumentCaptor.forClass(PeerInfo.class);
-        verify(mock).doSomething(argument.capture());
+        // Verify receivedEnter called with right arguments
+        // - Prepare to capture arguments
+        ArgumentCaptor<String> argPeerId = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<PeerInfo> argPeerInfo = ArgumentCaptor.forClass(PeerInfo.class);
+        ArgumentCaptor<JSONObject> argUserInfo = ArgumentCaptor.forClass(JSONObject.class);
 
-        verify(mockSkylinkPeerService).receivedEnter(peerId, peerInfo.capture(), userInfo);
-        assertEquals(agent, peerInfo.getValue().getAgent());
+        verify(mockSkylinkPeerService).receivedEnter(argPeerId.capture(), argPeerInfo.capture(), argUserInfo.capture());
 
-        // Should call rejoinRestart
-        verify(mockSkylinkConnection).rejoinRestart();
+        // - Check receivedEnter parameter 1
+        assertEquals(remotePeerId, argPeerId.getValue());
 
-        // Should call to initializePcRelatedMaps since PCObserverPool is null
-        when(mockSkylinkConnection.getPcObserverPool()).thenReturn(null);
-        enterMessageProcessor.process(jsonObject);
-        verify(mockSkylinkConnection).initializePcRelatedMaps();
+        // - Check receivedEnter parameter 2
+        assertEquals(receiveOnly, argPeerInfo.getValue().isReceiveOnly());
+        assertEquals(agent, argPeerInfo.getValue().getAgent());
+        assertEquals(version, argPeerInfo.getValue().getVersion());
+
+        // - Check receivedEnter parameter 3
+        assertTrue(userInfo.equals(new UserInfo(argUserInfo.getValue())));
     }
 }

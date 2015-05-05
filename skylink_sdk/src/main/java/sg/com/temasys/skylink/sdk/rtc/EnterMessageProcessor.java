@@ -18,9 +18,9 @@ public class EnterMessageProcessor implements MessageProcessor {
     public void process(JSONObject jsonObject) throws JSONException {
 
         String peerId = jsonObject.getString("mid");
-        Object userInfo = "";
+        JSONObject userInfo = null;
         try {
-            userInfo = jsonObject.get("userInfo");
+            userInfo = jsonObject.getJSONObject("userInfo");
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }

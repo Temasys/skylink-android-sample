@@ -200,7 +200,8 @@ class ProtocolHelper {
         if (remotePeerId != null) {
             enterObject.put("target", remotePeerId);
         }
-        skylinkConnection.setUserInfo(enterObject);
+        UserInfo userInfo = new UserInfo(skylinkConnection.getMyConfig(), skylinkConnection.getUserData(null));
+        UserInfo.setUserInfo(enterObject, userInfo);
         webServerClient.sendMessage(enterObject);
     }
 
@@ -238,7 +239,8 @@ class ProtocolHelper {
             welcomeObject.put("enableDataChannel",
                     (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
                             || myConfig.hasDataTransfer()));
-            skylinkConnection.setUserInfo(welcomeObject);
+            UserInfo userInfo = new UserInfo(myConfig, skylinkConnection.getUserData(null));
+            UserInfo.setUserInfo(welcomeObject, userInfo);
             webServerClient
                     .sendMessage(welcomeObject);
 

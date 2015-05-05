@@ -1026,9 +1026,10 @@ public class SkylinkConnection {
 
 
     /**
-     * Retrieves the user defined data object associated with a remote peer.
+     * Retrieves the user defined data object associated with a peer.
      *
-     * @param remotePeerId The id of the remote peer whose data is to be retrieved.
+     * @param remotePeerId The id of the remote peer whose data is to be retrieved, or NULL for
+     *                     self.
      * @return May be a 'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public Object getUserData(String remotePeerId) {
@@ -1218,53 +1219,6 @@ public class SkylinkConnection {
                     + e.getMessage());
         }
         return result.substring(0, result.length() - 1);
-    }
-
-    void setUserInfo(JSONObject jsonObject) throws JSONException {
-        JSONObject dictAudio = null;
-        if (myConfig.hasAudioSend()) {
-            dictAudio = new JSONObject();
-            dictAudio.put("stereo", myConfig.isStereoAudio());
-        }
-
-        JSONObject dictVideo = null;
-        if (myConfig.hasVideoSend()) {
-            dictVideo = new JSONObject();
-            dictVideo.put("frameRate", myConfig.getVideoFps());
-            JSONObject resolution = new JSONObject();
-            resolution.put("height", myConfig.getVideoHeight());
-            resolution.put("width", myConfig.getVideoWidth());
-            dictVideo.put("resolution", resolution);
-        }
-
-        JSONObject dictSettings = new JSONObject();
-        if (dictAudio != null)
-            dictSettings.put("audio", dictAudio);
-        if (dictVideo != null)
-            dictSettings.put("video", dictVideo);
-
-        JSONObject dictMediaStatus = new JSONObject();
-        dictMediaStatus.put("audioMuted", false);
-        dictMediaStatus.put("videoMuted", false);
-
-        JSONObject dictUserInfo = new JSONObject();
-        dictUserInfo.put("settings", dictSettings);
-        dictUserInfo.put("mediaStatus", dictMediaStatus);
-        dictUserInfo.put("userData", this.myUserData == null ? ""
-                : this.myUserData);
-
-        jsonObject.put("userInfo", dictUserInfo);
-
-        // NOTE XR: dictBandwidth object is not being used.
-        // Commented out for now.
-        // Consider removing code.
-        /*JSONObject dictBandwidth = new JSONObject();
-        if (myConfig.hasAudioSend())
-            dictBandwidth.put("audio", settingsObject.audio_bandwidth);
-        if (myConfig.hasVideoSend())
-            dictBandwidth.put("video", settingsObject.video_bandwidth);
-        if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer())
-            dictBandwidth.put("data", settingsObject.data_bandwidth);*/
     }
 
     private boolean isPeerIdMCU(String peerId) {

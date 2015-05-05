@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.util.Log;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.webrtc.PeerConnection;
 
 /**
@@ -18,7 +19,7 @@ public class SkylinkPeerService {
         this.skylinkConnection = skylinkConnection;
     }
 
-    void receivedEnter(String peerId, PeerInfo peerInfo, Object userInfo) {
+    void receivedEnter(String peerId, PeerInfo peerInfo, JSONObject userInfo) {
         PeerConnection peerConnection = skylinkConnection
                 .getPeerConnection(peerId, HealthChecker.ICE_ROLE_ANSWERER);
 
