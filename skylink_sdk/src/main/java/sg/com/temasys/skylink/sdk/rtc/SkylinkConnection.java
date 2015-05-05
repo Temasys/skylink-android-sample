@@ -408,6 +408,10 @@ public class SkylinkConnection {
                 Log.d(TAG, "Enabled hardware acceleration");
             }
 
+            /*
+            Note XR:
+             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
+            */
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
                     true, true, hardwareAccelerated, eglContext
             ), "Failed to initializeAndroidGlobals");
@@ -415,28 +419,28 @@ public class SkylinkConnection {
             factoryStaticInitialized = true;
         }
 
+        MediaConstraints[] constraintsArray = new MediaConstraints[2];
         this.sdpMediaConstraints = new MediaConstraints();
-        this.sdpMediaConstraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                        String.valueOf(this.myConfig.hasAudioReceive())));
-        this.sdpMediaConstraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                        String.valueOf(this.myConfig.hasVideoReceive())));
+        this.pcConstraints = new MediaConstraints();
+        constraintsArray[0] = this.sdpMediaConstraints;
+        constraintsArray[1] = this.pcConstraints;
 
-        MediaConstraints constraints = new MediaConstraints();
-        constraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                        String.valueOf(this.myConfig.hasAudioReceive())));
-        constraints.mandatory
-                .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                        String.valueOf(this.myConfig.hasVideoReceive())));
-        constraints.optional.add(new MediaConstraints.KeyValuePair(
+        for (MediaConstraints mediaConstranits : constraintsArray) {
+            mediaConstranits.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
+                            String.valueOf(this.myConfig.hasAudioReceive())));
+            mediaConstranits.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
+                            String.valueOf(this.myConfig.hasVideoReceive())));
+        }
+
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "internalSctpDataChannels", "true"));
-        constraints.optional.add(new MediaConstraints.KeyValuePair(
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "DtlsSrtpKeyAgreement", "true"));
-        constraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
                 "true"));
-        this.pcConstraints = constraints;
+
         setVideoConstrains(this.myConfig);
 
         this.applicationContext = context;
@@ -2074,37 +2078,39 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        if (myConfig.hasVideoReceive() || myConfig.hasAudioReceive()) {
-                            abortUnless(stream.audioTracks.size() <= 1
-                                            && stream.videoTracks.size() <= 1,
-                                    "Weird-looking stream: " + stream);
-                            GLSurfaceView remoteVideoView = null;
-                            if (stream.videoTracks.size() >= 1) {
-                                remoteVideoView = new GLSurfaceView(applicationContext);
 
-                                VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
-                                MyVideoRendererGuiListener myVideoRendererGuiListener =
-                                        new MyVideoRendererGuiListener();
-                                myVideoRendererGuiListener.setPeerId(myId);
-                                gui.setListener(myVideoRendererGuiListener);
+                        /* Note XR:
+                        Do not handle Audio or video tracks manually to satisfy hasVideoReceive() and hasAudioReceive(),
+                        as webrtc sdp will take care of it, albeit possibly with us doing SDP mangling when we are the answerer.
+                        */
+                        abortUnless(stream.audioTracks.size() <= 1
+                                        && stream.videoTracks.size() <= 1,
+                                "Weird-looking stream: " + stream);
+                        GLSurfaceView remoteVideoView = null;
+                        // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
+                        if ((stream.videoTracks.size() >= 1)) {
+                            remoteVideoView = new GLSurfaceView(applicationContext);
 
-                                VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
-                                        100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                                stream.videoTracks.get(0).addRenderer(
-                                        new VideoRenderer(remoteRender));
+                            VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
+                            MyVideoRendererGuiListener myVideoRendererGuiListener =
+                                    new MyVideoRendererGuiListener();
+                            myVideoRendererGuiListener.setPeerId(myId);
+                            gui.setListener(myVideoRendererGuiListener);
 
-                                final GLSurfaceView rVideoView = remoteVideoView;
-                                // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
-                                if (!connectionManager.isPeerIdMCU(myId))
-                                    mediaListener.onRemotePeerMediaReceive(myId, rVideoView);
-                            } else {
-                                // If this is an audio only stream, audio will be added automatically.
-                                // Still, send a null videoView to alert user stream is received.
-                                if (!connectionManager.isPeerIdMCU(myId))
-                                    mediaListener.onRemotePeerMediaReceive(myId, null);
-                            }
+                            VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
+                                    100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
+                            stream.videoTracks.get(0).addRenderer(
+                                    new VideoRenderer(remoteRender));
+
+                            final GLSurfaceView rVideoView = remoteVideoView;
+                            // connectionManager.surfaceOnHoldPool.put(rVideoView, myId);
+                            if (!connectionManager.isPeerIdMCU(myId))
+                                mediaListener.onRemotePeerMediaReceive(myId, rVideoView);
                         } else {
-                            // If this is a no audio no video stream,
+                            // If:
+                            // This is an audio only stream (audio will be added automatically)
+                            // OR
+                            // This is a no audio and no video stream
                             // still send a null videoView to alert user stream is received.
                             if (!connectionManager.isPeerIdMCU(myId))
                                 mediaListener.onRemotePeerMediaReceive(myId, null);
@@ -2189,6 +2195,8 @@ public class SkylinkConnection {
                 if (connectionState == ConnectionState.DISCONNECT) return;
                 abortUnless(this.localSdp == null, "multiple SDP create?!?");
 
+                String sdpType = origSdp.type.canonicalForm();
+
                 // Set the preferred audio codec
                 String sdpString = Utils.preferCodec(origSdp.description,
                         myConfig.getPreferredAudioCodec().toString(), true);
@@ -2196,7 +2204,26 @@ public class SkylinkConnection {
                 // Modify stereo audio in the SDP if required
                 sdpString = Utils.modifyStereoAudio(sdpString, myConfig);
 
+                // If answer, may need to mangle to respect our own MediaConstraints:
+                /* Note XR:
+                The webrtc designed behaviour seems to be that if an offerer SDP indicates to send media,
+                the answerer will generate an SDP to accept it, even if the answerer had put in its
+                MediaConstraints not to accept that media (provided it sends that media):
+                https://code.google.com/p/webrtc/issues/detail?id=2404
+                Hence, for our answerer to respect its own MediaConstraints, the answer SDP will be
+                mangled (if required) to respect the MediaConstraints (sdpMediaConstraints).
+                */
+                if ("answer".equals(sdpType)) {
+                    if (!myConfig.hasAudioReceive() && myConfig.hasAudioSend()) {
+                        sdpString = Utils.sdpAudioSendOnly(sdpString);
+                    }
+                    if (!myConfig.hasVideoReceive() && myConfig.hasVideoSend()) {
+                        sdpString = Utils.sdpVideoSendOnly(sdpString);
+                    }
+                }
+
                 sdp = new SessionDescription(origSdp.type, sdpString);
+
                 this.localSdp = sdp;
                 pc = connectionManager.peerConnectionPool
                         .get(this.myId);

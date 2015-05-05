@@ -11,6 +11,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.TimeZone;
@@ -137,6 +139,206 @@ class Utils {
     public static String drainStream(InputStream in) {
         Scanner s = new Scanner(in).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
+    }
+
+    /**
+     * Mangle SDP to have recvonly for audio.
+     *
+     * @param sdpDescription
+     * @return Mangled or original SDP.
+     */
+    public static String sdpAudioSendOnly(String sdpDescription) {
+        String sdp = sdpSendReceiveOnly(sdpDescription, true, true);
+        return sdp;
+    }
+
+    /**
+     * Mangle SDP to have sendonly for video.
+     *
+     * @param sdpDescription
+     * @return Mangled or original SDP.
+     */
+    public static String sdpVideoSendOnly(String sdpDescription) {
+        String sdp = sdpSendReceiveOnly(sdpDescription, true, false);
+        return sdp;
+    }
+
+    /**
+     * Mangle SDP to have sendonly for audio.
+     *
+     * @param sdpDescription
+     * @return Mangled or original SDP.
+     */
+    public static String sdpAudioReceiveOnly(String sdpDescription) {
+        String sdp = sdpSendReceiveOnly(sdpDescription, false, true);
+        return sdp;
+    }
+
+    /**
+     * Mangle SDP to have recvonly for video.
+     *
+     * @param sdpDescription
+     * @return Mangled or original SDP.
+     */
+    public static String sdpVideoReceiveOnly(String sdpDescription) {
+        String sdp = sdpSendReceiveOnly(sdpDescription, false, false);
+        return sdp;
+    }
+
+    /**
+     * Mangle SDP to have sendonly or recvonly for audio or video.
+     *
+     * @param sdpDescription
+     * @param isSendOnly
+     * @param isAudio
+     * @return Mangled or original SDP.
+     */
+    public static String sdpSendReceiveOnly(String sdpDescription, boolean isSendOnly, boolean isAudio) {
+        String strSR = "sendrecv";
+        String strS = "sendonly";
+        String strR = "recvonly";
+
+        String[] segments;
+        String segment;
+
+        String mediaType = "audio";
+        if (!isAudio) {
+            mediaType = "video";
+        }
+
+        String regex = "^a=(" + strSR + "|" + strS + "|" + strR + ")$";
+
+        String newStr = "a=" + strS;
+        if (!isSendOnly) {
+            newStr = "a=" + strR;
+        }
+
+        // Get segment to search and replace.
+        segments = sdpSegment(sdpDescription, mediaType);
+        segment = segments[1];
+
+        // Segment was found, try to search and replace with sendrecv.
+        if (!"".equals(segment)) {
+            segment = sdpReplace(segment, regex, newStr, true);
+        } else {
+            // Return original sdp
+            return sdpDescription;
+        }
+
+        // If replacement was done
+        if (!"".equals(segment)) {
+            // Add it back to remaining segments and return.
+            String sdp = segments[0] + segment + segments[2];
+            return sdp;
+        } else {
+            // Return original sdp
+            return sdpDescription;
+        }
+    }
+
+    /**
+     * Extracts a particular segment of the SDP.
+     *
+     * @param sdpDescription SDP description string.
+     * @param mediaType      The type of media segment to return, for e.g. audio, video
+     * @return An array of the SDP, where [1] is the segment desired, [0] is the segment before, and
+     * [2] is the segment after. If segment not found return SDP in [0], and "" in the remaining
+     * elements.
+     */
+
+    public static String[] sdpSegment(String sdpDescription, String mediaType) {
+        String marker = "a=mid:";
+        String markerStart = "a=mid:" + mediaType;
+        String[] segments = new String[3];
+        Arrays.fill(segments, "");
+
+        String[] lines = sdpDescription.split("\r\n");
+        ArrayList<String> linesBefore = new ArrayList<String>();
+        ArrayList<String> linesFound = new ArrayList<String>();
+        ArrayList<String> linesAfter = new ArrayList<String>();
+        boolean started = false;
+        boolean over = false;
+
+        // Collect segment in linesFound
+        for (String lineCur : lines) {
+            // Stop if already started and found marker again.
+            if (lineCur.startsWith(marker) && started || over) {
+                over = true;
+                linesAfter.add(lineCur);
+                continue;
+            }
+            // Collect lines once started or if markerStart found. 
+            if (markerStart.equals(lineCur) || started) {
+                started = true;
+                linesFound.add(lineCur);
+                continue;
+            }
+            // Collect lines before started.
+            linesBefore.add(lineCur);
+        }
+
+        // Return segments found
+        String segment = "";
+        if (started) {
+            for (String line : linesBefore) {
+                segments[0] += line + "\r\n";
+            }
+            for (String line : linesFound) {
+                segments[1] += line + "\r\n";
+            }
+            for (String line : linesAfter) {
+                segments[2] += line + "\r\n";
+            }
+        } else {
+            segments[0] = sdpDescription;
+            segments[1] = "";
+            segments[2] = "";
+        }
+        return segments;
+    }
+
+    /**
+     * Replaces a particular SDP line with another one.
+     *
+     * @param sdpDescription     SDP description string.
+     * @param regex              Regex string specifying the line to be replaced.
+     * @param newLine            String to be replace the line matching regex. Newline characters
+     *                           will be automatically provided, so do not add these unless you
+     *                           really want multiple newline characters.
+     * @param firstOccurenceOnly Boolean for replacing first occurrence only. Replace all occurences
+     *                           if false.
+     * @return The replaced SDP or "" if no replacement occurred.
+     */
+
+    public static String sdpReplace(String sdpDescription, String regex, String newLine, boolean firstOccurenceOnly) {
+        String lineReturn = "";
+        String[] lines = sdpDescription.split("\r\n");
+        boolean found = false;
+
+        Pattern sdpPattern = Pattern.compile(regex);
+        for (String lineCur : lines) {
+            // If only first occurrence needed, and it has been found, simply add line to return line.
+            if (firstOccurenceOnly && found) {
+                lineReturn += lineCur + "\r\n";
+                continue;
+            }
+            // Check if it is a line to replace.
+            Matcher sdoMatcher = sdpPattern.matcher(lineCur);
+            if (sdoMatcher.matches()) {
+                found = true;
+                lineReturn += newLine + "\r\n";
+            } else {
+                lineReturn += lineCur + "\r\n";
+            }
+        }
+
+        // Return replaced (or not) string.
+        String segment = "";
+        if (found) {
+            return lineReturn;
+        } else {
+            return "";
+        }
     }
 
     /**
