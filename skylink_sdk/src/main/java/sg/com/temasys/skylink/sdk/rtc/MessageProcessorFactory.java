@@ -63,7 +63,7 @@ class MessageProcessorFactory {
             //TODO: handle welcome restart types
         } else if (ANSWER.equalsIgnoreCase(messageType) ||
                 OFFER.equalsIgnoreCase(messageType)) {
-            //TODO: handle offer and answer
+            messageProcessor = new OfferAnswerMessageProcessor();
         } else if (BYE.equalsIgnoreCase(messageType)) {
             //TODO: handle bye
         } else if (CANDIDATE.equalsIgnoreCase(messageType)) {

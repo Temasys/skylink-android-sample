@@ -1506,38 +1506,6 @@ public class SkylinkConnection {
             } else if (value.compareTo("answer") == 0
                     || value.compareTo("offer") == 0) {
 
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
-
-                String mid = objects.getString("mid");
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-
-                String sdpString = objects.getString("sdp");
-
-                // Set the preferred audio codec
-                sdpString = Utils.preferCodec(sdpString, myConfig.getPreferredAudioCodec()
-                        .toString(), true);
-
-                SessionDescription sdp = new SessionDescription(
-                        SessionDescription.Type.fromCanonicalForm(value),
-                        sdpString);
-
-                if (connectionManager.sdpObserverPool == null)
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
-                SDPObserver sdpObserver = connectionManager.sdpObserverPool
-                        .get(mid);
-                if (sdpObserver == null) {
-                    sdpObserver = new SkylinkConnection.SDPObserver();
-                    sdpObserver.setMyId(mid);
-                    connectionManager.sdpObserverPool.put(mid, sdpObserver);
-                }
-                peerConnection.setRemoteDescription(sdpObserver, sdp);
-                connectionManager
-                        .logMessage("PC - setRemoteDescription. Sending "
-                                + sdp.type + " to " + mid);
 
             } else if (value.compareTo("group") == 0) {
                 // Split up group message
@@ -1879,19 +1847,7 @@ public class SkylinkConnection {
                     peerConnection, target, mid, "", null, mid);
         }
 
-        if (sdpObserverPool == null)
-            sdpObserverPool = new Hashtable<String, SDPObserver>();
-        SDPObserver sdpObserver = sdpObserverPool
-                .get(mid);
-        if (sdpObserver == null) {
-            sdpObserver = new SkylinkConnection.SDPObserver();
-            sdpObserver.setMyId(mid);
-            sdpObserverPool.put(mid, sdpObserver);
-        }
-
-        peerConnection.createOffer(sdpObserver,
-                sdpMediaConstraints);
-
+        peerConnection.createOffer(getSdpObserver(mid), sdpMediaConstraints);
         logMessage("PC - createOffer for " + mid);
     }
 
@@ -2167,7 +2123,7 @@ public class SkylinkConnection {
     // Implementation detail: handle offer creation/signaling and answer
 // setting,
 // as well as adding remote ICE candidates once the answer SDP is set.
-    private class SDPObserver implements SdpObserver {
+    class SDPObserver implements SdpObserver {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 
@@ -2363,6 +2319,22 @@ public class SkylinkConnection {
 
     protected void setDataChannelManager(DataChannelManager dataChannelManager) {
         this.dataChannelManager = dataChannelManager;
+    }
+
+    SDPObserver getSdpObserver(String mid) {
+
+        if (sdpObserverPool == null) {
+            sdpObserverPool = new Hashtable<String, SDPObserver>();
+        }
+
+        SDPObserver sdpObserver = sdpObserverPool.get(mid);
+        if (sdpObserver == null) {
+            sdpObserver = new SkylinkConnection.SDPObserver();
+            sdpObserver.setMyId(mid);
+            sdpObserverPool.put(mid, sdpObserver);
+        }
+
+        return sdpObserver;
     }
 
     // Initialize all PC related maps.
