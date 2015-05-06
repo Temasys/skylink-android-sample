@@ -37,6 +37,7 @@ class HealthChecker {
 
     // Has a default value to avoid null exceptions when iceState is not yet updated.
     private PeerConnection.IceConnectionState iceState = PeerConnection.IceConnectionState.CHECKING;
+    // Our ICE role in this PeerConnection
     // Offerer (sent enter) or Answerer (sent welcome).
     // Default is the Offerer (longer wait duration).
     private String iceRole = ICE_ROLE_OFFERER;

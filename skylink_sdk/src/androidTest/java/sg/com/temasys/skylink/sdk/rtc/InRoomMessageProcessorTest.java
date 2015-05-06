@@ -16,7 +16,6 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
