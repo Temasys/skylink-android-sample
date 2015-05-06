@@ -41,4 +41,11 @@ public class MessageProcessorFactoryTest {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("unsupportedMessage");
         assertNull(processor);
     }
+
+    @Test
+    public void testMuteVideoMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("muteVideoEvent");
+        assertNotNull(processor);
+        assertTrue(processor instanceof MuteVideoMessageProcessor);
+    }
 }

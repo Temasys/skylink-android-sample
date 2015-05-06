@@ -1263,7 +1263,7 @@ public class SkylinkConnection {
             dictBandwidth.put("data", settingsObject.data_bandwidth);*/
     }
 
-    private boolean isPeerIdMCU(String peerId) {
+    boolean isPeerIdMCU(String peerId) {
         return peerId.startsWith("MCU");
     }
 
@@ -1755,24 +1755,6 @@ public class SkylinkConnection {
                 }
 
             } else if (value.compareTo("muteVideoEvent") == 0) {
-
-                if (myConfig.hasVideoReceive()) {
-                    final String mid = objects.getString("mid");
-                    final boolean muted = objects.getBoolean("muted");
-                    if (!connectionManager.isPeerIdMCU(mid)) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                // Prevent thread from executing with disconnect concurrently.
-                                synchronized (lockDisconnect) {
-                                    // If user has indicated intention to disconnect,
-                                    // We should no longer process messages from signalling server.
-                                    if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onRemotePeerVideoToggle(mid, muted);
-                                }
-                            }
-                        });
-                    }
-                }
 
             } else {
 
