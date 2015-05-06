@@ -99,7 +99,7 @@ class MessageProcessorFactory {
         } else if (ROOM_LOCK_EVENT.equalsIgnoreCase(messageType)) {
             //TODO: handle ping
         } else if (MUTE_AUDIO_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle muteAudioEvent
+            messageProcessor = new MuteAudioMessageProcessor();
         } else if (MUTE_VIDEO_EVENT.equalsIgnoreCase(messageType)) {
             //TODO: handle muteAudioEvent
         }
