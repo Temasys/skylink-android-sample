@@ -1500,7 +1500,7 @@ public class SkylinkConnection {
                 processWelcome(objects);
             } else if (value.compareTo("restart") == 0) {
                 String mid = objects.getString("mid");
-                if (ProtocolHelper.processRestart(mid, localMediaStream, connectionManager)) {
+                if (ProtocolHelper.processRestart(mid, connectionManager)) {
                     processWelcome(objects);
                 }
             } else if (value.compareTo("answer") == 0
@@ -1643,21 +1643,6 @@ public class SkylinkConnection {
                 connectionManager.logMessage("[SDK] onMessage - ack_candidate");
 
             } else if (value.compareTo("ping") == 0) {
-
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
-
-                String mid = objects.getString("mid");
-                JSONObject pingObject = new JSONObject();
-                pingObject.put("type", "ping");
-                pingObject.put("mid",
-                        connectionManager.webServerClient.getSid());
-                pingObject.put("target", mid);
-                pingObject.put("rid",
-                        connectionManager.webServerClient.getRoomId());
-                connectionManager.webServerClient.sendMessage(pingObject);
 
             } else if (value.compareTo("redirect") == 0) {
                 runOnUiThread(new Runnable() {
@@ -2420,5 +2405,9 @@ public class SkylinkConnection {
 
     Object getMyUserData() {
         return myUserData;
+    }
+
+    MediaStream getLocalMediaStream(){
+        return localMediaStream;
     }
 }

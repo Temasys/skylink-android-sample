@@ -69,7 +69,7 @@ class MessageProcessorFactory {
         } else if (CANDIDATE.equalsIgnoreCase(messageType)) {
             //TODO: handle candidate
         } else if (PING.equalsIgnoreCase(messageType)) {
-            //TODO: handle ping
+            messageProcessor = new PingMessageProcessor();
         } else if (REDIRECT.equalsIgnoreCase(messageType)) {
             //TODO: handle ping
         }

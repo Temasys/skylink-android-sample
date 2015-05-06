@@ -71,6 +71,15 @@ class ProtocolHelper {
         return shouldDisconnect;
     }
 
+    /**
+     * Processes a room lock status
+     *
+     * @param currentRoomLockStatus
+     * @param jsonObject
+     * @param lifeCycleListener
+     * @return
+     * @throws JSONException
+     */
     static boolean processRoomLockStatus(boolean currentRoomLockStatus,
                                          JSONObject jsonObject, LifeCycleListener lifeCycleListener) throws JSONException {
         boolean lockStatus = jsonObject.getBoolean("lock");
@@ -82,6 +91,13 @@ class ProtocolHelper {
         return lockStatus;
     }
 
+    /**
+     * Send room lock status
+     *
+     * @param webServerClient
+     * @param lockStatus
+     * @throws JSONException
+     */
     static void sendRoomLockStatus(WebServerClient webServerClient, boolean lockStatus) throws JSONException {
         JSONObject dict = new JSONObject();
         dict.put("rid", webServerClient.getRoomId());
@@ -92,11 +108,17 @@ class ProtocolHelper {
         Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
     }
 
-    static boolean processRestart(final String remotePeerId, MediaStream localMediaStream,
-                                  final SkylinkConnection skylinkConnection) {
+    /**
+     * Processes restart
+     *
+     * @param remotePeerId
+     * @param skylinkConnection
+     * @return
+     */
+    static boolean processRestart(final String remotePeerId, final SkylinkConnection skylinkConnection) {
         if (skylinkConnection != null) {
             // Dispose the peerConnection
-            disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+            disposePeerConnection(remotePeerId, skylinkConnection);
 
             // Notify that the connection is restarting
             skylinkConnection.runOnUiThread(new Runnable() {
@@ -114,6 +136,17 @@ class ProtocolHelper {
         return false;
     }
 
+    /**
+     * Sends a restart message
+     *
+     * @param remotePeerId
+     * @param skylinkConnection
+     * @param webServerClient
+     * @param localMediaStream
+     * @param myConfig
+     * @return
+     * @throws JSONException
+     */
     static boolean sendRestart(final String remotePeerId,
                                final SkylinkConnection skylinkConnection,
                                WebServerClient webServerClient,
@@ -123,7 +156,7 @@ class ProtocolHelper {
         if (skylinkConnection != null) {
 
             // Dispose the peerConnection
-            disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+            disposePeerConnection(remotePeerId, skylinkConnection);
 
             // Notify that the connection is restarting
             notifyPeerLeave(skylinkConnection, remotePeerId, PEER_CONNECTION_RESTART);
@@ -152,7 +185,12 @@ class ProtocolHelper {
         return false;
     }
 
-    // Notify that all remote peers are leaving.
+    /**
+     * Notify that all remote peers are leaving.
+     *
+     * @param skylinkConnection
+     * @param reason
+     */
     static void notifyPeerLeaveAll(SkylinkConnection skylinkConnection, String reason) {
         Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
         if (pcObserverPool != null) {
@@ -164,7 +202,13 @@ class ProtocolHelper {
         }
     }
 
-    // Notify that a specific remote peer is leaving.
+    /**
+     * Notify that a specific remote peer is leaving.
+     *
+     * @param skylinkConnection
+     * @param remotePeerId
+     * @param reason
+     */
     static void notifyPeerLeave(final SkylinkConnection skylinkConnection, final String remotePeerId,
                                 final String reason) {
         skylinkConnection.runOnUiThread(new Runnable() {
@@ -176,14 +220,18 @@ class ProtocolHelper {
         });
     }
 
-
-    // Send enter
-    // Params remotePeerId:
-    // Set to null if sending to all Peers in room.
-    // Set to PeerId of remote Peer if targeted to send only to this remote Peer.
-    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
-    // This is esp. so for the JS clients which do not allow restarts
-    // for PeerIds without PeerConnection.
+    /**
+     * Send enter
+     *
+     * @param remotePeerId      Set to null if sending to all Peers in room.,
+     *                          Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+     *                          This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
+     *                          This is esp. so for the JS clients which do not allow restarts
+     *                          for PeerIds without PeerConnection.
+     * @param skylinkConnection
+     * @param webServerClient
+     * @throws JSONException
+     */
     static void sendEnter(String remotePeerId,
                           SkylinkConnection skylinkConnection,
                           WebServerClient webServerClient) throws JSONException {
@@ -204,7 +252,17 @@ class ProtocolHelper {
         webServerClient.sendMessage(enterObject);
     }
 
-    // Set isRestart to true/false to create restart/welcome.
+    /**
+     * Set isRestart to true/false to create restart/welcome.
+     *
+     * @param remotePeerId
+     * @param skylinkConnection
+     * @param webServerClient
+     * @param myConfig
+     * @param isRestart
+     * @return
+     * @throws JSONException
+     */
     static boolean sendWelcome(String remotePeerId,
                                SkylinkConnection skylinkConnection,
                                WebServerClient webServerClient,
@@ -247,15 +305,19 @@ class ProtocolHelper {
         return false;
     }
 
-    // Dispose all PeerConnections
-    static void disposePeerConnectionAll(SkylinkConnection skylinkConnection, MediaStream localMediaStream) {
+    /**
+     * Dispose all PeerConnections
+     *
+     * @param skylinkConnection
+     */
+    static void disposePeerConnectionAll(SkylinkConnection skylinkConnection) {
         Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
             for (String peerId : peerIdSet) {
                 // Dispose the peerConnection
-                disposePeerConnection(peerId, skylinkConnection, localMediaStream);
+                disposePeerConnection(peerId, skylinkConnection);
             }
         }
     }
@@ -264,19 +326,16 @@ class ProtocolHelper {
      * Returns true if the peer connection is disposed successfully
      *
      * @param remotePeerId
-     * @param localMediaStream
      * @param skylinkConnection
      * @return
      */
-
-    static boolean disposePeerConnection(String remotePeerId, SkylinkConnection skylinkConnection,
-                                         MediaStream localMediaStream) {
+    static boolean disposePeerConnection(String remotePeerId, SkylinkConnection skylinkConnection) {
 
         PeerConnection peerConnection = skylinkConnection.getPeerConnectionPool().get(remotePeerId);
         if (peerConnection != null) {
 
             // Dispose peer connection
-            peerConnection.removeStream(localMediaStream);
+            peerConnection.removeStream(skylinkConnection.getLocalMediaStream());
             peerConnection.dispose();
 
             skylinkConnection.getPeerConnectionPool().remove(remotePeerId);
@@ -290,6 +349,17 @@ class ProtocolHelper {
             return true;
         }
         return false;
+    }
+
+    static void sendPingMessage(SkylinkConnection skylinkConnection,
+                                String target) throws JSONException {
+        JSONObject pingObject = new JSONObject();
+        pingObject.put("type", "ping");
+        pingObject.put("mid", skylinkConnection.getWebServerClient().getSid());
+        pingObject.put("target", target);
+        pingObject.put("rid",
+                skylinkConnection.getWebServerClient().getRoomId());
+        skylinkConnection.getWebServerClient().sendMessage(pingObject);
     }
 
     private static int getRedirectCode(String reason) {
