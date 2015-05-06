@@ -18,21 +18,22 @@ public class EnterMessageProcessor implements MessageProcessor {
     public void process(JSONObject jsonObject) throws JSONException {
 
         String peerId = jsonObject.getString("mid");
-        JSONObject userInfo = null;
-        try {
-            userInfo = jsonObject.getJSONObject("userInfo");
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        JSONObject userInfo = jsonObject.getJSONObject("userInfo");
 
         PeerInfo peerInfo = new PeerInfo();
-        try {
+        peerInfo.setAgent(jsonObject.getString("agent"));
+
+        // Hack to accomodate the non-Android clients until the update to SM 0.1.1
+        if (peerInfo.getAgent().equals("Android")) {
+            // If it is Android, get receiveOnly value.
             peerInfo.setReceiveOnly(jsonObject.getBoolean("receiveOnly"));
-            peerInfo.setAgent(jsonObject.getString("agent"));
-            // SM0.1.0 - Browser version for web, SDK version for others.
-            peerInfo.setVersion(jsonObject.getString("version"));
-        } catch (JSONException e) {
+        } else {
+            // If web or others, let receiveOnly be false
+            // TODO XR: Remove after JS client update to compatible restart protocol.
+            Log.d(TAG, "[EnterMessageProcessor] Peer " + peerId + " is non-Android or has no receiveOnly.");
         }
+        // SM0.1.0 - Browser version for web, SDK version for others.
+        peerInfo.setVersion(jsonObject.getString("version"));
 
         skylinkConnection.getSkylinkPeerService().receivedEnter(peerId, peerInfo, userInfo);
     }

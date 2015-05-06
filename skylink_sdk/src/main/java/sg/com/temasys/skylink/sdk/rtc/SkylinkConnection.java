@@ -1411,49 +1411,6 @@ public class SkylinkConnection {
 
             } else if (value.compareTo("enter") == 0) {
 
-                String mid = objects.getString("mid");
-                Object userInfo = "";
-                try {
-                    userInfo = objects.get("userInfo");
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid, HealthChecker.ICE_ROLE_ANSWERER);
-
-                PeerInfo peerInfo = new PeerInfo();
-                try {
-                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-                    peerInfo.setAgent(objects.getString("agent"));
-                    // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.setVersion(objects.getString("version"));
-                } catch (JSONException e) {
-                }
-
-                peerInfoMap.put(mid, peerInfo);
-
-                // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
-                    peerConnection.addStream(connectionManager.localMediaStream);
-                    Log.d(TAG, "Added localMedia Stream");
-                }
-
-                if (peerConnection != null) {
-                    setUserInfoMap(userInfo, mid);
-
-                    try {
-                        ProtocolHelper.sendWelcome(mid, connectionManager, false);
-                    } catch (JSONException e) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-
-                } else {
-                    connectionManager
-                            .logMessage("I only support "
-                                    + MAX_PEER_CONNECTIONS
-                                    + " connections are in this app. I am discarding this 'welcome'.");
-                }
-
             } else if (value.compareTo("welcome") == 0) {
                 processWelcome(objects);
             } else if (value.compareTo("restart") == 0) {
@@ -2288,25 +2245,17 @@ public class SkylinkConnection {
 
     }
 
-    // Getter and Setters
+    // Getters and Setters
 
-    public SkylinkPeerService getSkylinkPeerService() {
+    SkylinkPeerService getSkylinkPeerService() {
         return skylinkPeerService;
     }
 
-    public void setSkylinkPeerService(SkylinkPeerService skylinkPeerService) {
-        this.skylinkPeerService = skylinkPeerService;
-    }
-
-    public MediaStream getLocalMediaStream() {
+    MediaStream getLocalMediaStream() {
         return localMediaStream;
     }
 
-    public void setLocalMediaStream(MediaStream localMediaStream) {
-        this.localMediaStream = localMediaStream;
-    }
-
-    public static int getMaxPeerConnections() {
+    static int getMaxPeerConnections() {
         return MAX_PEER_CONNECTIONS;
     }
 

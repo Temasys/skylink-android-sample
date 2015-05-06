@@ -9,7 +9,7 @@ import org.webrtc.PeerConnection;
 /**
  * Created by xiangrong on 4/5/15.
  */
-public class SkylinkPeerService {
+class SkylinkPeerService {
 
     private static final String TAG = SkylinkPeerService.class.getSimpleName();
 
@@ -20,20 +20,20 @@ public class SkylinkPeerService {
     }
 
     void receivedEnter(String peerId, PeerInfo peerInfo, JSONObject userInfo) {
+        // Create a new PeerConnection if we can
         PeerConnection peerConnection = skylinkConnection
                 .getPeerConnection(peerId, HealthChecker.ICE_ROLE_ANSWERER);
 
-
-        skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
-
-        // Add our local media stream to this PC, or not.
-        if ((skylinkConnection.getMyConfig().hasAudioSend() || skylinkConnection.getMyConfig().hasVideoSend())) {
-            peerConnection.addStream(skylinkConnection.getLocalMediaStream());
-            Log.d(TAG, "Added localMedia Stream");
-        }
-
+        // If we are over the max no. of peers, peerConnection here will be null.
         if (peerConnection != null) {
             skylinkConnection.setUserInfoMap(userInfo, peerId);
+            skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
+
+            // Add our local media stream to this PC, or not.
+            if ((skylinkConnection.getMyConfig().hasAudioSend() || skylinkConnection.getMyConfig().hasVideoSend())) {
+                peerConnection.addStream(skylinkConnection.getLocalMediaStream());
+                Log.d(TAG, "Added localMedia Stream");
+            }
 
             try {
                 ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
@@ -42,10 +42,9 @@ public class SkylinkPeerService {
             }
 
         } else {
-            skylinkConnection
-                    .logMessage("I only support "
-                            + skylinkConnection.getMaxPeerConnections()
-                            + " connections are in this app. I am discarding this 'welcome'.");
+            Log.d(TAG, "I only support "
+                    + skylinkConnection.getMaxPeerConnections()
+                    + " connections are in this app. I am discarding this 'welcome'.");
         }
     }
 }
