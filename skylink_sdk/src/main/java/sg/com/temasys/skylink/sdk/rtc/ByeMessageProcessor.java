@@ -47,7 +47,7 @@ public class ByeMessageProcessor implements MessageProcessor {
             dataChannelManager.disposeDC(mid);
         }
 
-        skylinkConnection.disposePeerConnection(mid);
+        ProtocolHelper.disposePeerConnection(mid, skylinkConnection);
     }
 
     @Override

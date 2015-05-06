@@ -69,8 +69,6 @@ public class ByeMessageProcessorTest {
         messageProcessor.process(jsonObject);
 
         verify(mockSkylinkConnection).isPeerIdMCU(mid);
-
         verify(dataChannelManager).disposeDC(mid);
-        verify(mockSkylinkConnection).disposePeerConnection(mid);
     }
 }

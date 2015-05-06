@@ -2337,19 +2337,6 @@ public class SkylinkConnection {
         return userInfoMap;
     }
 
-    void disposePeerConnection(String mid) {
-        PeerConnection peerConnection = getPeerConnection(mid);
-        // Remove Stream so that it will not be disposed when the PeerConnection is disposed
-        peerConnection.removeStream(localMediaStream);
-        peerConnection.dispose();
-
-        peerConnectionPool.remove(mid);
-        pcObserverPool.remove(mid);
-        sdpObserverPool.remove(mid);
-        userInfoMap.remove(mid);
-        peerInfoMap.remove(mid);
-    }
-
     Map<String, SDPObserver> getSdpObserverPool() {
         return sdpObserverPool;
     }

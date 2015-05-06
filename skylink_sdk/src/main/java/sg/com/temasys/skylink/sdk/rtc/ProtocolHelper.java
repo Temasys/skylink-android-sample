@@ -96,7 +96,7 @@ class ProtocolHelper {
                                   final SkylinkConnection skylinkConnection) {
         if (skylinkConnection != null) {
             // Dispose the peerConnection
-            disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+            disposePeerConnection(remotePeerId, skylinkConnection);
 
             // Notify that the connection is restarting
             skylinkConnection.runOnUiThread(new Runnable() {
@@ -123,7 +123,7 @@ class ProtocolHelper {
         if (skylinkConnection != null) {
 
             // Dispose the peerConnection
-            disposePeerConnection(remotePeerId, skylinkConnection, localMediaStream);
+            disposePeerConnection(remotePeerId, skylinkConnection);
 
             // Notify that the connection is restarting
             notifyPeerLeave(skylinkConnection, remotePeerId, PEER_CONNECTION_RESTART);
@@ -255,7 +255,7 @@ class ProtocolHelper {
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
             for (String peerId : peerIdSet) {
                 // Dispose the peerConnection
-                disposePeerConnection(peerId, skylinkConnection, localMediaStream);
+                disposePeerConnection(peerId, skylinkConnection);
             }
         }
     }
@@ -264,19 +264,17 @@ class ProtocolHelper {
      * Returns true if the peer connection is disposed successfully
      *
      * @param remotePeerId
-     * @param localMediaStream
      * @param skylinkConnection
      * @return
      */
 
-    static boolean disposePeerConnection(String remotePeerId, SkylinkConnection skylinkConnection,
-                                         MediaStream localMediaStream) {
+    static boolean disposePeerConnection(String remotePeerId, SkylinkConnection skylinkConnection) {
 
         PeerConnection peerConnection = skylinkConnection.getPeerConnectionPool().get(remotePeerId);
         if (peerConnection != null) {
 
             // Dispose peer connection
-            peerConnection.removeStream(localMediaStream);
+            peerConnection.removeStream(skylinkConnection.getLocalMediaStream());
             peerConnection.dispose();
 
             skylinkConnection.getPeerConnectionPool().remove(remotePeerId);
