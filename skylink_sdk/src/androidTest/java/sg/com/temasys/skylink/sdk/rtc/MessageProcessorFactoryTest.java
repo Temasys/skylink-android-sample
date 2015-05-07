@@ -30,6 +30,11 @@ public class MessageProcessorFactoryTest {
     }
 
     @Test
+    public void testCanBeCreated() {
+        assertNotNull(new MessageProcessorFactory());
+    }
+
+    @Test
     public void testGetInRoomMessageProcessor() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("inRoom");
         assertNotNull(processor);
@@ -44,6 +49,17 @@ public class MessageProcessorFactoryTest {
     }
 
     @Test
+    public void testGetOfferAnswerMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("offer");
+        assertNotNull(processor);
+        assertTrue(processor instanceof OfferAnswerMessageProcessor);
+
+        processor = messageProcessorFactory.getMessageProcessor("answer");
+        assertNotNull(processor);
+        assertTrue(processor instanceof OfferAnswerMessageProcessor);
+    }
+
+    @Test
     public void testGetEnterMessageProcessor() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("enter");
         assertNotNull(processor);
@@ -54,5 +70,18 @@ public class MessageProcessorFactoryTest {
     public void testReturnsNullForInvalidMessageTypes() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("unsupportedMessage");
         assertNull(processor);
+    }
+
+    @Test
+    public void testMuteVideoMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("muteVideoEvent");
+        assertNotNull(processor);
+        assertTrue(processor instanceof MuteVideoMessageProcessor);
+    }
+
+    @Test
+    public void testGetMuteAudioMessageProcessor(){
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("muteAudioEvent");
+        assertTrue(processor instanceof MuteAudioMessageProcessor);
     }
 }

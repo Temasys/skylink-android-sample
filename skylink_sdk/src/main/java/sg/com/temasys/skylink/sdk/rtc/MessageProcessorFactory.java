@@ -63,7 +63,7 @@ class MessageProcessorFactory {
             //TODO: handle welcome restart types
         } else if (ANSWER.equalsIgnoreCase(messageType) ||
                 OFFER.equalsIgnoreCase(messageType)) {
-            //TODO: handle offer and answer
+            messageProcessor = new OfferAnswerMessageProcessor();
         } else if (BYE.equalsIgnoreCase(messageType)) {
             messageProcessor = new ByeMessageProcessor();
         } else if (CANDIDATE.equalsIgnoreCase(messageType)) {
@@ -99,9 +99,9 @@ class MessageProcessorFactory {
         } else if (ROOM_LOCK_EVENT.equalsIgnoreCase(messageType)) {
             //TODO: handle ping
         } else if (MUTE_AUDIO_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle muteAudioEvent
+            messageProcessor = new MuteAudioMessageProcessor();
         } else if (MUTE_VIDEO_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle muteAudioEvent
+            messageProcessor = new MuteVideoMessageProcessor();
         }
 
         return messageProcessor;
