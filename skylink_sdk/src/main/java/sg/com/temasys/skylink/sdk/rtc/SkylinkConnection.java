@@ -105,6 +105,7 @@ public class SkylinkConnection {
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SDPObserver> sdpObserverPool;
     private MediaConstraints pcConstraints;
+
     private MediaConstraints sdpMediaConstraints;
 
     private MediaStream localMediaStream;
@@ -1098,7 +1099,7 @@ public class SkylinkConnection {
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 
-    private List<Object> getWeightedPeerConnection(String key, double weight) {
+    List<Object> getWeightedPeerConnection(String key, double weight) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
             this.isMCUConnection = isPeerIdMCU(key);
@@ -2086,7 +2087,7 @@ public class SkylinkConnection {
     // Implementation detail: handle offer creation/signaling and answer
 // setting,
 // as well as adding remote ICE candidates once the answer SDP is set.
-    private class SDPObserver implements SdpObserver {
+    class SDPObserver implements SdpObserver {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 
@@ -2286,6 +2287,10 @@ public class SkylinkConnection {
         return MAX_PEER_CONNECTIONS;
     }
 
+    MediaConstraints getSdpMediaConstraints() {
+        return sdpMediaConstraints;
+    }
+
     public DataTransferListener getDataTransferListener() {
         return dataTransferListener;
     }
@@ -2313,6 +2318,10 @@ public class SkylinkConnection {
 
     Map<String, SDPObserver> getSdpObserverPool() {
         return sdpObserverPool;
+    }
+
+    public void setSdpObserverPool(Map<String, SDPObserver> sdpObserverPool) {
+        this.sdpObserverPool = sdpObserverPool;
     }
 
     Map<String, PCObserver> getPcObserverPool() {
