@@ -34,6 +34,9 @@ public class ByeMessageProcessorTest {
     public void setUp() throws Exception {
         messageProcessor = new ByeMessageProcessor();
         mockSkylinkConnection = mock(SkylinkConnection.class);
+
+        SkylinkPeerService skylinkPeerService = new SkylinkPeerService(mockSkylinkConnection);
+        when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(skylinkPeerService);
     }
 
     @Test

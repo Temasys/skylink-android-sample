@@ -8,8 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Purpose of this class to handle signaling messages and create message processors
- * to handle different signaling messages
+ * Purpose of this class to handle signaling messages and create message processors to handle
+ * different signaling messages
  * <p/>
  * Created by janidu on 27/4/15.
  */
@@ -22,8 +22,9 @@ class SignalingMessageProcessingService implements MessageHandler {
     private SignalingServerMessageSender sigMsgSender;
     private final MessageProcessorFactory messageProcessorFactory;
 
-    public SignalingMessageProcessingService(SkylinkConnection skylinkConnection) {
-        this.messageProcessorFactory = new MessageProcessorFactory();
+    public SignalingMessageProcessingService(SkylinkConnection skylinkConnection,
+                                             MessageProcessorFactory messageProcessorFactory) {
+        this.messageProcessorFactory = messageProcessorFactory;
         this.skylinkConnection = skylinkConnection;
     }
 
@@ -79,6 +80,17 @@ class SignalingMessageProcessingService implements MessageHandler {
         try {
             // Instantiate the relevant message processor
             JSONObject object = new JSONObject(data);
+
+            String type = object.getString("type");
+            String target = object.has("target") ? object.getString("target") : "";
+
+            // If the target exist it should be the same for this client
+            if (object.has("target") && !target.equals(skylinkConnection.getWebServerClient().getSid())) {
+                Log.e(TAG, "Ignoring the message" +
+                        " due target mismatch , target :" + target + " type: " + type);
+                return;
+            }
+
             MessageProcessor messageProcessor = messageProcessorFactory.
                     getMessageProcessor(object.getString("type"));
 
