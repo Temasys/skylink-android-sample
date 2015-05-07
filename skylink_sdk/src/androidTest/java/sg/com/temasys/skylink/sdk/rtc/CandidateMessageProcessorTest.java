@@ -32,13 +32,9 @@ public class CandidateMessageProcessorTest {
     @Mocked
     private SkylinkConnection skylinkConnection;
 
-    @Mocked
-    private WebServerClient webServerClient;
-
     @Test
     public void testProcessing() throws JSONException {
         // Use Jmockit as mocking a peerconnection is involved
-
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("target", mid);
         jsonObject.put("mid", mid);
@@ -47,11 +43,8 @@ public class CandidateMessageProcessorTest {
         jsonObject.put("candidate", "testCandidate");
 
         new Expectations() {{
-            skylinkConnection.getWebServerClient();
-            result = webServerClient;
-
-            webServerClient.getSid();
-            result = mid;
+            skylinkConnection.getSkylinkPeerService();
+            result = new SkylinkPeerService(skylinkConnection);
 
             skylinkConnection.getPeerConnection(mid);
             result = mockPeerConnection;
