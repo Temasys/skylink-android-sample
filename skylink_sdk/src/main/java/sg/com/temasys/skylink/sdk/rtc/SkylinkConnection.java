@@ -2294,8 +2294,4 @@ public class SkylinkConnection {
     Object getMyUserData() {
         return myUserData;
     }
-
-    MediaStream getLocalMediaStream(){
-        return localMediaStream;
-    }
 }

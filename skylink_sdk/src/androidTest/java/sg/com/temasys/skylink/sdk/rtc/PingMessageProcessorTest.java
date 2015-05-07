@@ -28,6 +28,8 @@ public class PingMessageProcessorTest {
     private static final String TAG = PingMessageProcessorTest.class.getSimpleName();
 
     private static final String target = "1234";
+    private static final String rid = "123456";
+    private static final String mid = "12345";
 
     private SkylinkConnection mockSkylinkConnection;
     private PingMessageProcessor pingMessageProcessor;
@@ -65,13 +67,13 @@ public class PingMessageProcessorTest {
     @Test
     public void testProcess() throws JSONException {
 
-        when(mockWebServerClient.getRoomId()).thenReturn(target);
+        when(mockWebServerClient.getRoomId()).thenReturn(rid);
         when(mockWebServerClient.getSid()).thenReturn(target);
         when(mockSkylinkConnection.getWebServerClient()).thenReturn(mockWebServerClient);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("target", target);
-        jsonObject.put("mid", target);
+        jsonObject.put("mid", mid);
 
         pingMessageProcessor.process(jsonObject);
 
@@ -80,7 +82,7 @@ public class PingMessageProcessorTest {
 
         assertEquals("ping", argument.getValue().getString("type"));
         assertEquals(target, argument.getValue().getString("mid"));
-        assertEquals(target, argument.getValue().getString("target"));
-        assertEquals(target, argument.getValue().getString("rid"));
+        assertEquals(mid, argument.getValue().getString("target"));
+        assertEquals(rid, argument.getValue().getString("rid"));
     }
 }
