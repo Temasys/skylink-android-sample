@@ -1225,7 +1225,7 @@ public class SkylinkConnection {
         return result.substring(0, result.length() - 1);
     }
 
-    private boolean isPeerIdMCU(String peerId) {
+    boolean isPeerIdMCU(String peerId) {
         return peerId.startsWith("MCU");
     }
 
@@ -1623,23 +1623,6 @@ public class SkylinkConnection {
 
             } else if (value.compareTo("muteAudioEvent") == 0) {
 
-                if (myConfig.hasAudioReceive()) {
-                    final String mid = objects.getString("mid");
-                    final boolean muted = objects.getBoolean("muted");
-                    if (!connectionManager.isPeerIdMCU(mid)) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                // Prevent thread from executing with disconnect concurrently.
-                                synchronized (lockDisconnect) {
-                                    // If user has indicated intention to disconnect,
-                                    // We should no longer process messages from signalling server.
-                                    if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onRemotePeerAudioToggle(mid, muted);
-                                }
-                            }
-                        });
-                    }
-                }
 
             } else if (value.compareTo("muteVideoEvent") == 0) {
 
