@@ -56,14 +56,14 @@ class MessageProcessorFactory {
         if (IN_ROOM.equalsIgnoreCase(messageType)) {
             messageProcessor = new InRoomMessageProcessor();
         } else if (ENTER.equalsIgnoreCase(messageType)) {
-            //TODO: handle enter message types
+            messageProcessor = new EnterMessageProcessor();
         } else if (WELCOME.equalsIgnoreCase(messageType)) {
             //TODO: handle welcome message types
         } else if (RESTART.equalsIgnoreCase(messageType)) {
             //TODO: handle welcome restart types
         } else if (ANSWER.equalsIgnoreCase(messageType) ||
                 OFFER.equalsIgnoreCase(messageType)) {
-            //TODO: handle offer and answer
+            messageProcessor = new OfferAnswerMessageProcessor();
         } else if (BYE.equalsIgnoreCase(messageType)) {
             //TODO: handle bye
         } else if (CANDIDATE.equalsIgnoreCase(messageType)) {
@@ -99,7 +99,7 @@ class MessageProcessorFactory {
         } else if (ROOM_LOCK_EVENT.equalsIgnoreCase(messageType)) {
             //TODO: handle ping
         } else if (MUTE_AUDIO_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle muteAudioEvent
+            messageProcessor = new MuteAudioMessageProcessor();
         } else if (MUTE_VIDEO_EVENT.equalsIgnoreCase(messageType)) {
             //TODO: handle muteAudioEvent
         }

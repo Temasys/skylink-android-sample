@@ -75,6 +75,7 @@ public class SkylinkConnection {
     public static final String API_SERVER = "http://api.temasys.com.sg/api/";
 
     private static final String TAG = "SkylinkConnection";
+
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
 
@@ -105,6 +106,7 @@ public class SkylinkConnection {
     private Map<String, SDPObserver> sdpObserverPool;
     private MediaConstraints pcConstraints;
     private MediaConstraints sdpMediaConstraints;
+
     private MediaStream localMediaStream;
     private Object myUserData;
     private PeerConnectionFactory peerConnectionFactory;
@@ -131,6 +133,8 @@ public class SkylinkConnection {
     private VideoRendererGui localVideoRendererGui;
     private MediaConstraints videoConstraints;
     private SignalingMessageProcessingService signalingMessageProcessingService;
+
+    private SkylinkPeerService skylinkPeerService;
 
     /**
      * List of Connection state types
@@ -257,6 +261,10 @@ public class SkylinkConnection {
 
         if (this.signalingMessageProcessingService == null) {
             this.signalingMessageProcessingService = new SignalingMessageProcessingService(this);
+        }
+
+        if (this.skylinkPeerService == null) {
+            this.skylinkPeerService = new SkylinkPeerService(this);
         }
 
         this.webServerClient = new WebServerClient(iceServersObserver,
@@ -1022,9 +1030,10 @@ public class SkylinkConnection {
 
 
     /**
-     * Retrieves the user defined data object associated with a remote peer.
+     * Retrieves the user defined data object associated with a peer.
      *
-     * @param remotePeerId The id of the remote peer whose data is to be retrieved.
+     * @param remotePeerId The id of the remote peer whose data is to be retrieved, or NULL for
+     *                     self.
      * @return May be a 'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public Object getUserData(String remotePeerId) {
@@ -1069,7 +1078,7 @@ public class SkylinkConnection {
         }
     }
 
-    private void setUserInfoMap(Object userInfo, String key) {
+    void setUserInfoMap(Object userInfo, String key) {
         if (this.userInfoMap == null) {
             this.userInfoMap = new Hashtable<String, Object>();
         }
@@ -1216,54 +1225,7 @@ public class SkylinkConnection {
         return result.substring(0, result.length() - 1);
     }
 
-    void setUserInfo(JSONObject jsonObject) throws JSONException {
-        JSONObject dictAudio = null;
-        if (myConfig.hasAudioSend()) {
-            dictAudio = new JSONObject();
-            dictAudio.put("stereo", myConfig.isStereoAudio());
-        }
-
-        JSONObject dictVideo = null;
-        if (myConfig.hasVideoSend()) {
-            dictVideo = new JSONObject();
-            dictVideo.put("frameRate", myConfig.getVideoFps());
-            JSONObject resolution = new JSONObject();
-            resolution.put("height", myConfig.getVideoHeight());
-            resolution.put("width", myConfig.getVideoWidth());
-            dictVideo.put("resolution", resolution);
-        }
-
-        JSONObject dictSettings = new JSONObject();
-        if (dictAudio != null)
-            dictSettings.put("audio", dictAudio);
-        if (dictVideo != null)
-            dictSettings.put("video", dictVideo);
-
-        JSONObject dictMediaStatus = new JSONObject();
-        dictMediaStatus.put("audioMuted", false);
-        dictMediaStatus.put("videoMuted", false);
-
-        JSONObject dictUserInfo = new JSONObject();
-        dictUserInfo.put("settings", dictSettings);
-        dictUserInfo.put("mediaStatus", dictMediaStatus);
-        dictUserInfo.put("userData", this.myUserData == null ? ""
-                : this.myUserData);
-
-        jsonObject.put("userInfo", dictUserInfo);
-
-        // NOTE XR: dictBandwidth object is not being used.
-        // Commented out for now.
-        // Consider removing code.
-        /*JSONObject dictBandwidth = new JSONObject();
-        if (myConfig.hasAudioSend())
-            dictBandwidth.put("audio", settingsObject.audio_bandwidth);
-        if (myConfig.hasVideoSend())
-            dictBandwidth.put("video", settingsObject.video_bandwidth);
-        if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer())
-            dictBandwidth.put("data", settingsObject.data_bandwidth);*/
-    }
-
-    private boolean isPeerIdMCU(String peerId) {
+    boolean isPeerIdMCU(String peerId) {
         return peerId.startsWith("MCU");
     }
 
@@ -1453,49 +1415,6 @@ public class SkylinkConnection {
 
             } else if (value.compareTo("enter") == 0) {
 
-                String mid = objects.getString("mid");
-                Object userInfo = "";
-                try {
-                    userInfo = objects.get("userInfo");
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid, HealthChecker.ICE_ROLE_ANSWERER);
-
-                PeerInfo peerInfo = new PeerInfo();
-                try {
-                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-                    peerInfo.setAgent(objects.getString("agent"));
-                    // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.setVersion(objects.getString("version"));
-                } catch (JSONException e) {
-                }
-
-                peerInfoMap.put(mid, peerInfo);
-
-                // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
-                    peerConnection.addStream(connectionManager.localMediaStream);
-                    Log.d(TAG, "Added localMedia Stream");
-                }
-
-                if (peerConnection != null) {
-                    setUserInfoMap(userInfo, mid);
-
-                    try {
-                        ProtocolHelper.sendWelcome(mid, connectionManager, webServerClient, myConfig, false);
-                    } catch (JSONException e) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-
-                } else {
-                    connectionManager
-                            .logMessage("I only support "
-                                    + MAX_PEER_CONNECTIONS
-                                    + " connections are in this app. I am discarding this 'welcome'.");
-                }
-
             } else if (value.compareTo("welcome") == 0) {
                 processWelcome(objects);
             } else if (value.compareTo("restart") == 0) {
@@ -1506,38 +1425,6 @@ public class SkylinkConnection {
             } else if (value.compareTo("answer") == 0
                     || value.compareTo("offer") == 0) {
 
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
-
-                String mid = objects.getString("mid");
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-
-                String sdpString = objects.getString("sdp");
-
-                // Set the preferred audio codec
-                sdpString = Utils.preferCodec(sdpString, myConfig.getPreferredAudioCodec()
-                        .toString(), true);
-
-                SessionDescription sdp = new SessionDescription(
-                        SessionDescription.Type.fromCanonicalForm(value),
-                        sdpString);
-
-                if (connectionManager.sdpObserverPool == null)
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
-                SDPObserver sdpObserver = connectionManager.sdpObserverPool
-                        .get(mid);
-                if (sdpObserver == null) {
-                    sdpObserver = new SkylinkConnection.SDPObserver();
-                    sdpObserver.setMyId(mid);
-                    connectionManager.sdpObserverPool.put(mid, sdpObserver);
-                }
-                peerConnection.setRemoteDescription(sdpObserver, sdp);
-                connectionManager
-                        .logMessage("PC - setRemoteDescription. Sending "
-                                + sdp.type + " to " + mid);
 
             } else if (value.compareTo("group") == 0) {
                 // Split up group message
@@ -1721,23 +1608,6 @@ public class SkylinkConnection {
 
             } else if (value.compareTo("muteAudioEvent") == 0) {
 
-                if (myConfig.hasAudioReceive()) {
-                    final String mid = objects.getString("mid");
-                    final boolean muted = objects.getBoolean("muted");
-                    if (!connectionManager.isPeerIdMCU(mid)) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                // Prevent thread from executing with disconnect concurrently.
-                                synchronized (lockDisconnect) {
-                                    // If user has indicated intention to disconnect,
-                                    // We should no longer process messages from signalling server.
-                                    if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onRemotePeerAudioToggle(mid, muted);
-                                }
-                            }
-                        });
-                    }
-                }
 
             } else if (value.compareTo("muteVideoEvent") == 0) {
 
@@ -1864,19 +1734,7 @@ public class SkylinkConnection {
                     peerConnection, target, mid, "", null, mid);
         }
 
-        if (sdpObserverPool == null)
-            sdpObserverPool = new Hashtable<String, SDPObserver>();
-        SDPObserver sdpObserver = sdpObserverPool
-                .get(mid);
-        if (sdpObserver == null) {
-            sdpObserver = new SkylinkConnection.SDPObserver();
-            sdpObserver.setMyId(mid);
-            sdpObserverPool.put(mid, sdpObserver);
-        }
-
-        peerConnection.createOffer(sdpObserver,
-                sdpMediaConstraints);
-
+        peerConnection.createOffer(getSdpObserver(mid), sdpMediaConstraints);
         logMessage("PC - createOffer for " + mid);
     }
 
@@ -2152,7 +2010,7 @@ public class SkylinkConnection {
     // Implementation detail: handle offer creation/signaling and answer
 // setting,
 // as well as adding remote ICE candidates once the answer SDP is set.
-    private class SDPObserver implements SdpObserver {
+    class SDPObserver implements SdpObserver {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 
@@ -2338,6 +2196,20 @@ public class SkylinkConnection {
 
     }
 
+    // Getters and Setters
+
+    SkylinkPeerService getSkylinkPeerService() {
+        return skylinkPeerService;
+    }
+
+    MediaStream getLocalMediaStream() {
+        return localMediaStream;
+    }
+
+    static int getMaxPeerConnections() {
+        return MAX_PEER_CONNECTIONS;
+    }
+
     public DataTransferListener getDataTransferListener() {
         return dataTransferListener;
     }
@@ -2348,6 +2220,22 @@ public class SkylinkConnection {
 
     protected void setDataChannelManager(DataChannelManager dataChannelManager) {
         this.dataChannelManager = dataChannelManager;
+    }
+
+    SDPObserver getSdpObserver(String mid) {
+
+        if (sdpObserverPool == null) {
+            sdpObserverPool = new Hashtable<String, SDPObserver>();
+        }
+
+        SDPObserver sdpObserver = sdpObserverPool.get(mid);
+        if (sdpObserver == null) {
+            sdpObserver = new SkylinkConnection.SDPObserver();
+            sdpObserver.setMyId(mid);
+            sdpObserverPool.put(mid, sdpObserver);
+        }
+
+        return sdpObserver;
     }
 
     // Initialize all PC related maps.
