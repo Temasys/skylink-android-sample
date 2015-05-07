@@ -223,11 +223,12 @@ class ProtocolHelper {
     /**
      * Send enter
      *
-     * @param remotePeerId      Set to null if sending to all Peers in room.,
-     *                          Set to PeerId of remote Peer if targeted to send only to this remote Peer.
-     *                          This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
-     *                          This is esp. so for the JS clients which do not allow restarts
-     *                          for PeerIds without PeerConnection.
+     * Set to null if sending to all Peers in room.,
+     * Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+     * This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
+     * This is esp. so for the JS clients which do not allow restarts for PeerIds without PeerConnection.
+     *
+     * @param remotePeerId
      * @param skylinkConnection
      * @param webServerClient
      * @throws JSONException
@@ -258,8 +259,6 @@ class ProtocolHelper {
      *
      * @param remotePeerId
      * @param skylinkConnection
-     * @param webServerClient
-     * @param myConfig
      * @param isRestart
      * @return
      * @throws JSONException
