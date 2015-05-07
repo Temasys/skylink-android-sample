@@ -43,19 +43,7 @@ public class ByeMessageProcessorTest {
     public void testCreateByeMessageProcessor() {
         assertNotNull(new ByeMessageProcessor());
     }
-
-    @Test
-    public void testWillIgnoreTargetedBye() throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("target", "1234");
-
-        messageProcessor.setSkylinkConnection(mockSkylinkConnection);
-
-        // Should return immediately
-        messageProcessor.process(jsonObject);
-        verify(mockSkylinkConnection, never()).isPeerIdMCU(anyString());
-    }
-
+    
     @Test
     public void testProcess() throws JSONException {
         JSONObject jsonObject = new JSONObject();
