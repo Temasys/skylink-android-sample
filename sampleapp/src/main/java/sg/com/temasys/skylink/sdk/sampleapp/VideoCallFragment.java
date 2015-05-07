@@ -71,6 +71,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             @Override
             public void onClick(View v) {
                 String roomName = etRoomName.getText().toString();
+                roomName = "xr";
                 if (roomName.isEmpty()) {
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
