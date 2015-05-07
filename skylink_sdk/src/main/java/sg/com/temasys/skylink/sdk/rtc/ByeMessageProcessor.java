@@ -14,10 +14,6 @@ public class ByeMessageProcessor implements MessageProcessor {
 
     @Override
     public void process(JSONObject jsonObject) throws JSONException {
-        // Ignoring targeted bye
-        if (jsonObject.has("target")) {
-            return;
-        }
         skylinkConnection.getSkylinkPeerService().receivedBye(jsonObject.getString("mid"));
     }
 
