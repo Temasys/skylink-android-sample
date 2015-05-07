@@ -101,7 +101,7 @@ class MessageProcessorFactory {
         } else if (MUTE_AUDIO_EVENT.equalsIgnoreCase(messageType)) {
             messageProcessor = new MuteAudioMessageProcessor();
         } else if (MUTE_VIDEO_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle muteAudioEvent
+            messageProcessor = new MuteVideoMessageProcessor();
         }
 
         return messageProcessor;
