@@ -8,8 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Purpose of this class to handle signaling messages and create message processors
- * to handle different signaling messages
+ * Purpose of this class to handle signaling messages and create message processors to handle
+ * different signaling messages
  * <p/>
  * Created by janidu on 27/4/15.
  */

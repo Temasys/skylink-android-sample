@@ -53,6 +53,13 @@ public class MessageProcessorFactoryTest {
     }
 
     @Test
+    public void testGetEnterMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("enter");
+        assertNotNull(processor);
+        assertTrue(processor instanceof EnterMessageProcessor);
+    }
+
+    @Test
     public void testReturnsNullForInvalidMessageTypes() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("unsupportedMessage");
         assertNull(processor);
