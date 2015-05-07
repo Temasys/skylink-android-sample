@@ -16,7 +16,6 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
@@ -30,6 +29,7 @@ public class MuteAudioMessageProcessorTest {
     private static final String TAG = MuteAudioMessageProcessorTest.class.getSimpleName();
 
     private static final String MID = "1234";
+    public static final boolean MUTED = true;
     private SkylinkConnection skylinkConnection;
     private MuteAudioMessageProcessor muteAudioMessageProcessor;
 
@@ -53,7 +53,7 @@ public class MuteAudioMessageProcessorTest {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mid", MID);
-        jsonObject.put("muted", "true");
+        jsonObject.put("muted", String.valueOf(MUTED));
 
         skylinkConnection = spy(SkylinkConnection.getInstance());
 
@@ -76,7 +76,7 @@ public class MuteAudioMessageProcessorTest {
             @Override
             public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
                 assertEquals(MID, remotePeerId);
-                assertTrue(isMuted);
+                assertEquals("should be muted", MUTED, isMuted);
             }
 
             @Override
