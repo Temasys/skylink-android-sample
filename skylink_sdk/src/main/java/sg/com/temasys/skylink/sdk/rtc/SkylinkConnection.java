@@ -1468,22 +1468,7 @@ public class SkylinkConnection {
 
             } else if (value.compareTo("candidate") == 0) {
 
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
 
-                String mid = objects.getString("mid");
-                String ID = objects.getString("id");
-                int sdpLineIndex = objects.getInt("label");
-                String sdp = objects.getString("candidate");
-
-                IceCandidate candidate = new IceCandidate(ID, sdpLineIndex, sdp);
-
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-                if (peerConnection != null)
-                    peerConnection.addIceCandidate(candidate);
 
             } else if (value.compareTo("ack_candidate") == 0) {
 

@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 
 /**
@@ -76,5 +77,13 @@ class SkylinkPeerService {
         }
 
         ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
+    }
+
+
+    void addIceCandidate(String peerId, IceCandidate iceCandidate) {
+        PeerConnection peerConnection = skylinkConnection.getPeerConnection(peerId);
+        if (peerConnection != null) {
+            peerConnection.addIceCandidate(iceCandidate);
+        }
     }
 }
