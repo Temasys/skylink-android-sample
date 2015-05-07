@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 
 /**
@@ -45,6 +46,14 @@ class SkylinkPeerService {
             Log.d(TAG, "I only support "
                     + skylinkConnection.getMaxPeerConnections()
                     + " connections are in this app. I am discarding this 'welcome'.");
+        }
+    }
+
+
+    void addIceCandidate(String peerId, IceCandidate iceCandidate) {
+        PeerConnection peerConnection = skylinkConnection.getPeerConnection(peerId);
+        if (peerConnection != null) {
+            peerConnection.addIceCandidate(iceCandidate);
         }
     }
 }
