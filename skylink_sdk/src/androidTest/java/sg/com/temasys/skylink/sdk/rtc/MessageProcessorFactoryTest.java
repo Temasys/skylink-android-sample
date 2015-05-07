@@ -42,6 +42,13 @@ public class MessageProcessorFactoryTest {
     }
 
     @Test
+    public void testGetByeMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("bye");
+        assertNotNull(processor);
+        assertTrue(processor instanceof ByeMessageProcessor);
+    }
+
+    @Test
     public void testGetPingMessageProcessor() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("ping");
         assertNotNull(processor);

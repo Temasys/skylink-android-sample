@@ -455,6 +455,4 @@ class Utils {
 
         return sdpDescription;
     }
-
-
 }

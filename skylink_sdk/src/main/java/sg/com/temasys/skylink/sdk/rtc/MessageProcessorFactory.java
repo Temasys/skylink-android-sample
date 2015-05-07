@@ -65,7 +65,7 @@ class MessageProcessorFactory {
                 OFFER.equalsIgnoreCase(messageType)) {
             messageProcessor = new OfferAnswerMessageProcessor();
         } else if (BYE.equalsIgnoreCase(messageType)) {
-            //TODO: handle bye
+            messageProcessor = new ByeMessageProcessor();
         } else if (CANDIDATE.equalsIgnoreCase(messageType)) {
             //TODO: handle candidate
         } else if (PING.equalsIgnoreCase(messageType)) {

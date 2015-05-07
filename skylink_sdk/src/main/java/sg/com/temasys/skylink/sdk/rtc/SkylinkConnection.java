@@ -260,7 +260,8 @@ public class SkylinkConnection {
         }
 
         if (this.signalingMessageProcessingService == null) {
-            this.signalingMessageProcessingService = new SignalingMessageProcessingService(this);
+            this.signalingMessageProcessingService = new SignalingMessageProcessingService(this,
+                    new MessageProcessorFactory());
         }
 
         if (this.skylinkPeerService == null) {
@@ -1464,47 +1465,6 @@ public class SkylinkConnection {
                 }
             } else if (value.compareTo("bye") == 0) {
 
-                // Ignoring targetted bye
-                String target = null;
-                try {
-                    target = objects.getString("target");
-                } catch (JSONException e) {
-
-                }
-                if (target != null)
-                    return;
-
-                final String mid = objects.getString("mid");
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onRemotePeerLeave(mid, "The peer has left the room");
-                            }
-                        }
-                    });
-                }
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-
-                // Dispose DataChannel.
-                if (dataChannelManager != null) {
-                    connectionManager.dataChannelManager.disposeDC(mid);
-                }
-
-                // Remove Stream so that it will not be disposed when the PeerConnection is disposed
-                peerConnection.removeStream(localMediaStream);
-                peerConnection.dispose();
-
-                connectionManager.peerConnectionPool.remove(mid);
-                connectionManager.pcObserverPool.remove(mid);
-                connectionManager.sdpObserverPool.remove(mid);
-                connectionManager.userInfoMap.remove(mid);
-                connectionManager.peerInfoMap.remove(mid);
 
             } else if (value.compareTo("candidate") == 0) {
 

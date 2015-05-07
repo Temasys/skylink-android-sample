@@ -49,6 +49,36 @@ class SkylinkPeerService {
         }
     }
 
+    void receivedBye(final String peerId) {
+
+        if (!skylinkConnection.isPeerIdMCU(peerId)) {
+            skylinkConnection.runOnUiThread(new Runnable() {
+                public void run() {
+                    // Prevent thread from executing with disconnect concurrently.
+                    synchronized (skylinkConnection.getLockDisconnect()) {
+                        // If user has indicated intention to disconnect,
+                        // We should no longer process messages from signalling server.
+                        if (skylinkConnection.getConnectionState() ==
+                                SkylinkConnection.ConnectionState.DISCONNECT) {
+                            return;
+                        }
+                        skylinkConnection.getRemotePeerListener()
+                                .onRemotePeerLeave(peerId, "The peer has left the room");
+                    }
+                }
+            });
+        }
+
+        DataChannelManager dataChannelManager = skylinkConnection.getDataChannelManager();
+
+        // Dispose DataChannel.
+        if (dataChannelManager != null) {
+            dataChannelManager.disposeDC(peerId);
+        }
+
+        ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
+    }
+
 
     void addIceCandidate(String peerId, IceCandidate iceCandidate) {
         PeerConnection peerConnection = skylinkConnection.getPeerConnection(peerId);
