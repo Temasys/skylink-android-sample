@@ -20,11 +20,6 @@ public class OfferAnswerMessageProcessor implements MessageProcessor {
     @Override
     public void process(JSONObject jsonObject) throws JSONException {
 
-        if (!jsonObject.getString("target")
-                .equals(skylinkConnection.getWebServerClient().getSid())) {
-            return;
-        }
-
         String mid = jsonObject.getString("mid");
         PeerConnection peerConnection = skylinkConnection.getPeerConnection(mid);
 
