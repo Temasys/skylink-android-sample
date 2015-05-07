@@ -13,11 +13,6 @@ public class PingMessageProcessor implements MessageProcessor {
 
     @Override
     public void process(JSONObject jsonObject) throws JSONException {
-        if (!skylinkConnection.getWebServerClient()
-                .getSid().equals(jsonObject.getString("target"))) {
-            return;
-        }
-
         ProtocolHelper.sendPingMessage(skylinkConnection, jsonObject.getString("mid"));
     }
 

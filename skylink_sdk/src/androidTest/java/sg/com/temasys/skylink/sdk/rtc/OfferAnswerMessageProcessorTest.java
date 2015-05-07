@@ -53,22 +53,6 @@ public class OfferAnswerMessageProcessorTest {
     }
 
     @Test
-    public void testProcessingDifferentTarget() throws JSONException {
-
-        SkylinkConnection mockSkylinkConnection = mock(SkylinkConnection.class);
-
-        WebServerClient mockWebServerClient = mock(WebServerClient.class);
-        when(mockWebServerClient.getCid()).thenReturn("differentCid");
-        when(mockSkylinkConnection.getWebServerClient()).thenReturn(mockWebServerClient);
-
-        offerAnswerMessageProcessor.setSkylinkConnection(mockSkylinkConnection);
-        offerAnswerMessageProcessor.process(getJsonObject());
-
-        // Should not proceed with the rest of the processing, when different target
-        verify(mockSkylinkConnection, never()).getPeerConnection(mid);
-    }
-
-    @Test
     public void testProcessing() throws JSONException {
         // Use Jmockit as mocking a peerconnection is involved
 
@@ -79,11 +63,6 @@ public class OfferAnswerMessageProcessorTest {
         jsonObject.put("type", "answer");
 
         new Expectations() {{
-            skylinkConnection.getWebServerClient();
-            result = webServerClient;
-
-            webServerClient.getSid();
-            result = mid;
 
             skylinkConnection.getPeerConnection(mid);
             result = mockPeerConnection;
