@@ -1225,7 +1225,7 @@ public class SkylinkConnection {
         return result.substring(0, result.length() - 1);
     }
 
-    private boolean isPeerIdMCU(String peerId) {
+    boolean isPeerIdMCU(String peerId) {
         return peerId.startsWith("MCU");
     }
 
