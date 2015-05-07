@@ -56,7 +56,7 @@ class MessageProcessorFactory {
         if (IN_ROOM.equalsIgnoreCase(messageType)) {
             messageProcessor = new InRoomMessageProcessor();
         } else if (ENTER.equalsIgnoreCase(messageType)) {
-            //TODO: handle enter message types
+            messageProcessor = new EnterMessageProcessor();
         } else if (WELCOME.equalsIgnoreCase(messageType)) {
             //TODO: handle welcome message types
         } else if (RESTART.equalsIgnoreCase(messageType)) {
