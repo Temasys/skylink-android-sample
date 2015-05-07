@@ -27,6 +27,7 @@ import static org.mockito.Mockito.spy;
 public class MuteVideoMessageProcessorTest {
 
     private static final String MID = "1234";
+    private static final boolean MUTED = true;
 
     private MuteVideoMessageProcessor muteVideoMessageProcessor;
     private SkylinkConnection skylinkConnection;
@@ -45,7 +46,7 @@ public class MuteVideoMessageProcessorTest {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mid", MID);
-        jsonObject.put("muted", "true");
+        jsonObject.put("muted", String.valueOf(MUTED));
 
         skylinkConnection = spy(SkylinkConnection.getInstance());
 
@@ -73,7 +74,7 @@ public class MuteVideoMessageProcessorTest {
             @Override
             public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
                 assertEquals(MID, remotePeerId);
-                assertTrue(isMuted);
+                assertEquals(MUTED, isMuted);
             }
 
             @Override
