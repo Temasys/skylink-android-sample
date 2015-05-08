@@ -22,9 +22,6 @@ public class InRoomMessageProcessor implements MessageProcessor {
     @Override
     public void process(JSONObject jsonObject) throws JSONException {
 
-        String mid = jsonObject.getString("sid");
-        skylinkConnection.getWebServerClient().setSid(mid);
-
         JSONObject pcConfigJSON = jsonObject.getJSONObject("pc_config");
 
         List<PeerConnection.IceServer> result = new ArrayList<>();
@@ -55,31 +52,7 @@ public class InRoomMessageProcessor implements MessageProcessor {
             result.add(server);
         }
 
-        skylinkConnection.getIceServersObserver().onIceServers(result);
-
-        // Set mid and displayName in DataChannelManager
-        if (skylinkConnection.getDataChannelManager() != null) {
-            skylinkConnection.getDataChannelManager().setMid(mid);
-            skylinkConnection.getDataChannelManager().setDisplayName(
-                    skylinkConnection.getMyUserData().toString());
-        }
-
-        // Check if pcObserverPool has been populated.
-        if (skylinkConnection.getPcObserverPool() != null) {
-            // If so, chances are this is a rejoin of room.
-            // Send restart to all.
-            skylinkConnection.rejoinRestart();
-        } else {
-            // If not, chances are this is a first join room, or there were no peers from before.
-            // Create afresh all PC related maps.
-            skylinkConnection.initializePcRelatedMaps();
-            // Send enter.
-            try {
-                ProtocolHelper.sendEnter(null, skylinkConnection, skylinkConnection.getWebServerClient());
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
-        }
+        skylinkConnection.getSkylinkPeerService().receivedInRoom(jsonObject.getString("sid"), result);
     }
 
     @Override
