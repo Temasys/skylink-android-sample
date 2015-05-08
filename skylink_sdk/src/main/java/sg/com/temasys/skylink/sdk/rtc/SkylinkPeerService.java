@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
+import org.webrtc.SessionDescription;
 
 import java.util.List;
 
@@ -118,5 +119,21 @@ class SkylinkPeerService {
                 Log.d(TAG, e.getMessage(), e);
             }
         }
+    }
+
+    void receivedOfferAnswer(String peerId, String sdp, String type) {
+        PeerConnection peerConnection = skylinkConnection.getPeerConnection(peerId);
+
+        // Set the preferred audio codec
+        String sdpString = Utils.preferCodec(sdp,
+                skylinkConnection.getMyConfig().getPreferredAudioCodec().toString(), true);
+
+        // Set the SDP
+        SessionDescription sessionDescription = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type),
+                sdpString);
+
+        peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(peerId), sessionDescription);
+        Log.d(TAG, "PC - setRemoteDescription. Sending " + sessionDescription.type + " to " + peerId);
     }
 }

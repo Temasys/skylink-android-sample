@@ -1,11 +1,7 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.PeerConnection;
-import org.webrtc.SessionDescription;
 
 /**
  * Purpose of this message processor is to handle offer/answer message types
@@ -19,21 +15,8 @@ public class OfferAnswerMessageProcessor implements MessageProcessor {
 
     @Override
     public void process(JSONObject jsonObject) throws JSONException {
-
-        String mid = jsonObject.getString("mid");
-        PeerConnection peerConnection = skylinkConnection.getPeerConnection(mid);
-
-        // Set the preferred audio codec
-        String sdpString = Utils.preferCodec(jsonObject.getString("sdp"),
-                skylinkConnection.getMyConfig().getPreferredAudioCodec().toString(), true);
-
-        // Set the SDP
-        SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(jsonObject.getString("type")),
-                sdpString);
-
-        peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(mid), sdp);
-        Log.d(TAG, "PC - setRemoteDescription. Sending " + sdp.type + " to " + mid);
+        skylinkConnection.getSkylinkPeerService().receivedOfferAnswer(jsonObject.getString("mid"),
+                jsonObject.getString("sdp"), jsonObject.getString("type"));
     }
 
     @Override
