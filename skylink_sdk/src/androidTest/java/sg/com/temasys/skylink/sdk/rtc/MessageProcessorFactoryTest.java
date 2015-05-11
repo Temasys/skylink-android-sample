@@ -87,14 +87,26 @@ public class MessageProcessorFactoryTest {
     }
 
     @Test
-    public void testGetMuteAudioMessageProcessor(){
+    public void testGetMuteAudioMessageProcessor() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("muteAudioEvent");
         assertTrue(processor instanceof MuteAudioMessageProcessor);
     }
 
     @Test
-    public void testGetRoomLockMessageProcessor(){
+    public void testGetRoomLockMessageProcessor() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("roomLockEvent");
         assertTrue(processor instanceof RoomLockMessageProcessor);
+    }
+
+    @Test
+    public void testGetCandidateProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("candidate");
+        assertTrue(processor instanceof CandidateMessageProcessor);
+    }
+
+    @Test
+    public void testGetRedirectProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("redirect");
+        assertTrue(processor instanceof RedirectMessageProcessor);
     }
 }

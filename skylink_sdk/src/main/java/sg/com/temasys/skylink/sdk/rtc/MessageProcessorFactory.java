@@ -67,11 +67,11 @@ class MessageProcessorFactory {
         } else if (BYE.equalsIgnoreCase(messageType)) {
             messageProcessor = new ByeMessageProcessor();
         } else if (CANDIDATE.equalsIgnoreCase(messageType)) {
-            //TODO: handle candidate
+            messageProcessor = new CandidateMessageProcessor();
         } else if (PING.equalsIgnoreCase(messageType)) {
             messageProcessor = new PingMessageProcessor();
         } else if (REDIRECT.equalsIgnoreCase(messageType)) {
-            //TODO: handle ping
+            messageProcessor = new RedirectMessageProcessor();
         }
 
         return messageProcessor;

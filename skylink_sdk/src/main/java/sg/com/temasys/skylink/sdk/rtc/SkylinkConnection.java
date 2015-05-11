@@ -1477,26 +1477,7 @@ public class SkylinkConnection {
             } else if (value.compareTo("ping") == 0) {
 
             } else if (value.compareTo("redirect") == 0) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        boolean shouldDisconnect = false;
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnect) {
-                            // If user has indicated intention to disconnect,
-                            // We should no longer process messages from signalling server.
-                            if (connectionState == ConnectionState.DISCONNECT) return;
-                            try {
-                                shouldDisconnect = ProtocolHelper.processRedirect(objects, lifeCycleListener);
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.getMessage(), e);
-                            }
-                        }
 
-                        if (shouldDisconnect) {
-                            disconnectFromRoom();
-                        }
-                    }
-                });
 
             } else if (value.compareTo("private") == 0
                     || value.compareTo("public") == 0) {

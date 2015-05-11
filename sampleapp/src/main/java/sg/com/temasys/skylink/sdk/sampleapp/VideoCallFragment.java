@@ -243,7 +243,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
-
         Toast.makeText(getActivity(), "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT).show();
     }
 
