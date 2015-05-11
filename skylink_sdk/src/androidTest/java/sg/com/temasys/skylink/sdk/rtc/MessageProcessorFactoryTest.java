@@ -91,4 +91,10 @@ public class MessageProcessorFactoryTest {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("muteAudioEvent");
         assertTrue(processor instanceof MuteAudioMessageProcessor);
     }
+
+    @Test
+    public void testGetRoomLockMessageProcessor(){
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("roomLockEvent");
+        assertTrue(processor instanceof RoomLockMessageProcessor);
+    }
 }

@@ -1534,22 +1534,7 @@ public class SkylinkConnection {
                     });
                 }
             } else if (value.compareTo("roomLockEvent") == 0) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnect) {
-                            // If user has indicated intention to disconnect,
-                            // We should no longer process messages from signalling server.
-                            if (connectionState == ConnectionState.DISCONNECT) return;
-                            try {
-                                roomLocked = ProtocolHelper.processRoomLockStatus(roomLocked,
-                                        objects, lifeCycleListener);
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.getMessage(), e);
-                            }
-                        }
-                    }
-                });
+
 
             } else if (value.compareTo("muteAudioEvent") == 0) {
 
@@ -2220,5 +2205,13 @@ public class SkylinkConnection {
 
     Object getMyUserData() {
         return myUserData;
+    }
+
+    void setRoomLocked(boolean roomLocked){
+        this.roomLocked = roomLocked;
+    }
+
+    boolean isRoomLocked(){
+        return roomLocked;
     }
 }

@@ -97,7 +97,7 @@ class MessageProcessorFactory {
                 PUBLIC.equalsIgnoreCase(messageType)) {
             //TODO: handle public and private
         } else if (ROOM_LOCK_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle ping
+            messageProcessor = new RoomLockMessageProcessor();
         } else if (MUTE_AUDIO_EVENT.equalsIgnoreCase(messageType)) {
             messageProcessor = new MuteAudioMessageProcessor();
         } else if (MUTE_VIDEO_EVENT.equalsIgnoreCase(messageType)) {
