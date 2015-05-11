@@ -109,4 +109,13 @@ public class MessageProcessorFactoryTest {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("redirect");
         assertTrue(processor instanceof RedirectMessageProcessor);
     }
+
+    @Test
+    public void testServerMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("public");
+        assertTrue(processor instanceof ServerMessageProcessor);
+
+        processor = messageProcessorFactory.getMessageProcessor("private");
+        assertTrue(processor instanceof ServerMessageProcessor);
+    }
 }

@@ -1482,21 +1482,6 @@ public class SkylinkConnection {
             } else if (value.compareTo("private") == 0
                     || value.compareTo("public") == 0) {
 
-                final Object objData = objects.get("data");
-                final String mid = objects.getString("mid");
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                                messagesListener.onServerMessageReceive(mid, objData, value.compareTo("private") == 0);
-                            }
-                        }
-                    });
-                }
             } else if (value.compareTo("updateUserEvent") == 0) {
 
                 final String mid = objects.getString("mid");
