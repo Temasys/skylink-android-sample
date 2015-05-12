@@ -118,4 +118,10 @@ public class MessageProcessorFactoryTest {
         processor = messageProcessorFactory.getMessageProcessor("private");
         assertTrue(processor instanceof ServerMessageProcessor);
     }
+
+    @Test
+    public void testGetGroupMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("group");
+        assertTrue(processor instanceof GroupMessageProcessor);
+    }
 }

@@ -1428,41 +1428,9 @@ public class SkylinkConnection {
 
 
             } else if (value.compareTo("group") == 0) {
-                // Split up group message
-                // Format:
-                // { type: "group", lists: [<group msg>...], mid: "xxx", rid: "xxx" }
-                JSONArray msgArr = objects.getJSONArray("lists");
-                for (int i = 0; i < msgArr.length(); ++i) {
-                    String msg = (String) msgArr.get(i);
-                    // Send each message to be processed like a non-group message.
-                    if (msg != null) messageProcessor(msg);
-                }
+
             } else if (value.compareTo("chat") == 0) {
 
-                final String mid = objects.getString("mid");
-                final String nick = objects.getString("nick");
-                final String text = objects.getString("data");
-                String tempTarget = null;
-                try {
-                    tempTarget = objects.getString("target");
-                } catch (JSONException e) {
-
-                }
-                final String target = tempTarget;
-                connectionManager.logMessage("event:" + value + ", nick->"
-                        + nick + ", text->" + text + ", target->" + target);
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                            }
-                        }
-                    });
-                }
             } else if (value.compareTo("bye") == 0) {
 
 
@@ -2179,5 +2147,9 @@ public class SkylinkConnection {
 
     boolean isRoomLocked(){
         return roomLocked;
+    }
+
+    SignalingMessageProcessingService getSignalingMessageProcessingService(){
+        return signalingMessageProcessingService;
     }
 }

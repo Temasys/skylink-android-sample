@@ -87,12 +87,10 @@ class MessageProcessorFactory {
 
         MessageProcessor messageProcessor = null;
 
-        if (CHAT.equalsIgnoreCase(messageType)) {
-            //TODO: handle chat
-        } else if (UPDATE_USER_EVENT.equalsIgnoreCase(messageType)) {
+        if (UPDATE_USER_EVENT.equalsIgnoreCase(messageType)) {
             //TODO: handle ping
         } else if (GROUP.equalsIgnoreCase(messageType)) {
-            //TODO: handle ping
+            messageProcessor = new GroupMessageProcessor();
         } else if (PRIVATE.equalsIgnoreCase(messageType) ||
                 PUBLIC.equalsIgnoreCase(messageType)) {
             messageProcessor = new ServerMessageProcessor();
