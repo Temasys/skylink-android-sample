@@ -1452,21 +1452,6 @@ public class SkylinkConnection {
 
             } else if (value.compareTo("updateUserEvent") == 0) {
 
-                final String mid = objects.getString("mid");
-                final Object userData = objects.get("userData");
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onRemotePeerUserDataReceive(mid, userData);
-                            }
-                        }
-                    });
-                }
             } else if (value.compareTo("roomLockEvent") == 0) {
 
 

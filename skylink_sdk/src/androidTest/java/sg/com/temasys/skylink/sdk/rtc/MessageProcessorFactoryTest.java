@@ -124,4 +124,11 @@ public class MessageProcessorFactoryTest {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("group");
         assertTrue(processor instanceof GroupMessageProcessor);
     }
+
+
+    @Test
+    public void testUpdateUserEventMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("updateUserEvent");
+        assertTrue(processor instanceof UpdateUserEventMessageProcessor);
+    }
 }

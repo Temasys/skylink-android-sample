@@ -88,7 +88,7 @@ class MessageProcessorFactory {
         MessageProcessor messageProcessor = null;
 
         if (UPDATE_USER_EVENT.equalsIgnoreCase(messageType)) {
-            //TODO: handle ping
+            messageProcessor = new UpdateUserEventMessageProcessor();
         } else if (GROUP.equalsIgnoreCase(messageType)) {
             messageProcessor = new GroupMessageProcessor();
         } else if (PRIVATE.equalsIgnoreCase(messageType) ||
