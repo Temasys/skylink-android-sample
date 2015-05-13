@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -105,6 +104,7 @@ public class SkylinkConnection {
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SDPObserver> sdpObserverPool;
     private MediaConstraints pcConstraints;
+
     private MediaConstraints sdpMediaConstraints;
 
     private MediaStream localMediaStream;
@@ -118,9 +118,6 @@ public class SkylinkConnection {
     private WebServerClient webServerClient;
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
-
-    // TODO: Remove this
-    public MyMessageHandler messageHandler = new MyMessageHandler();
 
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
@@ -1099,7 +1096,7 @@ public class SkylinkConnection {
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 
-    private List<Object> getWeightedPeerConnection(String key, double weight) {
+    List<Object> getWeightedPeerConnection(String key, double weight) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
             this.isMCUConnection = isPeerIdMCU(key);
@@ -1394,181 +1391,6 @@ public class SkylinkConnection {
             });
         }
     }
-
-    /*
-     * GAEChannelClient.MessageHandler
-     */
-    //TODO: Remove
-    class MyMessageHandler {
-
-        private SkylinkConnection connectionManager = SkylinkConnection.this;
-
-        //TODO: Should remove this method
-        public void messageProcessor(String data) throws JSONException {
-            String message = data;
-            final JSONObject objects = new JSONObject(data);
-
-            final String value = objects.getString("type");
-            connectionManager.logMessage("[SDK] onMessage type - " + value);
-
-            if (value.compareTo("inRoom") == 0) {
-
-
-            } else if (value.compareTo("enter") == 0) {
-
-            } else if (value.compareTo("welcome") == 0) {
-                processWelcome(objects);
-            } else if (value.compareTo("restart") == 0) {
-                String mid = objects.getString("mid");
-                if (ProtocolHelper.processRestart(mid, connectionManager)) {
-                    processWelcome(objects);
-                }
-            } else if (value.compareTo("answer") == 0
-                    || value.compareTo("offer") == 0) {
-
-
-            } else if (value.compareTo("group") == 0) {
-
-            } else if (value.compareTo("chat") == 0) {
-
-            } else if (value.compareTo("bye") == 0) {
-
-
-            } else if (value.compareTo("candidate") == 0) {
-
-
-
-            } else if (value.compareTo("ack_candidate") == 0) {
-
-                connectionManager.logMessage("[SDK] onMessage - ack_candidate");
-
-            } else if (value.compareTo("ping") == 0) {
-
-            } else if (value.compareTo("redirect") == 0) {
-
-
-            } else if (value.compareTo("private") == 0
-                    || value.compareTo("public") == 0) {
-
-            } else if (value.compareTo("updateUserEvent") == 0) {
-
-            } else if (value.compareTo("roomLockEvent") == 0) {
-
-
-            } else if (value.compareTo("muteAudioEvent") == 0) {
-
-
-            } else if (value.compareTo("muteVideoEvent") == 0) {
-
-            } else {
-
-                connectionManager.logMessage("The message '" + message
-                        + "' is not handled yet");
-
-            }
-
-        }
-
-    }
-
-    void processWelcome(JSONObject objects) throws JSONException {
-        String target = objects.getString("target");
-        if (target
-                .compareTo(webServerClient.getSid()) != 0)
-            return;
-
-        PeerInfo peerInfo = new PeerInfo();
-        String mid = objects.getString("mid");
-        try {
-            peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-        } catch (JSONException e) {
-        }
-
-        try {
-            peerInfo.setAgent(objects.getString("agent"));
-            // SM0.1.0 - Browser version for web, SDK version for others.
-            peerInfo.setVersion(objects.getString("version"));
-            if (objects.has("enableIceTrickle")) {
-                peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
-            } else {
-                // Work around for JS and/or other clients that do not yet implement this flag.
-                peerInfo.setEnableIceTrickle(true);
-            }
-            if (objects.has("enableDataChannel")) {
-                peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
-            } else {
-                // Work around for JS and/or other clients that do not yet implement this flag.
-                peerInfo.setEnableDataChannel(true);
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        peerInfoMap.put(mid, peerInfo);
-
-        Object userInfo = "";
-
-        try {
-            userInfo = objects.get("userInfo");
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        double weight = 0.0;
-        try {
-            weight = objects.getDouble("weight");
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        PeerConnection peerConnection = null;
-        List<Object> weightedConnection = getWeightedPeerConnection(mid, weight);
-        if (!(Boolean) weightedConnection.get(0)) {
-            Log.d(TAG, "Ignoring this welcome");
-            return;
-        }
-
-        Object secondObject = weightedConnection.get(1);
-        if (secondObject instanceof PeerConnection)
-            peerConnection = (PeerConnection) secondObject;
-
-        if (peerConnection == null) {
-            logMessage("I only support "
-                    + MAX_PEER_CONNECTIONS
-                    + " connections are in this app. I am discarding this 'welcome'.");
-            return;
-        }
-
-        setUserInfoMap(userInfo, mid);
-
-        boolean receiveOnly = false;
-        try {
-            receiveOnly = objects.getBoolean("receiveOnly");
-        } catch (JSONException e) {
-        }
-
-        // Add our local media stream to this PC, or not.
-        if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
-            peerConnection.addStream(localMediaStream);
-            Log.d(TAG, "Added localMedia Stream");
-        }
-
-        logMessage("[SDK] onMessage - create offer.");
-        // Create DataChannel if both Peer and ourself desires it.
-        if (peerInfo.isEnableDataChannel() &&
-                (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                        || myConfig.hasDataTransfer()))
-
-        {
-            // It is stored by dataChannelManager.
-            dataChannelManager.createDataChannel(
-                    peerConnection, target, mid, "", null, mid);
-        }
-
-        peerConnection.createOffer(getSdpObserver(mid), sdpMediaConstraints);
-        logMessage("PC - createOffer for " + mid);
-    }
-
 
     /*
      * VideoRendererGui.VideoRendererGuiListener
@@ -2041,6 +1863,10 @@ public class SkylinkConnection {
         return MAX_PEER_CONNECTIONS;
     }
 
+    MediaConstraints getSdpMediaConstraints() {
+        return sdpMediaConstraints;
+    }
+
     public DataTransferListener getDataTransferListener() {
         return dataTransferListener;
     }
@@ -2086,6 +1912,10 @@ public class SkylinkConnection {
         return sdpObserverPool;
     }
 
+    void setSdpObserverPool(Map<String, SDPObserver> sdpObserverPool) {
+        this.sdpObserverPool = sdpObserverPool;
+    }
+
     Map<String, PCObserver> getPcObserverPool() {
         return pcObserverPool;
     }
@@ -2126,15 +1956,15 @@ public class SkylinkConnection {
         return myUserData;
     }
 
-    void setRoomLocked(boolean roomLocked){
+    void setRoomLocked(boolean roomLocked) {
         this.roomLocked = roomLocked;
     }
 
-    boolean isRoomLocked(){
+    boolean isRoomLocked() {
         return roomLocked;
     }
 
-    SignalingMessageProcessingService getSignalingMessageProcessingService(){
+    SignalingMessageProcessingService getSignalingMessageProcessingService() {
         return signalingMessageProcessingService;
     }
 }

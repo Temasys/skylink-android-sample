@@ -98,9 +98,6 @@ class SignalingMessageProcessingService implements MessageHandler {
                 messageProcessor.setSkylinkConnection(skylinkConnection);
                 messageProcessor.process(object);
             } else {
-                //TODO: Remove
-                //TODO: TO ensure backward compatibility use the older method
-                skylinkConnection.messageHandler.messageProcessor(data);
                 Log.e(TAG, "Invalid signaling message type");
             }
 

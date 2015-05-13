@@ -125,10 +125,21 @@ public class MessageProcessorFactoryTest {
         assertTrue(processor instanceof GroupMessageProcessor);
     }
 
-
     @Test
-    public void testUpdateUserEventMessageProcessor() {
+    public void testGetUpdateUserEventMessageProcessor() {
         MessageProcessor processor = messageProcessorFactory.getMessageProcessor("updateUserEvent");
         assertTrue(processor instanceof UpdateUserEventMessageProcessor);
+    }
+
+    @Test
+    public void testGetRestartMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("restart");
+        assertTrue(processor instanceof WelcomeRestartMessageProcessor);
+    }
+
+    @Test
+    public void testWelcomeMessageProcessor() {
+        MessageProcessor processor = messageProcessorFactory.getMessageProcessor("welcome");
+        assertTrue(processor instanceof WelcomeRestartMessageProcessor);
     }
 }

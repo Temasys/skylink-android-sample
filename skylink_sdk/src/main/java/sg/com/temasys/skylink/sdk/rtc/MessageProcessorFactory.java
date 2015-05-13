@@ -58,9 +58,9 @@ class MessageProcessorFactory {
         } else if (ENTER.equalsIgnoreCase(messageType)) {
             messageProcessor = new EnterMessageProcessor();
         } else if (WELCOME.equalsIgnoreCase(messageType)) {
-            //TODO: handle welcome message types
+            messageProcessor = new WelcomeRestartMessageProcessor();
         } else if (RESTART.equalsIgnoreCase(messageType)) {
-            //TODO: handle welcome restart types
+            messageProcessor = new WelcomeRestartMessageProcessor();
         } else if (ANSWER.equalsIgnoreCase(messageType) ||
                 OFFER.equalsIgnoreCase(messageType)) {
             messageProcessor = new OfferAnswerMessageProcessor();
