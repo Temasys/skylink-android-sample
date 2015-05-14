@@ -30,7 +30,7 @@ dependencies {
 
     jaxDoclet("com.google.doclava:doclava:1.0.5")
     classpaths files('build/classes/release')
-    classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-17/android.jar'))
+    classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-21/android.jar'))
 }
 
 android {
