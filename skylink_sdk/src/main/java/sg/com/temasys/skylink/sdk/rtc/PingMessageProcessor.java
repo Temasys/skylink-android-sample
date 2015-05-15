@@ -7,7 +7,7 @@ import org.json.JSONObject;
  * Purpose of this message processor is to handle ping message types
  * Created by janidu on 6/5/15.
  */
-public class PingMessageProcessor implements MessageProcessor {
+class PingMessageProcessor implements MessageProcessor {
 
     private SkylinkConnection skylinkConnection;
 

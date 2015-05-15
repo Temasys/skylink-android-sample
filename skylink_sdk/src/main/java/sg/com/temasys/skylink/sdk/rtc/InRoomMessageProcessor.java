@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Purpose of this message processor is to handle inRoom message types
  */
-public class InRoomMessageProcessor implements MessageProcessor {
+class InRoomMessageProcessor implements MessageProcessor {
 
     private static final String TAG = InRoomMessageProcessor.class.getSimpleName();
 

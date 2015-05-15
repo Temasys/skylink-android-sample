@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * <p/>
  * Created by janidu on 11/5/15.
  */
-public class ServerMessageProcessor implements MessageProcessor {
+class ServerMessageProcessor implements MessageProcessor {
 
     private SkylinkConnection skylinkConnection;
 

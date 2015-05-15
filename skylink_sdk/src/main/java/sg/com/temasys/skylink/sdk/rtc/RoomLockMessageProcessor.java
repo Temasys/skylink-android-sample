@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Purpose is to process room lock message types
  * Created by janidu on 11/5/15.
  */
-public class RoomLockMessageProcessor implements MessageProcessor {
+class RoomLockMessageProcessor implements MessageProcessor {
 
     private static final String TAG = RoomLockMessageProcessor.class.getSimpleName();
 

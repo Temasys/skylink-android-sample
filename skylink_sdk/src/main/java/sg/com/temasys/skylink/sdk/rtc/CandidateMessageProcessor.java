@@ -7,7 +7,7 @@ import org.webrtc.IceCandidate;
 /**
  * Created by janidu on 5/5/15.
  */
-public class CandidateMessageProcessor implements MessageProcessor {
+class CandidateMessageProcessor implements MessageProcessor {
 
     private SkylinkConnection skylinkConnection;
 

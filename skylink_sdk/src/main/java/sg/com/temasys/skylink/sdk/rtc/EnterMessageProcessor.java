@@ -8,7 +8,7 @@ import org.json.JSONObject;
 /**
  * Purpose of this message processor is to handle enter message types
  */
-public class EnterMessageProcessor implements MessageProcessor {
+class EnterMessageProcessor implements MessageProcessor {
 
     private static final String TAG = EnterMessageProcessor.class.getSimpleName();
 

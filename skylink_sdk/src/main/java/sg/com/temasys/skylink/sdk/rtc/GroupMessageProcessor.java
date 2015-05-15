@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * Purpose of this message processor is to process group message types
  * Created by janidu on 11/5/15.
  */
-public class GroupMessageProcessor implements MessageProcessor {
+class GroupMessageProcessor implements MessageProcessor {
 
     private SkylinkConnection skylinkConnection;
 

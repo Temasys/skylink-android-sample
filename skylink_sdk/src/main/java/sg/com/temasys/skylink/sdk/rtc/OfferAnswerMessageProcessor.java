@@ -7,7 +7,7 @@ import org.json.JSONObject;
  * Purpose of this message processor is to handle offer/answer message types
  * Created by janidu on 4/5/15.
  */
-public class OfferAnswerMessageProcessor implements MessageProcessor {
+class OfferAnswerMessageProcessor implements MessageProcessor {
 
     private static final String TAG = OfferAnswerMessageProcessor.class.getSimpleName();
 

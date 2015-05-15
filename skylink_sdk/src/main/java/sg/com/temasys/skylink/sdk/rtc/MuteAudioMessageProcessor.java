@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * <p/>
  * Created by janidu on 6/5/15.
  */
-public class MuteAudioMessageProcessor implements MessageProcessor {
+class MuteAudioMessageProcessor implements MessageProcessor {
 
     private SkylinkConnection skylinkConnection;
 

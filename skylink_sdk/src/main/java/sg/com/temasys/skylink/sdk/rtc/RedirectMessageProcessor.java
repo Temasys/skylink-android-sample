@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * <p/>
  * Created by janidu on 11/5/15.
  */
-public class RedirectMessageProcessor implements MessageProcessor {
+class RedirectMessageProcessor implements MessageProcessor {
 
     private static final String TAG = RedirectMessageProcessor.class.getSimpleName();
 

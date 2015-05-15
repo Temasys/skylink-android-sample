@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Purpose of this message processor is to handle enter message types
  * Created by xiangrong on 7/5/15.
  */
-public class WelcomeRestartMessageProcessor implements MessageProcessor {
+class WelcomeRestartMessageProcessor implements MessageProcessor {
 
     private static final String TAG = WelcomeRestartMessageProcessor.class.getSimpleName();
 
