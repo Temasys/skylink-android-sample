@@ -3,7 +3,6 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.util.Log;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
@@ -24,14 +23,14 @@ class SkylinkPeerService {
         this.skylinkConnection = skylinkConnection;
     }
 
-    void receivedEnter(String peerId, PeerInfo peerInfo, JSONObject userInfo) {
+    void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
         // Create a new PeerConnection if we can
         PeerConnection peerConnection = skylinkConnection
                 .getPeerConnection(peerId, HealthChecker.ICE_ROLE_ANSWERER);
 
         // If we are over the max no. of peers, peerConnection here will be null.
         if (peerConnection != null) {
-            skylinkConnection.setUserInfoMap(userInfo, peerId);
+            skylinkConnection.setUserInfo(peerId, userInfo);
             skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
 
             // Add our local media stream to this PC, or not.
@@ -139,7 +138,7 @@ class SkylinkPeerService {
     }
 
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
-                                JSONObject userInfo, double weight, boolean isRestart) {
+                                UserInfo userInfo, double weight, boolean isRestart) {
 
         if (isRestart) {
             if (!ProtocolHelper.processRestart(peerId, skylinkConnection)) {
@@ -166,7 +165,7 @@ class SkylinkPeerService {
             return;
         }
 
-        skylinkConnection.setUserInfoMap(userInfo, peerId);
+        skylinkConnection.setUserInfo(peerId, userInfo);
 
         boolean receiveOnly = peerInfo.isReceiveOnly();
 

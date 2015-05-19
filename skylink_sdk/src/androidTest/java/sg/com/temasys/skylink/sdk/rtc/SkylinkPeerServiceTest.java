@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,7 +62,7 @@ public class SkylinkPeerServiceTest {
     public void testReceivedEnterWithAudioSend(@Mocked final SkylinkConnection
                                                        skylinkConnection) throws JSONException {
 
-        final JSONObject userInfo = new JSONObject();
+        final UserInfo userInfo = new UserInfo();
         final PeerInfo peerInfo = new PeerInfo();
 
         final SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -76,7 +75,7 @@ public class SkylinkPeerServiceTest {
                     .getPeerConnection(peerId, HealthChecker.ICE_ROLE_ANSWERER);
             result = peerConnection;
 
-            skylinkConnection.setUserInfoMap(userInfo, peerId);
+            skylinkConnection.setUserInfo(peerId, userInfo);
             result = null;
 
             skylinkConnection.getPeerInfoMap();
@@ -104,7 +103,7 @@ public class SkylinkPeerServiceTest {
     public void testReceivedEnterWithVideoSend(@Mocked final SkylinkConnection
                                                        skylinkConnection) throws JSONException {
 
-        final JSONObject userInfo = new JSONObject();
+        final UserInfo userInfo = new UserInfo();
         final PeerInfo peerInfo = new PeerInfo();
 
         final SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -117,7 +116,7 @@ public class SkylinkPeerServiceTest {
                     .getPeerConnection(peerId, HealthChecker.ICE_ROLE_ANSWERER);
             result = peerConnection;
 
-            skylinkConnection.setUserInfoMap(userInfo, peerId);
+            skylinkConnection.setUserInfo(peerId, userInfo);
             result = null;
 
             skylinkConnection.getPeerInfoMap();
@@ -255,7 +254,7 @@ public class SkylinkPeerServiceTest {
 
         when(skylinkConnection.getPcObserverPool()).thenReturn(null);
         when(skylinkConnection.getMyConfig()).thenReturn(new SkylinkConfig());
-        when(skylinkConnection.getUserInfoMap()).thenReturn(new HashMap<String, Object>());
+        when(skylinkConnection.getUserInfoMap()).thenReturn(new HashMap<String, UserInfo>());
 
         skylinkPeerService.receivedInRoom(peerId, iceServers);
 

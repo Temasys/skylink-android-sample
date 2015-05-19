@@ -11,7 +11,6 @@ import org.robolectric.annotation.Config;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.fail;
 import static org.mockito.Mockito.doReturn;

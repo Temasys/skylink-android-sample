@@ -98,7 +98,7 @@ public class SkylinkConnection {
     private GLSurfaceView localVideoView;
     private List<PeerConnection.IceServer> iceServerArray;
     private Map<GLSurfaceView, String> surfaceOnHoldPool;
-    private Map<String, Object> userInfoMap;
+    private Map<String, UserInfo> userInfoMap;
     private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
     private Map<String, PCObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
@@ -109,6 +109,7 @@ public class SkylinkConnection {
 
     private MediaStream localMediaStream;
     private Object myUserData;
+    private UserInfo myUserInfo;
     private PeerConnectionFactory peerConnectionFactory;
     private String apiKey;
     private SkylinkConfig myConfig;
@@ -193,6 +194,7 @@ public class SkylinkConnection {
         }
 
         this.myUserData = userData;
+        this.myUserInfo = new UserInfo(myConfig, this.myUserData);
 
         // Fetch the current time from a server
         CurrentTimeService currentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
@@ -231,6 +233,7 @@ public class SkylinkConnection {
     public boolean connectToRoom(String skylinkConnectionString, Object userData) {
 
         this.myUserData = userData;
+        this.myUserInfo = new UserInfo(myConfig, this.myUserData);
 
         logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
 
@@ -1040,12 +1043,8 @@ public class SkylinkConnection {
             userData = this.myUserData;
         } else {
             if (this.userInfoMap != null) {
-                try {
-                    JSONObject userInfo = ((JSONObject) this.userInfoMap.get(remotePeerId));
-                    userData = userInfo.get("userData");
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
+                UserInfo userInfo = getUserInfo(remotePeerId);
+                userData = userInfo.getUserData();
             }
         }
         return userData;
@@ -1057,12 +1056,19 @@ public class SkylinkConnection {
      * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.
      * @return 'org.json.JSONObject'
      */
-    public Object getUserInfo(String remotePeerId) {
+    public UserInfo getUserInfo(String remotePeerId) {
         if (remotePeerId == null) {
-            return this.myUserData;
+            return this.myUserInfo;
         } else {
             return this.userInfoMap.get(remotePeerId);
         }
+    }
+
+    void setUserInfo(String peerId, UserInfo userInfo) {
+        if (this.userInfoMap == null) {
+            this.userInfoMap = new Hashtable<String, UserInfo>();
+        }
+        this.userInfoMap.put(peerId, userInfo);
     }
 
     void logMessage(String message) {
@@ -1074,13 +1080,6 @@ public class SkylinkConnection {
         if (!condition) {
             throw new RuntimeException(msg);
         }
-    }
-
-    void setUserInfoMap(Object userInfo, String key) {
-        if (this.userInfoMap == null) {
-            this.userInfoMap = new Hashtable<String, Object>();
-        }
-        this.userInfoMap.put(key, userInfo);
     }
 
     /**
@@ -1900,11 +1899,11 @@ public class SkylinkConnection {
         peerConnectionPool = new Hashtable<String, PeerConnection>();
         pcObserverPool = new Hashtable<String, PCObserver>();
         sdpObserverPool = new Hashtable<String, SDPObserver>();
-        userInfoMap = new Hashtable<String, Object>();
+        userInfoMap = new Hashtable<String, UserInfo>();
         peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
-    protected Map<String, Object> getUserInfoMap() {
+    protected Map<String, UserInfo> getUserInfoMap() {
         return userInfoMap;
     }
 

@@ -222,12 +222,12 @@ class ProtocolHelper {
 
     /**
      * Send enter
+     * <p/>
+     * This is a hack to accomodate the non-Android clients until the update to SM 0.1.1 This is
+     * esp. so for the JS clients which do not allow restarts for PeerIds without PeerConnection.
      *
-     * This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
-     * This is esp. so for the JS clients which do not allow restarts for PeerIds without PeerConnection.
-     *
-     * @param remotePeerId  Set to null if sending to all Peers in room.
-     *                      Set to PeerId of remote Peer if targeted to send only to this remote Peer.
+     * @param remotePeerId      Set to null if sending to all Peers in room. Set to PeerId of remote
+     *                          Peer if targeted to send only to this remote Peer.
      * @param skylinkConnection
      * @param webServerClient
      * @throws JSONException

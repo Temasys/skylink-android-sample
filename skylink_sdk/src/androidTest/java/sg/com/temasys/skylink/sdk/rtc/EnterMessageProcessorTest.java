@@ -12,7 +12,6 @@ import org.robolectric.annotation.Config;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -86,7 +85,7 @@ public class EnterMessageProcessorTest {
         // - Prepare to capture arguments
         ArgumentCaptor<String> argPeerId = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<PeerInfo> argPeerInfo = ArgumentCaptor.forClass(PeerInfo.class);
-        ArgumentCaptor<JSONObject> argUserInfo = ArgumentCaptor.forClass(JSONObject.class);
+        ArgumentCaptor<UserInfo> argUserInfo = ArgumentCaptor.forClass(UserInfo.class);
 
         verify(mockSkylinkPeerService).receivedEnter(argPeerId.capture(), argPeerInfo.capture(), argUserInfo.capture());
 

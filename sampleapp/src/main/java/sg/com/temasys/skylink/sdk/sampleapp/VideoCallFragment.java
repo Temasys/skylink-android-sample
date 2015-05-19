@@ -22,8 +22,6 @@ import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
-import org.json.JSONObject;
-
 import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
@@ -31,6 +29,7 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -312,8 +311,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
-        RemotePeerUserInfo remotePeerUserInfo = new RemotePeerUserInfo((JSONObject)
-                skylinkConnection.getUserInfo(remotePeerId));
+        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
         Log.d(TAG, "isAudioStereo " + remotePeerUserInfo.isAudioStereo());
         Log.d(TAG, "video height " + remotePeerUserInfo.getVideoHeight());
         Log.d(TAG, "video width " + remotePeerUserInfo.getVideoHeight());

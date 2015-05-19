@@ -14,7 +14,6 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 /**
  * Created by janidu on 12/5/15.

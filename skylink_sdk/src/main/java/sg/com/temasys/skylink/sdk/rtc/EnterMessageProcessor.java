@@ -18,7 +18,8 @@ class EnterMessageProcessor implements MessageProcessor {
     public void process(JSONObject jsonObject) throws JSONException {
 
         String peerId = jsonObject.getString("mid");
-        JSONObject userInfo = jsonObject.getJSONObject("userInfo");
+        JSONObject userInfoJson = jsonObject.getJSONObject("userInfo");
+        UserInfo userInfo = new UserInfo(userInfoJson);
 
         PeerInfo peerInfo = new PeerInfo();
         peerInfo.setAgent(jsonObject.getString("agent"));

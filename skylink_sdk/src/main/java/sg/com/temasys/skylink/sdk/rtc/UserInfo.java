@@ -42,15 +42,24 @@ public class UserInfo {
         if (jsonObject != null && jsonObject.has("settings")) {
             try {
                 JSONObject settings = jsonObject.getJSONObject("settings");
-                audioStereo = settings.getJSONObject("audio").getBoolean("stereo");
 
-                JSONObject videoRes = settings.getJSONObject("video").getJSONObject("resolution");
-                videoHeight = videoRes.getInt("height");
-                videoWidth = videoRes.getInt("width");
-                videoFps = settings.getJSONObject("video").getInt("frameRate");
+                Object audio = settings.get("audio");
+                // audio is either false or an object.
+                if (audio != null && !(audio instanceof Boolean)) {
+                    audioStereo = settings.getJSONObject("audio").getBoolean("stereo");
+                }
 
-                audioMuted = settings.getJSONObject("mediaStatus").getBoolean("audioMuted");
-                videoMuted = settings.getJSONObject("mediaStatus").getBoolean("videoMuted");
+                // video is either false or an object.
+                Object video = settings.get("video");
+                if (video != null && !(video instanceof Boolean)) {
+                    JSONObject videoRes = settings.getJSONObject("video").getJSONObject("resolution");
+                    videoHeight = videoRes.getInt("height");
+                    videoWidth = videoRes.getInt("width");
+                    videoFps = settings.getJSONObject("video").getInt("frameRate");
+                }
+
+                audioMuted = jsonObject.getJSONObject("mediaStatus").getBoolean("audioMuted");
+                videoMuted = jsonObject.getJSONObject("mediaStatus").getBoolean("videoMuted");
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
             }
@@ -147,31 +156,37 @@ public class UserInfo {
         return dictUserInfo;
     }
 
-    public boolean equals(UserInfo x) {
+    /**
+     * Checks if the values of a UserInfo object are the same as this one.
+     *
+     * @param userInfo The UserInfo that is being compared.
+     * @return true only if all values are the same as this one.
+     */
+    public boolean equals(UserInfo userInfo) {
         // Compare video sending
-        if (videoSend != x.hasVideoSend()) {
+        if (videoSend != userInfo.hasVideoSend()) {
             return false;
         } else if (videoSend) {
             // If sending video,
             // - Compare video resolution
-            if (videoHeight != x.getVideoHeight() || videoWidth != x.getVideoWidth() || videoFps != x.getVideoFps()) {
+            if (videoHeight != userInfo.getVideoHeight() || videoWidth != userInfo.getVideoWidth() || videoFps != userInfo.getVideoFps()) {
                 return false;
             }
         }
 
         // Compare audio sending
-        if (audioSend != x.hasAudioSend()) {
+        if (audioSend != userInfo.hasAudioSend()) {
             return false;
         } else if (audioSend) {
             // If sending audio,
             // - Compare audio stereo
-            if (audioStereo != x.isAudioStereo()) {
+            if (audioStereo != userInfo.isAudioStereo()) {
                 return false;
             }
         }
 
         // Compare media status
-        if (audioMuted != x.isAudioMuted() || videoMuted != x.isVideoMuted()) {
+        if (audioMuted != userInfo.isAudioMuted() || videoMuted != userInfo.isVideoMuted()) {
             return false;
         }
         return true;
