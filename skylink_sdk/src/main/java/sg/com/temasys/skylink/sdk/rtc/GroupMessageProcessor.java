@@ -22,7 +22,7 @@ class GroupMessageProcessor implements MessageProcessor {
             String message = (String) msgArr.get(i);
             // Send each message to be processed like a non-group message.
             if (message != null) {
-                skylinkConnection.
+                skylinkConnection.getSkylinkConnectionService().
                         getSignalingMessageProcessingService().onMessage(message);
             }
         }

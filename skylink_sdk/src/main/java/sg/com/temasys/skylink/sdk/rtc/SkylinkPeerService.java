@@ -92,7 +92,7 @@ class SkylinkPeerService {
 
     void receivedInRoom(String peerId, List<PeerConnection.IceServer> iceServers) {
 
-        skylinkConnection.getWebServerClient().setSid(peerId);
+        skylinkConnection.getSkylinkConnectionService().setSid(peerId);
 
         skylinkConnection.getIceServersObserver().onIceServers(iceServers);
 
@@ -114,7 +114,8 @@ class SkylinkPeerService {
             skylinkConnection.initializePcRelatedMaps();
             // Send enter.
             try {
-                ProtocolHelper.sendEnter(null, skylinkConnection, skylinkConnection.getWebServerClient());
+                ProtocolHelper.sendEnter(null, skylinkConnection,
+                        skylinkConnection.getSkylinkConnectionService());
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage(), e);
             }
@@ -184,7 +185,7 @@ class SkylinkPeerService {
                         || skylinkConnection.getMyConfig().hasDataTransfer())) {
             // It is stored by dataChannelManager.
             skylinkConnection.getDataChannelManager().createDataChannel(
-                    peerConnection, skylinkConnection.getWebServerClient().getSid(), peerId, "", null, peerId);
+                    peerConnection, skylinkConnection.getSkylinkConnectionService().getSid(), peerId, "", null, peerId);
         }
 
         if (skylinkConnection.getSdpObserverPool() == null) {

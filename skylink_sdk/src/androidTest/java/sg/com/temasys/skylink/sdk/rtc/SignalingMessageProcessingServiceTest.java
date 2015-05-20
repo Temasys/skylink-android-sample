@@ -43,7 +43,7 @@ public class SignalingMessageProcessingServiceTest {
         when(messageProcessorFactory.getMessageProcessor(INROOM)).thenReturn(byeMessageProcessor);
 
         when(webServerClient.getSid()).thenReturn(SOCKET_ID);
-        when(skylinkConnection.getWebServerClient()).thenReturn(webServerClient);
+        when(skylinkConnection.getSkylinkConnectionService()).thenReturn(webServerClient);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("target", TARGET);

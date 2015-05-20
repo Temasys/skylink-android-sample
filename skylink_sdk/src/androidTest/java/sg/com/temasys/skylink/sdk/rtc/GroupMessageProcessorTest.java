@@ -36,7 +36,7 @@ public class GroupMessageProcessorTest {
         groupMessageProcessor.setSkylinkConnection(skylinkConnection);
 
         signalingMessageProcessingService = mock(SignalingMessageProcessingService.class);
-        when(skylinkConnection.getSignalingMessageProcessingService())
+        when(skylinkConnection.getSkylinkConnectionService().getSignalingMessageProcessingService())
                 .thenReturn(signalingMessageProcessingService);
     }
 

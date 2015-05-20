@@ -46,6 +46,7 @@ class SignalingMessageProcessingService implements MessageHandler {
         sigMsgSender.sendMessage(socketIOClient, dictMessage);
     }
 
+    // Disconnect from the Signaling Channel.
     public void disconnect() {
         Log.d(TAG, "Disconnecting from the signaling server");
         if (socketIOClient != null) {
@@ -85,7 +86,7 @@ class SignalingMessageProcessingService implements MessageHandler {
             String target = object.has("target") ? object.getString("target") : "";
 
             // If the target exist it should be the same for this client
-            if (object.has("target") && !target.equals(skylinkConnection.getWebServerClient().getSid())) {
+            if (object.has("target") && !target.equals(skylinkConnection.getSkylinkConnectionService().getSid())) {
                 Log.e(TAG, "Ignoring the message" +
                         " due target mismatch , target :" + target + " type: " + type);
                 return;
@@ -102,7 +103,8 @@ class SignalingMessageProcessingService implements MessageHandler {
             }
 
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String strErr = "[onMessage] error: " + e.getMessage();
+            Log.e(TAG, strErr, e);
         }
     }
 

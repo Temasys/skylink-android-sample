@@ -54,7 +54,7 @@ public class PingMessageProcessorTest {
 
         when(mockWebServerClient.getRoomId()).thenReturn(rid);
         when(mockWebServerClient.getSid()).thenReturn(socketId);
-        when(mockSkylinkConnection.getWebServerClient()).thenReturn(mockWebServerClient);
+        when(mockSkylinkConnection.getSkylinkConnectionService()).thenReturn(mockWebServerClient);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("target", target);

@@ -12,7 +12,6 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.DataChannel;
@@ -91,6 +90,7 @@ public class SkylinkConnection {
 
     private Context applicationContext;
     private AudioSource localAudioSource;
+
     private AudioTrack localAudioTrack;
     private boolean isMCUConnection;
     private boolean videoSourceStopped;
@@ -108,6 +108,7 @@ public class SkylinkConnection {
     private MediaConstraints sdpMediaConstraints;
 
     private MediaStream localMediaStream;
+
     private Object myUserData;
     private UserInfo myUserInfo;
     private PeerConnectionFactory peerConnectionFactory;
@@ -115,8 +116,9 @@ public class SkylinkConnection {
     private SkylinkConfig myConfig;
     private VideoCapturerAndroid localVideoCapturer;
     private VideoSource localVideoSource;
+
     private VideoTrack localVideoTrack;
-    private WebServerClient webServerClient;
+    private SkylinkConnectionService skylinkConnectionService;
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
 
@@ -130,7 +132,6 @@ public class SkylinkConnection {
     private boolean roomLocked;
     private VideoRendererGui localVideoRendererGui;
     private MediaConstraints videoConstraints;
-    private SignalingMessageProcessingService signalingMessageProcessingService;
 
     private SkylinkPeerService skylinkPeerService;
 
@@ -259,21 +260,15 @@ public class SkylinkConnection {
             this.dataTransferListener = new DataTransferAdapter();
         }
 
-        if (this.signalingMessageProcessingService == null) {
-            this.signalingMessageProcessingService = new SignalingMessageProcessingService(this,
-                    new MessageProcessorFactory());
-        }
-
         if (this.skylinkPeerService == null) {
             this.skylinkPeerService = new SkylinkPeerService(this);
         }
 
-        this.webServerClient = new WebServerClient(iceServersObserver,
-                this.signalingMessageProcessingService);
+        this.skylinkConnectionService = new SkylinkConnectionService(this, iceServersObserver);
 
         String url = APP_SERVER + skylinkConnectionString;
         try {
-            this.webServerClient.connectToRoom(url);
+            this.skylinkConnectionService.connectToRoom(url);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (JSONException e) {
@@ -290,7 +285,7 @@ public class SkylinkConnection {
     public void lockRoom() {
         if (!roomLocked) {
             try {
-                ProtocolHelper.sendRoomLockStatus(this.webServerClient, true);
+                ProtocolHelper.sendRoomLockStatus(this.skylinkConnectionService, true);
                 roomLocked = true;
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
@@ -304,7 +299,7 @@ public class SkylinkConnection {
     public void unlockRoom() {
         if (roomLocked) {
             try {
-                ProtocolHelper.sendRoomLockStatus(this.webServerClient, false);
+                ProtocolHelper.sendRoomLockStatus(this.skylinkConnectionService, false);
                 roomLocked = false;
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
@@ -340,7 +335,7 @@ public class SkylinkConnection {
         }
         synchronized (lockDisconnect) {
             try {
-                ProtocolHelper.sendRestart(remotePeerId, this, webServerClient, localMediaStream,
+                ProtocolHelper.sendRestart(remotePeerId, this, skylinkConnectionService, localMediaStream,
                         myConfig);
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage(), e);
@@ -375,13 +370,13 @@ public class SkylinkConnection {
                 if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
                     // If it is Android, send restart.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
-                    ProtocolHelper.sendRestart(remotePeerId, this, webServerClient,
+                    ProtocolHelper.sendRestart(remotePeerId, this, skylinkConnectionService,
                             localMediaStream, myConfig);
                 } else {
                     // If web or others, send directed enter
                     // TODO XR: Remove after JS client update to compatible restart protocol.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
-                    ProtocolHelper.sendEnter(remotePeerId, this, webServerClient);
+                    ProtocolHelper.sendEnter(remotePeerId, this, skylinkConnectionService);
                 }
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage(), e);
@@ -502,7 +497,7 @@ public class SkylinkConnection {
     }
 
     private boolean isAlreadyConnected() {
-        return this.webServerClient != null;
+        return this.skylinkConnectionService != null;
     }
 
     /**
@@ -527,8 +522,9 @@ public class SkylinkConnection {
                                         // Record user intention for connection to room state
                                         connectionState = ConnectionState.DISCONNECT;
 
-                                        if (this.webServerClient != null) {
-                                            this.webServerClient.disconnect();
+                                        // Disconnect from the Signaling Channel.
+                                        if (this.skylinkConnectionService != null) {
+                                            skylinkConnectionService.disconnect();
                                         }
 
                                         logMessage("Inside SkylinkConnection.disconnectFromRoom");
@@ -598,7 +594,7 @@ public class SkylinkConnection {
                                         }
 
                                         this.peerConnectionFactory = null;
-                                        this.webServerClient = null;
+                                        this.skylinkConnectionService = null;
                                     }
                                 }
                             }
@@ -620,25 +616,7 @@ public class SkylinkConnection {
      *                     'org.json.JSONArray'.
      */
     public void sendServerMessage(String remotePeerId, Object message) {
-        if (this.webServerClient == null)
-            return;
-
-        JSONObject dict = new JSONObject();
-        try {
-            dict.put("cid", webServerClient.getCid());
-            dict.put("data", message);
-            dict.put("mid", webServerClient.getSid());
-            dict.put("rid", webServerClient.getRoomId());
-            if (remotePeerId != null) {
-                dict.put("type", "private");
-                dict.put("target", remotePeerId);
-            } else {
-                dict.put("type", "public");
-            }
-            webServerClient.sendMessage(dict);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        skylinkConnectionService.sendServerMessage(remotePeerId, message);
     }
 
     /**
@@ -653,7 +631,7 @@ public class SkylinkConnection {
      */
     public void sendP2PMessage(String remotePeerId, Object message)
             throws SkylinkException {
-        if (this.webServerClient == null)
+        if (this.skylinkConnectionService == null)
             return;
 
         if (myConfig.hasPeerMessaging()) {
@@ -718,21 +696,7 @@ public class SkylinkConnection {
      *                 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public void sendLocalUserData(Object userData) {
-        if (this.webServerClient == null) {
-            return;
-        }
-
-        this.myUserData = userData;
-        JSONObject dict = new JSONObject();
-        try {
-            dict.put("type", "updateUserEvent");
-            dict.put("mid", webServerClient.getSid());
-            dict.put("rid", webServerClient.getRoomId());
-            dict.put("userData", userData);
-            webServerClient.sendMessage(dict);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        skylinkConnectionService.sendLocalUserData(userData);
     }
 
     /**
@@ -741,23 +705,7 @@ public class SkylinkConnection {
      * @param isMuted Flag that specifies whether audio should be mute
      */
     public void muteLocalAudio(boolean isMuted) {
-        if (this.webServerClient == null) {
-            return;
-        }
-
-        if (myConfig.hasAudioSend() && (localAudioTrack.enabled() == isMuted)) {
-            localAudioTrack.setEnabled(!isMuted);
-            JSONObject dict = new JSONObject();
-            try {
-                dict.put("type", "muteAudioEvent");
-                dict.put("mid", webServerClient.getSid());
-                dict.put("rid", webServerClient.getRoomId());
-                dict.put("muted", new Boolean(isMuted));
-                webServerClient.sendMessage(dict);
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-        }
+        skylinkConnectionService.muteLocalAudio(isMuted);
     }
 
     /**
@@ -766,22 +714,7 @@ public class SkylinkConnection {
      * @param isMuted Flag that specifies whether video should be mute
      */
     public void muteLocalVideo(boolean isMuted) {
-        if (this.webServerClient == null)
-            return;
-
-        if (myConfig.hasVideoSend() && (localVideoTrack.enabled() == isMuted)) {
-            localVideoTrack.setEnabled(!isMuted);
-            JSONObject dict = new JSONObject();
-            try {
-                dict.put("type", "muteVideoEvent");
-                dict.put("mid", webServerClient.getSid());
-                dict.put("rid", webServerClient.getRoomId());
-                dict.put("muted", new Boolean(isMuted));
-                webServerClient.sendMessage(dict);
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-        }
+        skylinkConnectionService.muteLocalVideo(isMuted);
     }
 
     /**
@@ -795,7 +728,7 @@ public class SkylinkConnection {
      */
     public void sendFileTransferPermissionRequest(String remotePeerId, String fileName,
                                                   String filePath) throws SkylinkException {
-        if (this.webServerClient == null)
+        if (this.skylinkConnectionService == null)
             return;
 
         if (myConfig.hasFileTransfer()) {
@@ -918,7 +851,7 @@ public class SkylinkConnection {
      */
     public void sendFileTransferPermissionResponse(String remotePeerId,
                                                    String filePath, boolean isPermitted) {
-        if (this.webServerClient == null) {
+        if (this.skylinkConnectionService == null) {
             return;
         }
         if (myConfig.hasFileTransfer()) {
@@ -1326,32 +1259,8 @@ public class SkylinkConnection {
                         }
                     }
 
-                    try {
-                        JSONObject msgJoinRoom = new JSONObject();
-                        msgJoinRoom.put("type", "joinRoom");
-                        msgJoinRoom.put("rid",
-                                connectionManager.webServerClient.getRoomId());
-                        msgJoinRoom.put("uid",
-                                connectionManager.webServerClient.getUserId());
-                        msgJoinRoom.put("roomCred",
-                                connectionManager.webServerClient.getRoomCred());
-                        msgJoinRoom.put("cid",
-                                connectionManager.webServerClient.getCid());
-                        msgJoinRoom.put("userCred",
-                                connectionManager.webServerClient.getUserCred());
-                        msgJoinRoom.put("timeStamp",
-                                connectionManager.webServerClient.getTimeStamp());
-                        msgJoinRoom.put("apiOwner",
-                                connectionManager.webServerClient.getAppOwner());
-                        msgJoinRoom.put("len",
-                                connectionManager.webServerClient.getLen());
-                        msgJoinRoom.put("start",
-                                connectionManager.webServerClient.getStart());
-                        connectionManager.webServerClient.sendMessage(msgJoinRoom);
-                        connectionManager.logMessage("[SDK] Join Room msg: Sending...");
-                    } catch (JSONException e) {
-                        Log.e(TAG, e.getMessage(), e);
-                    }
+                    ProtocolHelper.sendJoinRoom(skylinkConnectionService);
+
                 }
             } else {
                 connectionManager.iceServerArray = iceServers;
@@ -1468,7 +1377,7 @@ public class SkylinkConnection {
         }
 
         void initialiseHealthChecker(String iceRole) {
-            healthChecker = new HealthChecker(myId, connectionManager, connectionManager.webServerClient, connectionManager.localMediaStream, connectionManager.myConfig, pc);
+            healthChecker = new HealthChecker(myId, connectionManager, connectionManager.skylinkConnectionService, connectionManager.localMediaStream, connectionManager.myConfig, pc);
             healthChecker.setIceRole(iceRole);
             healthChecker.startRestartTimer();
         }
@@ -1482,21 +1391,8 @@ public class SkylinkConnection {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (connectionState == ConnectionState.DISCONNECT) return;
-                        JSONObject json = new JSONObject();
-                        try {
-                            json.put("type", "candidate");
-                            json.put("label", candidate.sdpMLineIndex);
-                            json.put("id", candidate.sdpMid);
-                            json.put("candidate", candidate.sdp);
-                            json.put("mid",
-                                    connectionManager.webServerClient.getSid());
-                            json.put("rid",
-                                    connectionManager.webServerClient.getRoomId());
-                            json.put("target", PCObserver.this.myId);
-                            connectionManager.webServerClient.sendMessage(json);
-                        } catch (JSONException e) {
-                            Log.e(TAG, e.getMessage(), e);
-                        }
+                        ProtocolHelper.sendCandidate(connectionManager.skylinkConnectionService, candidate,
+                                PCObserver.this.myId);
                     }
                 }
             });
@@ -1545,19 +1441,9 @@ public class SkylinkConnection {
                             if (connectionState == ConnectionState.DISCONNECT) return;
                             SessionDescription sdp = connectionManager.peerConnectionPool
                                     .get(myId).getLocalDescription();
-                            JSONObject json = new JSONObject();
-                            try {
-                                json.put("type", sdp.type.canonicalForm());
-                                json.put("sdp", sdp.description);
-                                json.put("mid",
-                                        connectionManager.webServerClient.getSid());
-                                json.put("target", myId);
-                                json.put("rid", connectionManager.webServerClient
-                                        .getRoomId());
-                                connectionManager.webServerClient.sendMessage(json);
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.getMessage(), e);
-                            }
+                            ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
+                                    sdp,
+                                    PCObserver.this.myId);
                         }
                     }
                 });
@@ -1645,7 +1531,7 @@ public class SkylinkConnection {
                     // It is stored by dataChannelManager.
                     // Get PeerConnection.
                     PeerConnection pc = connectionManager.peerConnectionPool.get(this.myId);
-                    String mid = connectionManager.webServerClient.getSid();
+                    String mid = connectionManager.skylinkConnectionService.getSid();
                     connectionManager.dataChannelManager.createDataChannel(pc,
                             this.myId, mid, "", dc, this.myId);
                 }
@@ -1733,7 +1619,8 @@ public class SkylinkConnection {
 
                         pc.setLocalDescription(SDPObserver.this, sdp);
                         if (!connectionManager.isMCUConnection)
-                            sendLocalDescription(sdp);
+                        ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
+                                sdp, SDPObserver.this.myId);
                     }
                 }
             });
@@ -1816,26 +1703,6 @@ public class SkylinkConnection {
             });
         }
 
-        private void sendLocalDescription(SessionDescription sdp) {
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnectSdpSend) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("type", sdp.type.canonicalForm());
-                    json.put("sdp", sdp.description);
-                    json.put("mid", connectionManager.webServerClient.getSid());
-                    json.put("target", this.myId);
-                    json.put("rid", connectionManager.webServerClient.getRoomId());
-                    connectionManager.webServerClient.sendMessage(json);
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
-        }
-
         private void drainRemoteCandidates() {
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnectSdpDrain) {
@@ -1860,6 +1727,18 @@ public class SkylinkConnection {
 
     static int getMaxPeerConnections() {
         return MAX_PEER_CONNECTIONS;
+    }
+
+    public void setUserData(Object myUserData) {
+        this.myUserData = myUserData;
+    }
+
+    public AudioTrack getLocalAudioTrack() {
+        return localAudioTrack;
+    }
+
+    public VideoTrack getLocalVideoTrack() {
+        return localVideoTrack;
     }
 
     MediaConstraints getSdpMediaConstraints() {
@@ -1939,8 +1818,12 @@ public class SkylinkConnection {
         return iceServersObserver;
     }
 
+    SkylinkConnectionService getSkylinkConnectionService() {
+        return skylinkConnectionService;
+    }
+
     WebServerClient getWebServerClient() {
-        return webServerClient;
+        return skylinkConnectionService.getWebServerClient();
     }
 
     SkylinkConfig getMyConfig() {
@@ -1963,7 +1846,4 @@ public class SkylinkConnection {
         return roomLocked;
     }
 
-    SignalingMessageProcessingService getSignalingMessageProcessingService() {
-        return signalingMessageProcessingService;
-    }
 }

@@ -49,6 +49,7 @@ class HealthChecker {
     // Required for restart.
     private String remotePeerId;
     private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
     private WebServerClient webServerClient;
     private MediaStream localMediaStream;
     private SkylinkConfig myConfig;
@@ -59,20 +60,20 @@ class HealthChecker {
      *
      * @param remotePeerId
      * @param skylinkConnection
-     * @param webServerClient
+     * @param skylinkConnectionService
      * @param localMediaStream
      * @param myConfig
      * @param pc
      */
     HealthChecker(final String remotePeerId,
                   final SkylinkConnection skylinkConnection,
-                  WebServerClient webServerClient,
+                  SkylinkConnectionService skylinkConnectionService,
                   MediaStream localMediaStream,
                   SkylinkConfig myConfig,
                   PeerConnection pc) {
         this.remotePeerId = remotePeerId;
         this.skylinkConnection = skylinkConnection;
-        this.webServerClient = webServerClient;
+        this.skylinkConnectionService = skylinkConnectionService;
         this.localMediaStream = localMediaStream;
         this.myConfig = myConfig;
         this.pc = pc;
@@ -156,7 +157,7 @@ class HealthChecker {
         try {
             Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : IceConnectionState : " + iceState +
                     " - Restarting (" + restartNumber + ").");
-            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, webServerClient,
+            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, skylinkConnectionService,
                     localMediaStream, myConfig);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);

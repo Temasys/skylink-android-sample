@@ -49,6 +49,7 @@ import java.util.List;
 class WebServerClient implements RoomParameterServiceListener {
 
     private static final String TAG = WebServerClient.class.getName();
+    private final SkylinkConnectionService skylinkConnectionService;
     private final IceServersObserver iceServersObserver;
 
 
@@ -69,9 +70,8 @@ class WebServerClient implements RoomParameterServiceListener {
         public void onShouldConnectToRoom();
     }
 
-    public WebServerClient(IceServersObserver iceServersObserver,
-                           SignalingMessageProcessingService signalingMessageProcessingService) {
-        this.signalingMessageProcessingService = signalingMessageProcessingService;
+    public WebServerClient(SkylinkConnectionService skylinkConnectionService, IceServersObserver iceServersObserver) {
+        this.skylinkConnectionService = skylinkConnectionService;
         this.iceServersObserver = iceServersObserver;
     }
 
@@ -84,14 +84,8 @@ class WebServerClient implements RoomParameterServiceListener {
      * @throws Exception
      */
     public void connectToRoom(String url) throws IOException, JSONException {
+        // Obtain parameters required to connect to room.
         (new RoomParameterService(this)).execute(url);
-    }
-
-    /**
-     * Disconnect from the Signaling Channel.
-     */
-    public void disconnect() {
-        signalingMessageProcessingService.disconnect();
     }
 
     @Override
@@ -101,8 +95,11 @@ class WebServerClient implements RoomParameterServiceListener {
             Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
             Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
 
-            signalingMessageProcessingService.connect(params.getIpSigserver(),
-                    params.getPortSigserver(), params.getSid(), params.getRoomId());
+
+            /*signalingMessageProcessingService.connect(params.getIpSigserver(),
+                    params.getPortSigserver(), params.getSid(), params.getRoomId());*/
+            // Inform that Room parameters have been obtained.
+            skylinkConnectionService.obtainedRoomParameters(params.getRoomId());
         }
     }
 
@@ -143,6 +140,14 @@ class WebServerClient implements RoomParameterServiceListener {
 
     public void setAppOwner(String appOwner) {
         this.appRTCSignalingParameters.setAppOwner(appOwner);
+    }
+
+    public String getIpSigServer() {
+        return this.appRTCSignalingParameters.getIpSigserver();
+    }
+
+    public int getPortSigServer() {
+        return this.appRTCSignalingParameters.getPortSigserver();
     }
 
     public String getCid() {

@@ -227,7 +227,7 @@ public class SkylinkPeerServiceTest {
         SkylinkConnection skylinkConnection = mock(SkylinkConnection.class);
 
         WebServerClient webServerClient = mock(WebServerClient.class);
-        when(skylinkConnection.getWebServerClient()).thenReturn(webServerClient);
+        when(skylinkConnection.getSkylinkConnectionService()).thenReturn(webServerClient);
 
         when(skylinkConnection.getIceServersObserver()).thenReturn(iceServersObserver);
 
