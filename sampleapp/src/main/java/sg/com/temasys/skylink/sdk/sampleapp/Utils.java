@@ -41,18 +41,18 @@ class Utils {
      * Returns the SkylinkConnectionString
      *
      * @param roomName  Name of the room
-     * @param apiKey    API Key
-     * @param secret    API secret
+     * @param appKey    App Key
+     * @param secret    App secret
      * @param startTime Room Start Time
      * @param duration  Duration of the room in Hours
      * @return
      */
-    public static String getSkylinkConnectionString(String roomName, String apiKey,
+    public static String getSkylinkConnectionString(String roomName, String appKey,
                                                     String secret,
                                                     Date startTime, int duration) {
 
         Log.d(TAG, "Room name " + roomName);
-        Log.d(TAG, "API Key " + apiKey);
+        Log.d(TAG, "App Key " + appKey);
         Log.d(TAG, "startTime " + startTime);
         Log.d(TAG, "duration " + duration);
 
@@ -68,7 +68,7 @@ class Utils {
             Log.e(TAG, e.getMessage(), e);
         }
 
-        return apiKey + "/"
+        return appKey + "/"
                 + roomName + "/" + dateString + "/" + duration + "?cred="
                 + cred;
     }

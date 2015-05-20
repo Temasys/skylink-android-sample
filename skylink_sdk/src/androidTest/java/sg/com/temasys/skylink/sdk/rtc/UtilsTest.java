@@ -77,12 +77,12 @@ public class UtilsTest {
     public void testGetSkylinkConnectionString() {
 
         String roomName = "testRoom";
-        String apiKey = "TestKey";
+        String appKey = "TestKey";
         String secret = "TestSecret";
         int duration = SkylinkConnection.DEFAULT_DURATION;
 
         String skylinkConnectionString = Utils.getSkylinkConnectionString(roomName,
-                apiKey, secret, new Date(), duration);
+                appKey, secret, new Date(), duration);
 
         assertNotNull(skylinkConnectionString);
         assertFalse("Skylink Connection should not be empty",

@@ -137,12 +137,12 @@ class WebServerClient implements RoomParameterServiceListener {
         return appRTCSignalingParameters.getAudioConstraints();
     }
 
-    public String getApiOwner() {
-        return appRTCSignalingParameters.getApiOwner();
+    public String getAppOwner() {
+        return appRTCSignalingParameters.getAppOwner();
     }
 
-    public void setApiOwner(String apiOwner) {
-        this.appRTCSignalingParameters.setApiOwner(apiOwner);
+    public void setAppOwner(String appOwner) {
+        this.appRTCSignalingParameters.setAppOwner(appOwner);
     }
 
     public String getCid() {

@@ -18,7 +18,7 @@ class AppRTCSignalingParameters {
     private MediaConstraints pcConstraints;
     private MediaConstraints audioConstraints;
     private MediaConstraints videoConstraints;
-    private String apiOwner;
+    private String appOwner;
     private String cid;
     private String displayName;
     private String len;
@@ -98,12 +98,12 @@ class AppRTCSignalingParameters {
         this.videoConstraints = videoConstraints;
     }
 
-    public String getApiOwner() {
-        return apiOwner;
+    public String getAppOwner() {
+        return appOwner;
     }
 
-    public void setApiOwner(String apiOwner) {
-        this.apiOwner = apiOwner;
+    public void setAppOwner(String appOwner) {
+        this.appOwner = appOwner;
     }
 
     public String getCid() {

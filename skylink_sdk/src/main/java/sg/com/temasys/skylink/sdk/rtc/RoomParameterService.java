@@ -21,7 +21,7 @@ import java.io.InputStream;
 class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParameters> {
 
     public static final String TAG = RoomParameterService.class.getName();
-    public static final String API_OWNER = "apiOwner";
+    public static final String APP_OWNER = "apiOwner";
     public static final String CID = "cid";
     public static final String DISPLAY_NAME = "displayName";
     public static final String LEN = "len";
@@ -112,8 +112,8 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
         roomParameterServiceListener.onShouldConnectToRoom();
 
         AppRTCSignalingParameters parameters = new AppRTCSignalingParameters();
-        parameters.setApiOwner(roomJson.getString(API_OWNER));
-        Log.d(TAG, "apiOwner->" + parameters.getApiOwner());
+        parameters.setAppOwner(roomJson.getString(APP_OWNER));
+        Log.d(TAG, "apiOwner->" + parameters.getAppOwner());
 
         parameters.setCid(roomJson.getString(CID));
         Log.d(TAG, "cid->" + parameters.getCid());

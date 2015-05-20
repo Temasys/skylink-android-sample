@@ -2,7 +2,7 @@
 
 <!-->
   Instructions for using the config-example.xml file.
-  To use your own API key and secret for this app:
+  To use your own App Key and secret for this app:
   MAKE A COPY of config_example.xml (do NOT edit config-example.xml for app usage)
     and give it a name not used in this directory (res/value/), e.g. config.xml.
   Uncomment the xml elements in it.
@@ -12,7 +12,7 @@
 <-->
 <resources>
 
-    <!-- API keys and secrets. /**/res/values/config.xml is ignored by git and will not be committed -->
+    <!-- App Keys and secrets. /**/res/values/config.xml is ignored by git and will not be committed -->
 
     <!-- Uncomment in config.xml>
       <string name="app_key">Enter your app ID here.</string>
