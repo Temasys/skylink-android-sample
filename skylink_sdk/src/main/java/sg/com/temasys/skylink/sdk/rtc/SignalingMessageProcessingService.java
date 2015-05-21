@@ -103,9 +103,15 @@ class SignalingMessageProcessingService implements MessageHandler {
             }
 
         } catch (JSONException e) {
-            String strErr = "[onMessage] error: " + e.getMessage();
-            Log.e(TAG, strErr, e);
+            onSignalingMessageException(e);
         }
+    }
+
+    // A place to collect all Signaling message exceptions.
+    // As some objects, like runnables, have to catch exceptions.
+    void onSignalingMessageException(JSONException e) {
+        String strErr = "[onMessage] error: " + e.getMessage();
+        Log.e(TAG, strErr, e);
     }
 
     @Override

@@ -37,13 +37,13 @@ public class SignalingMessageProcessingServiceTest {
 
         MessageProcessorFactory messageProcessorFactory = mock(MessageProcessorFactory.class);
         SkylinkConnection skylinkConnection = mock(SkylinkConnection.class);
-        WebServerClient webServerClient = mock(WebServerClient.class);
+        SkylinkConnectionService skylinkConnectionService = mock(SkylinkConnectionService.class);
         InRoomMessageProcessor byeMessageProcessor = mock(InRoomMessageProcessor.class);
 
         when(messageProcessorFactory.getMessageProcessor(INROOM)).thenReturn(byeMessageProcessor);
 
-        when(webServerClient.getSid()).thenReturn(SOCKET_ID);
-        when(skylinkConnection.getSkylinkConnectionService()).thenReturn(webServerClient);
+        when(skylinkConnectionService.getSid()).thenReturn(SOCKET_ID);
+        when(skylinkConnection.getSkylinkConnectionService()).thenReturn(skylinkConnectionService);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("target", TARGET);

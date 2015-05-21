@@ -1619,8 +1619,8 @@ public class SkylinkConnection {
 
                         pc.setLocalDescription(SDPObserver.this, sdp);
                         if (!connectionManager.isMCUConnection)
-                        ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
-                                sdp, SDPObserver.this.myId);
+                            ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
+                                    sdp, SDPObserver.this.myId);
                     }
                 }
             });

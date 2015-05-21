@@ -33,12 +33,12 @@ public class PingMessageProcessorTest {
 
     private SkylinkConnection mockSkylinkConnection;
     private PingMessageProcessor pingMessageProcessor;
-    private WebServerClient mockWebServerClient;
+    private SkylinkConnectionService skylinkConnectionService;
 
     @Before
     public void setUp() throws Exception {
         mockSkylinkConnection = mock(SkylinkConnection.class);
-        mockWebServerClient = mock(WebServerClient.class);
+        skylinkConnectionService = mock(SkylinkConnectionService.class);
 
         pingMessageProcessor = new PingMessageProcessor();
         pingMessageProcessor.setSkylinkConnection(mockSkylinkConnection);
@@ -52,9 +52,9 @@ public class PingMessageProcessorTest {
     @Test
     public void testProcess() throws JSONException {
 
-        when(mockWebServerClient.getRoomId()).thenReturn(rid);
-        when(mockWebServerClient.getSid()).thenReturn(socketId);
-        when(mockSkylinkConnection.getSkylinkConnectionService()).thenReturn(mockWebServerClient);
+        when(skylinkConnectionService.getRoomId()).thenReturn(rid);
+        when(skylinkConnectionService.getSid()).thenReturn(socketId);
+        when(mockSkylinkConnection.getSkylinkConnectionService()).thenReturn(skylinkConnectionService);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("target", target);
@@ -63,7 +63,7 @@ public class PingMessageProcessorTest {
         pingMessageProcessor.process(jsonObject);
 
         ArgumentCaptor<JSONObject> argument = ArgumentCaptor.forClass(JSONObject.class);
-        verify(mockWebServerClient).sendMessage(argument.capture());
+        verify(skylinkConnectionService).sendMessage(argument.capture());
 
         assertEquals("ping", argument.getValue().getString("type"));
         assertEquals(socketId, argument.getValue().getString("mid"));

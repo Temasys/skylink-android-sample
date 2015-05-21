@@ -13,11 +13,11 @@ import java.io.IOException;
 class SkylinkConnectionService {
     private static final String TAG = SkylinkConnectionService.class.getName();
     private final SkylinkConnection skylinkConnection;
+    private final SignalingMessageProcessingService signalingMessageProcessingService;
+    private final WebServerClient webServerClient;
     private final WebServerClient.IceServersObserver iceServersObserver;
 
-    private final SignalingMessageProcessingService signalingMessageProcessingService;
-
-    private final WebServerClient webServerClient;
+    private AppRTCSignalingParameters appRTCSignalingParameters;
 
     public SkylinkConnectionService(SkylinkConnection skylinkConnection,
                                     WebServerClient.IceServersObserver iceServersObserver) {
@@ -54,17 +54,17 @@ class SkylinkConnectionService {
 
         JSONObject dict = new JSONObject();
         try {
-            dict.put("cid", webServerClient.getCid());
+            dict.put("cid", getCid());
             dict.put("data", message);
-            dict.put("mid", webServerClient.getSid());
-            dict.put("rid", webServerClient.getRoomId());
+            dict.put("mid", getSid());
+            dict.put("rid", getRoomId());
             if (remotePeerId != null) {
                 dict.put("type", "private");
                 dict.put("target", remotePeerId);
             } else {
                 dict.put("type", "public");
             }
-            webServerClient.sendMessage(dict);
+            sendMessage(dict);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -85,10 +85,10 @@ class SkylinkConnectionService {
         JSONObject dict = new JSONObject();
         try {
             dict.put("type", "updateUserEvent");
-            dict.put("mid", webServerClient.getSid());
-            dict.put("rid", webServerClient.getRoomId());
+            dict.put("mid", getSid());
+            dict.put("rid", getRoomId());
             dict.put("userData", userData);
-            webServerClient.sendMessage(dict);
+            sendMessage(dict);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -112,10 +112,10 @@ class SkylinkConnectionService {
             JSONObject dict = new JSONObject();
             try {
                 dict.put("type", "muteAudioEvent");
-                dict.put("mid", webServerClient.getSid());
-                dict.put("rid", webServerClient.getRoomId());
+                dict.put("mid", getSid());
+                dict.put("rid", getRoomId());
                 dict.put("muted", new Boolean(isMuted));
-                webServerClient.sendMessage(dict);
+                sendMessage(dict);
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
             }
@@ -138,24 +138,14 @@ class SkylinkConnectionService {
             JSONObject dict = new JSONObject();
             try {
                 dict.put("type", "muteVideoEvent");
-                dict.put("mid", webServerClient.getSid());
-                dict.put("rid", webServerClient.getRoomId());
+                dict.put("mid", getSid());
+                dict.put("rid", getRoomId());
                 dict.put("muted", new Boolean(isMuted));
-                webServerClient.sendMessage(dict);
+                sendMessage(dict);
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
-    }
-
-    // Connect to Signaling Server and start signaling process with room.
-    void obtainedRoomParameters(String roomId) {
-        // Connect to Signaling Server and start signaling process with room.
-            /*signalingMessageProcessingService.connect(params.getIpSigserver(),
-                    params.getPortSigserver(), params.getSid(), params.getRoomId());*/
-        signalingMessageProcessingService.connect(webServerClient.getIpSigServer(),
-                webServerClient.getPortSigServer(), webServerClient.getSid(), roomId);
-
     }
 
     // Disconnect from the Signaling Channel.
@@ -163,6 +153,23 @@ class SkylinkConnectionService {
         if (this.signalingMessageProcessingService != null) {
             signalingMessageProcessingService.disconnect();
         }
+    }
+
+    // Connect to Signaling Server and start signaling process with room.
+    void obtainedRoomParameters(AppRTCSignalingParameters params) {
+        setAppRTCSignalingParameters(params);
+        // Connect to Signaling Server and start signaling process with room.
+        signalingMessageProcessingService.connect(getIpSigServer(),
+                getPortSigServer(), getSid(), getRoomId());
+    }
+
+    public void sendMessage(JSONObject dictMessage) {
+        Log.d(TAG, "Send message");
+        signalingMessageProcessingService.sendMessage(dictMessage);
+    }
+
+    WebServerClient.IceServersObserver getIceServersObserver() {
+        return iceServersObserver;
     }
 
     public WebServerClient getWebServerClient() {
@@ -173,16 +180,67 @@ class SkylinkConnectionService {
         return signalingMessageProcessingService;
     }
 
-    public String getSid() {
-        return webServerClient.getSid();
+    public AppRTCSignalingParameters getAppRTCSignalingParameters() {
+        return appRTCSignalingParameters;
     }
 
-    public void setSid(String sid) {
-        webServerClient.setSid(sid);
+    public void setAppRTCSignalingParameters(AppRTCSignalingParameters appRTCSignalingParameters) {
+        this.appRTCSignalingParameters = appRTCSignalingParameters;
+    }
+
+    public String getAppOwner() {
+        return appRTCSignalingParameters.getAppOwner();
+    }
+
+    public String getIpSigServer() {
+        return this.appRTCSignalingParameters.getIpSigserver();
+    }
+
+    public int getPortSigServer() {
+        return this.appRTCSignalingParameters.getPortSigserver();
+    }
+
+    public String getCid() {
+        return appRTCSignalingParameters.getCid();
+    }
+
+    public String getLen() {
+        return appRTCSignalingParameters.getLen();
+    }
+
+    public String getRoomCred() {
+        return appRTCSignalingParameters.getRoomCred();
     }
 
     public String getRoomId() {
-        return webServerClient.getRoomId();
+        return appRTCSignalingParameters.getRoomId();
     }
 
+    public String getSid() {
+        return appRTCSignalingParameters.getSid();
+    }
+
+    public void setSid(String sid) {
+        this.appRTCSignalingParameters.setSid(sid);
+    }
+
+    public String getStart() {
+        return appRTCSignalingParameters.getStart();
+    }
+
+    public void setStart(String start) {
+        this.appRTCSignalingParameters.setStart(start);
+    }
+
+    public String getTimeStamp() {
+        return appRTCSignalingParameters.getTimeStamp();
+    }
+
+    public String getUserCred() {
+        return appRTCSignalingParameters.getUserCred();
+    }
+
+    public String getUserId() {
+        return appRTCSignalingParameters.getUserId();
+    }
 }

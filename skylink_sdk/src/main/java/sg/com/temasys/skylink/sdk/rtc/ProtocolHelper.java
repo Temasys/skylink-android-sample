@@ -101,13 +101,12 @@ class ProtocolHelper {
      * @throws JSONException
      */
     static void sendRoomLockStatus(SkylinkConnectionService skylinkConnectionService, boolean lockStatus) throws JSONException {
-        WebServerClient webServerClient = skylinkConnectionService.getWebServerClient();
         JSONObject dict = new JSONObject();
-        dict.put("rid", webServerClient.getRoomId());
-        dict.put("mid", webServerClient.getSid());
+        dict.put("rid", skylinkConnectionService.getRoomId());
+        dict.put("mid", skylinkConnectionService.getSid());
         dict.put("lock", lockStatus);
         dict.put("type", "roomLockEvent");
-        webServerClient.sendMessage(dict);
+        skylinkConnectionService.sendMessage(dict);
         Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
     }
 
@@ -155,7 +154,6 @@ class ProtocolHelper {
                                SkylinkConnectionService skylinkConnectionService,
                                MediaStream localMediaStream,
                                SkylinkConfig myConfig) throws JSONException {
-        WebServerClient webServerClient = skylinkConnectionService.getWebServerClient();
 
         if (skylinkConnection != null) {
 
@@ -240,12 +238,11 @@ class ProtocolHelper {
                           SkylinkConnection skylinkConnection,
                           SkylinkConnectionService skylinkConnectionService) throws JSONException {
 
-        WebServerClient webServerClient = skylinkConnectionService.getWebServerClient();
         skylinkConnection.logMessage("*** SendEnter");
         JSONObject enterObject = new JSONObject();
         enterObject.put("type", "enter");
-        enterObject.put("mid", webServerClient.getSid());
-        enterObject.put("rid", webServerClient.getRoomId());
+        enterObject.put("mid", skylinkConnectionService.getSid());
+        enterObject.put("rid", skylinkConnectionService.getRoomId());
         enterObject.put("receiveOnly", false);
         enterObject.put("agent", "Android");
         enterObject.put("version", BuildConfig.VERSION_NAME);
@@ -255,7 +252,7 @@ class ProtocolHelper {
         }
         UserInfo userInfo = new UserInfo(skylinkConnection.getMyConfig(), skylinkConnection.getUserData(null));
         UserInfo.setUserInfo(enterObject, userInfo);
-        webServerClient.sendMessage(enterObject);
+        skylinkConnectionService.sendMessage(enterObject);
     }
 
     /**
@@ -271,8 +268,8 @@ class ProtocolHelper {
                                SkylinkConnection skylinkConnection,
                                boolean isRestart) throws JSONException {
 
-        WebServerClient webServerClient =
-                skylinkConnection.getSkylinkConnectionService().getWebServerClient();
+        SkylinkConnectionService skylinkConnectionService =
+                skylinkConnection.getSkylinkConnectionService();
         SkylinkConfig myConfig = skylinkConnection.getMyConfig();
 
         String typeStr = "restart";
@@ -290,10 +287,10 @@ class ProtocolHelper {
                     skylinkConnection.getPcObserverPool().get(remotePeerId)
                             .getMyWeight());
             welcomeObject.put("mid",
-                    webServerClient.getSid());
+                    skylinkConnectionService.getSid());
             welcomeObject.put("target", remotePeerId);
             welcomeObject.put("rid",
-                    webServerClient.getRoomId());
+                    skylinkConnectionService.getRoomId());
             welcomeObject.put("agent", "Android");
             welcomeObject.put("version", BuildConfig.VERSION_NAME);
             welcomeObject.put("receiveOnly", false);
@@ -303,8 +300,7 @@ class ProtocolHelper {
                             || myConfig.hasDataTransfer()));
             UserInfo userInfo = new UserInfo(myConfig, skylinkConnection.getUserData(null));
             UserInfo.setUserInfo(welcomeObject, userInfo);
-            webServerClient
-                    .sendMessage(welcomeObject);
+            skylinkConnectionService.sendMessage(welcomeObject);
 
             return true;
         }
@@ -319,29 +315,28 @@ class ProtocolHelper {
      */
     static void sendJoinRoom(SkylinkConnectionService skylinkConnectionService) {
 
-        WebServerClient webServerClient = skylinkConnectionService.getWebServerClient();
         try {
             JSONObject msgJoinRoom = new JSONObject();
             msgJoinRoom.put("type", "joinRoom");
             msgJoinRoom.put("rid",
-                    webServerClient.getRoomId());
+                    skylinkConnectionService.getRoomId());
             msgJoinRoom.put("uid",
-                    webServerClient.getUserId());
+                    skylinkConnectionService.getUserId());
             msgJoinRoom.put("roomCred",
-                    webServerClient.getRoomCred());
+                    skylinkConnectionService.getRoomCred());
             msgJoinRoom.put("cid",
-                    webServerClient.getCid());
+                    skylinkConnectionService.getCid());
             msgJoinRoom.put("userCred",
-                    webServerClient.getUserCred());
+                    skylinkConnectionService.getUserCred());
             msgJoinRoom.put("timeStamp",
-                    webServerClient.getTimeStamp());
+                    skylinkConnectionService.getTimeStamp());
             msgJoinRoom.put("apiOwner",
-                    webServerClient.getAppOwner());
+                    skylinkConnectionService.getAppOwner());
             msgJoinRoom.put("len",
-                    webServerClient.getLen());
+                    skylinkConnectionService.getLen());
             msgJoinRoom.put("start",
-                    webServerClient.getStart());
-            webServerClient.sendMessage(msgJoinRoom);
+                    skylinkConnectionService.getStart());
+            skylinkConnectionService.sendMessage(msgJoinRoom);
             Log.d(TAG, "[SDK] Join Room msg: Sending...");
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -358,17 +353,16 @@ class ProtocolHelper {
     static void sendCandidate(SkylinkConnectionService skylinkConnectionService,
                               final IceCandidate candidate, String peerId) {
 
-        WebServerClient webServerClient = skylinkConnectionService.getWebServerClient();
         JSONObject json = new JSONObject();
         try {
             json.put("type", "candidate");
             json.put("label", candidate.sdpMLineIndex);
             json.put("id", candidate.sdpMid);
             json.put("candidate", candidate.sdp);
-            json.put("mid", webServerClient.getSid());
-            json.put("rid", webServerClient.getRoomId());
+            json.put("mid", skylinkConnectionService.getSid());
+            json.put("rid", skylinkConnectionService.getRoomId());
             json.put("target", peerId);
-            webServerClient.sendMessage(json);
+            skylinkConnectionService.sendMessage(json);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -385,15 +379,14 @@ class ProtocolHelper {
     static void sendSdp(SkylinkConnectionService skylinkConnectionService,
                         SessionDescription sdp, String peerId) {
 
-        WebServerClient webServerClient = skylinkConnectionService.getWebServerClient();
         JSONObject json = new JSONObject();
         try {
             json.put("type", sdp.type.canonicalForm());
             json.put("sdp", sdp.description);
-            json.put("mid", webServerClient.getSid());
+            json.put("mid", skylinkConnectionService.getSid());
             json.put("target", peerId);
-            json.put("rid", webServerClient.getRoomId());
-            webServerClient.sendMessage(json);
+            json.put("rid", skylinkConnectionService.getRoomId());
+            skylinkConnectionService.sendMessage(json);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -453,8 +446,7 @@ class ProtocolHelper {
         pingObject.put("target", target);
         pingObject.put("rid",
                 skylinkConnection.getSkylinkConnectionService().getRoomId());
-        skylinkConnection.getSkylinkConnectionService().getWebServerClient()
-                .sendMessage(pingObject);
+        skylinkConnection.getSkylinkConnectionService().sendMessage(pingObject);
     }
 
     private static int getRedirectCode(String reason) {

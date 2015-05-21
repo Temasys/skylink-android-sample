@@ -15,9 +15,34 @@ class RedirectMessageProcessor implements MessageProcessor {
     private static final String TAG = RedirectMessageProcessor.class.getSimpleName();
 
     private SkylinkConnection skylinkConnection;
+    private JSONException jsonException;
+    private final Object waitLock = new Object();
 
     @Override
     public void process(final JSONObject jsonObject) throws JSONException {
+
+        /*Thread thread = new Thread() {
+            public void run() {
+                synchronized (waitLock) {
+                    // Wait for possible exception throwing to be past
+                    // before checking if exception should be thrown.
+                    try {
+                        waitLock.wait();
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+                    if (jsonException != null) {
+                        throw jsonException;
+                    }
+                }
+            }
+        thread.start();
+        }*/
+
+        final SignalingMessageProcessingService signalingMessageProcessingService =
+                skylinkConnection.getSkylinkConnectionService().
+                        getSignalingMessageProcessingService();
+
         skylinkConnection.runOnUiThread(new Runnable() {
             public void run() {
                 boolean shouldDisconnect = false;
@@ -27,6 +52,10 @@ class RedirectMessageProcessor implements MessageProcessor {
                     // We should no longer process messages from signalling server.
                     if (skylinkConnection.getConnectionState()
                             == SkylinkConnection.ConnectionState.DISCONNECT) {
+                        synchronized (waitLock) {
+                            // Waiting for possible exception is over.
+                            waitLock.notifyAll();
+                        }
                         return;
                     }
                     try {
@@ -34,7 +63,13 @@ class RedirectMessageProcessor implements MessageProcessor {
                                 skylinkConnection.getLifeCycleListener());
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage(), e);
+                        signalingMessageProcessingService.onSignalingMessageException(e);
                     }
+                }
+
+                synchronized (waitLock) {
+                    // Waiting for possible exception is over.
+                    waitLock.notifyAll();
                 }
 
                 if (shouldDisconnect) {
@@ -42,10 +77,12 @@ class RedirectMessageProcessor implements MessageProcessor {
                 }
             }
         });
+
     }
 
     @Override
     public void setSkylinkConnection(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
     }
+
 }

@@ -30,6 +30,8 @@ public class RoomLockMessageProcessorTest {
     private static final boolean EXPECTED_UNLOCK_STATUS = false;
 
     private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
+    private SignalingMessageProcessingService signalingMessageProcessingService;
     private RoomLockMessageProcessor roomLockMessageProcessor;
 
     @Before
@@ -37,7 +39,19 @@ public class RoomLockMessageProcessorTest {
         roomLockMessageProcessor = new RoomLockMessageProcessor();
 
         skylinkConnection = spy(SkylinkConnection.getInstance());
+        // Mock objects
+        skylinkConnection = spy(SkylinkConnection.getInstance());
+        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
+                skylinkConnection.getIceServersObserver()));
+        signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
+                skylinkConnection, new MessageProcessorFactory()));
         roomLockMessageProcessor.setSkylinkConnection(skylinkConnection);
+
+        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
+                .getConnectionState();
+        doReturn(skylinkConnectionService).when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(signalingMessageProcessingService).when(skylinkConnectionService)
+                .getSignalingMessageProcessingService();
     }
 
     @Test
@@ -71,8 +85,6 @@ public class RoomLockMessageProcessorTest {
             }
         };
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
         doReturn(false).when(skylinkConnection)
                 .isRoomLocked();
         doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
@@ -116,8 +128,6 @@ public class RoomLockMessageProcessorTest {
             }
         };
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
         doReturn(true).when(skylinkConnection)
                 .isRoomLocked();
         doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();

@@ -26,20 +26,33 @@ public class RedirectMessageProcessorTest {
 
     public static final String TEST_INFO = "testInfo";
     private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
+    private SignalingMessageProcessingService signalingMessageProcessingService;
     private RedirectMessageProcessor redirectMessageProcessor;
 
     @Before
     public void setup() {
         redirectMessageProcessor = new RedirectMessageProcessor();
 
+        // Mock objects
         skylinkConnection = spy(SkylinkConnection.getInstance());
+        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
+                skylinkConnection.getIceServersObserver()));
+        signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
+                skylinkConnection, new MessageProcessorFactory()));
         redirectMessageProcessor.setSkylinkConnection(skylinkConnection);
+
+        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
+                .getConnectionState();
+        doReturn(skylinkConnectionService).when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(signalingMessageProcessingService).when(skylinkConnectionService)
+                .getSignalingMessageProcessingService();
     }
 
     @Test
     public void testProcessWarning() throws JSONException {
-
         LifeCycleListener lifeCycleListener = new LifeCycleListener() {
+
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail();
@@ -67,8 +80,6 @@ public class RedirectMessageProcessorTest {
             }
         };
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
         doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
 
         JSONObject jsonObject = new JSONObject();
@@ -109,8 +120,6 @@ public class RedirectMessageProcessorTest {
             }
         };
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
         doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
 
         JSONObject jsonObject = new JSONObject();
