@@ -1051,6 +1051,25 @@ public class SkylinkConnection {
     }
 
     /**
+     * Sets the userdata to the relevant peer
+     *
+     * @param remotePeerId
+     * @param userData
+     */
+    void setUserData(String remotePeerId, Object userData) {
+        if (remotePeerId == null) {
+            this.myUserData = userData;
+        } else {
+            if (this.userInfoMap != null) {
+                UserInfo userInfo = getUserInfo(remotePeerId);
+                if(userInfo != null){
+                    userInfo.setUserData(userData);
+                }
+            }
+        }
+    }
+
+    /**
      * Retrieves the user defined info object associated with a remote peer.
      *
      * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.

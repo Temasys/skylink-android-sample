@@ -25,6 +25,8 @@ class UpdateUserEventMessageProcessor implements MessageProcessor {
                                 SkylinkConnection.ConnectionState.DISCONNECT) {
                             return;
                         }
+
+                        skylinkConnection.setUserData(mid, userData);
                         skylinkConnection.getRemotePeerListener()
                                 .onRemotePeerUserDataReceive(mid, userData);
                     }
