@@ -277,13 +277,13 @@ public class SkylinkConfig implements Serializable {
      * @return STUN is enabled or not
      */
     public boolean isStunDisabled() {
-        boolean result = false;
         if (advancedOptions != null) {
             Object object = advancedOptions.get("STUN");
-            if (object != null)
-                result = ((Boolean) object).booleanValue();
+            if (object != null) {
+                return !((Boolean) object).booleanValue();
+            }
         }
-        return result;
+        return false;
     }
 
     /**
@@ -293,10 +293,11 @@ public class SkylinkConfig implements Serializable {
         boolean result = false;
         if (advancedOptions != null) {
             Object object = advancedOptions.get("TURN");
-            if (object != null)
-                result = ((Boolean) object).booleanValue();
+            if (object != null) {
+                result = !((Boolean) object).booleanValue();
+            }
         }
-        return result;
+        return false;
     }
 
     /**

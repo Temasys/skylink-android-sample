@@ -1,11 +1,11 @@
-package sg.com.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.adapter;
 
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 
 /**
  * @author Temasys Communications Pte Ltd
  */
-class MessagesAdapter implements MessagesListener {
+public class MessagesAdapter implements MessagesListener {
 
     /**
      *

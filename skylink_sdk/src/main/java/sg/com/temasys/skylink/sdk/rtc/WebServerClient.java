@@ -27,10 +27,7 @@
 
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.os.AsyncTask;
 import android.util.Log;
-
-import com.github.nkzawa.socketio.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,8 +35,6 @@ import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnection;
 
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,16 +49,14 @@ import java.util.List;
 class WebServerClient implements RoomParameterServiceListener {
 
     private static final String TAG = WebServerClient.class.getName();
-
-    private final MessageHandler gaeHandler;
     private final IceServersObserver iceServersObserver;
-    private SignalingServerClient socketTester;
-    private SignalingServerMessageSender sigMsgSender;
 
 
     // These members are only read/written under sendQueue's lock.
     private LinkedList<String> sendQueue = new LinkedList<String>();
     private AppRTCSignalingParameters appRTCSignalingParameters;
+
+    private SignalingMessageProcessingService signalingMessageProcessingService;
 
     /**
      * Callback fired once the room's signaling parameters specify the set of ICE servers to use.
@@ -76,9 +69,9 @@ class WebServerClient implements RoomParameterServiceListener {
         public void onShouldConnectToRoom();
     }
 
-    public WebServerClient(MessageHandler gaeHandler,
-                           IceServersObserver iceServersObserver) {
-        this.gaeHandler = gaeHandler;
+    public WebServerClient(IceServersObserver iceServersObserver,
+                           SignalingMessageProcessingService signalingMessageProcessingService) {
+        this.signalingMessageProcessingService = signalingMessageProcessingService;
         this.iceServersObserver = iceServersObserver;
     }
 
@@ -98,13 +91,7 @@ class WebServerClient implements RoomParameterServiceListener {
      * Disconnect from the Signaling Channel.
      */
     public void disconnect() {
-        if (socketTester != null) {
-            Socket socketIO = socketTester.getSocketIO();
-            socketIO.off();
-            if (socketIO.connected()) {
-                socketIO.disconnect();
-            }
-        }
+        signalingMessageProcessingService.disconnect();
     }
 
     @Override
@@ -113,12 +100,9 @@ class WebServerClient implements RoomParameterServiceListener {
         if (params != null) {
             Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
             Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
-            socketTester = new SignalingServerClient(this.gaeHandler,
-                    "https://" + params.getIpSigserver(), params.getPortSigserver());
-        }
-        // Create SignalingServerMessageSender is not yet created.
-        if (sigMsgSender == null) {
-            sigMsgSender = new SignalingServerMessageSender(getSid(), getRoomId());
+
+            signalingMessageProcessingService.connect(params.getIpSigserver(),
+                    params.getPortSigserver(), params.getSid(), params.getRoomId());
         }
     }
 
@@ -134,7 +118,7 @@ class WebServerClient implements RoomParameterServiceListener {
 
     public void sendMessage(JSONObject dictMessage) {
         Log.d(TAG, "Send message");
-        sigMsgSender.sendMessage(socketTester, dictMessage);
+        signalingMessageProcessingService.sendMessage(dictMessage);
     }
 
     public boolean isInitiator() {
@@ -153,12 +137,12 @@ class WebServerClient implements RoomParameterServiceListener {
         return appRTCSignalingParameters.getAudioConstraints();
     }
 
-    public String getApiOwner() {
-        return appRTCSignalingParameters.getApiOwner();
+    public String getAppOwner() {
+        return appRTCSignalingParameters.getAppOwner();
     }
 
-    public void setApiOwner(String apiOwner) {
-        this.appRTCSignalingParameters.setApiOwner(apiOwner);
+    public void setAppOwner(String appOwner) {
+        this.appRTCSignalingParameters.setAppOwner(appOwner);
     }
 
     public String getCid() {
@@ -247,53 +231,6 @@ class WebServerClient implements RoomParameterServiceListener {
 
     public void setUserId(String userId) {
         this.appRTCSignalingParameters.setUserId(userId);
-    }
-
-    /**
-     * Queue a message for sending to the room's channel and send it if already connected (other
-     * wise queued messages are drained when the channel is eventually established).
-     */
-    public synchronized void sendGaeMessage(String msg) {
-        synchronized (sendQueue) {
-            sendQueue.add(msg);
-        }
-        requestQueueDrainInBackground();
-    }
-
-    // Request an attempt to drain the send queue, on a background thread.
-    private void requestQueueDrainInBackground() {
-        (new AsyncTask<Void, Void, Void>() {
-            public Void doInBackground(Void... unused) {
-                maybeDrainQueue();
-                return null;
-            }
-        }).execute();
-    }
-
-    // Send all queued messages if connected to the room.
-    private void maybeDrainQueue() {
-        synchronized (sendQueue) {
-            if (appRTCSignalingParameters == null) {
-                return;
-            }
-            try {
-                for (String msg : sendQueue) {
-                    URLConnection connection = new URL(
-                            appRTCSignalingParameters.getGaeBaseHref() +
-                                    appRTCSignalingParameters.getPostMessageUrl()).openConnection();
-                    connection.setDoOutput(true);
-                    connection.getOutputStream().write(msg.getBytes("UTF-8"));
-                    if (!connection.getHeaderField(null).startsWith("HTTP/1.1 200 ")) {
-                        throw new IOException(
-                                "Non-200 response to POST: " + connection.getHeaderField(null) +
-                                        " for msg: " + msg);
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            sendQueue.clear();
-        }
     }
 
 }

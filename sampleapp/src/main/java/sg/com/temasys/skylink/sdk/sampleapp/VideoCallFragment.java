@@ -22,8 +22,6 @@ import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
-import org.json.JSONObject;
-
 import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
@@ -31,6 +29,7 @@ import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -78,8 +77,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
                 btnEnterRoom.setVisibility(View.GONE);
 
-                String apiKey = getString(R.string.app_key);
-                String apiSecret = getString(R.string.app_secret);
+                String appKey = getString(R.string.app_key);
+                String appSecret = getString(R.string.app_secret);
 
                 // Initialize the skylink connection
                 initializeSkylinkConnection();
@@ -89,11 +88,11 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
                 // Obtaining the Skylink connection string done locally
                 // In a production environment the connection string should be given
-                // by an entity external to the App, such as an App server that holds the Skylink API secret
-                // In order to avoid keeping the API secret within the application
+                // by an entity external to the App, such as an App server that holds the Skylink App secret
+                // In order to avoid keeping the App secret within the application
                 String skylinkConnectionString = Utils.
-                        getSkylinkConnectionString(roomName, apiKey,
-                                apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+                        getSkylinkConnectionString(roomName, appKey,
+                                appSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
                 skylinkConnection.connectToRoom(skylinkConnectionString,
                         MY_USER_NAME);
@@ -243,7 +242,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
-
         Toast.makeText(getActivity(), "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT).show();
     }
 
@@ -313,8 +311,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         Toast.makeText(getActivity(), "Your peer has just connected", Toast.LENGTH_SHORT).show();
-        RemotePeerUserInfo remotePeerUserInfo = new RemotePeerUserInfo((JSONObject)
-                skylinkConnection.getUserInfo(remotePeerId));
+        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
         Log.d(TAG, "isAudioStereo " + remotePeerUserInfo.isAudioStereo());
         Log.d(TAG, "video height " + remotePeerUserInfo.getVideoHeight());
         Log.d(TAG, "video width " + remotePeerUserInfo.getVideoHeight());

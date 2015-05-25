@@ -1,11 +1,11 @@
-package sg.com.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.adapter;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
 /**
  * @author Temasys Communications Pte Ltd
  */
-class LifeCycleAdapter implements LifeCycleListener {
+public class LifeCycleAdapter implements LifeCycleListener {
 
     /**
      *

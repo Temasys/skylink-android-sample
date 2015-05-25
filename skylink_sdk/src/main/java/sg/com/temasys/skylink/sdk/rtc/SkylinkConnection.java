@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -46,6 +45,12 @@ import java.util.Set;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import sg.com.temasys.skylink.sdk.adapter.DataTransferAdapter;
+import sg.com.temasys.skylink.sdk.adapter.FileTransferAdapter;
+import sg.com.temasys.skylink.sdk.adapter.LifeCycleAdapter;
+import sg.com.temasys.skylink.sdk.adapter.MediaAdapter;
+import sg.com.temasys.skylink.sdk.adapter.MessagesAdapter;
+import sg.com.temasys.skylink.sdk.adapter.RemotePeerAdapter;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
@@ -66,9 +71,10 @@ public class SkylinkConnection {
      * server.
      */
     public static final int DEFAULT_DURATION = 24;
-    public static final String API_SERVER = "http://api.temasys.com.sg/api/";
+    public static final String APP_SERVER = "http://api.temasys.com.sg/api/";
 
     private static final String TAG = "SkylinkConnection";
+
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
 
@@ -92,17 +98,20 @@ public class SkylinkConnection {
     private GLSurfaceView localVideoView;
     private List<PeerConnection.IceServer> iceServerArray;
     private Map<GLSurfaceView, String> surfaceOnHoldPool;
-    private Map<String, Object> userInfoMap;
+    private Map<String, UserInfo> userInfoMap;
     private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
     private Map<String, PCObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SDPObserver> sdpObserverPool;
     private MediaConstraints pcConstraints;
+
     private MediaConstraints sdpMediaConstraints;
+
     private MediaStream localMediaStream;
     private Object myUserData;
+    private UserInfo myUserInfo;
     private PeerConnectionFactory peerConnectionFactory;
-    private String apiKey;
+    private String appKey;
     private SkylinkConfig myConfig;
     private VideoCapturerAndroid localVideoCapturer;
     private VideoSource localVideoSource;
@@ -110,7 +119,6 @@ public class SkylinkConnection {
     private WebServerClient webServerClient;
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
-    private MessageHandler messageHandler = new MyMessageHandler();
 
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
@@ -122,6 +130,9 @@ public class SkylinkConnection {
     private boolean roomLocked;
     private VideoRendererGui localVideoRendererGui;
     private MediaConstraints videoConstraints;
+    private SignalingMessageProcessingService signalingMessageProcessingService;
+
+    private SkylinkPeerService skylinkPeerService;
 
     /**
      * List of Connection state types
@@ -183,13 +194,14 @@ public class SkylinkConnection {
         }
 
         this.myUserData = userData;
+        this.myUserInfo = new UserInfo(myConfig, this.myUserData);
 
         // Fetch the current time from a server
         CurrentTimeService currentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
             @Override
             public void onCurrentTimeFetched(Date date) {
                 Log.d(TAG, "onCurrentTimeFetched" + date);
-                String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
+                String connectionString = Utils.getSkylinkConnectionString(roomName, appKey,
                         secret, date, DEFAULT_DURATION);
                 connectToRoom(connectionString, userData);
             }
@@ -197,7 +209,7 @@ public class SkylinkConnection {
             @Override
             public void onCurrentTimeFetchedFailed() {
                 Log.d(TAG, "onCurrentTimeFetchedFailed, using device time");
-                String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
+                String connectionString = Utils.getSkylinkConnectionString(roomName, appKey,
                         secret, new Date(), DEFAULT_DURATION);
                 connectToRoom(connectionString, userData);
             }
@@ -211,7 +223,7 @@ public class SkylinkConnection {
     /**
      * Connects to a room with SkylinkConnectionString
      *
-     * @param skylinkConnectionString SkylinkConnectionString Generated with room name, apiKey,
+     * @param skylinkConnectionString SkylinkConnectionString Generated with room name, appKey,
      *                                secret, startTime and duration
      * @param userData                User defined data relating to oneself. May be a
      *                                'java.lang.String', 'org.json.JSONObject' or
@@ -221,6 +233,7 @@ public class SkylinkConnection {
     public boolean connectToRoom(String skylinkConnectionString, Object userData) {
 
         this.myUserData = userData;
+        this.myUserInfo = new UserInfo(myConfig, this.myUserData);
 
         logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
 
@@ -246,10 +259,19 @@ public class SkylinkConnection {
             this.dataTransferListener = new DataTransferAdapter();
         }
 
-        this.webServerClient = new WebServerClient(messageHandler,
-                iceServersObserver);
+        if (this.signalingMessageProcessingService == null) {
+            this.signalingMessageProcessingService = new SignalingMessageProcessingService(this,
+                    new MessageProcessorFactory());
+        }
 
-        String url = API_SERVER + skylinkConnectionString;
+        if (this.skylinkPeerService == null) {
+            this.skylinkPeerService = new SkylinkPeerService(this);
+        }
+
+        this.webServerClient = new WebServerClient(iceServersObserver,
+                this.signalingMessageProcessingService);
+
+        String url = APP_SERVER + skylinkConnectionString;
         try {
             this.webServerClient.connectToRoom(url);
         } catch (IOException e) {
@@ -327,7 +349,7 @@ public class SkylinkConnection {
     }
 
     // Restart all connections when rejoining room.
-    private void rejoinRestart() {
+    void rejoinRestart() {
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
@@ -370,18 +392,18 @@ public class SkylinkConnection {
     /**
      * Creates a new SkylinkConnection object with the specified parameters.
      *
-     * @param apiKey  The api key from the Skylink Developer Console
+     * @param appKey  The App key from the Skylink Developer Console
      * @param config  The SkylinkConfig object to configure the type of call.
      * @param context The application context
      */
-    public void init(String apiKey,
+    public void init(String appKey,
                      SkylinkConfig config, Context context) {
         logMessage("SkylinkConnection::config=>" + config);
 
         this.myConfig = new SkylinkConfig(config);
 
-        logMessage("SkylinkConnection::apiKey=>" + apiKey);
-        this.apiKey = apiKey;
+        logMessage("SkylinkConnection::appKey=>" + appKey);
+        this.appKey = appKey;
 
         if (!factoryStaticInitialized) {
 
@@ -1009,9 +1031,10 @@ public class SkylinkConnection {
 
 
     /**
-     * Retrieves the user defined data object associated with a remote peer.
+     * Retrieves the user defined data object associated with a peer.
      *
-     * @param remotePeerId The id of the remote peer whose data is to be retrieved.
+     * @param remotePeerId The id of the remote peer whose data is to be retrieved, or NULL for
+     *                     self.
      * @return May be a 'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public Object getUserData(String remotePeerId) {
@@ -1020,15 +1043,30 @@ public class SkylinkConnection {
             userData = this.myUserData;
         } else {
             if (this.userInfoMap != null) {
-                try {
-                    JSONObject userInfo = ((JSONObject) this.userInfoMap.get(remotePeerId));
-                    userData = userInfo.get("userData");
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
+                UserInfo userInfo = getUserInfo(remotePeerId);
+                userData = userInfo.getUserData();
             }
         }
         return userData;
+    }
+
+    /**
+     * Sets the userdata to the relevant peer
+     *
+     * @param remotePeerId
+     * @param userData
+     */
+    void setUserData(String remotePeerId, Object userData) {
+        if (remotePeerId == null) {
+            this.myUserData = userData;
+        } else {
+            if (this.userInfoMap != null) {
+                UserInfo userInfo = getUserInfo(remotePeerId);
+                if(userInfo != null){
+                    userInfo.setUserData(userData);
+                }
+            }
+        }
     }
 
     /**
@@ -1037,12 +1075,19 @@ public class SkylinkConnection {
      * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.
      * @return 'org.json.JSONObject'
      */
-    public Object getUserInfo(String remotePeerId) {
+    public UserInfo getUserInfo(String remotePeerId) {
         if (remotePeerId == null) {
-            return this.myUserData;
+            return this.myUserInfo;
         } else {
             return this.userInfoMap.get(remotePeerId);
         }
+    }
+
+    void setUserInfo(String peerId, UserInfo userInfo) {
+        if (this.userInfoMap == null) {
+            this.userInfoMap = new Hashtable<String, UserInfo>();
+        }
+        this.userInfoMap.put(peerId, userInfo);
     }
 
     void logMessage(String message) {
@@ -1054,13 +1099,6 @@ public class SkylinkConnection {
         if (!condition) {
             throw new RuntimeException(msg);
         }
-    }
-
-    private void setUserInfoMap(Object userInfo, String key) {
-        if (this.userInfoMap == null) {
-            this.userInfoMap = new Hashtable<String, Object>();
-        }
-        this.userInfoMap.put(key, userInfo);
     }
 
     /**
@@ -1076,7 +1114,7 @@ public class SkylinkConnection {
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 
-    private List<Object> getWeightedPeerConnection(String key, double weight) {
+    List<Object> getWeightedPeerConnection(String key, double weight) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
             this.isMCUConnection = isPeerIdMCU(key);
@@ -1203,54 +1241,7 @@ public class SkylinkConnection {
         return result.substring(0, result.length() - 1);
     }
 
-    void setUserInfo(JSONObject jsonObject) throws JSONException {
-        JSONObject dictAudio = null;
-        if (myConfig.hasAudioSend()) {
-            dictAudio = new JSONObject();
-            dictAudio.put("stereo", myConfig.isStereoAudio());
-        }
-
-        JSONObject dictVideo = null;
-        if (myConfig.hasVideoSend()) {
-            dictVideo = new JSONObject();
-            dictVideo.put("frameRate", myConfig.getVideoFps());
-            JSONObject resolution = new JSONObject();
-            resolution.put("height", myConfig.getVideoHeight());
-            resolution.put("width", myConfig.getVideoWidth());
-            dictVideo.put("resolution", resolution);
-        }
-
-        JSONObject dictSettings = new JSONObject();
-        if (dictAudio != null)
-            dictSettings.put("audio", dictAudio);
-        if (dictVideo != null)
-            dictSettings.put("video", dictVideo);
-
-        JSONObject dictMediaStatus = new JSONObject();
-        dictMediaStatus.put("audioMuted", false);
-        dictMediaStatus.put("videoMuted", false);
-
-        JSONObject dictUserInfo = new JSONObject();
-        dictUserInfo.put("settings", dictSettings);
-        dictUserInfo.put("mediaStatus", dictMediaStatus);
-        dictUserInfo.put("userData", this.myUserData == null ? ""
-                : this.myUserData);
-
-        jsonObject.put("userInfo", dictUserInfo);
-
-        // NOTE XR: dictBandwidth object is not being used.
-        // Commented out for now.
-        // Consider removing code.
-        /*JSONObject dictBandwidth = new JSONObject();
-        if (myConfig.hasAudioSend())
-            dictBandwidth.put("audio", settingsObject.audio_bandwidth);
-        if (myConfig.hasVideoSend())
-            dictBandwidth.put("video", settingsObject.video_bandwidth);
-        if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer())
-            dictBandwidth.put("data", settingsObject.data_bandwidth);*/
-    }
-
-    private boolean isPeerIdMCU(String peerId) {
+    boolean isPeerIdMCU(String peerId) {
         return peerId.startsWith("MCU");
     }
 
@@ -1370,7 +1361,7 @@ public class SkylinkConnection {
                         msgJoinRoom.put("timeStamp",
                                 connectionManager.webServerClient.getTimeStamp());
                         msgJoinRoom.put("apiOwner",
-                                connectionManager.webServerClient.getApiOwner());
+                                connectionManager.webServerClient.getAppOwner());
                         msgJoinRoom.put("len",
                                 connectionManager.webServerClient.getLen());
                         msgJoinRoom.put("start",
@@ -1418,598 +1409,6 @@ public class SkylinkConnection {
             });
         }
     }
-
-    /*
-     * GAEChannelClient.MessageHandler
-     */
-    private class MyMessageHandler implements MessageHandler {
-
-        private SkylinkConnection connectionManager = SkylinkConnection.this;
-
-        @Override
-        public void onOpen() {
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
-                connectionManager.iceServersObserver.onIceServers(null);
-            }
-        }
-
-        @Override
-        public void onMessage(String data) {
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnectMsg) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
-                try {
-                    messageProcessor(data);
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
-        }
-
-        private void messageProcessor(String data) throws JSONException {
-            String message = data;
-            final JSONObject objects = new JSONObject(data);
-
-            final String value = objects.getString("type");
-            connectionManager.logMessage("[SDK] onMessage type - " + value);
-
-            if (value.compareTo("inRoom") == 0) {
-
-                String mid = objects.getString("sid");
-                connectionManager.webServerClient.setSid(mid);
-
-                JSONObject pcConfigJSON = objects.getJSONObject("pc_config");
-                String username = "";// pcConfigJSON.getString("username");
-                username = username != null ? username : "";
-                List<PeerConnection.IceServer> result = new ArrayList<PeerConnection.IceServer>();
-                JSONArray iceServers = pcConfigJSON.getJSONArray("iceServers");
-                for (int i = 0; i < iceServers.length(); i++) {
-                    JSONObject iceServer = iceServers.getJSONObject(i);
-                    String url = iceServer.getString("url");
-                    if (myConfig.isStunDisabled() && url.startsWith("stun:")) {
-                        connectionManager.logMessage(
-                                "[SDK] Not adding stun server as stun disabled in config.");
-                        continue;
-                    }
-                    if (myConfig.isTurnDisabled() && url.startsWith("turn:")) {
-                        connectionManager.logMessage(
-                                "[SDK] Not adding turn server as turn disabled in config.");
-                        continue;
-                    }
-                    if (myConfig.getTransport() != null)
-                        url = url + "?transport=" + myConfig.getTransport();
-                    String credential = "";
-                    try {
-                        credential = iceServer.getString("credential");
-                    } catch (JSONException e) {
-
-                    }
-                    credential = credential != null ? credential : "";
-                    connectionManager.logMessage("[SDK] url [" + url
-                            + "] - credential [" + credential + "]");
-                    PeerConnection.IceServer server = new PeerConnection.IceServer(
-                            url, username, credential);
-                    result.add(server);
-                }
-
-                connectionManager.iceServersObserver.onIceServers(result);
-
-                // Set mid and displayName in DataChannelManager
-                if (connectionManager.dataChannelManager != null) {
-                    connectionManager.dataChannelManager.setMid(mid);
-                    connectionManager.dataChannelManager
-                            .setDisplayName(connectionManager.myUserData
-                                    .toString());
-                }
-
-                // Check if pcObserverPool has been populated.
-                if (pcObserverPool != null) {
-                    // If so, chances are this is a rejoin of room.
-                    // Send restart to all.
-                    rejoinRestart();
-                } else {
-                    // If not, chances are this is a first join room, or there were no peers from before.
-                    // Create afresh all PC related maps.
-                    initializePcRelatedMaps();
-                    // Send enter.
-                    try {
-                        ProtocolHelper.sendEnter(null, connectionManager, webServerClient);
-                    } catch (JSONException e) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-                }
-
-
-            } else if (value.compareTo("enter") == 0) {
-
-                String mid = objects.getString("mid");
-                Object userInfo = "";
-                try {
-                    userInfo = ((JSONObject) objects.get("userInfo"));
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid, HealthChecker.ICE_ROLE_ANSWERER);
-
-                PeerInfo peerInfo = new PeerInfo();
-                try {
-                    peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-                    peerInfo.setAgent(objects.getString("agent"));
-                    // SM0.1.0 - Browser version for web, SDK version for others.
-                    peerInfo.setVersion(objects.getString("version"));
-                } catch (JSONException e) {
-                }
-
-                peerInfoMap.put(mid, peerInfo);
-
-                // Add our local media stream to this PC, or not.
-                if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
-                    peerConnection.addStream(connectionManager.localMediaStream);
-                    Log.d(TAG, "Added localMedia Stream");
-                }
-
-                if (peerConnection != null) {
-                    setUserInfoMap(userInfo, mid);
-
-                    try {
-                        ProtocolHelper.sendWelcome(mid, connectionManager, webServerClient, myConfig, false);
-                    } catch (JSONException e) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-
-                } else {
-                    connectionManager
-                            .logMessage("I only support "
-                                    + MAX_PEER_CONNECTIONS
-                                    + " connections are in this app. I am discarding this 'welcome'.");
-                }
-
-            } else if (value.compareTo("welcome") == 0) {
-                processWelcome(objects);
-            } else if (value.compareTo("restart") == 0) {
-                String mid = objects.getString("mid");
-                if (ProtocolHelper.processRestart(mid, localMediaStream, connectionManager)) {
-                    processWelcome(objects);
-                }
-            } else if (value.compareTo("answer") == 0
-                    || value.compareTo("offer") == 0) {
-
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
-
-                String mid = objects.getString("mid");
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-
-                String sdpString = objects.getString("sdp");
-
-                // Set the preferred audio codec
-                sdpString = Utils.preferCodec(sdpString, myConfig.getPreferredAudioCodec()
-                        .toString(), true);
-
-                SessionDescription sdp = new SessionDescription(
-                        SessionDescription.Type.fromCanonicalForm(value),
-                        sdpString);
-
-                if (connectionManager.sdpObserverPool == null)
-                    connectionManager.sdpObserverPool = new Hashtable<String, SDPObserver>();
-                SDPObserver sdpObserver = connectionManager.sdpObserverPool
-                        .get(mid);
-                if (sdpObserver == null) {
-                    sdpObserver = new SkylinkConnection.SDPObserver();
-                    sdpObserver.setMyId(mid);
-                    connectionManager.sdpObserverPool.put(mid, sdpObserver);
-                }
-                peerConnection.setRemoteDescription(sdpObserver, sdp);
-                connectionManager
-                        .logMessage("PC - setRemoteDescription. Sending "
-                                + sdp.type + " to " + mid);
-
-            } else if (value.compareTo("group") == 0) {
-                // Split up group message
-                // Format:
-                // { type: "group", lists: [<group msg>...], mid: "xxx", rid: "xxx" }
-                JSONArray msgArr = objects.getJSONArray("lists");
-                for (int i = 0; i < msgArr.length(); ++i) {
-                    String msg = (String) msgArr.get(i);
-                    // Send each message to be processed like a non-group message.
-                    if (msg != null) messageProcessor(msg);
-                }
-            } else if (value.compareTo("chat") == 0) {
-
-                final String mid = objects.getString("mid");
-                final String nick = objects.getString("nick");
-                final String text = objects.getString("data");
-                String tempTarget = null;
-                try {
-                    tempTarget = objects.getString("target");
-                } catch (JSONException e) {
-
-                }
-                final String target = tempTarget;
-                connectionManager.logMessage("event:" + value + ", nick->"
-                        + nick + ", text->" + text + ", target->" + target);
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                            }
-                        }
-                    });
-                }
-            } else if (value.compareTo("bye") == 0) {
-
-                // Ignoring targetted bye
-                String target = null;
-                try {
-                    target = objects.getString("target");
-                } catch (JSONException e) {
-
-                }
-                if (target != null)
-                    return;
-
-                final String mid = objects.getString("mid");
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onRemotePeerLeave(mid, "The peer has left the room");
-                            }
-                        }
-                    });
-                }
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-
-                // Dispose DataChannel.
-                if (dataChannelManager != null) {
-                    connectionManager.dataChannelManager.disposeDC(mid);
-                }
-
-                // Remove Stream so that it will not be disposed when the PeerConnection is disposed
-                peerConnection.removeStream(localMediaStream);
-                peerConnection.dispose();
-
-                connectionManager.peerConnectionPool.remove(mid);
-                connectionManager.pcObserverPool.remove(mid);
-                connectionManager.sdpObserverPool.remove(mid);
-                connectionManager.userInfoMap.remove(mid);
-                connectionManager.peerInfoMap.remove(mid);
-
-            } else if (value.compareTo("candidate") == 0) {
-
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
-
-                String mid = objects.getString("mid");
-                String ID = objects.getString("id");
-                int sdpLineIndex = objects.getInt("label");
-                String sdp = objects.getString("candidate");
-
-                IceCandidate candidate = new IceCandidate(ID, sdpLineIndex, sdp);
-
-                PeerConnection peerConnection = connectionManager
-                        .getPeerConnection(mid);
-                if (peerConnection != null)
-                    peerConnection.addIceCandidate(candidate);
-
-            } else if (value.compareTo("ack_candidate") == 0) {
-
-                connectionManager.logMessage("[SDK] onMessage - ack_candidate");
-
-            } else if (value.compareTo("ping") == 0) {
-
-                String target = objects.getString("target");
-                if (target
-                        .compareTo(connectionManager.webServerClient.getSid()) != 0)
-                    return;
-
-                String mid = objects.getString("mid");
-                JSONObject pingObject = new JSONObject();
-                pingObject.put("type", "ping");
-                pingObject.put("mid",
-                        connectionManager.webServerClient.getSid());
-                pingObject.put("target", mid);
-                pingObject.put("rid",
-                        connectionManager.webServerClient.getRoomId());
-                connectionManager.webServerClient.sendMessage(pingObject);
-
-            } else if (value.compareTo("redirect") == 0) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        boolean shouldDisconnect = false;
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnect) {
-                            // If user has indicated intention to disconnect,
-                            // We should no longer process messages from signalling server.
-                            if (connectionState == ConnectionState.DISCONNECT) return;
-                            try {
-                                shouldDisconnect = ProtocolHelper.processRedirect(objects, lifeCycleListener);
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.getMessage(), e);
-                            }
-                        }
-
-                        if (shouldDisconnect) {
-                            disconnectFromRoom();
-                        }
-                    }
-                });
-
-            } else if (value.compareTo("private") == 0
-                    || value.compareTo("public") == 0) {
-
-                final Object objData = objects.get("data");
-                final String mid = objects.getString("mid");
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                                messagesListener.onServerMessageReceive(mid, objData, value.compareTo("private") == 0);
-                            }
-                        }
-                    });
-                }
-            } else if (value.compareTo("updateUserEvent") == 0) {
-
-                final String mid = objects.getString("mid");
-                final Object userData = objects.get("userData");
-                if (!connectionManager.isPeerIdMCU(mid)) {
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            // Prevent thread from executing with disconnect concurrently.
-                            synchronized (lockDisconnect) {
-                                // If user has indicated intention to disconnect,
-                                // We should no longer process messages from signalling server.
-                                if (connectionState == ConnectionState.DISCONNECT) return;
-                                remotePeerListener.onRemotePeerUserDataReceive(mid, userData);
-                            }
-                        }
-                    });
-                }
-            } else if (value.compareTo("roomLockEvent") == 0) {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnect) {
-                            // If user has indicated intention to disconnect,
-                            // We should no longer process messages from signalling server.
-                            if (connectionState == ConnectionState.DISCONNECT) return;
-                            try {
-                                roomLocked = ProtocolHelper.processRoomLockStatus(roomLocked,
-                                        objects, lifeCycleListener);
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.getMessage(), e);
-                            }
-                        }
-                    }
-                });
-
-            } else if (value.compareTo("muteAudioEvent") == 0) {
-
-                if (myConfig.hasAudioReceive()) {
-                    final String mid = objects.getString("mid");
-                    final boolean muted = objects.getBoolean("muted");
-                    if (!connectionManager.isPeerIdMCU(mid)) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                // Prevent thread from executing with disconnect concurrently.
-                                synchronized (lockDisconnect) {
-                                    // If user has indicated intention to disconnect,
-                                    // We should no longer process messages from signalling server.
-                                    if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onRemotePeerAudioToggle(mid, muted);
-                                }
-                            }
-                        });
-                    }
-                }
-
-            } else if (value.compareTo("muteVideoEvent") == 0) {
-
-                if (myConfig.hasVideoReceive()) {
-                    final String mid = objects.getString("mid");
-                    final boolean muted = objects.getBoolean("muted");
-                    if (!connectionManager.isPeerIdMCU(mid)) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                // Prevent thread from executing with disconnect concurrently.
-                                synchronized (lockDisconnect) {
-                                    // If user has indicated intention to disconnect,
-                                    // We should no longer process messages from signalling server.
-                                    if (connectionState == ConnectionState.DISCONNECT) return;
-                                    mediaListener.onRemotePeerVideoToggle(mid, muted);
-                                }
-                            }
-                        });
-                    }
-                }
-
-            } else {
-
-                connectionManager.logMessage("The message '" + message
-                        + "' is not handled yet");
-
-            }
-
-        }
-
-        @Override
-        public void onClose() {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
-                        connectionManager.logMessage("[SDK] onClose.");
-
-                        lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR,
-                                "Connection with the skylink server is closed");
-                    }
-                    // Disconnect from room
-                    disconnectFromRoom();
-                }
-            });
-        }
-
-        @Override
-        public void onError(final int code, final String description) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
-                        final String message = "[SDK] onError: " + code + ", " + description;
-                        connectionManager.logMessage(message);
-                        lifeCycleListener.onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
-                    }
-
-                    // Disconnect from room
-                    disconnectFromRoom();
-                }
-            });
-        }
-
-    }
-
-    void processWelcome(JSONObject objects) throws JSONException {
-        String target = objects.getString("target");
-        if (target
-                .compareTo(webServerClient.getSid()) != 0)
-            return;
-
-        PeerInfo peerInfo = new PeerInfo();
-        String mid = objects.getString("mid");
-        try {
-            peerInfo.setReceiveOnly(objects.getBoolean("receiveOnly"));
-        } catch (JSONException e) {
-        }
-
-        try {
-            peerInfo.setAgent(objects.getString("agent"));
-            // SM0.1.0 - Browser version for web, SDK version for others.
-            peerInfo.setVersion(objects.getString("version"));
-            if (objects.has("enableIceTrickle")) {
-                peerInfo.setEnableIceTrickle(objects.getBoolean("enableIceTrickle"));
-            } else {
-                // Work around for JS and/or other clients that do not yet implement this flag.
-                peerInfo.setEnableIceTrickle(true);
-            }
-            if (objects.has("enableDataChannel")) {
-                peerInfo.setEnableDataChannel(objects.getBoolean("enableDataChannel"));
-            } else {
-                // Work around for JS and/or other clients that do not yet implement this flag.
-                peerInfo.setEnableDataChannel(true);
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        peerInfoMap.put(mid, peerInfo);
-
-        Object userInfo = "";
-
-        try {
-            userInfo = ((JSONObject) objects.get("userInfo"));
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        double weight = 0.0;
-        try {
-            weight = objects.getDouble("weight");
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        PeerConnection peerConnection = null;
-        List<Object> weightedConnection = getWeightedPeerConnection(mid, weight);
-        if (!(Boolean) weightedConnection.get(0)) {
-            Log.d(TAG, "Ignoring this welcome");
-            return;
-        }
-
-        Object secondObject = weightedConnection.get(1);
-        if (secondObject instanceof PeerConnection)
-            peerConnection = (PeerConnection) secondObject;
-
-        if (peerConnection == null) {
-            logMessage("I only support "
-                    + MAX_PEER_CONNECTIONS
-                    + " connections are in this app. I am discarding this 'welcome'.");
-            return;
-        }
-
-        setUserInfoMap(userInfo, mid);
-
-        boolean receiveOnly = false;
-        try {
-            receiveOnly = objects.getBoolean("receiveOnly");
-        } catch (JSONException e) {
-        }
-
-        // Add our local media stream to this PC, or not.
-        if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
-            peerConnection.addStream(localMediaStream);
-            Log.d(TAG, "Added localMedia Stream");
-        }
-
-        logMessage("[SDK] onMessage - create offer.");
-        // Create DataChannel if both Peer and ourself desires it.
-        if (peerInfo.isEnableDataChannel() &&
-                (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                        || myConfig.hasDataTransfer()))
-
-        {
-            // It is stored by dataChannelManager.
-            dataChannelManager.createDataChannel(
-                    peerConnection, target, mid, "", null, mid);
-        }
-
-        if (sdpObserverPool == null)
-            sdpObserverPool = new Hashtable<String, SDPObserver>();
-        SDPObserver sdpObserver = sdpObserverPool
-                .get(mid);
-        if (sdpObserver == null) {
-            sdpObserver = new SkylinkConnection.SDPObserver();
-            sdpObserver.setMyId(mid);
-            sdpObserverPool.put(mid, sdpObserver);
-        }
-
-        peerConnection.createOffer(sdpObserver,
-                sdpMediaConstraints);
-
-        logMessage("PC - createOffer for " + mid);
-    }
-
 
     /*
      * VideoRendererGui.VideoRendererGuiListener
@@ -2282,7 +1681,7 @@ public class SkylinkConnection {
     // Implementation detail: handle offer creation/signaling and answer
 // setting,
 // as well as adding remote ICE candidates once the answer SDP is set.
-    private class SDPObserver implements SdpObserver {
+    class SDPObserver implements SdpObserver {
 
         private SkylinkConnection connectionManager = SkylinkConnection.this;
 
@@ -2468,6 +1867,24 @@ public class SkylinkConnection {
 
     }
 
+    // Getters and Setters
+
+    SkylinkPeerService getSkylinkPeerService() {
+        return skylinkPeerService;
+    }
+
+    MediaStream getLocalMediaStream() {
+        return localMediaStream;
+    }
+
+    static int getMaxPeerConnections() {
+        return MAX_PEER_CONNECTIONS;
+    }
+
+    MediaConstraints getSdpMediaConstraints() {
+        return sdpMediaConstraints;
+    }
+
     public DataTransferListener getDataTransferListener() {
         return dataTransferListener;
     }
@@ -2480,21 +1897,41 @@ public class SkylinkConnection {
         this.dataChannelManager = dataChannelManager;
     }
 
+    SDPObserver getSdpObserver(String mid) {
+
+        if (sdpObserverPool == null) {
+            sdpObserverPool = new Hashtable<String, SDPObserver>();
+        }
+
+        SDPObserver sdpObserver = sdpObserverPool.get(mid);
+        if (sdpObserver == null) {
+            sdpObserver = new SkylinkConnection.SDPObserver();
+            sdpObserver.setMyId(mid);
+            sdpObserverPool.put(mid, sdpObserver);
+        }
+
+        return sdpObserver;
+    }
+
     // Initialize all PC related maps.
-    private void initializePcRelatedMaps() {
+    void initializePcRelatedMaps() {
         peerConnectionPool = new Hashtable<String, PeerConnection>();
         pcObserverPool = new Hashtable<String, PCObserver>();
         sdpObserverPool = new Hashtable<String, SDPObserver>();
-        userInfoMap = new Hashtable<String, Object>();
+        userInfoMap = new Hashtable<String, UserInfo>();
         peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
-    protected Map<String, Object> getUserInfoMap() {
+    protected Map<String, UserInfo> getUserInfoMap() {
         return userInfoMap;
     }
 
     Map<String, SDPObserver> getSdpObserverPool() {
         return sdpObserverPool;
+    }
+
+    void setSdpObserverPool(Map<String, SDPObserver> sdpObserverPool) {
+        this.sdpObserverPool = sdpObserverPool;
     }
 
     Map<String, PCObserver> getPcObserverPool() {
@@ -2509,4 +1946,43 @@ public class SkylinkConnection {
         return peerInfoMap;
     }
 
+    Object getLockDisconnect() {
+        return lockDisconnect;
+    }
+
+    ConnectionState getConnectionState() {
+        return connectionState;
+    }
+
+    WebServerClient.IceServersObserver getIceServersObserver() {
+        return iceServersObserver;
+    }
+
+    WebServerClient getWebServerClient() {
+        return webServerClient;
+    }
+
+    SkylinkConfig getMyConfig() {
+        return myConfig;
+    }
+
+    DataChannelManager getDataChannelManager() {
+        return dataChannelManager;
+    }
+
+    Object getMyUserData() {
+        return myUserData;
+    }
+
+    void setRoomLocked(boolean roomLocked) {
+        this.roomLocked = roomLocked;
+    }
+
+    boolean isRoomLocked() {
+        return roomLocked;
+    }
+
+    SignalingMessageProcessingService getSignalingMessageProcessingService() {
+        return signalingMessageProcessingService;
+    }
 }

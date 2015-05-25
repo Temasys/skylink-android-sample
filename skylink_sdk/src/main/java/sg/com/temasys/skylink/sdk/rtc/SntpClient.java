@@ -35,7 +35,7 @@ import java.net.InetAddress;
  * }
  * </pre>
  */
-public class SntpClient {
+class SntpClient {
     private static final String TAG = "SntpClient";
 
     private static final int REFERENCE_TIME_OFFSET = 16;

@@ -1,11 +1,11 @@
-package sg.com.temasys.skylink.sdk.rtc;
+package sg.com.temasys.skylink.sdk.adapter;
 
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 
 /**
  * @author Temasys Communications Pte Ltd
  */
-class DataTransferAdapter implements DataTransferListener {
+public class DataTransferAdapter implements DataTransferListener {
 
     @Override
     public void onDataReceive(String remotePeerId, byte[] data) {
