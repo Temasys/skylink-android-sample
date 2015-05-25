@@ -75,17 +75,19 @@ class ProtocolHelper {
      * Processes a room lock status
      *
      * @param currentRoomLockStatus
-     * @param jsonObject
+     * @param peerId
+     * @param roomLock
      * @param lifeCycleListener
      * @return
      * @throws JSONException
      */
     static boolean processRoomLockStatus(boolean currentRoomLockStatus,
-                                         JSONObject jsonObject, LifeCycleListener lifeCycleListener) throws JSONException {
-        boolean lockStatus = jsonObject.getBoolean("lock");
+                                         String peerId, boolean roomLock,
+                                         LifeCycleListener lifeCycleListener) throws JSONException {
+        boolean lockStatus = roomLock;
         // Only post updates if received lock status is not the same
         if (lockStatus != currentRoomLockStatus) {
-            lifeCycleListener.onLockRoomStatusChange(jsonObject.getString("mid"), lockStatus);
+            lifeCycleListener.onLockRoomStatusChange(peerId, lockStatus);
             Log.d(TAG, "processRoomLockStatus: onLockRoomStatusChange " + lockStatus);
         }
         return lockStatus;

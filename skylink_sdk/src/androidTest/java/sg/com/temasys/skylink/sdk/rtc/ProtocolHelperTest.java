@@ -39,45 +39,40 @@ public class ProtocolHelperTest {
 
         // If the currently the room is locked and we receive that the room is locked
         // listener should not be called
-        JSONObject dict = new JSONObject();
-        dict.put("lock", "true");
+        boolean currentStatus = ProtocolHelper.processRoomLockStatus(true, "1000", true,
+                new LifeCycleListener() {
+                    @Override
+                    public void onConnect(boolean isSuccessful, String message) {
+                        fail();
+                    }
 
-        boolean currentStatus = ProtocolHelper.processRoomLockStatus(true, dict, new LifeCycleListener() {
-            @Override
-            public void onConnect(boolean isSuccessful, String message) {
-                fail();
-            }
+                    @Override
+                    public void onWarning(int errorCode, String message) {
+                        fail();
+                    }
 
-            @Override
-            public void onWarning(int errorCode, String message) {
-                fail();
-            }
+                    @Override
+                    public void onDisconnect(int errorCode, String message) {
+                        fail();
+                    }
 
-            @Override
-            public void onDisconnect(int errorCode, String message) {
-                fail();
-            }
+                    @Override
+                    public void onReceiveLog(String message) {
+                        fail();
+                    }
 
-            @Override
-            public void onReceiveLog(String message) {
-                fail();
-            }
-
-            @Override
-            public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-                fail();
-            }
-        });
+                    @Override
+                    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+                        fail();
+                    }
+                });
 
         assertTrue(currentStatus);
 
         // If the currently the room is locked and we receive that the room is unlocked
         // listener should be called
-        dict = new JSONObject();
-        dict.put("lock", "false");
-        dict.put("mid", "1000");
 
-        currentStatus = ProtocolHelper.processRoomLockStatus(true, dict, new LifeCycleListener() {
+        currentStatus = ProtocolHelper.processRoomLockStatus(true, "1000", false, new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail();
@@ -110,11 +105,8 @@ public class ProtocolHelperTest {
 
         // If the currently the room is unlocked and we receive that the room is locked
         // listener should be called
-        dict = new JSONObject();
-        dict.put("lock", "true");
-        dict.put("mid", "1000");
 
-        currentStatus = ProtocolHelper.processRoomLockStatus(false, dict, new LifeCycleListener() {
+        currentStatus = ProtocolHelper.processRoomLockStatus(false, "1000", true, new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail();
@@ -146,11 +138,8 @@ public class ProtocolHelperTest {
 
         // If the currently the room is unlocked and we receive that the room is unlocked
         // listener should not be called
-        dict = new JSONObject();
-        dict.put("lock", "false");
-        dict.put("mid", "1000");
 
-        currentStatus = ProtocolHelper.processRoomLockStatus(false, dict, new LifeCycleListener() {
+        currentStatus = ProtocolHelper.processRoomLockStatus(false, "1000", false, new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail();

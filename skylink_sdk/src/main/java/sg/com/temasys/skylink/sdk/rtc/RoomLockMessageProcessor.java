@@ -29,7 +29,8 @@ class RoomLockMessageProcessor implements MessageProcessor {
                     }
                     try {
                         boolean roomLocked = ProtocolHelper.processRoomLockStatus(
-                                skylinkConnection.isRoomLocked(), jsonObject,
+                                skylinkConnection.isRoomLocked(), jsonObject.getString("mid"),
+                                jsonObject.getBoolean("lock"),
                                 skylinkConnection.getLifeCycleListener());
                         skylinkConnection.setRoomLocked(roomLocked);
                     } catch (JSONException e) {
