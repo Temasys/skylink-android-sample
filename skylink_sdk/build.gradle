@@ -21,9 +21,13 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'io.pristine:libjingle:9127@aar'
     compile 'com.github.nkzawa:socket.io-client:0.4.2'
+    repositories {
+        mavenCentral()
+    }
     testCompile 'io.pristine:libjingle:9127@aar'
     testCompile 'org.jmockit:jmockit:1.8'
     testCompile 'junit:junit:4.11'
+    testCompile 'org.apache.maven:maven-ant-tasks:2.1.3'
     testCompile 'org.robolectric:robolectric:2.4'
     testCompile 'com.android.support:support-v4:19.0.1'
     testCompile 'org.mockito:mockito-all:1.9.5'
