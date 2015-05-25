@@ -71,7 +71,7 @@ public class SkylinkConnection {
      * server.
      */
     public static final int DEFAULT_DURATION = 24;
-    public static final String API_SERVER = "http://api.temasys.com.sg/api/";
+    public static final String APP_SERVER = "http://api.temasys.com.sg/api/";
 
     private static final String TAG = "SkylinkConnection";
 
@@ -111,7 +111,7 @@ public class SkylinkConnection {
     private Object myUserData;
     private UserInfo myUserInfo;
     private PeerConnectionFactory peerConnectionFactory;
-    private String apiKey;
+    private String appKey;
     private SkylinkConfig myConfig;
     private VideoCapturerAndroid localVideoCapturer;
     private VideoSource localVideoSource;
@@ -201,7 +201,7 @@ public class SkylinkConnection {
             @Override
             public void onCurrentTimeFetched(Date date) {
                 Log.d(TAG, "onCurrentTimeFetched" + date);
-                String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
+                String connectionString = Utils.getSkylinkConnectionString(roomName, appKey,
                         secret, date, DEFAULT_DURATION);
                 connectToRoom(connectionString, userData);
             }
@@ -209,7 +209,7 @@ public class SkylinkConnection {
             @Override
             public void onCurrentTimeFetchedFailed() {
                 Log.d(TAG, "onCurrentTimeFetchedFailed, using device time");
-                String connectionString = Utils.getSkylinkConnectionString(roomName, apiKey,
+                String connectionString = Utils.getSkylinkConnectionString(roomName, appKey,
                         secret, new Date(), DEFAULT_DURATION);
                 connectToRoom(connectionString, userData);
             }
@@ -223,7 +223,7 @@ public class SkylinkConnection {
     /**
      * Connects to a room with SkylinkConnectionString
      *
-     * @param skylinkConnectionString SkylinkConnectionString Generated with room name, apiKey,
+     * @param skylinkConnectionString SkylinkConnectionString Generated with room name, appKey,
      *                                secret, startTime and duration
      * @param userData                User defined data relating to oneself. May be a
      *                                'java.lang.String', 'org.json.JSONObject' or
@@ -271,7 +271,7 @@ public class SkylinkConnection {
         this.webServerClient = new WebServerClient(iceServersObserver,
                 this.signalingMessageProcessingService);
 
-        String url = API_SERVER + skylinkConnectionString;
+        String url = APP_SERVER + skylinkConnectionString;
         try {
             this.webServerClient.connectToRoom(url);
         } catch (IOException e) {
@@ -392,18 +392,18 @@ public class SkylinkConnection {
     /**
      * Creates a new SkylinkConnection object with the specified parameters.
      *
-     * @param apiKey  The api key from the Skylink Developer Console
+     * @param appKey  The App key from the Skylink Developer Console
      * @param config  The SkylinkConfig object to configure the type of call.
      * @param context The application context
      */
-    public void init(String apiKey,
+    public void init(String appKey,
                      SkylinkConfig config, Context context) {
         logMessage("SkylinkConnection::config=>" + config);
 
         this.myConfig = new SkylinkConfig(config);
 
-        logMessage("SkylinkConnection::apiKey=>" + apiKey);
-        this.apiKey = apiKey;
+        logMessage("SkylinkConnection::appKey=>" + appKey);
+        this.appKey = appKey;
 
         if (!factoryStaticInitialized) {
 
@@ -1342,7 +1342,7 @@ public class SkylinkConnection {
                         msgJoinRoom.put("timeStamp",
                                 connectionManager.webServerClient.getTimeStamp());
                         msgJoinRoom.put("apiOwner",
-                                connectionManager.webServerClient.getApiOwner());
+                                connectionManager.webServerClient.getAppOwner());
                         msgJoinRoom.put("len",
                                 connectionManager.webServerClient.getLen());
                         msgJoinRoom.put("start",

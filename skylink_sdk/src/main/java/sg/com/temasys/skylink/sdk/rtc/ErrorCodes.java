@@ -49,7 +49,7 @@ public class ErrorCodes {
     public static final int REDIRECT_REASON_ROOM_TO_CLOSED = 8;
 
     /**
-     * The user is unable to join due to insufficient seat quota for the API Key.
+     * The user is unable to join due to insufficient seat quota for the App Key.
      */
     public static final int REDIRECT_REASON_SEAT_QUOTA = 9;
 

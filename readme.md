@@ -68,7 +68,7 @@ Step-by-step guide
     04. SkyLinkConfig.AudioVideoConfig.VIDEO_ONLY
 
 
-####Initialize SkylinkConnection object and pass the API key from the developer portal
+####Initialize SkylinkConnection object and pass the App key from the developer portal
 
             SkylinkConnection skylinkConnection;
             .....
@@ -93,7 +93,7 @@ Step-by-step guide
 
 #### Connect to a room using Skylink SDK - using a connection string (recommended to use in production, refer to sample app for more details)
 
-           // SkylinkConnectionString Generated with room name, apiKey, secret, startTime and duration
+           // SkylinkConnectionString Generated with room name, appKey, secret, startTime and duration
            skyLinkConnection.connectToRoom(skylinkConnectionString, "userName");
 
 ####Verify if the connection works by logging on callback
