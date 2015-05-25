@@ -40,19 +40,16 @@ class ProtocolHelper {
     /**
      * Processes a redirect message
      *
-     * @param jsonObject
+     * @param info
+     * @param action
+     * @param reason
      * @param lifeCycleListener
      * @return true if its a disconnection(reject) false if its a warning
      * @throws JSONException
      */
-    static boolean processRedirect(JSONObject jsonObject,
+    static boolean processRedirect(String info, String action, String reason,
                                    LifeCycleListener lifeCycleListener) throws JSONException {
 
-        String info = jsonObject.getString("info");
-        String action = jsonObject.getString("action");
-
-        // If the reason key exist, get the relevant error code
-        String reason = jsonObject.getString("reason");
         int errorCode = ProtocolHelper.getRedirectCode(reason);
 
         boolean shouldDisconnect = false;

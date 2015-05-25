@@ -194,7 +194,7 @@ public class ProtocolHelperTest {
         jsonObject.put("action", "warning");
         jsonObject.put("reason", "fastmsg");
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "fastmsg", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -228,38 +228,34 @@ public class ProtocolHelperTest {
     @Test
     public void testWarningWithReasonLocked() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "warning");
-        jsonObject.put("reason", "locked");
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "locked",
+                new LifeCycleListener() {
+                    @Override
+                    public void onConnect(boolean isSuccessful, String message) {
+                        fail("Should not be called");
+                    }
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
-            @Override
-            public void onConnect(boolean isSuccessful, String message) {
-                fail("Should not be called");
-            }
+                    @Override
+                    public void onWarning(int errorCode, String message) {
+                        assertEquals(message, expectedInfo);
+                        assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_LOCKED);
+                    }
 
-            @Override
-            public void onWarning(int errorCode, String message) {
-                assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_LOCKED);
-            }
+                    @Override
+                    public void onDisconnect(int errorCode, String message) {
+                        fail("Should not be called");
+                    }
 
-            @Override
-            public void onDisconnect(int errorCode, String message) {
-                fail("Should not be called");
-            }
+                    @Override
+                    public void onReceiveLog(String message) {
+                        fail("Should not be called");
+                    }
 
-            @Override
-            public void onReceiveLog(String message) {
-                fail("Should not be called");
-            }
-
-            @Override
-            public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-                fail();
-            }
-        });
+                    @Override
+                    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+                        fail();
+                    }
+                });
 
         assertFalse(shouldDisconnect);
     }
@@ -267,38 +263,34 @@ public class ProtocolHelperTest {
     @Test
     public void testWarningWithReasonRoomFull() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "warning");
-        jsonObject.put("reason", "roomfull");
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "roomfull",
+                new LifeCycleListener() {
+                    @Override
+                    public void onConnect(boolean isSuccessful, String message) {
+                        fail("Should not be called");
+                    }
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
-            @Override
-            public void onConnect(boolean isSuccessful, String message) {
-                fail("Should not be called");
-            }
+                    @Override
+                    public void onWarning(int errorCode, String message) {
+                        assertEquals(message, expectedInfo);
+                        assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_FULL);
+                    }
 
-            @Override
-            public void onWarning(int errorCode, String message) {
-                assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_FULL);
-            }
+                    @Override
+                    public void onDisconnect(int errorCode, String message) {
+                        fail("Should not be called");
+                    }
 
-            @Override
-            public void onDisconnect(int errorCode, String message) {
-                fail("Should not be called");
-            }
+                    @Override
+                    public void onReceiveLog(String message) {
+                        fail("Should not be called");
+                    }
 
-            @Override
-            public void onReceiveLog(String message) {
-                fail("Should not be called");
-            }
-
-            @Override
-            public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-                fail();
-            }
-        });
+                    @Override
+                    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+                        fail();
+                    }
+                });
 
         assertFalse(shouldDisconnect);
     }
@@ -306,12 +298,9 @@ public class ProtocolHelperTest {
     @Test
     public void testWarningWithReasonDuplicatedLogin() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "warning");
-        jsonObject.put("reason", "duplicatedLogin");
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "duplicatedLogin"
+                , new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -345,12 +334,7 @@ public class ProtocolHelperTest {
     @Test
     public void testWarningWithReasonServerError() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "warning");
-        jsonObject.put("reason", "serverError");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "serverError", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -385,12 +369,8 @@ public class ProtocolHelperTest {
     @Test
     public void testWarningWithReasonVerification() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "warning");
-        jsonObject.put("reason", "verification");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "verification"
+                , new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -429,7 +409,8 @@ public class ProtocolHelperTest {
         jsonObject.put("action", "warning");
         jsonObject.put("reason", "expired");
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "expired"
+                , new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -468,7 +449,8 @@ public class ProtocolHelperTest {
         jsonObject.put("action", "warning");
         jsonObject.put("reason", "roomclose");
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "roomclose"
+                , new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -508,7 +490,7 @@ public class ProtocolHelperTest {
         jsonObject.put("action", "warning");
         jsonObject.put("reason", "toclose");
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "toclose", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -543,12 +525,7 @@ public class ProtocolHelperTest {
     @Test
     public void testWarningWithReasonSeatQuota() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "warning");
-        jsonObject.put("reason", "seatquota");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "warning", "seatquota", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -582,12 +559,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonFastMessage() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "fastmsg");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "fastmsg", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -621,12 +593,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonLocked() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "locked");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "locked", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -666,7 +633,7 @@ public class ProtocolHelperTest {
         jsonObject.put("action", "reject");
         jsonObject.put("reason", "roomfull");
 
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "roomfull", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -700,12 +667,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonDuplicatedLogin() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "duplicatedLogin");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "duplicatedLogin", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -740,12 +702,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonServerError() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "serverError");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "serverError", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -780,12 +737,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonVerification() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "verification");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "verification", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -819,12 +771,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonExpired() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "expired");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "expired", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -858,12 +805,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonRoomClosed() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "roomclose");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "roomclose", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -897,12 +839,7 @@ public class ProtocolHelperTest {
 
     public void testRejectWithReasonRoomToClose() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "toclose");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "toclose", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");
@@ -936,12 +873,7 @@ public class ProtocolHelperTest {
     @Test
     public void testRejectWithReasonSeatQuota() throws JSONException {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("info", expectedInfo);
-        jsonObject.put("action", "reject");
-        jsonObject.put("reason", "seatquota");
-
-        boolean shouldDisconnect = ProtocolHelper.processRedirect(jsonObject, new LifeCycleListener() {
+        boolean shouldDisconnect = ProtocolHelper.processRedirect(expectedInfo, "reject", "seatquota", new LifeCycleListener() {
             @Override
             public void onConnect(boolean isSuccessful, String message) {
                 fail("Should not be called");

@@ -30,7 +30,8 @@ class RedirectMessageProcessor implements MessageProcessor {
                         return;
                     }
                     try {
-                        shouldDisconnect = ProtocolHelper.processRedirect(jsonObject,
+                        shouldDisconnect = ProtocolHelper.processRedirect(jsonObject.getString("info")
+                                , jsonObject.getString("action"), jsonObject.getString("reason"),
                                 skylinkConnection.getLifeCycleListener());
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage(), e);
