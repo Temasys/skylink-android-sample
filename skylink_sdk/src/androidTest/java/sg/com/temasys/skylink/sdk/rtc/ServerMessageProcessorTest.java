@@ -74,7 +74,7 @@ public class ServerMessageProcessorTest {
             @Override
             public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
                 assertTrue(remotePeerId.equals(peerId));
-                assertFalse(isPrivate);
+                assertTrue(isPrivate);
                 assertTrue(data.equals(message.toString()));
             }
 
@@ -92,7 +92,7 @@ public class ServerMessageProcessorTest {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mid", peerId);
         jsonObject.put("data", data);
-        jsonObject.put("type", "public");
+        jsonObject.put("type", "private");
 
         serverMessageProcessor.process(jsonObject);
     }

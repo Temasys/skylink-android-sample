@@ -23,7 +23,7 @@ import static org.mockito.Mockito.spy;
 public class UpdateUserEventMessageProcessorTest {
 
     private static final String peerId = "1234";
-    private static final Object userData = new Object();
+    private static final String userName = "testUserName";
 
     private SkylinkConnection skylinkConnection;
     private UpdateUserEventMessageProcessor userEventMessgeProcesor;
@@ -37,9 +37,10 @@ public class UpdateUserEventMessageProcessorTest {
 
     @Test
     public void testProcess() throws Exception {
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mid", peerId);
-        jsonObject.put("userData", userData);
+        jsonObject.put("userData", userName);
 
         doReturn(SkylinkConnection.ConnectionState.CONNECT).when
                 (skylinkConnection).getConnectionState();
@@ -54,6 +55,7 @@ public class UpdateUserEventMessageProcessorTest {
             public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
                 assertTrue(peerId.equals(remotePeerId));
                 assertNotNull(userData);
+                assertTrue(userName.equals(userName));
             }
 
             @Override

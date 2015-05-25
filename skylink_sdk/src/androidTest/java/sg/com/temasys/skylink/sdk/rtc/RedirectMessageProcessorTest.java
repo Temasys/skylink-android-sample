@@ -60,7 +60,7 @@ public class RedirectMessageProcessorTest {
 
             @Override
             public void onWarning(int errorCode, String message) {
-                assertEquals(ErrorCodes.REDIRECT_REASON_LOCKED, errorCode);
+                assertEquals(ErrorCodes.REDIRECT_REASON_FAST_MSG, errorCode);
                 assertTrue(TEST_INFO.equals(message));
             }
 
@@ -85,7 +85,7 @@ public class RedirectMessageProcessorTest {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("info", TEST_INFO);
         jsonObject.put("action", "warning");
-        jsonObject.put("reason", "locked");
+        jsonObject.put("reason", "fastmsg");
         redirectMessageProcessor.process(jsonObject);
     }
 
