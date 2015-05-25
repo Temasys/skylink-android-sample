@@ -22,12 +22,12 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'io.pristine:libjingle:9127@aar'
     compile 'com.github.nkzawa:socket.io-client:0.4.2'
+    androidTestCompile 'io.pristine:libjingle:9127@aar'
     androidTestCompile 'org.jmockit:jmockit:1.8'
     androidTestCompile 'junit:junit:4.11'
     androidTestCompile 'org.robolectric:robolectric:2.3'
     androidTestCompile 'com.android.support:support-v4:19.0.1'
     androidTestCompile 'org.mockito:mockito-all:1.9.5'
-    androidTestCompile 'io.pristine:libjingle:9127@aar'
 
     jaxDoclet("com.google.doclava:doclava:1.0.5")
     classpaths files('build/classes/release')
