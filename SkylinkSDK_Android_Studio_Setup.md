@@ -17,7 +17,7 @@ Add the following to your app's build.gradle:
     dependencies {
         compile(group: 'sg.com.temasys.skylink.sdk',
                 name: 'skylink_sdk',
-                version: '0.9.2-RELEASE',
+                version: '0.9.3-RELEASE',
                 ext: 'aar'){
             transitive = true
         }
