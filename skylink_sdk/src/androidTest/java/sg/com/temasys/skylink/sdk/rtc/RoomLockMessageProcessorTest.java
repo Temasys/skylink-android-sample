@@ -41,6 +41,92 @@ public class RoomLockMessageProcessorTest {
     }
 
     @Test
+    public void testProcessingWithSameLockStatusLocked() throws JSONException {
+
+        LifeCycleListener lifeCycleListener = new LifeCycleListener() {
+            @Override
+            public void onConnect(boolean isSuccessful, String message) {
+                fail();
+            }
+
+            @Override
+            public void onWarning(int errorCode, String message) {
+                fail();
+            }
+
+            @Override
+            public void onDisconnect(int errorCode, String message) {
+                fail();
+            }
+
+            @Override
+            public void onReceiveLog(String message) {
+                fail();
+            }
+
+            @Override
+            public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+                fail();
+            }
+        };
+
+        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
+                .getConnectionState();
+        doReturn(true).when(skylinkConnection)
+                .isRoomLocked();
+        doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("lock", true);
+        jsonObject.put("mid", EXPECTED_ID);
+
+        roomLockMessageProcessor.process(jsonObject);
+    }
+
+    @Test
+    public void testProcessingWithSameLockStatusUnlocked() throws JSONException {
+
+        LifeCycleListener lifeCycleListener = new LifeCycleListener() {
+            @Override
+            public void onConnect(boolean isSuccessful, String message) {
+                fail();
+            }
+
+            @Override
+            public void onWarning(int errorCode, String message) {
+                fail();
+            }
+
+            @Override
+            public void onDisconnect(int errorCode, String message) {
+                fail();
+            }
+
+            @Override
+            public void onReceiveLog(String message) {
+                fail();
+            }
+
+            @Override
+            public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+                fail();
+            }
+        };
+
+        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
+                .getConnectionState();
+        doReturn(false).when(skylinkConnection)
+                .isRoomLocked();
+        doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("lock", false);
+        jsonObject.put("mid", EXPECTED_ID);
+
+        roomLockMessageProcessor.process(jsonObject);
+    }
+
+    @Test
     public void testProcessingWithLockedRoom() throws JSONException {
 
         LifeCycleListener lifeCycleListener = new LifeCycleListener() {
