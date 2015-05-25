@@ -22,7 +22,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'io.pristine:libjingle:9127@aar'
     compile 'com.github.nkzawa:socket.io-client:0.4.2'
-    androidTestCompile 'io.pristine:libjingle:9127@aar'
+    androidTestCompile fileTree(dir: "$project.buildDir/exploded-aar", include: "**/classes.jar")
     androidTestCompile 'org.jmockit:jmockit:1.8'
     androidTestCompile 'junit:junit:4.11'
     androidTestCompile 'org.robolectric:robolectric:2.3'
