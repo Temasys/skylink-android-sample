@@ -14,24 +14,10 @@ class RoomLockMessageProcessor implements MessageProcessor {
     private static final String TAG = RoomLockMessageProcessor.class.getSimpleName();
 
     private SkylinkConnection skylinkConnection;
-    private JSONException jsonException;
-    private final Object waitLock = new Object();
 
     @Override
     public void process(final JSONObject jsonObject) throws JSONException {
 
-        // Wait for possible exception throwing to be past
-        // before checking if exception should be thrown.
-        /*synchronized (waitLock) {
-            try {
-                waitLock.wait();
-            } catch (InterruptedException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-            if (jsonException != null) {
-                throw jsonException;
-            }
-        }*/
         final SignalingMessageProcessingService signalingMessageProcessingService =
                 skylinkConnection.getSkylinkConnectionService().
                         getSignalingMessageProcessingService();
@@ -44,10 +30,6 @@ class RoomLockMessageProcessor implements MessageProcessor {
                     // We should no longer process messages from signalling server.
                     if (skylinkConnection.getConnectionState() ==
                             SkylinkConnection.ConnectionState.DISCONNECT) {
-                        synchronized (waitLock) {
-                            // Waiting for possible exception is over.
-                            waitLock.notifyAll();
-                        }
                         return;
                     }
                     try {
@@ -58,11 +40,6 @@ class RoomLockMessageProcessor implements MessageProcessor {
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage(), e);
                         signalingMessageProcessingService.onSignalingMessageException(e);
-                    }
-
-                    synchronized (waitLock) {
-                        // Waiting for possible exception is over.
-                        waitLock.notifyAll();
                     }
                 }
             }
