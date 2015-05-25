@@ -42,10 +42,11 @@ class SignalingMessageProcessingService implements MessageHandler {
     }
 
     public void sendMessage(JSONObject dictMessage) {
-        Log.d(TAG, "Send message");
+        Log.d(TAG, "[sendMessage] " + dictMessage);
         sigMsgSender.sendMessage(socketIOClient, dictMessage);
     }
 
+    // Disconnect from the Signaling Channel.
     public void disconnect() {
         Log.d(TAG, "Disconnecting from the signaling server");
         if (socketIOClient != null) {
@@ -85,7 +86,7 @@ class SignalingMessageProcessingService implements MessageHandler {
             String target = object.has("target") ? object.getString("target") : "";
 
             // If the target exist it should be the same for this client
-            if (object.has("target") && !target.equals(skylinkConnection.getWebServerClient().getSid())) {
+            if (object.has("target") && !target.equals(skylinkConnection.getSkylinkConnectionService().getSid())) {
                 Log.e(TAG, "Ignoring the message" +
                         " due target mismatch , target :" + target + " type: " + type);
                 return;
@@ -102,8 +103,15 @@ class SignalingMessageProcessingService implements MessageHandler {
             }
 
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            onSignalingMessageException(e);
         }
+    }
+
+    // A place to collect all Signaling message exceptions.
+    // As some objects, like runnables, have to catch exceptions.
+    void onSignalingMessageException(JSONException e) {
+        String strErr = "[onMessage] error: " + e.getMessage();
+        Log.e(TAG, strErr, e);
     }
 
     @Override

@@ -4,8 +4,10 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
+import org.webrtc.SessionDescription;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -93,17 +95,17 @@ class ProtocolHelper {
     /**
      * Send room lock status
      *
-     * @param webServerClient
+     * @param skylinkConnectionService
      * @param lockStatus
      * @throws JSONException
      */
-    static void sendRoomLockStatus(WebServerClient webServerClient, boolean lockStatus) throws JSONException {
+    static void sendRoomLockStatus(SkylinkConnectionService skylinkConnectionService, boolean lockStatus) throws JSONException {
         JSONObject dict = new JSONObject();
-        dict.put("rid", webServerClient.getRoomId());
-        dict.put("mid", webServerClient.getSid());
+        dict.put("rid", skylinkConnectionService.getRoomId());
+        dict.put("mid", skylinkConnectionService.getSid());
         dict.put("lock", lockStatus);
         dict.put("type", "roomLockEvent");
-        webServerClient.sendMessage(dict);
+        skylinkConnectionService.sendMessage(dict);
         Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
     }
 
@@ -140,7 +142,7 @@ class ProtocolHelper {
      *
      * @param remotePeerId
      * @param skylinkConnection
-     * @param webServerClient
+     * @param skylinkConnectionService
      * @param localMediaStream
      * @param myConfig
      * @return
@@ -148,7 +150,7 @@ class ProtocolHelper {
      */
     static boolean sendRestart(final String remotePeerId,
                                final SkylinkConnection skylinkConnection,
-                               WebServerClient webServerClient,
+                               SkylinkConnectionService skylinkConnectionService,
                                MediaStream localMediaStream,
                                SkylinkConfig myConfig) throws JSONException {
 
@@ -225,21 +227,21 @@ class ProtocolHelper {
      * This is a hack to accomodate the non-Android clients until the update to SM 0.1.1 This is
      * esp. so for the JS clients which do not allow restarts for PeerIds without PeerConnection.
      *
-     * @param remotePeerId      Set to null if sending to all Peers in room. Set to PeerId of remote
-     *                          Peer if targeted to send only to this remote Peer.
+     * @param remotePeerId             Set to null if sending to all Peers in room. Set to PeerId of
+     *                                 remote Peer if targeted to send only to this remote Peer.
      * @param skylinkConnection
-     * @param webServerClient
+     * @param skylinkConnectionService
      * @throws JSONException
      */
     static void sendEnter(String remotePeerId,
                           SkylinkConnection skylinkConnection,
-                          WebServerClient webServerClient) throws JSONException {
+                          SkylinkConnectionService skylinkConnectionService) throws JSONException {
 
         skylinkConnection.logMessage("*** SendEnter");
         JSONObject enterObject = new JSONObject();
         enterObject.put("type", "enter");
-        enterObject.put("mid", webServerClient.getSid());
-        enterObject.put("rid", webServerClient.getRoomId());
+        enterObject.put("mid", skylinkConnectionService.getSid());
+        enterObject.put("rid", skylinkConnectionService.getRoomId());
         enterObject.put("receiveOnly", false);
         enterObject.put("agent", "Android");
         enterObject.put("version", BuildConfig.VERSION_NAME);
@@ -249,7 +251,7 @@ class ProtocolHelper {
         }
         UserInfo userInfo = new UserInfo(skylinkConnection.getMyConfig(), skylinkConnection.getUserData(null));
         UserInfo.setUserInfo(enterObject, userInfo);
-        webServerClient.sendMessage(enterObject);
+        skylinkConnectionService.sendMessage(enterObject);
     }
 
     /**
@@ -265,7 +267,8 @@ class ProtocolHelper {
                                SkylinkConnection skylinkConnection,
                                boolean isRestart) throws JSONException {
 
-        WebServerClient webServerClient = skylinkConnection.getWebServerClient();
+        SkylinkConnectionService skylinkConnectionService =
+                skylinkConnection.getSkylinkConnectionService();
         SkylinkConfig myConfig = skylinkConnection.getMyConfig();
 
         String typeStr = "restart";
@@ -283,10 +286,10 @@ class ProtocolHelper {
                     skylinkConnection.getPcObserverPool().get(remotePeerId)
                             .getMyWeight());
             welcomeObject.put("mid",
-                    webServerClient.getSid());
+                    skylinkConnectionService.getSid());
             welcomeObject.put("target", remotePeerId);
             welcomeObject.put("rid",
-                    webServerClient.getRoomId());
+                    skylinkConnectionService.getRoomId());
             welcomeObject.put("agent", "Android");
             welcomeObject.put("version", BuildConfig.VERSION_NAME);
             welcomeObject.put("receiveOnly", false);
@@ -296,13 +299,96 @@ class ProtocolHelper {
                             || myConfig.hasDataTransfer()));
             UserInfo userInfo = new UserInfo(myConfig, skylinkConnection.getUserData(null));
             UserInfo.setUserInfo(welcomeObject, userInfo);
-            webServerClient
-                    .sendMessage(welcomeObject);
+            skylinkConnectionService.sendMessage(welcomeObject);
 
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Send joinRoom message to Signaling Server.
+     *
+     * @param skylinkConnectionService
+     */
+    static void sendJoinRoom(SkylinkConnectionService skylinkConnectionService) {
+
+        try {
+            JSONObject msgJoinRoom = new JSONObject();
+            msgJoinRoom.put("type", "joinRoom");
+            msgJoinRoom.put("rid",
+                    skylinkConnectionService.getRoomId());
+            msgJoinRoom.put("uid",
+                    skylinkConnectionService.getUserId());
+            msgJoinRoom.put("roomCred",
+                    skylinkConnectionService.getRoomCred());
+            msgJoinRoom.put("cid",
+                    skylinkConnectionService.getCid());
+            msgJoinRoom.put("userCred",
+                    skylinkConnectionService.getUserCred());
+            msgJoinRoom.put("timeStamp",
+                    skylinkConnectionService.getTimeStamp());
+            msgJoinRoom.put("apiOwner",
+                    skylinkConnectionService.getAppOwner());
+            msgJoinRoom.put("len",
+                    skylinkConnectionService.getLen());
+            msgJoinRoom.put("start",
+                    skylinkConnectionService.getStart());
+            skylinkConnectionService.sendMessage(msgJoinRoom);
+            Log.d(TAG, "[SDK] Join Room msg: Sending...");
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Send candidate message to Signaling Server.
+     *
+     * @param skylinkConnectionService
+     * @param candidate
+     * @param peerId
+     */
+    static void sendCandidate(SkylinkConnectionService skylinkConnectionService,
+                              final IceCandidate candidate, String peerId) {
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", "candidate");
+            json.put("label", candidate.sdpMLineIndex);
+            json.put("id", candidate.sdpMid);
+            json.put("candidate", candidate.sdp);
+            json.put("mid", skylinkConnectionService.getSid());
+            json.put("rid", skylinkConnectionService.getRoomId());
+            json.put("target", peerId);
+            skylinkConnectionService.sendMessage(json);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+    }
+
+    /**
+     * Send candidate message to Signaling Server.
+     *
+     * @param skylinkConnectionService
+     * @param sdp
+     * @param peerId
+     */
+    static void sendSdp(SkylinkConnectionService skylinkConnectionService,
+                        SessionDescription sdp, String peerId) {
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", sdp.type.canonicalForm());
+            json.put("sdp", sdp.description);
+            json.put("mid", skylinkConnectionService.getSid());
+            json.put("target", peerId);
+            json.put("rid", skylinkConnectionService.getRoomId());
+            skylinkConnectionService.sendMessage(json);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
     }
 
     /**
@@ -351,15 +437,41 @@ class ProtocolHelper {
         return false;
     }
 
+    static void sendMuteAudio(boolean isMuted, SkylinkConnectionService skylinkConnectionService) {
+        JSONObject dict = new JSONObject();
+        try {
+            dict.put("type", "muteAudioEvent");
+            dict.put("mid", skylinkConnectionService.getSid());
+            dict.put("rid", skylinkConnectionService.getRoomId());
+            dict.put("muted", new Boolean(isMuted));
+            skylinkConnectionService.sendMessage(dict);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    static void sendMuteVideo(boolean isMuted, SkylinkConnectionService skylinkConnectionService) {
+        JSONObject dict = new JSONObject();
+        try {
+            dict.put("type", "muteVideoEvent");
+            dict.put("mid", skylinkConnectionService.getSid());
+            dict.put("rid", skylinkConnectionService.getRoomId());
+            dict.put("muted", new Boolean(isMuted));
+            skylinkConnectionService.sendMessage(dict);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
     static void sendPingMessage(SkylinkConnection skylinkConnection,
                                 String target) throws JSONException {
         JSONObject pingObject = new JSONObject();
         pingObject.put("type", "ping");
-        pingObject.put("mid", skylinkConnection.getWebServerClient().getSid());
+        pingObject.put("mid", skylinkConnection.getSkylinkConnectionService().getSid());
         pingObject.put("target", target);
         pingObject.put("rid",
-                skylinkConnection.getWebServerClient().getRoomId());
-        skylinkConnection.getWebServerClient().sendMessage(pingObject);
+                skylinkConnection.getSkylinkConnectionService().getRoomId());
+        skylinkConnection.getSkylinkConnectionService().sendMessage(pingObject);
     }
 
     private static int getRedirectCode(String reason) {
@@ -402,4 +514,5 @@ class ProtocolHelper {
 
         return redirectCode;
     }
+
 }

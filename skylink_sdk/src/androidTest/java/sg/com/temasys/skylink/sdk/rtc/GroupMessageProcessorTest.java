@@ -25,6 +25,7 @@ public class GroupMessageProcessorTest {
     private static final String MESSAGE_FOUR = "message4";
 
     private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
     private SignalingMessageProcessingService signalingMessageProcessingService;
     private GroupMessageProcessor groupMessageProcessor;
 
@@ -32,12 +33,15 @@ public class GroupMessageProcessorTest {
     public void setUp() throws Exception {
 
         skylinkConnection = mock(SkylinkConnection.class);
+        skylinkConnectionService = mock(SkylinkConnectionService.class);
+        signalingMessageProcessingService = mock(SignalingMessageProcessingService.class);
+
+        when(skylinkConnection.getSkylinkConnectionService()).thenReturn(skylinkConnectionService);
+        when(skylinkConnectionService.getSignalingMessageProcessingService())
+                .thenReturn(signalingMessageProcessingService);
+
         groupMessageProcessor = new GroupMessageProcessor();
         groupMessageProcessor.setSkylinkConnection(skylinkConnection);
-
-        signalingMessageProcessingService = mock(SignalingMessageProcessingService.class);
-        when(skylinkConnection.getSignalingMessageProcessingService())
-                .thenReturn(signalingMessageProcessingService);
     }
 
     @Test

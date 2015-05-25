@@ -172,18 +172,18 @@ public class ProtocolHelperTest {
     @Test
     public void testSendRoomLockStatusLockRoom() throws JSONException {
 
-        WebServerClient mockedWebServerClient = mock(WebServerClient.class);
-        when(mockedWebServerClient.getRoomId()).thenReturn("1000");
-        when(mockedWebServerClient.getSid()).thenReturn("senderId");
+        SkylinkConnectionService skylinkConnectionService = mock(SkylinkConnectionService.class);
+        when(skylinkConnectionService.getRoomId()).thenReturn("1000");
+        when(skylinkConnectionService.getSid()).thenReturn("senderId");
 
-        ProtocolHelper.sendRoomLockStatus(mockedWebServerClient, true);
+        ProtocolHelper.sendRoomLockStatus(skylinkConnectionService, true);
 
         JSONObject dict = new JSONObject();
         dict.put("rid", "1000");
         dict.put("mid", "senderId");
         dict.put("lock", true);
         dict.put("type", "roomLockEvent");
-        verify(mockedWebServerClient).sendMessage(Mockito.any(JSONObject.class));
+        verify(skylinkConnectionService).sendMessage(Mockito.any(JSONObject.class));
     }
 
     @Test

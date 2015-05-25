@@ -17,6 +17,11 @@ class RoomLockMessageProcessor implements MessageProcessor {
 
     @Override
     public void process(final JSONObject jsonObject) throws JSONException {
+
+        final SignalingMessageProcessingService signalingMessageProcessingService =
+                skylinkConnection.getSkylinkConnectionService().
+                        getSignalingMessageProcessingService();
+
         this.skylinkConnection.runOnUiThread(new Runnable() {
             public void run() {
                 // Prevent thread from executing with disconnect concurrently.
@@ -35,10 +40,12 @@ class RoomLockMessageProcessor implements MessageProcessor {
                         skylinkConnection.setRoomLocked(roomLocked);
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage(), e);
+                        signalingMessageProcessingService.onSignalingMessageException(e);
                     }
                 }
             }
         });
+
     }
 
     @Override

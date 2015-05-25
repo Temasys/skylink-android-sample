@@ -18,6 +18,11 @@ class RedirectMessageProcessor implements MessageProcessor {
 
     @Override
     public void process(final JSONObject jsonObject) throws JSONException {
+
+        final SignalingMessageProcessingService signalingMessageProcessingService =
+                skylinkConnection.getSkylinkConnectionService().
+                        getSignalingMessageProcessingService();
+
         skylinkConnection.runOnUiThread(new Runnable() {
             public void run() {
                 boolean shouldDisconnect = false;
@@ -35,18 +40,20 @@ class RedirectMessageProcessor implements MessageProcessor {
                                 skylinkConnection.getLifeCycleListener());
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage(), e);
+                        signalingMessageProcessingService.onSignalingMessageException(e);
                     }
                 }
-
                 if (shouldDisconnect) {
                     skylinkConnection.disconnectFromRoom();
                 }
             }
         });
+
     }
 
     @Override
     public void setSkylinkConnection(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
     }
+
 }

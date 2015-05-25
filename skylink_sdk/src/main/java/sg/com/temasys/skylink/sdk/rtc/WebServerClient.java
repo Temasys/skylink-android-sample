@@ -30,8 +30,6 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.util.Log;
 
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnection;
 
 import java.io.IOException;
@@ -49,12 +47,13 @@ import java.util.List;
 class WebServerClient implements RoomParameterServiceListener {
 
     private static final String TAG = WebServerClient.class.getName();
+    private final SkylinkConnectionService skylinkConnectionService;
     private final IceServersObserver iceServersObserver;
 
 
     // These members are only read/written under sendQueue's lock.
     private LinkedList<String> sendQueue = new LinkedList<String>();
-    private AppRTCSignalingParameters appRTCSignalingParameters;
+
 
     private SignalingMessageProcessingService signalingMessageProcessingService;
 
@@ -69,9 +68,8 @@ class WebServerClient implements RoomParameterServiceListener {
         public void onShouldConnectToRoom();
     }
 
-    public WebServerClient(IceServersObserver iceServersObserver,
-                           SignalingMessageProcessingService signalingMessageProcessingService) {
-        this.signalingMessageProcessingService = signalingMessageProcessingService;
+    public WebServerClient(SkylinkConnectionService skylinkConnectionService, IceServersObserver iceServersObserver) {
+        this.skylinkConnectionService = skylinkConnectionService;
         this.iceServersObserver = iceServersObserver;
     }
 
@@ -84,25 +82,17 @@ class WebServerClient implements RoomParameterServiceListener {
      * @throws Exception
      */
     public void connectToRoom(String url) throws IOException, JSONException {
+        // Obtain parameters required to connect to room.
         (new RoomParameterService(this)).execute(url);
-    }
-
-    /**
-     * Disconnect from the Signaling Channel.
-     */
-    public void disconnect() {
-        signalingMessageProcessingService.disconnect();
     }
 
     @Override
     public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
-        appRTCSignalingParameters = params;
         if (params != null) {
             Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
             Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
-
-            signalingMessageProcessingService.connect(params.getIpSigserver(),
-                    params.getPortSigserver(), params.getSid(), params.getRoomId());
+            // Inform that Room parameters have been obtained.
+            skylinkConnectionService.obtainedRoomParameters(params);
         }
     }
 
@@ -116,121 +106,5 @@ class WebServerClient implements RoomParameterServiceListener {
         WebServerClient.this.iceServersObserver.onShouldConnectToRoom();
     }
 
-    public void sendMessage(JSONObject dictMessage) {
-        Log.d(TAG, "Send message");
-        signalingMessageProcessingService.sendMessage(dictMessage);
-    }
-
-    public boolean isInitiator() {
-        return appRTCSignalingParameters.isInitiator();
-    }
-
-    public MediaConstraints pcConstraints() {
-        return appRTCSignalingParameters.getPcConstraints();
-    }
-
-    public MediaConstraints videoConstraints() {
-        return appRTCSignalingParameters.getVideoConstraints();
-    }
-
-    public MediaConstraints audioConstraints() {
-        return appRTCSignalingParameters.getAudioConstraints();
-    }
-
-    public String getAppOwner() {
-        return appRTCSignalingParameters.getAppOwner();
-    }
-
-    public void setAppOwner(String appOwner) {
-        this.appRTCSignalingParameters.setAppOwner(appOwner);
-    }
-
-    public String getCid() {
-        return appRTCSignalingParameters.getCid();
-    }
-
-    public void setCid(String cid) {
-        this.appRTCSignalingParameters.setCid(cid);
-    }
-
-    public String getDisplayName() {
-        return appRTCSignalingParameters.getDisplayName();
-    }
-
-    public void setDisplayName(String displayName) {
-        this.appRTCSignalingParameters.setDisplayName(displayName);
-    }
-
-    public String getLen() {
-        return appRTCSignalingParameters.getLen();
-    }
-
-    public void setLen(String len) {
-        this.appRTCSignalingParameters.setLen(len);
-    }
-
-    public String getRoomCred() {
-        return appRTCSignalingParameters.getRoomCred();
-    }
-
-    public void setRoomCred(String roomCred) {
-        this.appRTCSignalingParameters.setRoomCred(roomCred);
-    }
-
-    public String getRoomId() {
-        return appRTCSignalingParameters.getRoomId();
-    }
-
-    public void setRoomId(String roomId) {
-        this.appRTCSignalingParameters.setRoomId(roomId);
-    }
-
-    public String getSid() {
-        return appRTCSignalingParameters.getSid();
-    }
-
-    public void setSid(String sid) {
-        this.appRTCSignalingParameters.setSid(sid);
-    }
-
-    public String getStart() {
-        return appRTCSignalingParameters.getStart();
-    }
-
-    public void setStart(String start) {
-        this.appRTCSignalingParameters.setStart(start);
-    }
-
-    public String getTimeStamp() {
-        return appRTCSignalingParameters.getTimeStamp();
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        this.appRTCSignalingParameters.setTimeStamp(timeStamp);
-    }
-
-    public String getTokenTempCreated() {
-        return appRTCSignalingParameters.getTokenTempCreated();
-    }
-
-    public void setTokenTempCreated(String tokenTempCreated) {
-        this.appRTCSignalingParameters.setTokenTempCreated(tokenTempCreated);
-    }
-
-    public String getUserCred() {
-        return appRTCSignalingParameters.getUserCred();
-    }
-
-    public void setUserCred(String userCred) {
-        this.appRTCSignalingParameters.setUserCred(userCred);
-    }
-
-    public String getUserId() {
-        return appRTCSignalingParameters.getUserId();
-    }
-
-    public void setUserId(String userId) {
-        this.appRTCSignalingParameters.setUserId(userId);
-    }
 
 }

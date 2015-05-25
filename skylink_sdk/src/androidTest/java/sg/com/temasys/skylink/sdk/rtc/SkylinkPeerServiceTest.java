@@ -226,8 +226,8 @@ public class SkylinkPeerServiceTest {
 
         SkylinkConnection skylinkConnection = mock(SkylinkConnection.class);
 
-        WebServerClient webServerClient = mock(WebServerClient.class);
-        when(skylinkConnection.getWebServerClient()).thenReturn(webServerClient);
+        SkylinkConnectionService skylinkConnectionService = mock(SkylinkConnectionService.class);
+        when(skylinkConnection.getSkylinkConnectionService()).thenReturn(skylinkConnectionService);
 
         when(skylinkConnection.getIceServersObserver()).thenReturn(iceServersObserver);
 
@@ -245,7 +245,7 @@ public class SkylinkPeerServiceTest {
         SkylinkPeerService skylinkPeerService = new SkylinkPeerService(skylinkConnection);
         skylinkPeerService.receivedInRoom(peerId, iceServers);
 
-        verify(webServerClient).setSid(peerId);
+        verify(skylinkConnectionService).setSid(peerId);
         verify(dataChannelManager).setMid(peerId);
         verify(dataChannelManager).setDisplayName(TEST_USERDATA);
 

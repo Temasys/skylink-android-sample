@@ -78,11 +78,10 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Efficiently renders YUV frames using the GPU for CSC.
- * Clients will want first to call setView() to pass GLSurfaceView
- * and then for each video stream either create instance of VideoRenderer using
- * createGui() call or VideoRenderer.Callbacks interface using create() call.
- * Only one instance of the class can be created.
+ * Efficiently renders YUV frames using the GPU for CSC. Clients will want first to call setView()
+ * to pass GLSurfaceView and then for each video stream either create instance of VideoRenderer
+ * using createGui() call or VideoRenderer.Callbacks interface using create() call. Only one
+ * instance of the class can be created.
  */
 public class VideoRendererGui implements GLSurfaceView.Renderer {
 
@@ -236,9 +235,8 @@ public class VideoRendererGui implements GLSurfaceView.Renderer {
     }
 
     /**
-     * Class used to display stream of YUV420 frames at particular location
-     * on a screen. New video frames are sent to display using renderFrame()
-     * call.
+     * Class used to display stream of YUV420 frames at particular location on a screen. New video
+     * frames are sent to display using renderFrame() call.
      */
     private static class YuvImageRenderer implements VideoRenderer.Callbacks {
         private GLSurfaceView surface;
@@ -734,8 +732,8 @@ public class VideoRendererGui implements GLSurfaceView.Renderer {
     }
 
     /**
-     * Creates VideoRenderer with top left corner at (x, y) and resolution
-     * (width, height). All parameters are in percentage of screen resolution.
+     * Creates VideoRenderer with top left corner at (x, y) and resolution (width, height). All
+     * parameters are in percentage of screen resolution.
      */
     public VideoRenderer createGui(int x, int y, int width, int height,
                                    ScalingType scalingType, boolean mirror) throws Exception {
@@ -751,9 +749,8 @@ public class VideoRendererGui implements GLSurfaceView.Renderer {
     }
 
     /**
-     * Creates VideoRenderer.Callbacks with top left corner at (x, y) and
-     * resolution (width, height). All parameters are in percentage of
-     * screen resolution.
+     * Creates VideoRenderer.Callbacks with top left corner at (x, y) and resolution (width,
+     * height). All parameters are in percentage of screen resolution.
      */
     public YuvImageRenderer create(int x, int y, int width, int height,
                                    ScalingType scalingType, boolean mirror) {
