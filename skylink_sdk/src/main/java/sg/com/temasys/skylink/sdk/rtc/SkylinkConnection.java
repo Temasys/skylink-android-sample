@@ -118,7 +118,11 @@ public class SkylinkConnection {
     private VideoSource localVideoSource;
 
     private VideoTrack localVideoTrack;
+
+    // Skylink Services
     private SkylinkConnectionService skylinkConnectionService;
+    private SkylinkPeerService skylinkPeerService;
+    private SkylinkMediaService skylinkMediaService;
 
     private WebServerClient.IceServersObserver iceServersObserver = new MyIceServersObserver();
 
@@ -133,7 +137,6 @@ public class SkylinkConnection {
     private VideoRendererGui localVideoRendererGui;
     private MediaConstraints videoConstraints;
 
-    private SkylinkPeerService skylinkPeerService;
 
     /**
      * List of Connection state types
@@ -260,11 +263,16 @@ public class SkylinkConnection {
             this.dataTransferListener = new DataTransferAdapter();
         }
 
+        // Initialise Skylink Services
         if (this.skylinkPeerService == null) {
             this.skylinkPeerService = new SkylinkPeerService(this);
         }
-
-        this.skylinkConnectionService = new SkylinkConnectionService(this, iceServersObserver);
+        if (this.skylinkConnectionService == null) {
+            this.skylinkConnectionService = new SkylinkConnectionService(this, iceServersObserver);
+        }
+        if (this.skylinkMediaService == null) {
+            this.skylinkMediaService = new SkylinkMediaService(this, skylinkConnectionService);
+        }
 
         String url = APP_SERVER + skylinkConnectionString;
         try {
@@ -705,7 +713,7 @@ public class SkylinkConnection {
      * @param isMuted Flag that specifies whether audio should be mute
      */
     public void muteLocalAudio(boolean isMuted) {
-        skylinkConnectionService.muteLocalAudio(isMuted);
+        skylinkMediaService.muteLocalAudio(isMuted);
     }
 
     /**
@@ -714,7 +722,7 @@ public class SkylinkConnection {
      * @param isMuted Flag that specifies whether video should be mute
      */
     public void muteLocalVideo(boolean isMuted) {
-        skylinkConnectionService.muteLocalVideo(isMuted);
+        skylinkMediaService.muteLocalVideo(isMuted);
     }
 
     /**

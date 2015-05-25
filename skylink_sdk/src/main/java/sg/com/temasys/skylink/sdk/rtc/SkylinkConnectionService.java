@@ -94,60 +94,6 @@ class SkylinkConnectionService {
         }
     }
 
-    /**
-     * Mutes the local user's audio and notifies all the peers in the room.
-     *
-     * @param isMuted Flag that specifies whether audio should be mute
-     */
-    void muteLocalAudio(boolean isMuted) {
-        if (this.webServerClient == null) {
-            return;
-        }
-        org.webrtc.AudioTrack localAudioTrack = skylinkConnection.getLocalAudioTrack();
-
-        if (skylinkConnection.getMyConfig().hasAudioSend() &&
-                (localAudioTrack.enabled() == isMuted)) {
-
-            localAudioTrack.setEnabled(!isMuted);
-            JSONObject dict = new JSONObject();
-            try {
-                dict.put("type", "muteAudioEvent");
-                dict.put("mid", getSid());
-                dict.put("rid", getRoomId());
-                dict.put("muted", new Boolean(isMuted));
-                sendMessage(dict);
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * Mutes the local user's video and notifies all the peers in the room.
-     *
-     * @param isMuted Flag that specifies whether video should be mute
-     */
-    void muteLocalVideo(boolean isMuted) {
-        if (this.webServerClient == null)
-            return;
-
-        org.webrtc.VideoTrack localVideoTrack = skylinkConnection.getLocalVideoTrack();
-        if (skylinkConnection.getMyConfig().hasVideoSend() &&
-                (localVideoTrack.enabled() == isMuted)) {
-            localVideoTrack.setEnabled(!isMuted);
-            JSONObject dict = new JSONObject();
-            try {
-                dict.put("type", "muteVideoEvent");
-                dict.put("mid", getSid());
-                dict.put("rid", getRoomId());
-                dict.put("muted", new Boolean(isMuted));
-                sendMessage(dict);
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-        }
-    }
-
     // Disconnect from the Signaling Channel.
     public void disconnect() {
         if (this.signalingMessageProcessingService != null) {
@@ -164,8 +110,28 @@ class SkylinkConnectionService {
     }
 
     public void sendMessage(JSONObject dictMessage) {
-        Log.d(TAG, "Send message");
+        if (this.signalingMessageProcessingService == null) {
+            return;
+        }
         signalingMessageProcessingService.sendMessage(dictMessage);
+    }
+
+    /**
+     * Notify all the peers in the room on our changed audio status.
+     *
+     * @param isMuted Flag that specifies whether audio is now mute
+     */
+    void sendMuteAudio(boolean isMuted) {
+        ProtocolHelper.sendMuteAudio(isMuted, this);
+    }
+
+    /**
+     * Notify all the peers in the room on our changed video status.
+     *
+     * @param isMuted Flag that specifies whether video is now mute
+     */
+    void sendMuteVideo(boolean isMuted) {
+        ProtocolHelper.sendMuteVideo(isMuted, this);
     }
 
     WebServerClient.IceServersObserver getIceServersObserver() {

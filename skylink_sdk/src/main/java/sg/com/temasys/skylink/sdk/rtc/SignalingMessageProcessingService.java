@@ -42,7 +42,7 @@ class SignalingMessageProcessingService implements MessageHandler {
     }
 
     public void sendMessage(JSONObject dictMessage) {
-        Log.d(TAG, "Send message");
+        Log.d(TAG, "[sendMessage] " + dictMessage);
         sigMsgSender.sendMessage(socketIOClient, dictMessage);
     }
 

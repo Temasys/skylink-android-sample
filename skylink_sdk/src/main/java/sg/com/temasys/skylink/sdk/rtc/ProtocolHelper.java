@@ -438,6 +438,32 @@ class ProtocolHelper {
         return false;
     }
 
+    static void sendMuteAudio(boolean isMuted, SkylinkConnectionService skylinkConnectionService) {
+        JSONObject dict = new JSONObject();
+        try {
+            dict.put("type", "muteAudioEvent");
+            dict.put("mid", skylinkConnectionService.getSid());
+            dict.put("rid", skylinkConnectionService.getRoomId());
+            dict.put("muted", new Boolean(isMuted));
+            skylinkConnectionService.sendMessage(dict);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
+    static void sendMuteVideo(boolean isMuted, SkylinkConnectionService skylinkConnectionService) {
+        JSONObject dict = new JSONObject();
+        try {
+            dict.put("type", "muteVideoEvent");
+            dict.put("mid", skylinkConnectionService.getSid());
+            dict.put("rid", skylinkConnectionService.getRoomId());
+            dict.put("muted", new Boolean(isMuted));
+            skylinkConnectionService.sendMessage(dict);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+    }
+
     static void sendPingMessage(SkylinkConnection skylinkConnection,
                                 String target) throws JSONException {
         JSONObject pingObject = new JSONObject();
@@ -489,4 +515,5 @@ class ProtocolHelper {
 
         return redirectCode;
     }
+
 }
