@@ -72,38 +72,48 @@ class SignalingMessageProcessingService implements MessageHandler {
                     SkylinkConnection.ConnectionState.DISCONNECT) {
                 return;
             }
-            skylinkConnection.getIceServersObserver().onIceServers(null);
+            ProtocolHelper.sendJoinRoom(skylinkConnection.getSkylinkConnectionService());
         }
     }
 
     @Override
     public void onMessage(String data) {
-        try {
-            // Instantiate the relevant message processor
-            JSONObject object = new JSONObject(data);
-
-            String type = object.getString("type");
-            String target = object.has("target") ? object.getString("target") : "";
-
-            // If the target exist it should be the same for this client
-            if (object.has("target") && !target.equals(skylinkConnection.getSkylinkConnectionService().getSid())) {
-                Log.e(TAG, "Ignoring the message" +
-                        " due target mismatch , target :" + target + " type: " + type);
+        // Prevent thread from executing with disconnect concurrently.
+        synchronized (skylinkConnection.getLockDisconnectMsg()) {
+            // If user has indicated intention to disconnect,
+            // We should no longer process messages from signalling server.
+            if (skylinkConnection.getConnectionState() ==
+                    SkylinkConnection.ConnectionState.DISCONNECT) {
                 return;
             }
+            Log.d(TAG, "[onMessage] " + data);
+            try {
+                // Instantiate the relevant message processor
+                JSONObject object = new JSONObject(data);
 
-            MessageProcessor messageProcessor = messageProcessorFactory.
-                    getMessageProcessor(object.getString("type"));
+                String type = object.getString("type");
+                String target = object.has("target") ? object.getString("target") : "";
 
-            if (messageProcessor != null) {
-                messageProcessor.setSkylinkConnection(skylinkConnection);
-                messageProcessor.process(object);
-            } else {
-                Log.e(TAG, "Invalid signaling message type");
+                // If the target exist it should be the same for this client
+                if (object.has("target") && !target.equals(skylinkConnection.getSkylinkConnectionService().getSid())) {
+                    Log.e(TAG, "Ignoring the message" +
+                            " due target mismatch , target :" + target + " type: " + type);
+                    return;
+                }
+
+                MessageProcessor messageProcessor = messageProcessorFactory.
+                        getMessageProcessor(object.getString("type"));
+
+                if (messageProcessor != null) {
+                    messageProcessor.setSkylinkConnection(skylinkConnection);
+                    messageProcessor.process(object);
+                } else {
+                    Log.e(TAG, "Invalid signaling message type");
+                }
+
+            } catch (JSONException e) {
+                onSignalingMessageException(e);
             }
-
-        } catch (JSONException e) {
-            onSignalingMessageException(e);
         }
     }
 

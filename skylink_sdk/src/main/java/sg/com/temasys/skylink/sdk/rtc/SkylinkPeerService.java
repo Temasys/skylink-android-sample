@@ -40,6 +40,8 @@ class SkylinkPeerService {
             }
 
             try {
+                /*ProtocolHelper.sendEnter(null, skylinkConnection,
+                        skylinkConnection.getSkylinkConnectionService());*/
                 ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage(), e);
