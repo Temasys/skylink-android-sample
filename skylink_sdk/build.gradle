@@ -29,8 +29,8 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.9.5'
 
     jaxDoclet("com.google.doclava:doclava:1.0.5")
-    classpaths files('build/classes/release')
-    classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-21/android.jar'))
+    //classpaths files('build/classes/release')
+    //classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-21/android.jar'))
 }
 
 android {
@@ -44,8 +44,8 @@ android {
     }
     buildTypes {
         release {
-            // minifyEnabled true
-            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
