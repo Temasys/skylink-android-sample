@@ -20,8 +20,6 @@ repositories {
 dependencies {
     compile files('libs/libjingle_peerconnection_9127.jar')
     compile 'com.github.nkzawa:socket.io-client:0.4.2'
-    testCompile files('libs/libjingle_peerconnection_9127.jar')
-    testCompile 'org.jmockit:jmockit:1.8'
     testCompile 'junit:junit:4.11'
     testCompile 'org.apache.maven:maven-ant-tasks:2.1.3'
     testCompile 'org.robolectric:robolectric:2.4'
@@ -29,8 +27,8 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.9.5'
 
     jaxDoclet("com.google.doclava:doclava:1.0.5")
-    //classpaths files('build/classes/release')
-    //classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-21/android.jar'))
+    classpaths files('build/classes/release')
+    classpaths files(new File(System.getenv('ANDROID_HOME') + '/platforms/android-21/android.jar'))
 }
 
 android {
