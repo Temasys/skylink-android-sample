@@ -59,7 +59,7 @@ sonarRunner {
         property "sonar.sourceEncoding", "UTF-8"
         property "sonar.sources", "src/main/java"
         property "sonar.binaries", "build/intermediates/classes/debug"
-        property "sonar.tests", "src/androidTest/java"
+        property "sonar.tests", "src/test/java"
         property "sonar.junit.reportsPath", file("$buildDir/test-results")
         property "sonar.java.coveragePlugin", "jacoco"
         property "sonar.jacoco.reportPath", "build/jacoco/testDebug.exec"
