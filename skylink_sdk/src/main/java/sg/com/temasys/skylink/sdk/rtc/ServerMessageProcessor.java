@@ -23,7 +23,7 @@ class ServerMessageProcessor implements MessageProcessor {
             skylinkConnection.runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
-                    synchronized (skylinkConnection.getLockDisconnect()) {
+                    synchronized (skylinkConnection.getLockDisconnectMsg()) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
                         if (skylinkConnection.getConnectionState() ==
