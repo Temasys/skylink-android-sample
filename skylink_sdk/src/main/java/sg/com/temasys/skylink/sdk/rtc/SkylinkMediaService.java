@@ -17,7 +17,7 @@ import org.webrtc.VideoTrack;
 /**
  * Created by xiangrong on 25/5/15.
  */
-public class SkylinkMediaService {
+class SkylinkMediaService {
     private static final String TAG = SkylinkMediaService.class.getName();
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
@@ -28,7 +28,7 @@ public class SkylinkMediaService {
         this.skylinkConnectionService = skylinkConnectionService;
     }
 
-    void addMediaStream(final MediaStream stream, final String peerId, final Object lock){
+    void addMediaStream(final MediaStream stream, final String peerId, final Object lock) {
         skylinkConnection.runOnUiThread(new Runnable() {
             public void run() {
                 // Prevent thread from executing with disconnect concurrently.
@@ -79,6 +79,7 @@ public class SkylinkMediaService {
         });
 
     }
+
     /**
      * Mutes the local user's audio and notifies all the peers in the room.
      *
@@ -135,7 +136,7 @@ public class SkylinkMediaService {
                 peerConnectionFactory = new PeerConnectionFactory();
                 skylinkConnection.setPeerConnectionFactory(peerConnectionFactory);
 
-                Log.d(TAG,"[SDK] Local video source: Creating...");
+                Log.d(TAG, "[SDK] Local video source: Creating...");
                 lms = peerConnectionFactory
                         .createLocalMediaStream("ARDAMS");
                 skylinkConnection.setLocalMediaStream(lms);
@@ -187,9 +188,9 @@ public class SkylinkMediaService {
                                 skylinkConnection.getLocalVideoTrack().addRenderer(new VideoRenderer(localRender));
                             }
 
-                            Log.d(TAG,"[SDK] Local video source: Created.");
+                            Log.d(TAG, "[SDK] Local video source: Created.");
                             skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
-                            Log.d(TAG,"[SDK] Local video source: Sent to App.");
+                            Log.d(TAG, "[SDK] Local video source: Sent to App.");
                         }
                     }
                 });
@@ -199,7 +200,7 @@ public class SkylinkMediaService {
                 // We should no longer process messages from signalling server.
                 if (connectionState == SkylinkConnection.ConnectionState.DISCONNECT) return;
                 if (skylinkConnection.getMyConfig().hasAudioSend()) {
-                    Log.d(TAG,"[SDK] Local audio source: Creating...");
+                    Log.d(TAG, "[SDK] Local audio source: Creating...");
                     localAudioSource = peerConnectionFactory
                             .createAudioSource(new MediaConstraints());
                     localAudioTrack = peerConnectionFactory
@@ -208,7 +209,7 @@ public class SkylinkMediaService {
                     skylinkConnection.setLocalAudioSource(localAudioSource);
                     skylinkConnection.setLocalAudioTrack(localAudioTrack);
                     lms.addTrack(localAudioTrack);
-                    Log.d(TAG,"[SDK] Local audio source: Created.");
+                    Log.d(TAG, "[SDK] Local audio source: Created.");
                 }
                 // }
             }

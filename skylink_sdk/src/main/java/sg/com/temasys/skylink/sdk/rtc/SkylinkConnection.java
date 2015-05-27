@@ -1346,7 +1346,7 @@ public class SkylinkConnection {
         @SuppressLint("NewApi")
         @Override
         public void onAddStream(final MediaStream stream) {
-            skylinkMediaService.addMediaStream(stream, this.myId, lockDisconnectMediaLocal );
+            skylinkMediaService.addMediaStream(stream, this.myId, lockDisconnectMediaLocal);
         }
 
         @Override
@@ -1573,15 +1573,15 @@ public class SkylinkConnection {
         return localMediaStream;
     }
 
-    public void setLocalMediaStream(MediaStream localMediaStream) {
+    void setLocalMediaStream(MediaStream localMediaStream) {
         this.localMediaStream = localMediaStream;
     }
 
-    public VideoCapturerAndroid getLocalVideoCapturer() {
+    VideoCapturerAndroid getLocalVideoCapturer() {
         return localVideoCapturer;
     }
 
-    public void setLocalVideoCapturer(VideoCapturerAndroid localVideoCapturer) {
+    void setLocalVideoCapturer(VideoCapturerAndroid localVideoCapturer) {
         this.localVideoCapturer = localVideoCapturer;
     }
 
@@ -1589,52 +1589,51 @@ public class SkylinkConnection {
         return MAX_PEER_CONNECTIONS;
     }
 
-    public void setUserData(Object myUserData) {
+    void setUserData(Object myUserData) {
         this.myUserData = myUserData;
     }
 
-    public AudioSource getLocalAudioSource() {
+    AudioSource getLocalAudioSource() {
         return localAudioSource;
     }
 
-    public void setLocalAudioSource(AudioSource localAudioSource) {
+    void setLocalAudioSource(AudioSource localAudioSource) {
         this.localAudioSource = localAudioSource;
     }
 
-    public VideoSource getLocalVideoSource() {
+    VideoSource getLocalVideoSource() {
         return localVideoSource;
     }
 
-    public void setLocalVideoSource(VideoSource localVideoSource) {
+    void setLocalVideoSource(VideoSource localVideoSource) {
         this.localVideoSource = localVideoSource;
     }
 
-    public AudioTrack getLocalAudioTrack() {
+    AudioTrack getLocalAudioTrack() {
         return localAudioTrack;
     }
 
-    public void setLocalAudioTrack(AudioTrack localAudioTrack) {
+    void setLocalAudioTrack(AudioTrack localAudioTrack) {
         this.localAudioTrack = localAudioTrack;
     }
 
-    public VideoTrack getLocalVideoTrack() {
+    VideoTrack getLocalVideoTrack() {
         return localVideoTrack;
     }
 
-    public void setLocalVideoTrack(VideoTrack localVideoTrack) {
+    void setLocalVideoTrack(VideoTrack localVideoTrack) {
         this.localVideoTrack = localVideoTrack;
     }
 
-
-    public Object getLockDisconnectMediaLocal() {
+    Object getLockDisconnectMediaLocal() {
         return lockDisconnectMediaLocal;
     }
 
-    public Object getLockDisconnectMedia() {
+    Object getLockDisconnectMedia() {
         return lockDisconnectMedia;
     }
 
-    public Object getLockDisconnectMsg() {
+    Object getLockDisconnectMsg() {
         return lockDisconnectMsg;
     }
 
@@ -1642,15 +1641,15 @@ public class SkylinkConnection {
         return sdpMediaConstraints;
     }
 
-    public PeerConnectionFactory getPeerConnectionFactory() {
+    PeerConnectionFactory getPeerConnectionFactory() {
         return peerConnectionFactory;
     }
 
-    public void setPeerConnectionFactory(PeerConnectionFactory peerConnectionFactory) {
+    void setPeerConnectionFactory(PeerConnectionFactory peerConnectionFactory) {
         this.peerConnectionFactory = peerConnectionFactory;
     }
 
-    public MediaConstraints getVideoConstraints() {
+    MediaConstraints getVideoConstraints() {
         return videoConstraints;
     }
 

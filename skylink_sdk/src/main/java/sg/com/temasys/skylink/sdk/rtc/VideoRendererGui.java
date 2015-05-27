@@ -83,7 +83,7 @@ import javax.microedition.khronos.opengles.GL10;
  * using createGui() call or VideoRenderer.Callbacks interface using create() call. Only one
  * instance of the class can be created.
  */
-public class VideoRendererGui implements GLSurfaceView.Renderer {
+class VideoRendererGui implements GLSurfaceView.Renderer {
 
     private static VideoRendererGuiListener listener;
     // private static VideoRendererGui instance = null;
