@@ -69,8 +69,12 @@ class SignalingServerClient {
 
     private void connectSigServer() throws URISyntaxException {
 
+        IO.Options opts = new IO.Options();
+        opts.forceNew = true;
+        opts.reconnection = true;
+
         // Initialize SocketIO
-        socketIO = IO.socket(sigIP + ":" + sigPort);
+        socketIO = IO.socket(sigIP + ":" + sigPort, opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override

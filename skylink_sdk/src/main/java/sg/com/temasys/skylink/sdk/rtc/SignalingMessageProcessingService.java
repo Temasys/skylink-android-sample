@@ -93,11 +93,18 @@ class SignalingMessageProcessingService implements MessageHandler {
             }
 
             MessageProcessor messageProcessor = messageProcessorFactory.
-                    getMessageProcessor(object.getString("type"));
+                    getMessageProcessor(type);
 
             if (messageProcessor != null) {
+
                 messageProcessor.setSkylinkConnection(skylinkConnection);
+                Log.d(TAG, "Processing message type " + type + " with "
+                        + messageProcessor.getClass().getSimpleName());
+
                 messageProcessor.process(object);
+
+                Log.d(TAG, "Processed message type " + type + " with "
+                        + messageProcessor.getClass().getSimpleName());
             } else {
                 Log.e(TAG, "Invalid signaling message type");
             }
