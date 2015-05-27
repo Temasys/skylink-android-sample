@@ -87,7 +87,7 @@ class SignalingServerMessageSender {
                             try {
                                 sendGroupMessage();
                             } catch (Exception ex) {
-                                ex.printStackTrace();
+                                Log.e(TAG, ex.getMessage(), ex);
                             }
                         }
                     }, delay, TimeUnit.MILLISECONDS);

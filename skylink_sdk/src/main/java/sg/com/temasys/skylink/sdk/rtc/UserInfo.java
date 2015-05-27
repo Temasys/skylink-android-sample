@@ -64,6 +64,14 @@ public class UserInfo {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
+
+        if (jsonObject != null && jsonObject.has("userData")){
+            try {
+                userData = jsonObject.get("userData");
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
     }
 
     /**

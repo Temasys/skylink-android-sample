@@ -3,7 +3,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 /**
  * Created by xiangrong on 30/3/15.
  */
-public class PeerInfo {
+class PeerInfo {
     private String agent = "";
     private String version = "";
     private boolean receiveOnly = false;
