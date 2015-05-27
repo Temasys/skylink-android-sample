@@ -9,10 +9,6 @@ import com.github.nkzawa.socketio.client.Socket;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.net.ssl.SSLContext;
 
 class SignalingServerClient {
 
@@ -42,24 +38,8 @@ class SignalingServerClient {
         // sigIP = "http://sgbeta.signaling.temasys.com.sg";
         sigPort = SIG_PORT_DEFAULT;
         try {
-            // Initialize SSL
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, null, null);
-            IO.setDefaultSSLContext(sslContext);
-            /*HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-                @Override
-                public boolean verify(String hostname, SSLSession session) {
-                    return true;
-                }
-            });*/
             connectSigServer();
         } catch (URISyntaxException e) {
-            Log.e(TAG, e.getMessage(), e);
-            delegate.onError(0, e.getLocalizedMessage());
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, e.getMessage(), e);
-            delegate.onError(0, e.getLocalizedMessage());
-        } catch (KeyManagementException e) {
             Log.e(TAG, e.getMessage(), e);
             delegate.onError(0, e.getLocalizedMessage());
         }
@@ -76,6 +56,7 @@ class SignalingServerClient {
     private void connectSigServer() throws URISyntaxException {
 
         IO.Options opts = new IO.Options();
+        opts.secure = true;
         opts.forceNew = true;
         opts.reconnection = true;
 
