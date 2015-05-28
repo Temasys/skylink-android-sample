@@ -14,8 +14,9 @@ import android.widget.Toast;
 import com.temasys.skylink.sampleapp.BuildConfig;
 import com.temasys.skylink.sampleapp.R;
 
-public class MainActivity extends ActionBarActivity implements
-        NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+public class MainActivity extends ActionBarActivity
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     public static final String ARG_SECTION_NUMBER = "section_number";
     private static final int CASE_SECTION_AUDIO_CALL = 1;
@@ -47,11 +48,12 @@ public class MainActivity extends ActionBarActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.navigation_drawer);
+        mNavigationDrawerFragment = (NavigationDrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
-        mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
+        mNavigationDrawerFragment.setUp(
+                R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
@@ -63,7 +65,8 @@ public class MainActivity extends ActionBarActivity implements
         Fragment fragmentToLaunch = getFragmentToLaunch(position);
 
         fragmentManager.beginTransaction()
-                .replace(R.id.container, fragmentToLaunch).commit();
+                .replace(R.id.container, fragmentToLaunch)
+                .commit();
     }
 
     public void onSectionAttached(int number) {
@@ -97,6 +100,7 @@ public class MainActivity extends ActionBarActivity implements
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
