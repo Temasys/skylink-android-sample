@@ -9,7 +9,8 @@ public interface RemotePeerListener {
      * This is triggered when a remote peer joins the room.
      *
      * @param remotePeerId   The id of the peer
-     * @param userData       User defined data relating to the remote peer.
+     * @param userData       User defined data relating to the remote peer. May be a
+     *                       'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
      * @param hasDataChannel Whether peer has enabled DataChannel.
      */
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel);
@@ -25,8 +26,8 @@ public interface RemotePeerListener {
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData);
 
     /**
-     * This is triggered when the underlying peer to peer data connection is established between two
-     * peers and is ready to send and receive peer messages and files between them.
+     * This is triggered when the underlying peer to peer data connection is established with a
+     * remote peer and is ready to send and receive peer messages and data (including files).
      *
      * @param remotePeerId The id of the remote peer
      */

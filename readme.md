@@ -50,6 +50,7 @@ Step-by-step guide
     private SkyLinkConfig getSkylinkConfig() {
                 SkyLinkConfig config = new SkyLinkConfig();
                 config.setAudioVideoSendConfig(SkyLinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+                config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
                 config.setHasPeerMessaging(true);
                 config.setHasFileTransfer(true);
                 config.setHasDataTransfer(true);

@@ -893,6 +893,23 @@ public class SkylinkConnection {
     }
 
     /**
+     * @return The data transfer listener object.
+     */
+    public DataTransferListener getDataTransferListener() {
+        return dataTransferListener;
+    }
+
+    /**
+     * Sets the specified data transfer listener object.
+     *
+     * @param dataTransferListener The data transfer listener object that will receive callbacks
+     *                             related to DataTransfer
+     */
+    public void setDataTransferListener(DataTransferListener dataTransferListener) {
+        this.dataTransferListener = dataTransferListener;
+    }
+
+    /**
      * @return The life cycle listener object.
      */
     public LifeCycleListener getLifeCycleListener() {
@@ -965,7 +982,7 @@ public class SkylinkConnection {
      * Sets the specified remote peer listener object.
      *
      * @param remotePeerListener The remote peer listener object that will receive callbacks related
-     *                           to the RemotePeer.
+     *                           to remote Peers.
      */
     public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
         if (remotePeerListener == null)
@@ -1015,10 +1032,10 @@ public class SkylinkConnection {
     }
 
     /**
-     * Retrieves the user defined info object associated with a remote peer.
+     * Retrieves the UserInfo object associated with a remote peer.
      *
      * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.
-     * @return 'org.json.JSONObject'
+     * @return UserInfo
      */
     public UserInfo getUserInfo(String remotePeerId) {
         if (remotePeerId == null) {
@@ -1653,15 +1670,7 @@ public class SkylinkConnection {
         return videoConstraints;
     }
 
-    public DataTransferListener getDataTransferListener() {
-        return dataTransferListener;
-    }
-
-    public void setDataTransferListener(DataTransferListener dataTransferListener) {
-        this.dataTransferListener = dataTransferListener;
-    }
-
-    protected void setDataChannelManager(DataChannelManager dataChannelManager) {
+    void setDataChannelManager(DataChannelManager dataChannelManager) {
         this.dataChannelManager = dataChannelManager;
     }
 
@@ -1690,7 +1699,7 @@ public class SkylinkConnection {
         peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
-    protected Map<String, UserInfo> getUserInfoMap() {
+    Map<String, UserInfo> getUserInfoMap() {
         return userInfoMap;
     }
 

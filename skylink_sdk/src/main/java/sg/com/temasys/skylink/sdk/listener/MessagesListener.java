@@ -8,7 +8,7 @@ package sg.com.temasys.skylink.sdk.listener;
 public interface MessagesListener {
 
     /**
-     * This is triggered when a custom broadcast or private message is received from a remote peer
+     * This is triggered when a broadcast or private message is received from a remote peer
      * via a server.
      *
      * @param remotePeerId The id of the remote peer
@@ -21,7 +21,7 @@ public interface MessagesListener {
                                        boolean isPrivate);
 
     /**
-     * This is triggered when a broadcast or private peer message is received directly from the
+     * This is triggered when a broadcast or private message is received directly from the
      * peer, i.e. in a peer to peer manner.
      *
      * @param remotePeerId The id of the remote peer

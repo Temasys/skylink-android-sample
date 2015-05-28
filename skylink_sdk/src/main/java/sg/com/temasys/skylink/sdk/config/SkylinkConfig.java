@@ -395,7 +395,7 @@ public class SkylinkConfig implements Serializable {
 
     @Override
     public String toString() {
-        return "TEMAConnectionConfig [videoSend=" + videoSend + ", audioSend=" + audioSend
+        return "SkylinkConfig [videoSend=" + videoSend + ", audioSend=" + audioSend
                 + ",videoReceive=" + videoReceive + ", audioReceive=" + audioReceive
                 + ", p2PMessage=" + peerMessaging + ", fileTransfer=" + fileTransfer
                 + ", preferredAudioCodec=" + preferredAudioCodec
