@@ -135,6 +135,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
@@ -183,12 +184,12 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onLocalMediaCapture(GLSurfaceView glSurfaceView, Point point) {
+    public void onLocalMediaCapture(GLSurfaceView glSurfaceView) {
         Log.d(TAG, "onLocalMediaCapture");
     }
 
     @Override
-    public void onVideoSizeChange(GLSurfaceView glSurfaceView, Point point) {
+    public void onVideoSizeChange(String remotePeerId, Point point) {
         Log.d(TAG, point.toString() + "got size");
     }
 
@@ -203,7 +204,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String s, GLSurfaceView glSurfaceView, Point point) {
+    public void onRemotePeerMediaReceive(String s, GLSurfaceView glSurfaceView) {
         Log.d(TAG, "onRemotePeerVideoToggle");
     }
 

@@ -18,6 +18,9 @@ The Skylink SDK Jar should now be located at:
 
     /libs/skylink_sdk-release.jar
 
+#### 3. Set up SocketIO Java
+
+Follow the instructions on [socket.io-client.java](https://github.com/nkzawa/socket.io-client.java)
 
 ###Set up WebRTC native dependencies
 
