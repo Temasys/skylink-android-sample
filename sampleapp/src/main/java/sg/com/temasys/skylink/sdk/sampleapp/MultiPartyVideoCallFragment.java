@@ -63,8 +63,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String apiKey = getString(R.string.app_key);
-        String apiSecret = getString(R.string.app_secret);
+        String appKey = getString(R.string.app_key);
+        String appSecret = getString(R.string.app_secret);
 
         // Initialize the skylink connection
         initializeSkylinkConnection();
@@ -74,11 +74,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         // Obtaining the Skylink connection string done locally
         // In a production environment the connection string should be given
-        // by an entity external to the App, such as an App server that holds the Skylink API secret
-        // In order to avoid keeping the API secret within the application
+        // by an entity external to the App, such as an App server that holds the Skylink App secret
+        // In order to avoid keeping the App secret within the application
         String skylinkConnectionString = Utils.
-                getSkylinkConnectionString(ROOM_NAME, apiKey,
-                        apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+                getSkylinkConnectionString(ROOM_NAME, appKey,
+                        appSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         Log.d(TAG, "Connection String" + skylinkConnectionString);
         skylinkConnection.connectToRoom(skylinkConnectionString,
@@ -165,6 +165,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         SkylinkConfig config = new SkylinkConfig();
         // AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
@@ -172,7 +173,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView, Point size) {
+    public void onLocalMediaCapture(GLSurfaceView videoView) {
+        if(videoView == null) return;
         if (!surfaceViews.containsKey(KEY_SELF)) {
             // Add self view if its not already added
             peerLayouts[0].addView(videoView);
@@ -181,11 +183,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView, Point size) {
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
         addRemotePeerViews(remotePeerId, videoView);
     }
 
     private void addRemotePeerViews(String remotePeerId, GLSurfaceView videoView) {
+        if(videoView == null) return;
         if (!surfaceViews.containsKey(remotePeerId)) {
             // Add peer view if its not already added
             // Find the frame layout that's empty
@@ -216,8 +219,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onVideoSizeChange(GLSurfaceView videoView, Point size) {
-        Log.d(TAG, "onVideoSizeChange");
+    public void onVideoSizeChange(String peerId, Point size) {
+        Log.d(TAG, "[onVideoSizeChange] Peer:" + peerId + ", size:" + size.x + "," + size.y + ".");
     }
 
     @Override

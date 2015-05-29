@@ -189,19 +189,19 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String apiKey = getString(R.string.app_key);
-        String apiSecret = getString(R.string.app_secret);
+        String appKey = getString(R.string.app_key);
+        String appSecret = getString(R.string.app_secret);
 
         // Initialize the skylink connection
         initializeSkylinkConnection();
 
         // Obtaining the Skylink connection string done locally
         // In a production environment the connection string should be given
-        // by an entity external to the App, such as an App server that holds the Skylink API secret
-        // In order to avoid keeping the API secret within the application
+        // by an entity external to the App, such as an App server that holds the Skylink App secret
+        // In order to avoid keeping the App secret within the application
         String skylinkConnectionString = Utils.
-                getSkylinkConnectionString(ROOM_NAME, apiKey,
-                        apiSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+                getSkylinkConnectionString(ROOM_NAME, appKey,
+                        appSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         skylinkConnection.connectToRoom(skylinkConnectionString,
                 MY_USER_NAME);
@@ -226,6 +226,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         SkylinkConfig config = new SkylinkConfig();
         // AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
