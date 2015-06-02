@@ -170,12 +170,12 @@ class SignalingMessageProcessingService implements MessageHandler {
 
                     final String message = "[SDK] onError: " + code + ", " + description;
                     Log.d(TAG, message);
-                    skylinkConnection.getLifeCycleListener()
-                            .onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
+                    /*skylinkConnection.getLifeCycleListener()
+                            .onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);*/
                 }
 
-                // Disconnect from room
-                skylinkConnection.disconnectFromRoom();
+                /*// Disconnect from room
+                skylinkConnection.disconnectFromRoom();*/
             }
         });
     }

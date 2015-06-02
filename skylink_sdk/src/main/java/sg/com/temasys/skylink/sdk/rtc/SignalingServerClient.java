@@ -59,6 +59,7 @@ class SignalingServerClient {
         opts.secure = true;
         opts.forceNew = true;
         opts.reconnection = true;
+        opts.timeout = 60000;
 
         // Initialize SocketIO
         socketIO = IO.socket(sigIP + ":" + sigPort, opts);
@@ -67,6 +68,11 @@ class SignalingServerClient {
             @Override
             public void call(Object... args) {
                 onConnect();
+            }
+        }).on(Socket.EVENT_RECONNECT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                onReconnect();
             }
         }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
             @Override
@@ -87,6 +93,13 @@ class SignalingServerClient {
                 onDisconnect();
             }
 
+        }).on(Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
+
+            @Override
+            public void call(Object... args) {
+                onTimeOut();
+            }
+
         }).on(Socket.EVENT_ERROR, new Emitter.Listener() {
 
             @Override
@@ -104,6 +117,10 @@ class SignalingServerClient {
         delegate.onOpen();
     }
 
+    void onReconnect() {
+        Log.d(TAG, "Reconnected to Signaling server.");
+    }
+
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
         Log.d(TAG, "Server said:" + jsonStr);
@@ -117,13 +134,18 @@ class SignalingServerClient {
 
     void onDisconnect() {
         Log.d(TAG, "Disconnected from Signaling server.");
+    }
+
+    void onTimeOut() {
+        Log.d(TAG, "Connection with Signaling server time out.");
         if (delegate != null) {
             delegate.onClose();
         }
     }
 
     void onError(Object... args) {
-        Log.d(TAG, "an Error occured");
+        String strErr = args[0].toString();
+        Log.d(TAG, "An Error occured: " + strErr);
         // If it was handshake error, switch to fail over port, and connect
         // again.
         if (!isConnected && retry++ < RETRY_MAX) {
@@ -137,6 +159,6 @@ class SignalingServerClient {
             return;
         }
         // Delegate will log message and result in UI disconnect.
-        delegate.onError(0, args[0].toString());
+        delegate.onError(0, strErr);
     }
 }
