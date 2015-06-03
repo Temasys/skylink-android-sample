@@ -6,6 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by xiangrong on 20/5/15.
@@ -25,7 +27,7 @@ class SkylinkConnectionService {
         this.iceServersObserver = iceServersObserver;
         this.webServerClient = new WebServerClient(this, iceServersObserver);
         this.signalingMessageProcessingService = new SignalingMessageProcessingService(
-                skylinkConnection, new MessageProcessorFactory());
+                skylinkConnection, this, new MessageProcessorFactory());
     }
 
     /**
@@ -208,5 +210,60 @@ class SkylinkConnectionService {
 
     public String getUserId() {
         return appRTCSignalingParameters.getUserId();
+    }
+
+    void restartConnectionInternal(String remotePeerId, SkylinkConnection skylinkConnection) {
+        if (skylinkConnection.getConnectionState() == SkylinkConnection.ConnectionState.DISCONNECT) {
+            return;
+        }
+        synchronized (skylinkConnection.getLockDisconnect()) {
+            try {
+                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this, skylinkConnection.getLocalMediaStream(),
+                        skylinkConnection.getMyConfig());
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    // Restart all connections when rejoining room.
+    void rejoinRestart(SkylinkConnection skylinkConnection) {
+        if (skylinkConnection.getPcObserverPool() != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(skylinkConnection.getPcObserverPool().keySet());
+            for (String peerId : peerIdSet) {
+                rejoinRestart(peerId, skylinkConnection);
+            }
+        }
+    }
+
+    // Restart specific connection when rejoining room.
+    // Sends targeted "enter" for non-Android peers.
+    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
+    // This is esp. so for the JS clients which do not allow restarts
+    // for PeerIds without PeerConnection.
+    void rejoinRestart(String remotePeerId, SkylinkConnection skylinkConnection) {
+        if (skylinkConnection.getConnectionState() == SkylinkConnection.ConnectionState.DISCONNECT) {
+            return;
+        }
+        synchronized (skylinkConnection.getLockDisconnect()) {
+            try {
+                Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
+                PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(remotePeerId);
+                if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
+                    // If it is Android, send restart.
+                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
+                    ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this,
+                            skylinkConnection.getLocalMediaStream(), skylinkConnection.getMyConfig());
+                } else {
+                    // If web or others, send directed enter
+                    // TODO XR: Remove after JS client update to compatible restart protocol.
+                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
+                    ProtocolHelper.sendEnter(remotePeerId, skylinkConnection, this);
+                }
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage(), e);
+            }
+        }
     }
 }

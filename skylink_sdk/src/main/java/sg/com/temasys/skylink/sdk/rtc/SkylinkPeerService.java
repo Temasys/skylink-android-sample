@@ -108,19 +108,18 @@ class SkylinkPeerService {
         // Check if pcObserverPool has been populated.
         if (skylinkConnection.getPcObserverPool() != null) {
             // If so, chances are this is a rejoin of room.
-            // Send restart to all.
-            skylinkConnection.rejoinRestart();
-        } else {
-            // If not, chances are this is a first join room, or there were no peers from before.
-            // Create afresh all PC related maps.
-            skylinkConnection.initializePcRelatedMaps();
-            // Send enter.
-            try {
-                ProtocolHelper.sendEnter(null, skylinkConnection,
-                        skylinkConnection.getSkylinkConnectionService());
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
+            // Log it
+            Log.d(TAG, "[receivedInRoom] This is a rejoin of room.");
+        }
+
+        // Create afresh all PC related maps.
+        skylinkConnection.initializePcRelatedMaps();
+        // Send enter.
+        try {
+            ProtocolHelper.sendEnter(null, skylinkConnection,
+                    skylinkConnection.getSkylinkConnectionService());
+        } catch (JSONException e) {
+            Log.d(TAG, e.getMessage(), e);
         }
     }
 

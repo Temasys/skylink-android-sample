@@ -113,7 +113,13 @@ class SignalingServerClient {
 
     void onConnect() {
         Log.d(TAG, "Connected to Signaling server.");
-        isConnected = true;
+        // Reconnection will follow same logic as first connect.
+        // Just log reconnection for awareness.
+        if (isConnected) {
+            Log.d(TAG, "onConnect() called after reconnecting to Signaling server.");
+        } else {
+            isConnected = true;
+        }
         delegate.onOpen();
     }
 
@@ -134,6 +140,7 @@ class SignalingServerClient {
 
     void onDisconnect() {
         Log.d(TAG, "Disconnected from Signaling server.");
+        delegate.onDisconnect();
     }
 
     void onTimeOut() {

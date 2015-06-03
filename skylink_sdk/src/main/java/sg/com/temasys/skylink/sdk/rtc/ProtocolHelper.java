@@ -34,7 +34,8 @@ class ProtocolHelper {
     private static final String ROOM_CLOSE = "roomclose";
     private static final String TO_CLOSE = "toclose";
     private static final String SEAT_QUOTA = "seatquota";
-    public static final String PEER_CONNECTION_RESTART = "Peer connection is restarting";
+    private static final String PEER_CONNECTION_RESTART = "Peer connection is restarting";
+    static final String CONNECTION_LOST = "Lost connection to room.";
 
     private ProtocolHelper() {
     }
@@ -392,17 +393,32 @@ class ProtocolHelper {
     }
 
     /**
-     * Dispose all PeerConnections
+     * Dispose all PeerConnections and associated DC.
      *
      * @param skylinkConnection
+     * @param reason
      */
-    static void disposePeerConnectionAll(SkylinkConnection skylinkConnection) {
+    static void disposePeerAll(final SkylinkConnection skylinkConnection, final String reason) {
         Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
-            for (String peerId : peerIdSet) {
-                // Dispose the peerConnection
+            for (final String peerId : peerIdSet) {
+
+                // Notify that the connection is restarting
+                skylinkConnection.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        skylinkConnection.getRemotePeerListener().onRemotePeerLeave(
+                                peerId, reason);
+                    }
+                });
+
+                // Dispose DC
+                if (skylinkConnection.getDataChannelManager() != null) {
+                    skylinkConnection.getDataChannelManager().disposeDC(peerId);
+                }
+                // Dispose PeerConnection
                 disposePeerConnection(peerId, skylinkConnection);
             }
         }

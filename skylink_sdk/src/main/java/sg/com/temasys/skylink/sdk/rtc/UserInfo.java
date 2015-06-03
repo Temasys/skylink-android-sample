@@ -65,7 +65,7 @@ public class UserInfo {
             }
         }
 
-        if (jsonObject != null && jsonObject.has("userData")){
+        if (jsonObject != null && jsonObject.has("userData")) {
             try {
                 userData = jsonObject.get("userData");
             } catch (JSONException e) {

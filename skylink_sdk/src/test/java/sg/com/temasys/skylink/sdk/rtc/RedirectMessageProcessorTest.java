@@ -39,7 +39,7 @@ public class RedirectMessageProcessorTest {
         skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
                 skylinkConnection.getIceServersObserver()));
         signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
-                skylinkConnection, new MessageProcessorFactory()));
+                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory()));
         redirectMessageProcessor.setSkylinkConnection(skylinkConnection);
 
         doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
