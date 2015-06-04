@@ -61,7 +61,7 @@ public class RoomParameterServiceTest {
                     }
 
                     @Override
-                    public void onRoomParameterError(String message) {
+                    public void onRoomParameterError(int message) {
                         fail("Should not be called!!");
                         countDownLatch.countDown();
                     }
@@ -92,7 +92,7 @@ public class RoomParameterServiceTest {
                     }
 
                     @Override
-                    public void onRoomParameterError(String message) {
+                    public void onRoomParameterError(int message) {
                         Log.d(TAG, "onRoomParameterError " + message);
                         assertTrue(true);
                         countDownLatch.countDown();

@@ -75,15 +75,6 @@ public class SkylinkConnection {
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
 
-    private static final String MAX_VIDEO_WIDTH_CONSTRAINT = "maxWidth";
-    private static final String MIN_VIDEO_WIDTH_CONSTRAINT = "minWidth";
-
-    private static final String MAX_VIDEO_HEIGHT_CONSTRAINT = "maxHeight";
-    private static final String MIN_VIDEO_HEIGHT_CONSTRAINT = "minHeight";
-
-    private static final String MAX_VIDEO_FPS_CONSTRAINT = "maxFrameRate";
-    private static final String MIN_VIDEO_FPS_CONSTRAINT = "minFrameRate";
-
     private static boolean factoryStaticInitialized;
 
     public Context getApplicationContext() {
@@ -132,7 +123,6 @@ public class SkylinkConnection {
     private DataTransferListener dataTransferListener;
 
     private boolean roomLocked;
-    private MediaConstraints videoConstraints;
 
 
     /**
@@ -175,6 +165,82 @@ public class SkylinkConnection {
             instance = new SkylinkConnection();
         }
         return instance;
+    }
+
+    /**
+     * Creates a new SkylinkConnection object with the specified parameters.
+     *
+     * @param appKey  The App key from the Skylink Developer Console
+     * @param config  The SkylinkConfig object to configure the type of call.
+     * @param context The application context
+     */
+    public void init(String appKey,
+                     SkylinkConfig config, Context context) {
+        logMessage("SkylinkConnection::config=>" + config);
+
+        this.myConfig = new SkylinkConfig(config);
+
+        logMessage("SkylinkConnection::appKey=>" + appKey);
+        this.appKey = appKey;
+
+        if (!factoryStaticInitialized) {
+
+            boolean hardwareAccelerated = false;
+            EGLContext eglContext = null;
+
+            // Enable hardware acceleration if supported
+            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
+                hardwareAccelerated = true;
+                eglContext = VideoRendererGui.getEGLContext();
+                Log.d(TAG, "Enabled hardware acceleration");
+            }
+
+            /*
+            Note XR:
+             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
+            */
+            abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
+                    true, true, hardwareAccelerated, eglContext
+            ), "Failed to initializeAndroidGlobals");
+
+            factoryStaticInitialized = true;
+        }
+
+        MediaConstraints[] constraintsArray = new MediaConstraints[2];
+        this.sdpMediaConstraints = new MediaConstraints();
+        this.pcConstraints = new MediaConstraints();
+        constraintsArray[0] = this.sdpMediaConstraints;
+        constraintsArray[1] = this.pcConstraints;
+
+        for (MediaConstraints mediaConstraints : constraintsArray) {
+            mediaConstraints.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
+                            String.valueOf(this.myConfig.hasAudioReceive())));
+            mediaConstraints.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
+                            String.valueOf(this.myConfig.hasVideoReceive())));
+        }
+
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+                "internalSctpDataChannels", "true"));
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+                "DtlsSrtpKeyAgreement", "true"));
+        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
+                "true"));
+
+        this.applicationContext = context;
+
+        // Instantiate DataChannelManager.
+        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()
+                || this.myConfig.hasDataTransfer()) {
+            this.dataChannelManager = new DataChannelManager(this,
+                    this.myConfig.getTimeout(), myConfig.hasPeerMessaging(),
+                    myConfig.hasFileTransfer());
+            this.dataChannelManager.setConnectionManager(this);
+        }
+
+        // Instantiate other variables
+        peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
     /**
@@ -243,9 +309,7 @@ public class SkylinkConnection {
             return false;
         }
 
-        // Record user intention for connection to room state
-        connectionState = ConnectionState.CONNECT;
-
+        // Initialise null Listeners to default values.
         if (this.fileTransferListener == null)
             this.fileTransferListener = new FileTransferAdapter();
         if (this.lifeCycleListener == null)
@@ -271,6 +335,11 @@ public class SkylinkConnection {
         if (this.skylinkMediaService == null) {
             this.skylinkMediaService = new SkylinkMediaService(this, skylinkConnectionService);
         }
+
+        skylinkMediaService.setVideoConstrains(this.myConfig);
+
+        // Record user intention for connection to room state
+        connectionState = ConnectionState.CONNECT;
 
         String url = APP_SERVER + skylinkConnectionString;
         try {
@@ -337,100 +406,6 @@ public class SkylinkConnection {
         } else {
             skylinkConnectionService.restartConnectionInternal(remotePeerId, this);
         }
-    }
-
-    /**
-     * Creates a new SkylinkConnection object with the specified parameters.
-     *
-     * @param appKey  The App key from the Skylink Developer Console
-     * @param config  The SkylinkConfig object to configure the type of call.
-     * @param context The application context
-     */
-    public void init(String appKey,
-                     SkylinkConfig config, Context context) {
-        logMessage("SkylinkConnection::config=>" + config);
-
-        this.myConfig = new SkylinkConfig(config);
-
-        logMessage("SkylinkConnection::appKey=>" + appKey);
-        this.appKey = appKey;
-
-        if (!factoryStaticInitialized) {
-
-            boolean hardwareAccelerated = false;
-            EGLContext eglContext = null;
-
-            // Enable hardware acceleration if supported
-            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
-                hardwareAccelerated = true;
-                eglContext = VideoRendererGui.getEGLContext();
-                Log.d(TAG, "Enabled hardware acceleration");
-            }
-
-            /*
-            Note XR:
-             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
-            */
-            abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    true, true, hardwareAccelerated, eglContext
-            ), "Failed to initializeAndroidGlobals");
-
-            factoryStaticInitialized = true;
-        }
-
-        MediaConstraints[] constraintsArray = new MediaConstraints[2];
-        this.sdpMediaConstraints = new MediaConstraints();
-        this.pcConstraints = new MediaConstraints();
-        constraintsArray[0] = this.sdpMediaConstraints;
-        constraintsArray[1] = this.pcConstraints;
-
-        for (MediaConstraints mediaConstranits : constraintsArray) {
-            mediaConstranits.mandatory
-                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                            String.valueOf(this.myConfig.hasAudioReceive())));
-            mediaConstranits.mandatory
-                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                            String.valueOf(this.myConfig.hasVideoReceive())));
-        }
-
-        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
-                "internalSctpDataChannels", "true"));
-        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
-                "DtlsSrtpKeyAgreement", "true"));
-        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
-                "true"));
-
-        setVideoConstrains(this.myConfig);
-
-        this.applicationContext = context;
-
-        // Instantiate DataChannelManager.
-        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()
-                || this.myConfig.hasDataTransfer()) {
-            this.dataChannelManager = new DataChannelManager(this,
-                    this.myConfig.getTimeout(), myConfig.hasPeerMessaging(),
-                    myConfig.hasFileTransfer());
-            this.dataChannelManager.setConnectionManager(this);
-        }
-
-        // Instantiate other variables
-        peerInfoMap = new Hashtable<String, PeerInfo>();
-    }
-
-    private void setVideoConstrains(SkylinkConfig skylinkConfig) {
-        videoConstraints = new MediaConstraints();
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MAX_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MIN_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MAX_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MIN_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
     }
 
     /**
@@ -817,6 +792,13 @@ public class SkylinkConnection {
     }
 
     /**
+     * Call this method to switch between available camera.
+     */
+    public void switchCamera() {
+        skylinkMediaService.switchCamera(lifeCycleListener);
+    }
+
+    /**
      * @return The file transfer listener object.
      */
     public FileTransferListener getFileTransferListener() {
@@ -1154,6 +1136,21 @@ public class SkylinkConnection {
             if (iceServers != null) {
                 connectionManager.iceServerArray = iceServers;
             }
+        }
+
+        @Override
+        public void onError(final int message) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    // Prevent thread from executing with disconnect concurrently.
+                    synchronized (lockDisconnect) {
+                        // If user has indicated intention to disconnect,
+                        // We should no longer process messages from signalling server.
+                        if (connectionState == ConnectionState.DISCONNECT) return;
+                        lifeCycleListener.onConnect(false, "Obtained ErrorCode: " + message + ".");
+                    }
+                }
+            });
         }
 
         @Override
@@ -1609,10 +1606,6 @@ public class SkylinkConnection {
 
     void setPeerConnectionFactory(PeerConnectionFactory peerConnectionFactory) {
         this.peerConnectionFactory = peerConnectionFactory;
-    }
-
-    MediaConstraints getVideoConstraints() {
-        return videoConstraints;
     }
 
     void setDataChannelManager(DataChannelManager dataChannelManager) {

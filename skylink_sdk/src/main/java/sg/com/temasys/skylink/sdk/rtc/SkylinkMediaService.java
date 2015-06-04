@@ -14,13 +14,29 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+
 /**
  * Created by xiangrong on 25/5/15.
  */
 class SkylinkMediaService {
     private static final String TAG = SkylinkMediaService.class.getName();
+    private static final String MAX_VIDEO_WIDTH_CONSTRAINT = "maxWidth";
+    private static final String MIN_VIDEO_WIDTH_CONSTRAINT = "minWidth";
+
+    private static final String MAX_VIDEO_HEIGHT_CONSTRAINT = "maxHeight";
+    private static final String MIN_VIDEO_HEIGHT_CONSTRAINT = "minHeight";
+
+    private static final String MAX_VIDEO_FPS_CONSTRAINT = "maxFrameRate";
+    private static final String MIN_VIDEO_FPS_CONSTRAINT = "minFrameRate";
+
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
+    private int numberOfCameras = 0;
+    private MediaConstraints videoConstraints;
+
+
 
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
                                SkylinkConnectionService skylinkConnectionService) {
@@ -114,6 +130,26 @@ class SkylinkMediaService {
         }
     }
 
+    void setVideoConstrains(SkylinkConfig skylinkConfig) {
+        videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MAX_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MIN_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MAX_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MIN_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
+    }
+
+    /**
+     * Get local media (video and audio) if SkylinkConfig allows it.
+     *
+     */
     void startLocalMedia(final Object lock) {
         final SkylinkConnection.ConnectionState connectionState =
                 skylinkConnection.getConnectionState();
@@ -151,8 +187,7 @@ class SkylinkMediaService {
                     }
 
                     localVideoSource = peerConnectionFactory
-                            .createVideoSource(localVideoCapturer,
-                                    skylinkConnection.getVideoConstraints());
+                            .createVideoSource(localVideoCapturer, videoConstraints);
                     skylinkConnection.setLocalVideoSource(localVideoSource);
 
                     final VideoTrack videoTrack = peerConnectionFactory
@@ -218,15 +253,55 @@ class SkylinkMediaService {
     }
 
     /**
-     * Cycle through likely device names for the camera and return the first capturer that works, or
-     * crash if none do.
+     * Call the internal function to switch camera.
+     *
+     * @param lifeCycleListener
+     */
+
+    void switchCamera(final LifeCycleListener lifeCycleListener) {
+        // Switch camera
+        skylinkConnection.runOnUiThread(
+                new Runnable() {
+                    @SuppressWarnings("unused")
+                    @Override
+                    public void run() {
+                        switchCameraInternal(lifeCycleListener);
+                    }
+                }
+
+        );
+    }
+
+    private void switchCameraInternal(LifeCycleListener lifeCycleListener) {
+        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
+            String strErr = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
+            Log.e(TAG, strErr);
+            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strErr);
+            return;  // No video is sent or only one camera is available or error happened.
+        }
+        skylinkConnection.getLocalVideoCapturer().switchCamera(null);
+        Log.d(TAG, "Switched camera");
+    }
+
+
+    /**
+     * Cycle through likely device names for the camera and return the first capturer that works.
+     * Return null if none available.
      *
      * @return
      */
+
     private VideoCapturerAndroid getVideoCapturer() {
-        String frontCameraDeviceName =
-                VideoCapturerAndroid.getNameOfFrontFacingDevice();
+        // Check if there is a camera on device and disable video call if not.
+        numberOfCameras = VideoCapturerAndroid.getDeviceCount();
+        if (numberOfCameras == 0) {
+            Log.w(TAG, "No camera on device. Video call will not be possible.");
+            return null;
+        }
+
+        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
         Log.d(TAG, "Opening camera: " + frontCameraDeviceName);
+
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 

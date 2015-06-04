@@ -180,6 +180,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             peerLayouts[0].addView(videoView);
             surfaceViews.put(KEY_SELF, videoView);
         }
+        videoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                skylinkConnection.switchCamera();
+            }
+        });
+
     }
 
     @Override
