@@ -10,14 +10,15 @@ import org.robolectric.annotation.Config;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
+
 /**
- * Tests related to RedirectMessage
+ * Tests related to RedirectMessage.
  * Created by janidu on 11/5/15.
  */
 @Config(emulateSdk = 18)
