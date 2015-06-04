@@ -87,6 +87,12 @@ public class SignalingServerClientTest {
                     }
 
                     @Override
+                    public void onDisconnect() {
+                        Log.d(TAG, "onDisconnect");
+                        countDownLatch.countDown();
+                    }
+
+                    @Override
                     public void onClose() {
                         Log.d(TAG, "onClose");
                         countDownLatch.countDown();

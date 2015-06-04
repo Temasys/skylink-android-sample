@@ -452,7 +452,9 @@ class DataChannelManager {
         while (iPeerId.hasNext()) {
             String tid = iPeerId.next();
 
-            if (peerId != null && !tid.equals(peerId)) continue;
+            if (peerId != null && !tid.equals(peerId)) {
+                continue;
+            }
 
             // Dispose DC.
             DcObserver dcObserver = dcInfoList.get(tid);
@@ -471,6 +473,12 @@ class DataChannelManager {
                 return;
             }
         }
+
+        // Clean dcInfoList if all DCs were disposed.
+        if (peerId == null) {
+            dcInfoList.clear();
+        }
+
         // When we leave room, disposeDc for dcMcu.
         if (isMcuRoom) {
             dcMcu.unregisterObserver();

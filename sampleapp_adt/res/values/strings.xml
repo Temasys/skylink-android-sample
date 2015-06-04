@@ -2,12 +2,12 @@
 <resources>
 
     <string name="app_name">SampleApp</string>
-    <string name="title_section1"> Audio Call </string>
-    <string name="title_section2"> Video Call </string>
-    <string name="title_section3"> Chat </string>
-    <string name="title_section4"> File Transfer </string>
-    <string name="title_section5"> Data Transfer </string>
-    <string name="title_section6"> Multi-Party Video Call </string>
+    <string name="title_section1">Audio Call</string>
+    <string name="title_section2">Video Call</string>
+    <string name="title_section3">Chat</string>
+    <string name="title_section4">File Transfer</string>
+    <string name="title_section5">Data Transfer</string>
+    <string name="title_section6">Multi-Party Video Call</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_build_info">Build information</string>

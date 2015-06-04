@@ -17,6 +17,7 @@ class SignalingServerClient {
     private final static int RETRY_MAX = 3;
     private final static int SIG_PORT_DEFAULT = 443;
     private final static int SIG_PORT_FAILOVER = 3443;
+    private final static int SOCKET_IO_TIME_OUT_MILLISECONDS = 60000;
     // private final int SIG_PORT_DEFAULT = 9000;
     // private final int SIG_PORT_FAILOVER = 9000;
     // private final int SIG_PORT_DEFAULT = 8018;
@@ -59,6 +60,7 @@ class SignalingServerClient {
         opts.secure = true;
         opts.forceNew = true;
         opts.reconnection = true;
+        opts.timeout = SOCKET_IO_TIME_OUT_MILLISECONDS;
 
         // Initialize SocketIO
         socketIO = IO.socket(sigIP + ":" + sigPort, opts);
@@ -67,6 +69,11 @@ class SignalingServerClient {
             @Override
             public void call(Object... args) {
                 onConnect();
+            }
+        }).on(Socket.EVENT_RECONNECT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                onReconnect();
             }
         }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
             @Override
@@ -87,6 +94,13 @@ class SignalingServerClient {
                 onDisconnect();
             }
 
+        }).on(Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
+
+            @Override
+            public void call(Object... args) {
+                onTimeOut();
+            }
+
         }).on(Socket.EVENT_ERROR, new Emitter.Listener() {
 
             @Override
@@ -100,8 +114,18 @@ class SignalingServerClient {
 
     void onConnect() {
         Log.d(TAG, "Connected to Signaling server.");
-        isConnected = true;
+        // Reconnection will follow same logic as first connect.
+        // Just log reconnection for awareness.
+        if (isConnected) {
+            Log.d(TAG, "onConnect() called after reconnecting to Signaling server.");
+        } else {
+            isConnected = true;
+        }
         delegate.onOpen();
+    }
+
+    void onReconnect() {
+        Log.d(TAG, "Reconnected to Signaling server.");
     }
 
     public void onMessage(JSONObject json) {
@@ -117,13 +141,19 @@ class SignalingServerClient {
 
     void onDisconnect() {
         Log.d(TAG, "Disconnected from Signaling server.");
+        delegate.onDisconnect();
+    }
+
+    void onTimeOut() {
+        Log.d(TAG, "Connection with Signaling server time out.");
         if (delegate != null) {
             delegate.onClose();
         }
     }
 
     void onError(Object... args) {
-        Log.d(TAG, "an Error occured");
+        String strErr = args[0].toString();
+        Log.d(TAG, "An Error occured: " + strErr);
         // If it was handshake error, switch to fail over port, and connect
         // again.
         if (!isConnected && retry++ < RETRY_MAX) {
@@ -137,6 +167,6 @@ class SignalingServerClient {
             return;
         }
         // Delegate will log message and result in UI disconnect.
-        delegate.onError(0, args[0].toString());
+        delegate.onError(0, strErr);
     }
 }

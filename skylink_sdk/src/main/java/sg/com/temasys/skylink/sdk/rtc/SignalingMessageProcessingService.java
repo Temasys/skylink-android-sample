@@ -18,14 +18,16 @@ class SignalingMessageProcessingService implements MessageHandler {
     private static final String TAG = SignalingMessageProcessingService.class.getSimpleName();
 
     private final SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
     private SignalingServerClient socketIOClient;
     private SignalingServerMessageSender sigMsgSender;
     private final MessageProcessorFactory messageProcessorFactory;
 
     public SignalingMessageProcessingService(SkylinkConnection skylinkConnection,
-                                             MessageProcessorFactory messageProcessorFactory) {
+                                             SkylinkConnectionService skylinkConnectionService, MessageProcessorFactory messageProcessorFactory) {
         this.messageProcessorFactory = messageProcessorFactory;
         this.skylinkConnection = skylinkConnection;
+        this.skylinkConnectionService = skylinkConnectionService;
     }
 
     public void connect(String signalingIp, int signalingPort, String socketId, String roomId) {
@@ -72,7 +74,7 @@ class SignalingMessageProcessingService implements MessageHandler {
                     SkylinkConnection.ConnectionState.DISCONNECT) {
                 return;
             }
-            ProtocolHelper.sendJoinRoom(skylinkConnection.getSkylinkConnectionService());
+            ProtocolHelper.sendJoinRoom(skylinkConnectionService);
         }
     }
 
@@ -95,7 +97,7 @@ class SignalingMessageProcessingService implements MessageHandler {
                 String target = object.has("target") ? object.getString("target") : "";
 
                 // If the target exist it should be the same for this client
-                if (object.has("target") && !target.equals(skylinkConnection.getSkylinkConnectionService().getSid())) {
+                if (object.has("target") && !target.equals(skylinkConnectionService.getSid())) {
                     Log.e(TAG, "Ignoring the message" +
                             " due target mismatch , target :" + target + " type: " + type);
                     return;
@@ -128,6 +130,15 @@ class SignalingMessageProcessingService implements MessageHandler {
     void onSignalingMessageException(JSONException e) {
         String strErr = "[onMessage] error: " + e.getMessage();
         Log.e(TAG, strErr, e);
+    }
+
+    @Override
+    public void onDisconnect() {
+        // Remove all existing PeerConnections and related info.
+        // If socket reconnects,
+        // Will join room again like first time.
+        // New PeerId will be issued.
+        ProtocolHelper.removeAllPeers(skylinkConnection, ProtocolHelper.CONNECTION_LOST);
     }
 
     @Override
@@ -171,11 +182,8 @@ class SignalingMessageProcessingService implements MessageHandler {
                     final String message = "[SDK] onError: " + code + ", " + description;
                     Log.d(TAG, message);
                     skylinkConnection.getLifeCycleListener()
-                            .onDisconnect(ErrorCodes.DISCONNECT_UNEXPECTED_ERROR, message);
+                            .onWarning(ErrorCodes.SIGNALING_CONNECTION_ERROR, message);
                 }
-
-                // Disconnect from room
-                skylinkConnection.disconnectFromRoom();
             }
         });
     }

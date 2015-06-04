@@ -331,66 +331,11 @@ public class SkylinkConnection {
                 // Create a new peerId set to prevent concurrent modification of the set
                 Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
                 for (String peerId : peerIdSet) {
-                    restartConnectionInternal(peerId);
+                    skylinkConnectionService.restartConnectionInternal(peerId, this);
                 }
             }
         } else {
-            restartConnectionInternal(remotePeerId);
-        }
-    }
-
-    private void restartConnectionInternal(String remotePeerId) {
-        if (connectionState == ConnectionState.DISCONNECT) {
-            return;
-        }
-        synchronized (lockDisconnect) {
-            try {
-                ProtocolHelper.sendRestart(remotePeerId, this, skylinkConnectionService, localMediaStream,
-                        myConfig);
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
-        }
-    }
-
-    // Restart all connections when rejoining room.
-    void rejoinRestart() {
-        if (pcObserverPool != null) {
-            // Create a new peerId set to prevent concurrent modification of the set
-            Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
-            for (String peerId : peerIdSet) {
-                rejoinRestart(peerId);
-            }
-        }
-    }
-
-    // Restart specific connection when rejoining room.
-    // Sends targeted "enter" for non-Android peers.
-    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
-    // This is esp. so for the JS clients which do not allow restarts
-    // for PeerIds without PeerConnection.
-    private void rejoinRestart(String remotePeerId) {
-        if (connectionState == ConnectionState.DISCONNECT) {
-            return;
-        }
-        synchronized (lockDisconnect) {
-            try {
-                Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
-                PeerInfo peerInfo = getPeerInfoMap().get(remotePeerId);
-                if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
-                    // If it is Android, send restart.
-                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
-                    ProtocolHelper.sendRestart(remotePeerId, this, skylinkConnectionService,
-                            localMediaStream, myConfig);
-                } else {
-                    // If web or others, send directed enter
-                    // TODO XR: Remove after JS client update to compatible restart protocol.
-                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
-                    ProtocolHelper.sendEnter(remotePeerId, this, skylinkConnectionService);
-                }
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
+            skylinkConnectionService.restartConnectionInternal(remotePeerId, this);
         }
     }
 

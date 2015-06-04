@@ -11,6 +11,8 @@ interface MessageHandler {
 
     void onMessage(String data);
 
+    void onDisconnect();
+
     void onClose();
 
     void onError(int code, String description);

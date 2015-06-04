@@ -44,7 +44,7 @@ public class RoomLockMessageProcessorTest {
         skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
                 skylinkConnection.getIceServersObserver()));
         signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
-                skylinkConnection, new MessageProcessorFactory()));
+                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory()));
         roomLockMessageProcessor.setSkylinkConnection(skylinkConnection);
 
         doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
