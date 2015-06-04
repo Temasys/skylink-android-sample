@@ -17,6 +17,7 @@ class SignalingServerClient {
     private final static int RETRY_MAX = 3;
     private final static int SIG_PORT_DEFAULT = 443;
     private final static int SIG_PORT_FAILOVER = 3443;
+    private final static int SOCKET_IO_TIME_OUT_MILLISECONDS = 60000;
     // private final int SIG_PORT_DEFAULT = 9000;
     // private final int SIG_PORT_FAILOVER = 9000;
     // private final int SIG_PORT_DEFAULT = 8018;
@@ -59,7 +60,7 @@ class SignalingServerClient {
         opts.secure = true;
         opts.forceNew = true;
         opts.reconnection = true;
-        opts.timeout = 60000;
+        opts.timeout = SOCKET_IO_TIME_OUT_MILLISECONDS;
 
         // Initialize SocketIO
         socketIO = IO.socket(sigIP + ":" + sigPort, opts);

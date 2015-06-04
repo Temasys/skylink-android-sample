@@ -226,7 +226,11 @@ class SkylinkConnectionService {
         }
     }
 
-    // Restart all connections when rejoining room.
+    /**
+     * Restart all connections when rejoining room.
+     *
+     * @param skylinkConnection SkylinkConnection instance.
+     */
     void rejoinRestart(SkylinkConnection skylinkConnection) {
         if (skylinkConnection.getPcObserverPool() != null) {
             // Create a new peerId set to prevent concurrent modification of the set
@@ -237,11 +241,15 @@ class SkylinkConnectionService {
         }
     }
 
-    // Restart specific connection when rejoining room.
-    // Sends targeted "enter" for non-Android peers.
-    // This is a hack to accomodate the non-Android clients until the update to SM 0.1.1
-    // This is esp. so for the JS clients which do not allow restarts
-    // for PeerIds without PeerConnection.
+    /**
+     * Restart specific connection when rejoining room. Sends targeted "enter" for non-Android
+     * peers. This is a hack to accomodate the non-Android clients until the update to SM 0.1.1 This
+     * is esp. so for the JS clients which do not allow restarts for PeerIds without
+     * PeerConnection.
+     *
+     * @param remotePeerId PeerId of the remote Peer with whom we should restart with.
+     * @param skylinkConnection SkylinkConnection instance.
+     */
     void rejoinRestart(String remotePeerId, SkylinkConnection skylinkConnection) {
         if (skylinkConnection.getConnectionState() == SkylinkConnection.ConnectionState.DISCONNECT) {
             return;

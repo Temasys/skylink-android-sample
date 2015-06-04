@@ -138,7 +138,7 @@ class SignalingMessageProcessingService implements MessageHandler {
         // If socket reconnects,
         // Will join room again like first time.
         // New PeerId will be issued.
-        ProtocolHelper.disposePeerAll(skylinkConnection, ProtocolHelper.CONNECTION_LOST);
+        ProtocolHelper.removeAllPeers(skylinkConnection, ProtocolHelper.CONNECTION_LOST);
     }
 
     @Override

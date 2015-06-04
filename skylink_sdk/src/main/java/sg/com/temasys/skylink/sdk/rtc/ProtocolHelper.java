@@ -398,7 +398,7 @@ class ProtocolHelper {
      * @param skylinkConnection
      * @param reason
      */
-    static void disposePeerAll(final SkylinkConnection skylinkConnection, final String reason) {
+    static void removeAllPeers(final SkylinkConnection skylinkConnection, final String reason) {
         Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
