@@ -33,9 +33,9 @@ class SkylinkMediaService {
 
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
+
     private int numberOfCameras = 0;
     private MediaConstraints videoConstraints;
-
 
 
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
@@ -148,7 +148,6 @@ class SkylinkMediaService {
 
     /**
      * Get local media (video and audio) if SkylinkConfig allows it.
-     *
      */
     void startLocalMedia(final Object lock) {
         final SkylinkConnection.ConnectionState connectionState =
@@ -265,22 +264,33 @@ class SkylinkMediaService {
                     @SuppressWarnings("unused")
                     @Override
                     public void run() {
-                        switchCameraInternal(lifeCycleListener);
+                        boolean success = false;
+                        String strLog = "";
+                        // Try to switch camera
+                        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
+                            // No video is sent or only one camera is available,
+                            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
+                        } else {
+                            success = switchCameraInternal();
+                        }
+                        // Log about success or failure in switching camera.
+                        if (success) {
+                            strLog = "Switched camera.";
+                            Log.d(TAG, strLog);
+                        } else {
+                            // Switch is pending or error while trying to switch.
+                            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);
+                            Log.e(TAG, strLog);
+                        }
                     }
                 }
-
         );
     }
 
-    private void switchCameraInternal(LifeCycleListener lifeCycleListener) {
-        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
-            String strErr = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
-            Log.e(TAG, strErr);
-            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strErr);
-            return;  // No video is sent or only one camera is available or error happened.
-        }
-        skylinkConnection.getLocalVideoCapturer().switchCamera(null);
-        Log.d(TAG, "Switched camera");
+    boolean switchCameraInternal() {
+        boolean success = false;
+        success = skylinkConnection.getLocalVideoCapturer().switchCamera(null);
+        return success;
     }
 
 
@@ -339,6 +349,15 @@ class SkylinkMediaService {
                 }
             });
         }
+    }
+
+    // Getters and Setters
+    public int getNumberOfCameras() {
+        return numberOfCameras;
+    }
+
+    public void setNumberOfCameras(int numberOfCameras) {
+        this.numberOfCameras = numberOfCameras;
     }
 
 }

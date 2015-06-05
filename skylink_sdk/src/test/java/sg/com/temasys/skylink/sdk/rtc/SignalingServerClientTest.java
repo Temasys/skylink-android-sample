@@ -56,6 +56,13 @@ public class SignalingServerClientTest {
             }
 
             @Override
+            public void onRoomParameterError(String message) {
+                Log.d(TAG, "onSignalingParametersReceivedError");
+                fail("Should receive signaling parameters successfully");
+                countDownLatch.countDown();
+            }
+
+            @Override
             public void onShouldConnectToRoom() {
                 assertTrue("Should notify to connect to room", true);
             }
