@@ -247,7 +247,7 @@ class SkylinkConnectionService {
      * is esp. so for the JS clients which do not allow restarts for PeerIds without
      * PeerConnection.
      *
-     * @param remotePeerId PeerId of the remote Peer with whom we should restart with.
+     * @param remotePeerId      PeerId of the remote Peer with whom we should restart with.
      * @param skylinkConnection SkylinkConnection instance.
      */
     void rejoinRestart(String remotePeerId, SkylinkConnection skylinkConnection) {

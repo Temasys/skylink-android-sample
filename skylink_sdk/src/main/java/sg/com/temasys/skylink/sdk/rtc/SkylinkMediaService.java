@@ -257,39 +257,26 @@ class SkylinkMediaService {
      * @param lifeCycleListener
      */
 
-    void switchCamera(final LifeCycleListener lifeCycleListener) {
+    boolean switchCamera(final LifeCycleListener lifeCycleListener) {
         // Switch camera
-        skylinkConnection.runOnUiThread(
-                new Runnable() {
-                    @SuppressWarnings("unused")
-                    @Override
-                    public void run() {
-                        boolean success = false;
-                        String strLog = "";
-                        // Try to switch camera
-                        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
-                            // No video is sent or only one camera is available,
-                            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
-                        } else {
-                            success = switchCameraInternal();
-                        }
-                        // Log about success or failure in switching camera.
-                        if (success) {
-                            strLog = "Switched camera.";
-                            Log.d(TAG, strLog);
-                        } else {
-                            // Switch is pending or error while trying to switch.
-                            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);
-                            Log.e(TAG, strLog);
-                        }
-                    }
-                }
-        );
-    }
-
-    boolean switchCameraInternal() {
         boolean success = false;
-        success = skylinkConnection.getLocalVideoCapturer().switchCamera(null);
+        String strLog = "";
+        // Try to switch camera
+        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
+            // No video is sent or only one camera is available,
+            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
+        } else {
+            success = skylinkConnection.getLocalVideoCapturer().switchCamera(null);
+        }
+        // Log about success or failure in switching camera.
+        if (success) {
+            strLog = "Switched camera.";
+            Log.d(TAG, strLog);
+        } else {
+            // Switch is pending or error while trying to switch.
+            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);
+            Log.e(TAG, strLog);
+        }
         return success;
     }
 

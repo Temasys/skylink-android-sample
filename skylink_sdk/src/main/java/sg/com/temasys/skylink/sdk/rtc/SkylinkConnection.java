@@ -793,9 +793,11 @@ public class SkylinkConnection {
 
     /**
      * Call this method to switch between available camera.
+     *
+     * @return True or false based on whether the switch was successful or not.
      */
-    public void switchCamera() {
-        skylinkMediaService.switchCamera(lifeCycleListener);
+    public boolean switchCamera() {
+        return skylinkMediaService.switchCamera(lifeCycleListener);
     }
 
     /**

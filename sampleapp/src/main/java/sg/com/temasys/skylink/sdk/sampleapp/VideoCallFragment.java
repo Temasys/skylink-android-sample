@@ -272,6 +272,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             videoView.setTag("self");
             parentFragment.removeView(videoView);
             parentFragment.addView(videoView);
+            // Allow self view to switch between different cameras (if any) when tapped.
+            videoView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    skylinkConnection.switchCamera();
+                }
+            });
         }
     }
 

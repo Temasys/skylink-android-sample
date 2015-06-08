@@ -180,6 +180,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             peerLayouts[0].addView(videoView);
             surfaceViews.put(KEY_SELF, videoView);
         }
+        // Allow self view to switch between different cameras (if any) when tapped.
         videoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
