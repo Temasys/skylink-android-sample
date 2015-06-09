@@ -19,6 +19,8 @@ class SkylinkPeerService {
 
     private final SkylinkConnection skylinkConnection;
 
+    private SkylinkMediaService skylinkMediaService;
+
     public SkylinkPeerService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
     }
@@ -63,8 +65,8 @@ class SkylinkPeerService {
                     synchronized (skylinkConnection.getLockDisconnect()) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (skylinkConnection.getConnectionState() ==
-                                SkylinkConnection.ConnectionState.DISCONNECT) {
+                        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
+                                SkylinkConnectionService.ConnectionState.DISCONNECTING) {
                             return;
                         }
                         skylinkConnection.getRemotePeerListener()
@@ -201,8 +203,14 @@ class SkylinkPeerService {
         }
 
         peerConnection.createOffer(sdpObserver,
-                skylinkConnection.getSdpMediaConstraints());
+                skylinkMediaService.getSdpMediaConstraints());
 
         Log.d(TAG, "[receivedWelcomeRestart] - createOffer for " + peerId);
     }
+
+    // Getters and Setters
+    public void setSkylinkMediaService(SkylinkMediaService skylinkMediaService) {
+        this.skylinkMediaService = skylinkMediaService;
+    }
+
 }

@@ -81,7 +81,7 @@ public class EnterMessageProcessorTest {
         // Test method
         enterMessageProcessor.process(enterObject);
 
-        // Verify receivedEnter called with right arguments
+        // Verify method called with right arguments
         // - Prepare to capture arguments
         ArgumentCaptor<String> argPeerId = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<PeerInfo> argPeerInfo = ArgumentCaptor.forClass(PeerInfo.class);

@@ -63,6 +63,8 @@ class WebServerClient implements RoomParameterServiceListener {
     public static interface IceServersObserver {
         public void onIceServers(List<PeerConnection.IceServer> iceServers);
 
+        public void onError(int message);
+
         public void onError(String message);
 
         public void onShouldConnectToRoom();
@@ -94,6 +96,11 @@ class WebServerClient implements RoomParameterServiceListener {
             // Inform that Room parameters have been obtained.
             skylinkConnectionService.obtainedRoomParameters(params);
         }
+    }
+
+    @Override
+    public void onRoomParameterError(int message) {
+        WebServerClient.this.iceServersObserver.onError(message);
     }
 
     @Override

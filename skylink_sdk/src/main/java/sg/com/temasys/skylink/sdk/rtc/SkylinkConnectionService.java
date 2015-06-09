@@ -14,6 +14,7 @@ import java.util.Set;
  */
 class SkylinkConnectionService {
     private static final String TAG = SkylinkConnectionService.class.getName();
+    private ConnectionState connectionState;
     private final SkylinkConnection skylinkConnection;
     private final SignalingMessageProcessingService signalingMessageProcessingService;
     private final WebServerClient webServerClient;
@@ -26,8 +27,37 @@ class SkylinkConnectionService {
         this.skylinkConnection = skylinkConnection;
         this.iceServersObserver = iceServersObserver;
         this.webServerClient = new WebServerClient(this, iceServersObserver);
+        connectionState = ConnectionState.DISCONNECTED;
         this.signalingMessageProcessingService = new SignalingMessageProcessingService(
                 skylinkConnection, this, new MessageProcessorFactory());
+    }
+
+    /**
+     * Check if already connected to Room, i.e., to Signaling server.
+     *
+     * @return
+     */
+    boolean isAlreadyConnected() {
+        boolean connected = (connectionState == ConnectionState.CONNECTED);
+        return connected;
+    }
+
+    /**
+     * Check if disconnected or disconnecting from Room, i.e., to Signaling server.
+     *
+     * @return
+     */
+    boolean isDisconnected() {
+        boolean disconnected = (connectionState == ConnectionState.DISCONNECTED ||
+                connectionState == ConnectionState.DISCONNECTING);
+        return disconnected;
+    }
+
+    /**
+     * List of Connection state types
+     */
+    public enum ConnectionState {
+        CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED
     }
 
     /**
@@ -39,6 +69,8 @@ class SkylinkConnectionService {
      * @throws Exception
      */
     public void connectToRoom(String url) throws IOException, JSONException {
+        // Record user intention for connection to room state
+        connectionState = ConnectionState.CONNECTING;
         this.webServerClient.connectToRoom(url);
     }
 
@@ -96,10 +128,20 @@ class SkylinkConnectionService {
         }
     }
 
-    // Disconnect from the Signaling Channel.
-    public void disconnect() {
+    /**
+     * Disconnect from the Signaling Channel.
+     *
+     * @return False if unable to disconnect.
+     */
+    public boolean disconnect() {
+        // Record user intention for disconnecting to room
+        connectionState = ConnectionState.DISCONNECTING;
+
         if (this.signalingMessageProcessingService != null) {
             signalingMessageProcessingService.disconnect();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -109,6 +151,70 @@ class SkylinkConnectionService {
         // Connect to Signaling Server and start signaling process with room.
         signalingMessageProcessingService.connect(getIpSigServer(),
                 getPortSigServer(), getSid(), getRoomId());
+    }
+
+
+    /**
+     * Restart all connections when rejoining room.
+     *
+     * @param skylinkConnection SkylinkConnection instance.
+     */
+    void rejoinRestart(SkylinkConnection skylinkConnection) {
+        if (skylinkConnection.getPcObserverPool() != null) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(skylinkConnection.getPcObserverPool().keySet());
+            for (String peerId : peerIdSet) {
+                rejoinRestart(peerId, skylinkConnection);
+            }
+        }
+    }
+
+    /**
+     * Restart specific connection when rejoining room. Sends targeted "enter" for non-Android
+     * peers. This is a hack to accomodate the non-Android clients until the update to SM 0.1.1 This
+     * is esp. so for the JS clients which do not allow restarts for PeerIds without
+     * PeerConnection.
+     *
+     * @param remotePeerId      PeerId of the remote Peer with whom we should restart with.
+     * @param skylinkConnection SkylinkConnection instance.
+     */
+    void rejoinRestart(String remotePeerId, SkylinkConnection skylinkConnection) {
+        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() == ConnectionState.DISCONNECTING) {
+            return;
+        }
+        synchronized (skylinkConnection.getLockDisconnect()) {
+            try {
+                Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
+                PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(remotePeerId);
+                if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
+                    // If it is Android, send restart.
+                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
+                    ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this,
+                            skylinkConnection.getLocalMediaStream(), skylinkConnection.getMyConfig());
+                } else {
+                    // If web or others, send directed enter
+                    // TODO XR: Remove after JS client update to compatible restart protocol.
+                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
+                    ProtocolHelper.sendEnter(remotePeerId, skylinkConnection, this);
+                }
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage(), e);
+            }
+        }
+    }
+
+    void restartConnectionInternal(String remotePeerId, SkylinkConnection skylinkConnection) {
+        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() == ConnectionState.DISCONNECTING) {
+            return;
+        }
+        synchronized (skylinkConnection.getLockDisconnect()) {
+            try {
+                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this, skylinkConnection.getLocalMediaStream(),
+                        skylinkConnection.getMyConfig());
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+        }
     }
 
     public void sendMessage(JSONObject dictMessage) {
@@ -136,6 +242,7 @@ class SkylinkConnectionService {
         ProtocolHelper.sendMuteVideo(isMuted, this);
     }
 
+    // Getters and Setters
     WebServerClient.IceServersObserver getIceServersObserver() {
         return iceServersObserver;
     }
@@ -212,66 +319,12 @@ class SkylinkConnectionService {
         return appRTCSignalingParameters.getUserId();
     }
 
-    void restartConnectionInternal(String remotePeerId, SkylinkConnection skylinkConnection) {
-        if (skylinkConnection.getConnectionState() == SkylinkConnection.ConnectionState.DISCONNECT) {
-            return;
-        }
-        synchronized (skylinkConnection.getLockDisconnect()) {
-            try {
-                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this, skylinkConnection.getLocalMediaStream(),
-                        skylinkConnection.getMyConfig());
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
-        }
+    void setConnectionState(ConnectionState connectionState) {
+        this.connectionState = connectionState;
     }
 
-    /**
-     * Restart all connections when rejoining room.
-     *
-     * @param skylinkConnection SkylinkConnection instance.
-     */
-    void rejoinRestart(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection.getPcObserverPool() != null) {
-            // Create a new peerId set to prevent concurrent modification of the set
-            Set<String> peerIdSet = new HashSet<String>(skylinkConnection.getPcObserverPool().keySet());
-            for (String peerId : peerIdSet) {
-                rejoinRestart(peerId, skylinkConnection);
-            }
-        }
+    ConnectionState getConnectionState() {
+        return connectionState;
     }
 
-    /**
-     * Restart specific connection when rejoining room. Sends targeted "enter" for non-Android
-     * peers. This is a hack to accomodate the non-Android clients until the update to SM 0.1.1 This
-     * is esp. so for the JS clients which do not allow restarts for PeerIds without
-     * PeerConnection.
-     *
-     * @param remotePeerId PeerId of the remote Peer with whom we should restart with.
-     * @param skylinkConnection SkylinkConnection instance.
-     */
-    void rejoinRestart(String remotePeerId, SkylinkConnection skylinkConnection) {
-        if (skylinkConnection.getConnectionState() == SkylinkConnection.ConnectionState.DISCONNECT) {
-            return;
-        }
-        synchronized (skylinkConnection.getLockDisconnect()) {
-            try {
-                Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
-                PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(remotePeerId);
-                if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
-                    // If it is Android, send restart.
-                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
-                    ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this,
-                            skylinkConnection.getLocalMediaStream(), skylinkConnection.getMyConfig());
-                } else {
-                    // If web or others, send directed enter
-                    // TODO XR: Remove after JS client update to compatible restart protocol.
-                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
-                    ProtocolHelper.sendEnter(remotePeerId, skylinkConnection, this);
-                }
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
-        }
-    }
 }

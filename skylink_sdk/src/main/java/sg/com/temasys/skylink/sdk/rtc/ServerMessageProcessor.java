@@ -26,8 +26,8 @@ class ServerMessageProcessor implements MessageProcessor {
                     synchronized (skylinkConnection.getLockDisconnectMsg()) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (skylinkConnection.getConnectionState() ==
-                                SkylinkConnection.ConnectionState.DISCONNECT) {
+                        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
+                                SkylinkConnectionService.ConnectionState.DISCONNECTING) {
                             return;
                         }
 

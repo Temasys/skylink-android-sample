@@ -191,6 +191,8 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
 interface RoomParameterServiceListener {
     void onRoomParameterSuccessful(AppRTCSignalingParameters params);
 
+    void onRoomParameterError(int message);
+
     void onRoomParameterError(String message);
 
     void onShouldConnectToRoom();

@@ -27,13 +27,17 @@ public class ByeMessageProcessorTest {
 
     private MessageProcessor messageProcessor;
     private SkylinkConnection mockSkylinkConnection;
+    private SkylinkConnectionService mockSkylinkConnectionService;
 
     @Before
     public void setUp() throws Exception {
         messageProcessor = new ByeMessageProcessor();
         mockSkylinkConnection = mock(SkylinkConnection.class);
+        mockSkylinkConnectionService = mock(SkylinkConnectionService.class);
 
         SkylinkPeerService skylinkPeerService = new SkylinkPeerService(mockSkylinkConnection);
+        when(mockSkylinkConnection.getSkylinkConnectionService())
+                .thenReturn(mockSkylinkConnectionService);
         when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(skylinkPeerService);
     }
 
@@ -49,8 +53,8 @@ public class ByeMessageProcessorTest {
 
         DataChannelManager dataChannelManager = mock(DataChannelManager.class);
 
-        when(mockSkylinkConnection.getConnectionState()).thenReturn
-                (SkylinkConnection.ConnectionState.CONNECT);
+        when(mockSkylinkConnection.getSkylinkConnectionService().getConnectionState()).thenReturn
+                (SkylinkConnectionService.ConnectionState.CONNECTING);
 
         when(mockSkylinkConnection.getDataChannelManager()).thenReturn(dataChannelManager);
 

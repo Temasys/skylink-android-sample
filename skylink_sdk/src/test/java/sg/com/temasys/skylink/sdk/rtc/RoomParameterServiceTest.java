@@ -61,6 +61,12 @@ public class RoomParameterServiceTest {
                     }
 
                     @Override
+                    public void onRoomParameterError(int message) {
+                        fail("Should not be called!!");
+                        countDownLatch.countDown();
+                    }
+
+                    @Override
                     public void onRoomParameterError(String message) {
                         fail("Should not be called!!");
                         countDownLatch.countDown();
@@ -88,6 +94,13 @@ public class RoomParameterServiceTest {
                     @Override
                     public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
                         fail("Should not be called!! for invalid URL");
+                        countDownLatch.countDown();
+                    }
+
+                    @Override
+                    public void onRoomParameterError(int message) {
+                        Log.d(TAG, "onRoomParameterError " + message);
+                        assertTrue(true);
                         countDownLatch.countDown();
                     }
 

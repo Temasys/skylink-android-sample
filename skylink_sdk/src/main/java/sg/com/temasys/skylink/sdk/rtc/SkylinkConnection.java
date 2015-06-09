@@ -16,7 +16,6 @@ import org.webrtc.AudioTrack;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaCodecVideoEncoder;
-import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnection.IceServer;
@@ -75,15 +74,6 @@ public class SkylinkConnection {
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
 
-    private static final String MAX_VIDEO_WIDTH_CONSTRAINT = "maxWidth";
-    private static final String MIN_VIDEO_WIDTH_CONSTRAINT = "minWidth";
-
-    private static final String MAX_VIDEO_HEIGHT_CONSTRAINT = "maxHeight";
-    private static final String MIN_VIDEO_HEIGHT_CONSTRAINT = "minHeight";
-
-    private static final String MAX_VIDEO_FPS_CONSTRAINT = "maxFrameRate";
-    private static final String MIN_VIDEO_FPS_CONSTRAINT = "minFrameRate";
-
     private static boolean factoryStaticInitialized;
 
     public Context getApplicationContext() {
@@ -101,9 +91,7 @@ public class SkylinkConnection {
     private Map<String, PCObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SDPObserver> sdpObserverPool;
-    private MediaConstraints pcConstraints;
 
-    private MediaConstraints sdpMediaConstraints;
     private MediaStream localMediaStream;
 
     private Object myUserData;
@@ -132,17 +120,7 @@ public class SkylinkConnection {
     private DataTransferListener dataTransferListener;
 
     private boolean roomLocked;
-    private MediaConstraints videoConstraints;
 
-
-    /**
-     * List of Connection state types
-     */
-    public enum ConnectionState {
-        CONNECT, DISCONNECT
-    }
-
-    private ConnectionState connectionState;
 
     // Lock objects to prevent threads from executing the following methods concurrently:
     // WebServerClient.MessageHandler.onMessage
@@ -178,6 +156,76 @@ public class SkylinkConnection {
     }
 
     /**
+     * Creates a new SkylinkConnection object with the specified parameters.
+     *
+     * @param appKey  The App key from the Skylink Developer Console
+     * @param config  The SkylinkConfig object to configure the type of call.
+     * @param context The application context
+     */
+    public void init(String appKey,
+                     SkylinkConfig config, Context context) {
+        logMessage("SkylinkConnection::config=>" + config);
+
+        this.myConfig = new SkylinkConfig(config);
+
+        logMessage("SkylinkConnection::appKey=>" + appKey);
+        this.appKey = appKey;
+
+        if (!factoryStaticInitialized) {
+
+            boolean hardwareAccelerated = false;
+            EGLContext eglContext = null;
+
+            // Enable hardware acceleration if supported
+            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
+                hardwareAccelerated = true;
+                eglContext = VideoRendererGui.getEGLContext();
+                Log.d(TAG, "Enabled hardware acceleration");
+            }
+
+            /*
+            Note XR:
+             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
+            */
+            abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
+                    true, true, hardwareAccelerated, eglContext
+            ), "Failed to initializeAndroidGlobals");
+
+            factoryStaticInitialized = true;
+        }
+
+        // Initialise Skylink Services
+        if (this.skylinkPeerService == null) {
+            this.skylinkPeerService = new SkylinkPeerService(this);
+        }
+        if (this.skylinkConnectionService == null) {
+            this.skylinkConnectionService = new SkylinkConnectionService(this, iceServersObserver);
+        }
+        if (this.skylinkMediaService == null) {
+            this.skylinkMediaService = new SkylinkMediaService(this, skylinkConnectionService);
+            skylinkPeerService.setSkylinkMediaService(skylinkMediaService);
+        }
+
+        skylinkMediaService.setVideoConstrains(this.myConfig);
+
+        skylinkMediaService.genMediaConstraints(myConfig);
+
+        this.applicationContext = context;
+
+        // Instantiate DataChannelManager.
+        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()
+                || this.myConfig.hasDataTransfer()) {
+            this.dataChannelManager = new DataChannelManager(this,
+                    this.myConfig.getTimeout(), myConfig.hasPeerMessaging(),
+                    myConfig.hasFileTransfer());
+            this.dataChannelManager.setConnectionManager(this);
+        }
+
+        // Instantiate other variables
+        peerInfoMap = new Hashtable<String, PeerInfo>();
+    }
+
+    /**
      * Connects to a room with the default duration of 24 hours and with the current time It is
      * encouraged to use the method connectToRoom(String connectionString, Object userData)
      *
@@ -191,7 +239,7 @@ public class SkylinkConnection {
     public boolean connectToRoom(final String secret,
                                  final String roomName, final Object userData) {
 
-        if (isAlreadyConnected()) {
+        if (skylinkConnectionService.isAlreadyConnected()) {
             return false;
         }
 
@@ -239,37 +287,28 @@ public class SkylinkConnection {
 
         logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
 
-        if (isAlreadyConnected()) {
+        if (skylinkConnectionService.isAlreadyConnected()) {
             return false;
         }
 
-        // Record user intention for connection to room state
-        connectionState = ConnectionState.CONNECT;
-
-        if (this.fileTransferListener == null)
+        // Initialise null Listeners to default values.
+        if (this.fileTransferListener == null) {
             this.fileTransferListener = new FileTransferAdapter();
-        if (this.lifeCycleListener == null)
+        }
+        if (this.lifeCycleListener == null) {
             this.lifeCycleListener = new LifeCycleAdapter();
-        if (this.mediaListener == null)
+        }
+        if (this.mediaListener == null) {
             this.mediaListener = new MediaAdapter();
-        if (this.messagesListener == null)
+        }
+        if (this.messagesListener == null) {
             this.messagesListener = new MessagesAdapter();
-        if (this.remotePeerListener == null)
+        }
+        if (this.remotePeerListener == null) {
             this.remotePeerListener = new RemotePeerAdapter();
-
+        }
         if (this.dataTransferListener == null) {
             this.dataTransferListener = new DataTransferAdapter();
-        }
-
-        // Initialise Skylink Services
-        if (this.skylinkPeerService == null) {
-            this.skylinkPeerService = new SkylinkPeerService(this);
-        }
-        if (this.skylinkConnectionService == null) {
-            this.skylinkConnectionService = new SkylinkConnectionService(this, iceServersObserver);
-        }
-        if (this.skylinkMediaService == null) {
-            this.skylinkMediaService = new SkylinkMediaService(this, skylinkConnectionService);
         }
 
         String url = APP_SERVER + skylinkConnectionString;
@@ -340,100 +379,6 @@ public class SkylinkConnection {
     }
 
     /**
-     * Creates a new SkylinkConnection object with the specified parameters.
-     *
-     * @param appKey  The App key from the Skylink Developer Console
-     * @param config  The SkylinkConfig object to configure the type of call.
-     * @param context The application context
-     */
-    public void init(String appKey,
-                     SkylinkConfig config, Context context) {
-        logMessage("SkylinkConnection::config=>" + config);
-
-        this.myConfig = new SkylinkConfig(config);
-
-        logMessage("SkylinkConnection::appKey=>" + appKey);
-        this.appKey = appKey;
-
-        if (!factoryStaticInitialized) {
-
-            boolean hardwareAccelerated = false;
-            EGLContext eglContext = null;
-
-            // Enable hardware acceleration if supported
-            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
-                hardwareAccelerated = true;
-                eglContext = VideoRendererGui.getEGLContext();
-                Log.d(TAG, "Enabled hardware acceleration");
-            }
-
-            /*
-            Note XR:
-             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
-            */
-            abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    true, true, hardwareAccelerated, eglContext
-            ), "Failed to initializeAndroidGlobals");
-
-            factoryStaticInitialized = true;
-        }
-
-        MediaConstraints[] constraintsArray = new MediaConstraints[2];
-        this.sdpMediaConstraints = new MediaConstraints();
-        this.pcConstraints = new MediaConstraints();
-        constraintsArray[0] = this.sdpMediaConstraints;
-        constraintsArray[1] = this.pcConstraints;
-
-        for (MediaConstraints mediaConstranits : constraintsArray) {
-            mediaConstranits.mandatory
-                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
-                            String.valueOf(this.myConfig.hasAudioReceive())));
-            mediaConstranits.mandatory
-                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
-                            String.valueOf(this.myConfig.hasVideoReceive())));
-        }
-
-        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
-                "internalSctpDataChannels", "true"));
-        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
-                "DtlsSrtpKeyAgreement", "true"));
-        this.pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
-                "true"));
-
-        setVideoConstrains(this.myConfig);
-
-        this.applicationContext = context;
-
-        // Instantiate DataChannelManager.
-        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()
-                || this.myConfig.hasDataTransfer()) {
-            this.dataChannelManager = new DataChannelManager(this,
-                    this.myConfig.getTimeout(), myConfig.hasPeerMessaging(),
-                    myConfig.hasFileTransfer());
-            this.dataChannelManager.setConnectionManager(this);
-        }
-
-        // Instantiate other variables
-        peerInfoMap = new Hashtable<String, PeerInfo>();
-    }
-
-    private void setVideoConstrains(SkylinkConfig skylinkConfig) {
-        videoConstraints = new MediaConstraints();
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MAX_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MIN_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MAX_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MIN_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
-    }
-
-    /**
      * Runs the specified action on the UI thread
      *
      * @param action the action to run on the UI thread
@@ -451,10 +396,6 @@ public class SkylinkConnection {
         return peerInfoMap.get(peerId);
     }
 
-    private boolean isAlreadyConnected() {
-        return this.skylinkConnectionService != null;
-    }
-
     /**
      * Disconnects from the room we are currently in.
      */
@@ -470,17 +411,13 @@ public class SkylinkConnection {
                                     synchronized (lockDisconnectSdp) {
                                         synchronized (lockDisconnect) {
 
-                                            // Disconnect only if connected
-                                            if (connectionState != ConnectionState.CONNECT) {
-                                                return;
-                                            }
-
-                                            // Record user intention for connection to room state
-                                            connectionState = ConnectionState.DISCONNECT;
-
-                                            // Disconnect from the Signaling Channel.
+                                            // Disconnect from the Signaling Channel only if connected.
+                                            boolean canDisconnect = false;
                                             if (this.skylinkConnectionService != null) {
-                                                skylinkConnectionService.disconnect();
+                                                canDisconnect = skylinkConnectionService.disconnect();
+                                            }
+                                            if(!canDisconnect) {
+                                                return;
                                             }
 
                                             logMessage("Inside SkylinkConnection.disconnectFromRoom");
@@ -638,7 +575,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from DC.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         lifeCycleListener.onReceiveLog(str);
                     }
                 }
@@ -731,7 +672,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from DC.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         lifeCycleListener.onReceiveLog(str);
                     }
                 }
@@ -791,7 +736,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from DC.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         lifeCycleListener.onReceiveLog(str);
                     }
                 }
@@ -814,6 +763,15 @@ public class SkylinkConnection {
         if (myConfig.hasFileTransfer()) {
             dataChannelManager.acceptFileTransfer(remotePeerId, isPermitted, filePath);
         }
+    }
+
+    /**
+     * Call this method to switch between available camera.
+     *
+     * @return True or false based on whether the switch was successful or not.
+     */
+    public boolean switchCamera() {
+        return skylinkMediaService.switchCamera(lifeCycleListener);
     }
 
     /**
@@ -1082,7 +1040,7 @@ public class SkylinkConnection {
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
                 pc = this.peerConnectionFactory.createPeerConnection(
-                        this.iceServerArray, this.pcConstraints, pcObserver);
+                        this.iceServerArray, skylinkMediaService.getPcConstraints(), pcObserver);
                 logMessage("Created a new peer connection");
             }
             /*if (this.myConfig.hasAudio())
@@ -1157,6 +1115,24 @@ public class SkylinkConnection {
         }
 
         @Override
+        public void onError(final int message) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    // Prevent thread from executing with disconnect concurrently.
+                    synchronized (lockDisconnect) {
+                        // If user has indicated intention to disconnect,
+                        // We should no longer process messages from signalling server.
+                        if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+                        lifeCycleListener.onConnect(false, "Obtained ErrorCode: " + message + ".");
+                    }
+                }
+            });
+        }
+
+        @Override
         public void onError(final String message) {
             runOnUiThread(new Runnable() {
                 public void run() {
@@ -1164,7 +1140,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         lifeCycleListener.onConnect(false, message);
                     }
                 }
@@ -1179,7 +1159,8 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) {
+                        if (skylinkConnectionService.isDisconnected())
+                        {
                             return;
                         }
                         lifeCycleListener.onConnect(true, null);
@@ -1246,7 +1227,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         ProtocolHelper.sendCandidate(connectionManager.skylinkConnectionService, candidate,
                                 PCObserver.this.myId);
                     }
@@ -1294,7 +1279,11 @@ public class SkylinkConnection {
                         synchronized (lockDisconnectSdpSend) {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
-                            if (connectionState == ConnectionState.DISCONNECT) return;
+                                                    if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                             SessionDescription sdp = connectionManager.peerConnectionPool
                                     .get(myId).getLocalDescription();
                             ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
@@ -1319,7 +1308,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         stream.videoTracks.get(0).dispose();
                     }
                 }
@@ -1334,7 +1327,11 @@ public class SkylinkConnection {
             synchronized (lockDisconnect) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
+                                        if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                 if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
                         || myConfig.hasDataTransfer()) {
                     // Create our DataChannel based on given dc.
@@ -1383,7 +1380,11 @@ public class SkylinkConnection {
             synchronized (lockDisconnectSdpCreate) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
+                                        if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                 abortUnless(this.localSdp == null, "multiple SDP create?!?");
 
                 String sdpType = origSdp.type.canonicalForm();
@@ -1425,7 +1426,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnectSdpSend) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
 
                         pc.setLocalDescription(SDPObserver.this, sdp);
                         if (!connectionManager.isMCUConnection)
@@ -1443,7 +1448,11 @@ public class SkylinkConnection {
             synchronized (lockDisconnectSdp) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
+                                        if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                 pc = connectionManager.peerConnectionPool.get(this.myId);
             }
             runOnUiThread(new Runnable() {
@@ -1453,14 +1462,18 @@ public class SkylinkConnection {
 
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         if (pc.signalingState() == PeerConnection.SignalingState.HAVE_REMOTE_OFFER) {
                             if (pc.getRemoteDescription() != null
                                     && pc.getLocalDescription() == null) {
                                 connectionManager
                                         .logMessage("Callee, setRemoteDescription succeeded");
                                 pc.createAnswer(SDPObserver.this,
-                                        sdpMediaConstraints);
+                                        skylinkMediaService.getSdpMediaConstraints());
                                 connectionManager.logMessage("PC - createAnswer.");
                             } else {
                                 drainRemoteCandidates();
@@ -1491,7 +1504,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         throw new RuntimeException("createSDP error: " + error);
                     }
                 }
@@ -1506,7 +1523,11 @@ public class SkylinkConnection {
                     synchronized (lockDisconnect) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (connectionState == ConnectionState.DISCONNECT) return;
+                                                if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                         throw new RuntimeException("setSDP error: " + error);
                     }
                 }
@@ -1518,7 +1539,11 @@ public class SkylinkConnection {
             synchronized (lockDisconnectSdpDrain) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == ConnectionState.DISCONNECT) return;
+                                        if (skylinkConnectionService.isDisconnected())
+                        {
+                            return;
+                        }
+
                 connectionManager.logMessage("Inside SDPObserver.drainRemoteCandidates()");
             }
         }
@@ -1599,20 +1624,12 @@ public class SkylinkConnection {
         return lockDisconnectMsg;
     }
 
-    MediaConstraints getSdpMediaConstraints() {
-        return sdpMediaConstraints;
-    }
-
     PeerConnectionFactory getPeerConnectionFactory() {
         return peerConnectionFactory;
     }
 
     void setPeerConnectionFactory(PeerConnectionFactory peerConnectionFactory) {
         this.peerConnectionFactory = peerConnectionFactory;
-    }
-
-    MediaConstraints getVideoConstraints() {
-        return videoConstraints;
     }
 
     void setDataChannelManager(DataChannelManager dataChannelManager) {
@@ -1670,10 +1687,6 @@ public class SkylinkConnection {
 
     Object getLockDisconnect() {
         return lockDisconnect;
-    }
-
-    ConnectionState getConnectionState() {
-        return connectionState;
     }
 
     WebServerClient.IceServersObserver getIceServersObserver() {

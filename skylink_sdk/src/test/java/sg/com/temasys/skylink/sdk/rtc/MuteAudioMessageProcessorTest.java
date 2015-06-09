@@ -17,6 +17,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
@@ -26,16 +27,17 @@ import static org.mockito.Mockito.spy;
 @RunWith(RobolectricTestRunner.class)
 public class MuteAudioMessageProcessorTest {
 
-    private static final String TAG = MuteAudioMessageProcessorTest.class.getSimpleName();
-
     private static final String MID = "1234";
     public static final boolean MUTED = true;
-    private SkylinkConnection skylinkConnection;
+
     private MuteAudioMessageProcessor muteAudioMessageProcessor;
+    private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
 
     @Before
     public void setup() {
         muteAudioMessageProcessor = new MuteAudioMessageProcessor();
+        skylinkConnectionService = mock(SkylinkConnectionService.class);
     }
 
     @Test
@@ -59,8 +61,11 @@ public class MuteAudioMessageProcessorTest {
 
         doReturn(skylinkConfig).when(skylinkConnection).getMyConfig();
         doReturn(false).when(skylinkConnection).isPeerIdMCU(MID);
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
 
         MediaListener mediaListener = new MediaListener() {
             @Override
