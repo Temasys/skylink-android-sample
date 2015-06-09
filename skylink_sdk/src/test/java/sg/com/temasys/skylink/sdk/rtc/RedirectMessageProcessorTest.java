@@ -43,8 +43,11 @@ public class RedirectMessageProcessorTest {
                 skylinkConnection, skylinkConnectionService, new MessageProcessorFactory()));
         redirectMessageProcessor.setSkylinkConnection(skylinkConnection);
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
         doReturn(skylinkConnectionService).when(skylinkConnection).getSkylinkConnectionService();
         doReturn(signalingMessageProcessingService).when(skylinkConnectionService)
                 .getSignalingMessageProcessingService();

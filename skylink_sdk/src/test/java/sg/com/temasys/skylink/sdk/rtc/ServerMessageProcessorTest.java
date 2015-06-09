@@ -14,6 +14,7 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
@@ -27,12 +28,14 @@ public class ServerMessageProcessorTest {
     private static final String peerId = "1234";
     private static final String data = "TestData";
 
-    private SkylinkConnection skylinkConnection;
     private ServerMessageProcessor serverMessageProcessor;
+    private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
 
     @Before
     public void setup() {
         skylinkConnection = spy(SkylinkConnection.getInstance());
+        skylinkConnectionService = mock(SkylinkConnectionService.class);
         serverMessageProcessor = new ServerMessageProcessor();
         serverMessageProcessor.setSkylinkConnection(skylinkConnection);
     }
@@ -56,8 +59,11 @@ public class ServerMessageProcessorTest {
 
         doReturn(messagesListener).when(skylinkConnection).getMessagesListener();
         doReturn(false).when(skylinkConnection).isPeerIdMCU(peerId);
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mid", peerId);
@@ -86,8 +92,11 @@ public class ServerMessageProcessorTest {
 
         doReturn(messagesListener).when(skylinkConnection).getMessagesListener();
         doReturn(false).when(skylinkConnection).isPeerIdMCU(peerId);
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mid", peerId);
