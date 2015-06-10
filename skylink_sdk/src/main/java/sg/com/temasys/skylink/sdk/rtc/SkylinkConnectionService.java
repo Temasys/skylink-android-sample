@@ -4,32 +4,102 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.PeerConnection;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by xiangrong on 20/5/15.
  */
-class SkylinkConnectionService {
+class SkylinkConnectionService implements AppServerClientListener, SignalingMessageListener {
     private static final String TAG = SkylinkConnectionService.class.getName();
     private ConnectionState connectionState;
     private final SkylinkConnection skylinkConnection;
     private final SignalingMessageProcessingService signalingMessageProcessingService;
-    private final WebServerClient webServerClient;
-    private final WebServerClient.IceServersObserver iceServersObserver;
+    private final AppServerClient appServerClient;
 
     private AppRTCSignalingParameters appRTCSignalingParameters;
 
-    public SkylinkConnectionService(SkylinkConnection skylinkConnection,
-                                    WebServerClient.IceServersObserver iceServersObserver) {
+    public SkylinkConnectionService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
-        this.iceServersObserver = iceServersObserver;
-        this.webServerClient = new WebServerClient(this, iceServersObserver);
+        this.appServerClient = new AppServerClient(this);
         connectionState = ConnectionState.DISCONNECTED;
         this.signalingMessageProcessingService = new SignalingMessageProcessingService(
-                skylinkConnection, this, new MessageProcessorFactory());
+                skylinkConnection, this, new MessageProcessorFactory(), this);
+    }
+
+    @Override
+    public void onErrorAppServer(final int message) {
+        skylinkConnection.runOnUiThread(new Runnable() {
+            public void run() {
+                // Prevent thread from executing with disconnect concurrently.
+                synchronized (skylinkConnection.getLockDisconnect()) {
+                    // If user has indicated intention to disconnect,
+                    // We should no longer process messages from signalling server.
+                    if (isDisconnected()) {
+                        return;
+                    }
+                    skylinkConnection.getLifeCycleListener()
+                            .onConnect(false, "Obtained ErrorCode: " + message + ".");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onErrorAppServer(final String message) {
+        skylinkConnection.runOnUiThread(new Runnable() {
+            public void run() {
+                // Prevent thread from executing with disconnect concurrently.
+                synchronized (skylinkConnection.getLockDisconnect()) {
+                    // If user has indicated intention to disconnect,
+                    // We should no longer process messages from signalling server.
+                    if (isDisconnected()) {
+                        return;
+                    }
+                    skylinkConnection.getLifeCycleListener().onConnect(false, message);
+                }
+            }
+        });
+    }
+
+    /**
+     * Connect to Signaling Server and start signaling process with room.
+     *
+     * @param params Parameters obtained from App server.
+     */
+    @Override
+    public void onObtainedRoomParameters(AppRTCSignalingParameters params) {
+        setAppRTCSignalingParameters(params);
+        // Connect to Signaling Server and start signaling process with room.
+        signalingMessageProcessingService.connect(getIpSigServer(),
+                getPortSigServer(), getSid(), getRoomId());
+    }
+
+    /**
+     * SignalingMessageListener implementation
+     */
+    @Override
+    public void onConnectedToRoom() {
+        // Send joinRoom.
+        ProtocolHelper.sendJoinRoom(this);
+
+        skylinkConnection.runOnUiThread(new Runnable() {
+            public void run() {
+                // Prevent thread from executing with disconnect concurrently.
+                synchronized (skylinkConnection.getLockDisconnect()) {
+                    // If user has indicated intention to disconnect,
+                    // We should no longer process messages from signalling server.
+                    if (isDisconnected()) {
+                        return;
+                    }
+                    skylinkConnection.getLifeCycleListener().onConnect(true, null);
+                }
+            }
+        });
     }
 
     /**
@@ -71,7 +141,7 @@ class SkylinkConnectionService {
     public void connectToRoom(String url) throws IOException, JSONException {
         // Record user intention for connection to room state
         connectionState = ConnectionState.CONNECTING;
-        this.webServerClient.connectToRoom(url);
+        this.appServerClient.connectToRoom(url);
     }
 
     /**
@@ -83,7 +153,7 @@ class SkylinkConnectionService {
      *                     'org.json.JSONArray'.
      */
     void sendServerMessage(String remotePeerId, Object message) {
-        if (this.webServerClient == null)
+        if (this.appServerClient == null)
             return;
 
         JSONObject dict = new JSONObject();
@@ -111,7 +181,7 @@ class SkylinkConnectionService {
      *                 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     void sendLocalUserData(Object userData) {
-        if (this.webServerClient == null) {
+        if (this.appServerClient == null) {
             return;
         }
 
@@ -144,15 +214,6 @@ class SkylinkConnectionService {
             return false;
         }
     }
-
-    // Connect to Signaling Server and start signaling process with room.
-    void obtainedRoomParameters(AppRTCSignalingParameters params) {
-        setAppRTCSignalingParameters(params);
-        // Connect to Signaling Server and start signaling process with room.
-        signalingMessageProcessingService.connect(getIpSigServer(),
-                getPortSigServer(), getSid(), getRoomId());
-    }
-
 
     /**
      * Restart all connections when rejoining room.
@@ -243,14 +304,6 @@ class SkylinkConnectionService {
     }
 
     // Getters and Setters
-    WebServerClient.IceServersObserver getIceServersObserver() {
-        return iceServersObserver;
-    }
-
-    public WebServerClient getWebServerClient() {
-        return webServerClient;
-    }
-
     public SignalingMessageProcessingService getSignalingMessageProcessingService() {
         return signalingMessageProcessingService;
     }
@@ -278,6 +331,15 @@ class SkylinkConnectionService {
     public String getCid() {
         return appRTCSignalingParameters.getCid();
     }
+
+    public List<PeerConnection.IceServer> getIceServers() {
+        return this.appRTCSignalingParameters.getIceServers();
+    }
+
+    public void setIceServers(List<PeerConnection.IceServer> iceServers) {
+        this.appRTCSignalingParameters.setIceServers(iceServers);
+    }
+
 
     public String getLen() {
         return appRTCSignalingParameters.getLen();

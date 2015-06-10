@@ -264,7 +264,8 @@ class SkylinkMediaService {
                 // synchronized (lockDisconnect) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING) return;
+                if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
+                    return;
                 if (skylinkConnection.getMyConfig().hasAudioSend()) {
                     Log.d(TAG, "[SDK] Local audio source: Creating...");
                     localAudioSource = peerConnectionFactory

@@ -13,7 +13,6 @@ import org.robolectric.shadows.ShadowLog;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -36,86 +35,129 @@ public class SignalingServerClientTest {
         ShadowLog.stream = System.out;
         Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
 
+    }
+
+    /**
+     * Test that connectSigServer can connect to to Signaling server and trigger onConnect().
+     *
+     * @throws InterruptedException
+     * @throws UnsupportedEncodingException
+     */
+    @Test
+    public void testOnConnect() throws InterruptedException, UnsupportedEncodingException {
+
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        RoomParameterService roomParameterService = new RoomParameterService(new RoomParameterServiceListener() {
-            @Override
-            public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
-                assertNotNull(params);
-                Log.d(TAG, "onSignalingParametersReceived");
-                mSignalingServer = params.getIpSigserver();
-                mSignalingPort = params.getPortSigserver();
-                countDownLatch.countDown();
-            }
+        // Get signaling parameters from AppServer.
+        RoomParameterService roomParameterService = new RoomParameterService(
+                new RoomParameterServiceListener() {
+                    @Override
+                    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                        assertNotNull(params);
+                        Log.d(TAG, "onSignalingParametersReceived");
+                        mSignalingServer = params.getIpSigserver();
+                        mSignalingPort = params.getPortSigserver();
+                        countDownLatch.countDown();
+                    }
 
-            @Override
-            public void onRoomParameterError(int message) {
-                Log.d(TAG, "onSignalingParametersReceivedError");
-                fail("Should receive signaling parameters successfully");
-                countDownLatch.countDown();
-            }
+                    @Override
+                    public void onRoomParameterError(int message) {
+                        Log.d(TAG, "onSignalingParametersReceivedError");
+                        fail("Should receive signaling parameters successfully");
+                        countDownLatch.countDown();
+                    }
 
-            @Override
-            public void onRoomParameterError(String message) {
-                Log.d(TAG, "onSignalingParametersReceivedError");
-                fail("Should receive signaling parameters successfully");
-                countDownLatch.countDown();
-            }
+                    @Override
+                    public void onRoomParameterError(String message) {
+                        Log.d(TAG, "onSignalingParametersReceivedError");
+                        fail("Should receive signaling parameters successfully");
+                        countDownLatch.countDown();
+                    }
 
-            @Override
-            public void onShouldConnectToRoom() {
-                assertTrue("Should notify to connect to room", true);
-            }
-        });
+                });
 
         roomParameterService.execute(TestConstants.SKYLINK_CONNECTION_STRING);
         countDownLatch.await();
-    }
 
-    @Test
-    public void testOnOpen() throws InterruptedException, UnsupportedEncodingException {
-
-        Log.d(TAG, "testOnOpen");
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Log.d(TAG, "testOnConnect");
+        final CountDownLatch countDownLatch2 = new CountDownLatch(1);
 
         final SignalingServerClient signalingServerClient =
                 new SignalingServerClient(new MessageHandler() {
                     @Override
                     public void onOpen() {
                         Log.d(TAG, "onOpen");
-                        assertEquals(true, true);
-                        countDownLatch.countDown();
+                        countDownLatch2.countDown();
                     }
 
                     @Override
                     public void onMessage(String data) {
-                        Log.d(TAG, "onMessage");
-                        countDownLatch.countDown();
+                        String strErr = "onOpen not called but onMessage called with:\n" + data;
+                        Log.e(TAG, strErr);
+                        fail(strErr);
+                        countDownLatch2.countDown();
                     }
 
                     @Override
                     public void onDisconnect() {
-                        Log.d(TAG, "onDisconnect");
-                        countDownLatch.countDown();
+                        String strErr = "onOpen not called but onDisconnect called.";
+                        Log.e(TAG, strErr);
+                        fail(strErr);
+                        countDownLatch2.countDown();
                     }
 
                     @Override
                     public void onClose() {
-                        Log.d(TAG, "onClose");
-                        countDownLatch.countDown();
+                        String strErr = "onOpen not called but onClose called.";
+                        Log.e(TAG, strErr);
+                        fail(strErr);
+                        countDownLatch2.countDown();
                     }
 
                     @Override
                     public void onError(int code, String description) {
-                        Log.d(TAG, "onError" + code + description);
-                        assertEquals(true, false);
-                        countDownLatch.countDown();
+                        String strErr = "onOpen not called but onErrorAppServer called with:\n" +
+                                "Code " + code + ", " + description + ".";
+                        Log.e(TAG, strErr);
+                        fail(strErr);
+                        countDownLatch2.countDown();
                     }
                 }, "https://" + mSignalingServer, mSignalingPort);
 
-        countDownLatch.await();
+        countDownLatch2.await();
         assertNotNull(signalingServerClient.getSocketIO());
         assertTrue(signalingServerClient.getSocketIO().connected());
         signalingServerClient.getSocketIO().disconnect();
     }
+
+    /* TODO */
+    @Test
+    public void testOnMessageJson() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnMessageString() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnDisconnect() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnTimeOut() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnError() {
+
+    }
+
 }

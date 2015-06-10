@@ -50,7 +50,7 @@ class HealthChecker {
     private String remotePeerId;
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
-    private WebServerClient webServerClient;
+    private AppServerClient appServerClient;
     private MediaStream localMediaStream;
     private SkylinkConfig myConfig;
     private PeerConnection pc;

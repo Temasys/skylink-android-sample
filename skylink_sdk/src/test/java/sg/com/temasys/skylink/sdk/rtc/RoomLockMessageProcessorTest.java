@@ -41,10 +41,10 @@ public class RoomLockMessageProcessorTest {
         skylinkConnection = spy(SkylinkConnection.getInstance());
         // Mock objects
         skylinkConnection = spy(SkylinkConnection.getInstance());
-        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
-                skylinkConnection.getIceServersObserver()));
+        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection
+        ));
         signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
-                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory()));
+                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory(), skylinkConnectionService));
         roomLockMessageProcessor.setSkylinkConnection(skylinkConnection);
 
         doReturn(skylinkConnectionService)

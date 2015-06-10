@@ -51,9 +51,41 @@ public class SignalingMessageProcessingServiceTest {
         jsonObject.put("type", INROOM);
 
         SignalingMessageProcessingService service = new
-                SignalingMessageProcessingService(skylinkConnection, skylinkConnectionService, messageProcessorFactory);
+                SignalingMessageProcessingService(skylinkConnection, skylinkConnectionService, messageProcessorFactory, skylinkConnectionService);
         service.onMessage(jsonObject.toString());
         // Should not process with a different target
         verify(byeMessageProcessor, never()).process(any(JSONObject.class));
     }
+
+    /* TODO */
+    @Test
+    public void testOnOpen() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnMessage() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnDisconnect() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnClose() {
+
+    }
+
+    /* TODO */
+    @Test
+    public void testOnError() {
+
+    }
+
+
 }

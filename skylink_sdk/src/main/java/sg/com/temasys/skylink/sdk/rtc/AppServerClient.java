@@ -30,11 +30,9 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.util.Log;
 
 import org.json.JSONException;
-import org.webrtc.PeerConnection;
 
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms". Uses the client<->server
@@ -44,35 +42,16 @@ import java.util.List;
  * connectToRoom().  Once that's done call sendMessage() and wait for the registered handler to be
  * called with received messages.
  */
-class WebServerClient implements RoomParameterServiceListener {
+class AppServerClient implements RoomParameterServiceListener {
 
-    private static final String TAG = WebServerClient.class.getName();
-    private final SkylinkConnectionService skylinkConnectionService;
-    private final IceServersObserver iceServersObserver;
-
+    private static final String TAG = AppServerClient.class.getName();
+    private AppServerClientListener appServerClientListener;
 
     // These members are only read/written under sendQueue's lock.
     private LinkedList<String> sendQueue = new LinkedList<String>();
 
-
-    private SignalingMessageProcessingService signalingMessageProcessingService;
-
-    /**
-     * Callback fired once the room's signaling parameters specify the set of ICE servers to use.
-     */
-    public static interface IceServersObserver {
-        public void onIceServers(List<PeerConnection.IceServer> iceServers);
-
-        public void onError(int message);
-
-        public void onError(String message);
-
-        public void onShouldConnectToRoom();
-    }
-
-    public WebServerClient(SkylinkConnectionService skylinkConnectionService, IceServersObserver iceServersObserver) {
-        this.skylinkConnectionService = skylinkConnectionService;
-        this.iceServersObserver = iceServersObserver;
+    public AppServerClient(AppServerClientListener appServerClientListener) {
+        this.appServerClientListener = appServerClientListener;
     }
 
     /**
@@ -88,30 +67,35 @@ class WebServerClient implements RoomParameterServiceListener {
         (new RoomParameterService(this)).execute(url);
     }
 
+    /**
+     * RoomParameterService implementation
+     */
     @Override
     public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
         if (params != null) {
             Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
             Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
             // Inform that Room parameters have been obtained.
-            skylinkConnectionService.obtainedRoomParameters(params);
+            appServerClientListener.onObtainedRoomParameters(params);
         }
     }
 
     @Override
     public void onRoomParameterError(int message) {
-        WebServerClient.this.iceServersObserver.onError(message);
+        appServerClientListener.onErrorAppServer(message);
     }
 
     @Override
     public void onRoomParameterError(String message) {
-        WebServerClient.this.iceServersObserver.onError(message);
+        appServerClientListener.onErrorAppServer(message);
     }
 
-    @Override
-    public void onShouldConnectToRoom() {
-        WebServerClient.this.iceServersObserver.onShouldConnectToRoom();
-    }
+}
 
+interface AppServerClientListener {
+    public void onErrorAppServer(int message);
 
+    public void onErrorAppServer(String message);
+
+    public void onObtainedRoomParameters(AppRTCSignalingParameters params);
 }

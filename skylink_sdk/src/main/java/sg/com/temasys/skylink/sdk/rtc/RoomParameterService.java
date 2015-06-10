@@ -49,9 +49,6 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
         this.roomParameterServiceListener = roomParameterServiceListener;
     }
 
-    private RoomParameterService() {
-    }
-
     @Override
     protected AppRTCSignalingParameters doInBackground(String... urls) {
         if (urls.length != 1) {
@@ -107,9 +104,6 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
             roomParameterServiceListener.onRoomParameterError(roomJson.getString(INFO));
             return null;
         }
-
-        // Will send joinRoom message.
-        roomParameterServiceListener.onShouldConnectToRoom();
 
         AppRTCSignalingParameters parameters = new AppRTCSignalingParameters();
         parameters.setAppOwner(roomJson.getString(APP_OWNER));
@@ -195,5 +189,4 @@ interface RoomParameterServiceListener {
 
     void onRoomParameterError(String message);
 
-    void onShouldConnectToRoom();
 }

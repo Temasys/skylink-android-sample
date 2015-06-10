@@ -21,13 +21,17 @@ class SignalingMessageProcessingService implements MessageHandler {
     private SkylinkConnectionService skylinkConnectionService;
     private SignalingServerClient socketIOClient;
     private SignalingServerMessageSender sigMsgSender;
+    private SignalingMessageListener signalingMessageListener;
     private final MessageProcessorFactory messageProcessorFactory;
 
     public SignalingMessageProcessingService(SkylinkConnection skylinkConnection,
-                                             SkylinkConnectionService skylinkConnectionService, MessageProcessorFactory messageProcessorFactory) {
+                                             SkylinkConnectionService skylinkConnectionService,
+                                             MessageProcessorFactory messageProcessorFactory,
+                                             SignalingMessageListener signalingMessageListener) {
         this.messageProcessorFactory = messageProcessorFactory;
         this.skylinkConnection = skylinkConnection;
         this.skylinkConnectionService = skylinkConnectionService;
+        this.signalingMessageListener = signalingMessageListener;
     }
 
     public void connect(String signalingIp, int signalingPort, String socketId, String roomId) {
@@ -76,7 +80,8 @@ class SignalingMessageProcessingService implements MessageHandler {
             }
             skylinkConnectionService.setConnectionState(
                     SkylinkConnectionService.ConnectionState.CONNECTED);
-            ProtocolHelper.sendJoinRoom(skylinkConnectionService);
+            // Inform Listener
+            signalingMessageListener.onConnectedToRoom();
         }
     }
 
@@ -126,6 +131,7 @@ class SignalingMessageProcessingService implements MessageHandler {
             }
         }
     }
+
 
     // A place to collect all Signaling message exceptions.
     // As some objects, like runnables, have to catch exceptions.
@@ -181,7 +187,7 @@ class SignalingMessageProcessingService implements MessageHandler {
                         return;
                     }
 
-                    final String message = "[SDK] onError: " + code + ", " + description;
+                    final String message = "[SDK] onErrorAppServer: " + code + ", " + description;
                     Log.d(TAG, message);
                     skylinkConnection.getLifeCycleListener()
                             .onWarning(ErrorCodes.SIGNALING_CONNECTION_ERROR, message);
@@ -191,3 +197,6 @@ class SignalingMessageProcessingService implements MessageHandler {
     }
 }
 
+interface SignalingMessageListener {
+    public void onConnectedToRoom();
+}

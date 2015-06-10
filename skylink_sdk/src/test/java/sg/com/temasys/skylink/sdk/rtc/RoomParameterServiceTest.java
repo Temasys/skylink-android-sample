@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Tests related to CurrentTimeService
+ * Tests related to RoomParameterService
  */
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
@@ -72,11 +72,6 @@ public class RoomParameterServiceTest {
                         countDownLatch.countDown();
                     }
 
-                    @Override
-                    public void onShouldConnectToRoom() {
-                        assertTrue("Should connect to room", true);
-                        countDownLatch.countDown();
-                    }
                 });
 
         roomParameterService.execute(TestConstants.SKYLINK_CONNECTION_STRING);
@@ -111,11 +106,6 @@ public class RoomParameterServiceTest {
                         countDownLatch.countDown();
                     }
 
-                    @Override
-                    public void onShouldConnectToRoom() {
-                        fail("Should not be called!! for invalid URL");
-                        countDownLatch.countDown();
-                    }
                 });
 
         roomParameterService.execute(TestConstants.INVALID_SKYLINK_CONNECTION_STRING);
