@@ -29,9 +29,9 @@ class SignalingServerClient {
     private final String sigIP;
 
     private Socket socketIO;
-    private MessageHandler delegate;
+    private SignalingServerClientListener delegate;
 
-    public SignalingServerClient(MessageHandler delegate,
+    public SignalingServerClient(SignalingServerClientListener delegate,
                                  String signalingIp, int signalingPort) {
         this.delegate = delegate;
         sigIP = signalingIp;
@@ -50,7 +50,7 @@ class SignalingServerClient {
         return socketIO;
     }
 
-    public void setDelegate(MessageHandler delegate) {
+    public void setDelegate(SignalingServerClientListener delegate) {
         this.delegate = delegate;
     }
 
@@ -172,12 +172,10 @@ class SignalingServerClient {
 }
 
 /**
- * Callback interface for messages delivered on the Google AppEngine channel.
- * <p/>
- * Methods are guaranteed to be invoked on the UI thread of |activity| passed to GAEChannelClient's
- * constructor.
+ * Allows another class to decide what to do on each of these events upon connecting to Signaling
+ * server.
  */
-interface MessageHandler {
+interface SignalingServerClientListener {
     void onOpen();
 
     void onMessage(String data);

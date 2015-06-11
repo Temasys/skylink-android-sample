@@ -52,7 +52,7 @@ public class SignalingServerClientTest {
         RoomParameterService roomParameterService = new RoomParameterService(
                 new RoomParameterServiceListener() {
                     @Override
-                    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                    public void onRoomParameterSuccessful(RoomParameters params) {
                         assertNotNull(params);
                         Log.d(TAG, "onSignalingParametersReceived");
                         mSignalingServer = params.getIpSigserver();
@@ -83,7 +83,7 @@ public class SignalingServerClientTest {
         final CountDownLatch countDownLatch2 = new CountDownLatch(1);
 
         final SignalingServerClient signalingServerClient =
-                new SignalingServerClient(new MessageHandler() {
+                new SignalingServerClient(new SignalingServerClientListener() {
                     @Override
                     public void onOpen() {
                         Log.d(TAG, "onOpen");

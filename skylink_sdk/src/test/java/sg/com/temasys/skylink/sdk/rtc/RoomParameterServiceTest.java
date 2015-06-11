@@ -42,7 +42,7 @@ public class RoomParameterServiceTest {
         RoomParameterService roomParameterService = new RoomParameterService
                 (new RoomParameterServiceListener() {
                     @Override
-                    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                    public void onRoomParameterSuccessful(RoomParameters params) {
                         Log.d(TAG, "onRoomParameterSuccessful");
                         assertNotNull("Parameters should not be null", params);
                         assertFalse(TextUtils.isEmpty(params.getAppOwner()));
@@ -54,7 +54,6 @@ public class RoomParameterServiceTest {
                         assertFalse(TextUtils.isEmpty(params.getTimeStamp()));
                         assertFalse(TextUtils.isEmpty(params.getUserCred()));
                         assertFalse(TextUtils.isEmpty(params.getUserId()));
-                        assertNotNull(params.getVideoConstraints());
                         assertFalse(TextUtils.isEmpty(params.getIpSigserver()));
                         assertFalse(params.getPortSigserver() == 0);
                         countDownLatch.countDown();
@@ -87,7 +86,7 @@ public class RoomParameterServiceTest {
         RoomParameterService roomParameterService = new RoomParameterService
                 (new RoomParameterServiceListener() {
                     @Override
-                    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                    public void onRoomParameterSuccessful(RoomParameters params) {
                         fail("Should not be called!! for invalid URL");
                         countDownLatch.countDown();
                     }

@@ -55,12 +55,12 @@ class AppServerClient implements RoomParameterServiceListener {
     }
 
     /**
-     * Asynchronously connect to an AppRTC room URL, e.g. https://apprtc.appspot.com/?r=NNN and
-     * register message-handling callbacks on its GAE Channel.
+     * Get room parameters from App server required to connect to room. Connection to room will
+     * trigger after obtaining room parameters.
      *
+     * @param url
      * @throws IOException
      * @throws JSONException
-     * @throws Exception
      */
     public void connectToRoom(String url) throws IOException, JSONException {
         // Obtain parameters required to connect to room.
@@ -71,7 +71,7 @@ class AppServerClient implements RoomParameterServiceListener {
      * RoomParameterService implementation
      */
     @Override
-    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+    public void onRoomParameterSuccessful(RoomParameters params) {
         if (params != null) {
             Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
             Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
@@ -97,5 +97,5 @@ interface AppServerClientListener {
 
     public void onErrorAppServer(String message);
 
-    public void onObtainedRoomParameters(AppRTCSignalingParameters params);
+    public void onObtainedRoomParameters(RoomParameters params);
 }

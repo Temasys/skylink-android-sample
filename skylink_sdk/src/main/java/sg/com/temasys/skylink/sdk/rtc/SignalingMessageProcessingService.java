@@ -13,7 +13,7 @@ import org.json.JSONObject;
  * <p/>
  * Created by janidu on 27/4/15.
  */
-class SignalingMessageProcessingService implements MessageHandler {
+class SignalingMessageProcessingService implements SignalingServerClientListener {
 
     private static final String TAG = SignalingMessageProcessingService.class.getSimpleName();
 
@@ -65,7 +65,7 @@ class SignalingMessageProcessingService implements MessageHandler {
     }
 
     /**
-     * MessageHandler implementation
+     * SignalingServerClientListener implementation
      */
 
     @Override

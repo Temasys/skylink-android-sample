@@ -9,7 +9,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.MediaConstraints;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +17,7 @@ import java.io.InputStream;
 /**
  * Service class that will fetch room parameters from a given url
  */
-class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParameters> {
+class RoomParameterService extends AsyncTask<String, Void, RoomParameters> {
 
     public static final String TAG = RoomParameterService.class.getName();
     public static final String APP_OWNER = "apiOwner";
@@ -31,13 +30,13 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
     public static final String ROOM_TIME_STAMP = "timeStamp";
     public static final String USER_CRED = "userCred";
     public static final String USERNAME = "username";
+    /* MediaConstraints are now read from SkylinkConfig, and not from App Server.
     public static final String MEDIA_CONSTRAINTS = "media_constraints";
     public static final String MANDATORY = "mandatory";
     public static final String MAX_WIDTH = "maxWidth";
-    public static final String MAX_HEIGHT = "maxHeight";
+    public static final String MAX_HEIGHT = "maxHeight";*/
     public static final String IP_SIGSERVER = "ipSigserver";
     public static final String PORT_SIGSERVER = "portSigserver";
-    public static final String ERROR_MESSAGES = "error_messages";
     public static final String SUCCESS = "success";
     public static final String INFO = "info";
     public static final String PROTOCOL = "protocol";
@@ -50,7 +49,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
     }
 
     @Override
-    protected AppRTCSignalingParameters doInBackground(String... urls) {
+    protected RoomParameters doInBackground(String... urls) {
         if (urls.length != 1) {
             throw new RuntimeException("Must be called with a single URL");
         }
@@ -63,7 +62,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
         }
     }
 
-    private AppRTCSignalingParameters getParametersForRoomUrl(String url)
+    private RoomParameters getParametersForRoomUrl(String url)
             throws IOException, JSONException {
 
         Log.d(TAG, "getParametersForRoomUrl " + url);
@@ -105,7 +104,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
             return null;
         }
 
-        AppRTCSignalingParameters parameters = new AppRTCSignalingParameters();
+        RoomParameters parameters = new RoomParameters();
         parameters.setAppOwner(roomJson.getString(APP_OWNER));
         Log.d(TAG, "apiOwner->" + parameters.getAppOwner());
 
@@ -136,6 +135,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
         parameters.setUserId(roomJson.getString(USERNAME));
         Log.d(TAG, "username->" + parameters.getUserId());
 
+        /* MediaConstraints are now read from SkylinkConfig, and not from App Server.
         String mc = roomJson.getString(MEDIA_CONSTRAINTS);
         if (mc != null) {
             Log.d(TAG, "media_constraints JSON:\n" + mc);
@@ -150,7 +150,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
             videoConstraints.mandatory.add(maxWidth);
             videoConstraints.mandatory.add(maxHeight);
             parameters.setVideoConstraints(videoConstraints);
-        }
+        }*/
 
         String ipSignalingServer = roomJson.getString(IP_SIGSERVER);
         Log.d(TAG, "ipSigserver->" + ipSignalingServer);
@@ -175,7 +175,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
     }
 
     @Override
-    protected void onPostExecute(AppRTCSignalingParameters params) {
+    protected void onPostExecute(RoomParameters params) {
         if (params != null) {
             roomParameterServiceListener.onRoomParameterSuccessful(params);
         }
@@ -183,7 +183,7 @@ class RoomParameterService extends AsyncTask<String, Void, AppRTCSignalingParame
 }
 
 interface RoomParameterServiceListener {
-    void onRoomParameterSuccessful(AppRTCSignalingParameters params);
+    void onRoomParameterSuccessful(RoomParameters params);
 
     void onRoomParameterError(int message);
 

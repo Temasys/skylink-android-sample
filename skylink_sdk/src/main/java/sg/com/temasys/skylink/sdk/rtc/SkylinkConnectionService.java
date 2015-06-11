@@ -16,21 +16,32 @@ import java.util.Set;
  */
 class SkylinkConnectionService implements AppServerClientListener, SignalingMessageListener {
     private static final String TAG = SkylinkConnectionService.class.getName();
-    private ConnectionState connectionState;
-    private final SkylinkConnection skylinkConnection;
-    private final SignalingMessageProcessingService signalingMessageProcessingService;
-    private final AppServerClient appServerClient;
+    public static final String APP_SERVER = "http://api.temasys.com.sg/api/";
 
-    private AppRTCSignalingParameters appRTCSignalingParameters;
+    /**
+     * List of Connection state types
+     */
+    public enum ConnectionState {
+        CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED
+    }
+
+    private final SkylinkConnection skylinkConnection;
+    private final AppServerClient appServerClient;
+    private final SignalingMessageProcessingService signalingMessageProcessingService;
+
+    private ConnectionState connectionState = ConnectionState.DISCONNECTED;
+    private RoomParameters roomParameters;
 
     public SkylinkConnectionService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
         this.appServerClient = new AppServerClient(this);
-        connectionState = ConnectionState.DISCONNECTED;
         this.signalingMessageProcessingService = new SignalingMessageProcessingService(
                 skylinkConnection, this, new MessageProcessorFactory(), this);
     }
 
+    /**
+     * AppServerClientListener implementation When error occurs while getting room parameters.
+     */
     @Override
     public void onErrorAppServer(final int message) {
         skylinkConnection.runOnUiThread(new Runnable() {
@@ -49,6 +60,9 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         });
     }
 
+    /**
+     * AppServerClientListener implementation When error occurs while getting room parameters.
+     */
     @Override
     public void onErrorAppServer(final String message) {
         skylinkConnection.runOnUiThread(new Runnable() {
@@ -67,20 +81,22 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
     }
 
     /**
-     * Connect to Signaling Server and start signaling process with room.
+     * AppServerClientListener implementation Connect to Signaling Server and start signaling
+     * process with room.
      *
      * @param params Parameters obtained from App server.
      */
     @Override
-    public void onObtainedRoomParameters(AppRTCSignalingParameters params) {
-        setAppRTCSignalingParameters(params);
+    public void onObtainedRoomParameters(RoomParameters params) {
+        setRoomParameters(params);
         // Connect to Signaling Server and start signaling process with room.
         signalingMessageProcessingService.connect(getIpSigServer(),
                 getPortSigServer(), getSid(), getRoomId());
     }
 
     /**
-     * SignalingMessageListener implementation
+     * SignalingMessageListener implementation Established socket.io connection with Signaling
+     * server Should now request to join the room.
      */
     @Override
     public void onConnectedToRoom() {
@@ -124,23 +140,18 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
     }
 
     /**
-     * List of Connection state types
-     */
-    public enum ConnectionState {
-        CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED
-    }
-
-    /**
-     * Asynchronously connect to an AppRTC room URL, e.g. https://apprtc.appspot.com/?r=NNN and
-     * register message-handling callbacks on its GAE Channel.
+     * Asynchronously connect to the App server, which will provide room parameters required to
+     * connect to room. Connection to room will trigger after obtaining room parameters.
      *
+     * @param skylinkConnectionString
      * @throws IOException
      * @throws JSONException
-     * @throws Exception
      */
-    public void connectToRoom(String url) throws IOException, JSONException {
+    public void connectToRoom(String skylinkConnectionString) throws IOException, JSONException {
         // Record user intention for connection to room state
         connectionState = ConnectionState.CONNECTING;
+        String url = APP_SERVER + skylinkConnectionString;
+        Log.d(TAG, "SkylinkConnectionService::connectToRoom url=>" + url);
         this.appServerClient.connectToRoom(url);
     }
 
@@ -308,77 +319,12 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         return signalingMessageProcessingService;
     }
 
-    public AppRTCSignalingParameters getAppRTCSignalingParameters() {
-        return appRTCSignalingParameters;
-    }
-
-    public void setAppRTCSignalingParameters(AppRTCSignalingParameters appRTCSignalingParameters) {
-        this.appRTCSignalingParameters = appRTCSignalingParameters;
-    }
-
     public String getAppOwner() {
-        return appRTCSignalingParameters.getAppOwner();
-    }
-
-    public String getIpSigServer() {
-        return this.appRTCSignalingParameters.getIpSigserver();
-    }
-
-    public int getPortSigServer() {
-        return this.appRTCSignalingParameters.getPortSigserver();
+        return roomParameters.getAppOwner();
     }
 
     public String getCid() {
-        return appRTCSignalingParameters.getCid();
-    }
-
-    public List<PeerConnection.IceServer> getIceServers() {
-        return this.appRTCSignalingParameters.getIceServers();
-    }
-
-    public void setIceServers(List<PeerConnection.IceServer> iceServers) {
-        this.appRTCSignalingParameters.setIceServers(iceServers);
-    }
-
-
-    public String getLen() {
-        return appRTCSignalingParameters.getLen();
-    }
-
-    public String getRoomCred() {
-        return appRTCSignalingParameters.getRoomCred();
-    }
-
-    public String getRoomId() {
-        return appRTCSignalingParameters.getRoomId();
-    }
-
-    public String getSid() {
-        return appRTCSignalingParameters.getSid();
-    }
-
-    public void setSid(String sid) {
-        this.appRTCSignalingParameters.setSid(sid);
-    }
-
-    public String getStart() {
-        return appRTCSignalingParameters.getStart();
-    }
-
-    public void setStart(String start) {
-        this.appRTCSignalingParameters.setStart(start);
-    }
-
-    public String getTimeStamp() {
-        return appRTCSignalingParameters.getTimeStamp();
-    }
-
-    public String getUserCred() {
-        return appRTCSignalingParameters.getUserCred();
-    }
-
-    public String getUserId() {
-        return appRTCSignalingParameters.getUserId();
+        return roomParameters.getCid();
     }
 
     void setConnectionState(ConnectionState connectionState) {
@@ -387,6 +333,70 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
 
     ConnectionState getConnectionState() {
         return connectionState;
+    }
+
+    public String getIpSigServer() {
+        return this.roomParameters.getIpSigserver();
+    }
+
+    public int getPortSigServer() {
+        return this.roomParameters.getPortSigserver();
+    }
+
+    public List<PeerConnection.IceServer> getIceServers() {
+        return this.roomParameters.getIceServers();
+    }
+
+    public void setIceServers(List<PeerConnection.IceServer> iceServers) {
+        this.roomParameters.setIceServers(iceServers);
+    }
+
+    public String getLen() {
+        return roomParameters.getLen();
+    }
+
+    public String getRoomCred() {
+        return roomParameters.getRoomCred();
+    }
+
+    public String getRoomId() {
+        return roomParameters.getRoomId();
+    }
+
+    public RoomParameters getRoomParameters() {
+        return roomParameters;
+    }
+
+    public void setRoomParameters(RoomParameters roomParameters) {
+        this.roomParameters = roomParameters;
+    }
+
+    public String getSid() {
+        return roomParameters.getSid();
+    }
+
+    public void setSid(String sid) {
+        this.roomParameters.setSid(sid);
+    }
+
+    public String getStart() {
+        return roomParameters.getStart();
+    }
+
+    public void setStart(String start) {
+        this.roomParameters.setStart(start);
+    }
+
+    public String getTimeStamp() {
+        return roomParameters.getTimeStamp();
+    }
+
+    public String getUserCred() {
+        return roomParameters.getUserCred();
+    }
+
+    public String getUserId() {
+        return roomParameters.getUserId();
     }
 
 }

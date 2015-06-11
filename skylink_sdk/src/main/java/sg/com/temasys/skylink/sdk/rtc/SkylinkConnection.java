@@ -65,7 +65,6 @@ public class SkylinkConnection {
      * server.
      */
     public static final int DEFAULT_DURATION = 24;
-    public static final String APP_SERVER = "http://api.temasys.com.sg/api/";
 
     private static final String TAG = "SkylinkConnection";
 
@@ -200,8 +199,10 @@ public class SkylinkConnection {
             skylinkPeerService.setSkylinkConnectionService(skylinkConnectionService);
         }
 
+        // Set MediaConstraints
+        // For local media
         skylinkMediaService.setVideoConstrains(this.myConfig);
-
+        // For PC and SDP
         skylinkMediaService.genMediaConstraints(myConfig);
 
         this.applicationContext = context;
@@ -305,20 +306,16 @@ public class SkylinkConnection {
             this.dataTransferListener = new DataTransferAdapter();
         }
 
-        String url = APP_SERVER + skylinkConnectionString;
         try {
-            this.skylinkConnectionService.connectToRoom(url);
+            this.skylinkConnectionService.connectToRoom(skylinkConnectionString);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
         }
 
-        logMessage("SkylinkConnection::connection url=>" + url);
-
         // Start local media
         skylinkMediaService.startLocalMedia(lockDisconnectMediaLocal);
-
         return true;
     }
 
