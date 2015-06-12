@@ -2,6 +2,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Log;
 
+import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,12 +11,14 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests related to SignalingServerClient
@@ -27,6 +30,10 @@ public class SignalingServerClientTest {
 
 
     private static final String TAG = SignalingServerClient.class.getName();
+    private AppServerClient appServerClient;
+    private AppServerClientListener appServerClientListener;
+    private SkylinkRoomParameterProcessor skylinkRoomParameterProcessor;
+
     private String mSignalingServer;
     private int mSignalingPort;
 
@@ -34,6 +41,10 @@ public class SignalingServerClientTest {
     public void setUp() throws Exception {
         ShadowLog.stream = System.out;
         Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
+        appServerClientListener = mock(AppServerClientListener.class);
+        skylinkRoomParameterProcessor = new SkylinkRoomParameterProcessor();
+        appServerClient = new AppServerClient(appServerClientListener,
+                skylinkRoomParameterProcessor);
 
     }
 
@@ -44,19 +55,22 @@ public class SignalingServerClientTest {
      * @throws UnsupportedEncodingException
      */
     @Test
-    public void testOnConnect() throws InterruptedException, UnsupportedEncodingException {
+    public void testOnConnect() throws InterruptedException, IOException, JSONException {
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        // Get signaling parameters from AppServer.
-        RoomParameterService roomParameterService = new RoomParameterService(
-                new RoomParameterServiceListener() {
+        // Get signaling parameters from App Server.
+        skylinkRoomParameterProcessor.setRoomParameterListener(
+                new RoomParameterListener() {
                     @Override
                     public void onRoomParameterSuccessful(RoomParameters params) {
-                        assertNotNull(params);
-                        Log.d(TAG, "onSignalingParametersReceived");
+                        Log.d(TAG, "onRoomParameterSuccessful called.");
+                        assertNotNull("Parameters should not be null", params);
                         mSignalingServer = params.getIpSigserver();
                         mSignalingPort = params.getPortSigserver();
+                        String log = "Signaling Server IP: " + mSignalingServer +
+                                "\nSignaling Server Port: " + mSignalingPort;
+                        Log.d(TAG, log);
                         countDownLatch.countDown();
                     }
 
@@ -73,12 +87,12 @@ public class SignalingServerClientTest {
                         fail("Should receive signaling parameters successfully");
                         countDownLatch.countDown();
                     }
-
                 });
 
-        roomParameterService.execute(TestConstants.SKYLINK_CONNECTION_STRING);
+        appServerClient.connectToRoom(TestConstants.SKYLINK_CONNECTION_STRING);
         countDownLatch.await();
 
+        // Test if able to connect Signaling Server and start onOpen call.
         Log.d(TAG, "testOnConnect");
         final CountDownLatch countDownLatch2 = new CountDownLatch(1);
 

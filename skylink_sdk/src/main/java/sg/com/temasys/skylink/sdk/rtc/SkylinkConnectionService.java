@@ -34,7 +34,7 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
 
     public SkylinkConnectionService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
-        this.appServerClient = new AppServerClient(this);
+        this.appServerClient = new AppServerClient(this, new SkylinkRoomParameterProcessor());
         this.signalingMessageProcessingService = new SignalingMessageProcessingService(
                 skylinkConnection, this, new MessageProcessorFactory(), this);
     }
@@ -151,8 +151,11 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         // Record user intention for connection to room state
         connectionState = ConnectionState.CONNECTING;
         String url = APP_SERVER + skylinkConnectionString;
-        Log.d(TAG, "SkylinkConnectionService::connectToRoom url=>" + url);
-        this.appServerClient.connectToRoom(url);
+        // Append json query
+        String jsonURL = url + "&t=json";
+
+        Log.d(TAG, "SkylinkConnectionService::connectToRoom url=>" + jsonURL);
+        this.appServerClient.connectToRoom(jsonURL);
     }
 
     /**
