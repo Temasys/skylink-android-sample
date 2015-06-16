@@ -58,7 +58,7 @@ public class ServerMessageProcessorTest {
         };
 
         doReturn(messagesListener).when(skylinkConnection).getMessagesListener();
-        doReturn(false).when(skylinkConnection).isPeerIdMCU(peerId);
+        SkylinkPeerService.isPeerIdMCU(peerId);
         doReturn(skylinkConnectionService)
                 .when(skylinkConnection).getSkylinkConnectionService();
         doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
@@ -91,7 +91,7 @@ public class ServerMessageProcessorTest {
         };
 
         doReturn(messagesListener).when(skylinkConnection).getMessagesListener();
-        doReturn(false).when(skylinkConnection).isPeerIdMCU(peerId);
+        SkylinkPeerService.isPeerIdMCU(peerId);
         doReturn(skylinkConnectionService)
                 .when(skylinkConnection).getSkylinkConnectionService();
         doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)

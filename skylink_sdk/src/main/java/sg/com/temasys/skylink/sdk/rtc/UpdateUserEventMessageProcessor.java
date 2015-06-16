@@ -14,7 +14,7 @@ class UpdateUserEventMessageProcessor implements MessageProcessor {
     public void process(JSONObject jsonObject) throws JSONException {
         final String mid = jsonObject.getString("mid");
         final Object userData = jsonObject.get("userData");
-        if (!skylinkConnection.isPeerIdMCU(mid)) {
+        if (!SkylinkPeerService.isPeerIdMCU(mid)) {
             skylinkConnection.runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.

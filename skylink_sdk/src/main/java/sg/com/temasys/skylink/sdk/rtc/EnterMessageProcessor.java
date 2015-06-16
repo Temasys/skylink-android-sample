@@ -18,6 +18,12 @@ class EnterMessageProcessor implements MessageProcessor {
     public void process(JSONObject jsonObject) throws JSONException {
 
         String peerId = jsonObject.getString("mid");
+
+        // Do not process enter from MCU.
+        if(SkylinkPeerService.isPeerIdMCU(peerId)) {
+            return;
+        }
+
         JSONObject userInfoJson = jsonObject.getJSONObject("userInfo");
         UserInfo userInfo = new UserInfo(userInfoJson);
 

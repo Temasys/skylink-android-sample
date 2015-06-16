@@ -25,6 +25,10 @@ class SkylinkPeerService {
         this.skylinkConnection = skylinkConnection;
     }
 
+    static boolean isPeerIdMCU(String peerId) {
+        return peerId.startsWith("MCU");
+    }
+
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
         // Create a new PeerConnection if we can
         PeerConnection peerConnection = skylinkConnection
@@ -58,7 +62,7 @@ class SkylinkPeerService {
 
     void receivedBye(final String peerId) {
 
-        if (!skylinkConnection.isPeerIdMCU(peerId)) {
+        if (!isPeerIdMCU(peerId)) {
             skylinkConnection.runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.

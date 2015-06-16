@@ -20,7 +20,7 @@ class MuteVideoMessageProcessor implements MessageProcessor {
             final String mid = jsonObject.getString("mid");
             final boolean muted = jsonObject.getBoolean("muted");
 
-            if (!skylinkConnection.isPeerIdMCU(mid)) {
+            if (!SkylinkPeerService.isPeerIdMCU(mid)) {
 
                 skylinkConnection.runOnUiThread(new Runnable() {
                     public void run() {

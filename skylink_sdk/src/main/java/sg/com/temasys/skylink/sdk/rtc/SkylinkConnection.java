@@ -959,13 +959,14 @@ public class SkylinkConnection {
     List<Object> getWeightedPeerConnection(String key, double weight) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
-            this.isMCUConnection = isPeerIdMCU(key);
-            if (dataChannelManager != null) {
-                dataChannelManager.setIsMcuRoom(isMCUConnection);
-            }
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
+
+        this.isMCUConnection = SkylinkPeerService.isPeerIdMCU(key);
+        if (dataChannelManager != null) {
+            dataChannelManager.setIsMcuRoom(isMCUConnection);
+        }
 
         List<Object> resultList = new ArrayList<Object>();
         if (weight > 0) {
@@ -1000,18 +1001,19 @@ public class SkylinkConnection {
     PeerConnection getPeerConnection(String key, String iceRole) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
-            this.isMCUConnection = isPeerIdMCU(key);
-            if (dataChannelManager != null) {
-                dataChannelManager.setIsMcuRoom(isMCUConnection);
-            }
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
 
+        this.isMCUConnection = SkylinkPeerService.isPeerIdMCU(key);
+        if (dataChannelManager != null) {
+            dataChannelManager.setIsMcuRoom(isMCUConnection);
+        }
+
         PeerConnection pc = this.peerConnectionPool.get(key);
         if (pc == null) {
             if (this.peerConnectionPool.size() >= MAX_PEER_CONNECTIONS
-                    && !isPeerIdMCU(key))
+                    && !SkylinkPeerService.isPeerIdMCU(key))
                 return null;
 
             logMessage("Creating a new peer connection ...");
@@ -1082,10 +1084,6 @@ public class SkylinkConnection {
                     + e.getMessage());
         }
         return result.substring(0, result.length() - 1);
-    }
-
-    boolean isPeerIdMCU(String peerId) {
-        return peerId.startsWith("MCU");
     }
 
 
@@ -1393,7 +1391,7 @@ public class SkylinkConnection {
                             if (pc.getRemoteDescription() != null) {
                                 connectionManager.logMessage("SDP onSuccess - drain candidates");
                                 drainRemoteCandidates();
-                                if (!connectionManager.isPeerIdMCU(myId)) {
+                                if (!SkylinkPeerService.isPeerIdMCU(myId)) {
                                     String tid = SDPObserver.this.myId;
                                     PeerInfo peerInfo = peerInfoMap.get(SDPObserver.this.myId);
                                     boolean eDC = false;

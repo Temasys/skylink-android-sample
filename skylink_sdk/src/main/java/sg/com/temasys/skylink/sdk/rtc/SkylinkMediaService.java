@@ -81,7 +81,7 @@ class SkylinkMediaService {
                                 new VideoRenderer(remoteRender));
 
                         final GLSurfaceView rVideoView = remoteVideoView;
-                        if (!skylinkConnection.isPeerIdMCU(peerId))
+                        if (!SkylinkPeerService.isPeerIdMCU(peerId))
                             skylinkConnection.getMediaListener().onRemotePeerMediaReceive(peerId, rVideoView);
                     } else {
                         // If:
@@ -89,7 +89,7 @@ class SkylinkMediaService {
                         // OR
                         // This is a no audio and no video stream
                         // still send a null videoView to alert user stream is received.
-                        if (!skylinkConnection.isPeerIdMCU(peerId))
+                        if (!SkylinkPeerService.isPeerIdMCU(peerId))
                             skylinkConnection.getMediaListener()
                                     .onRemotePeerMediaReceive(peerId, null);
                     }
