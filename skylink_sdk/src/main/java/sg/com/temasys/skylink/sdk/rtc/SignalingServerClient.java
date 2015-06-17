@@ -64,6 +64,7 @@ class SignalingServerClient {
 
         // Initialize SocketIO
         socketIO = IO.socket(sigIP + ":" + sigPort, opts);
+        // socketIO = IO.socket("http://ec2-52-8-2-158.us-west-1.compute.amazonaws.com:6001", opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override
@@ -130,12 +131,12 @@ class SignalingServerClient {
 
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
-        Log.d(TAG, "[onMessageJson] Server said:" + jsonStr);
+        Log.d(TAG, "[onMessageJson] Server sent JSON message.");
         delegate.onMessage(jsonStr);
     }
 
     public void onMessage(String data) {
-        Log.d(TAG, "[onMessageString] Server said: " + data);
+        Log.d(TAG, "[onMessageString] Server sent String message");
         delegate.onMessage(data);
     }
 

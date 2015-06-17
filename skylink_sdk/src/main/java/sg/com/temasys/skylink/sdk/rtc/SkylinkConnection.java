@@ -78,7 +78,8 @@ public class SkylinkConnection {
     }
 
     private Context applicationContext;
-    private boolean isMCUConnection;
+    private boolean isFirstPeer = true;
+    private boolean isMcuRoom;
     private DataChannelManager dataChannelManager;
     private Map<String, UserInfo> userInfoMap;
     private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
@@ -481,6 +482,9 @@ public class SkylinkConnection {
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
+
+                                            // Reset parameters
+                                            isFirstPeer = true;
                                         }
                                     }
                                 }
@@ -963,9 +967,14 @@ public class SkylinkConnection {
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
 
-        this.isMCUConnection = SkylinkPeerService.isPeerIdMCU(key);
-        if (dataChannelManager != null) {
-            dataChannelManager.setIsMcuRoom(isMCUConnection);
+        // Check if Peer is MCU
+        // MCU, if present, will always be first Peer to send welcome.
+        if (isFirstPeer) {
+            isFirstPeer = false;
+            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(key);
+            if (dataChannelManager != null && isMcuRoom) {
+                dataChannelManager.setIsMcuRoom(isMcuRoom);
+            }
         }
 
         List<Object> resultList = new ArrayList<Object>();
@@ -998,43 +1007,48 @@ public class SkylinkConnection {
         return getPeerConnection(key, "");
     }
 
-    PeerConnection getPeerConnection(String key, String iceRole) {
+    PeerConnection getPeerConnection(String peerId, String iceRole) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
 
-        this.isMCUConnection = SkylinkPeerService.isPeerIdMCU(key);
-        if (dataChannelManager != null) {
-            dataChannelManager.setIsMcuRoom(isMCUConnection);
+        // Check if Peer is MCU
+        // MCU, if present, will always be first Peer to send welcome.
+        if (isFirstPeer) {
+            isFirstPeer = false;
+            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(peerId);
+            if (dataChannelManager != null && isMcuRoom) {
+                dataChannelManager.setIsMcuRoom(isMcuRoom);
+            }
         }
 
-        PeerConnection pc = this.peerConnectionPool.get(key);
+        PeerConnection pc = this.peerConnectionPool.get(peerId);
         if (pc == null) {
             if (this.peerConnectionPool.size() >= MAX_PEER_CONNECTIONS
-                    && !SkylinkPeerService.isPeerIdMCU(key))
+                    && !SkylinkPeerService.isPeerIdMCU(peerId))
                 return null;
 
             logMessage("Creating a new peer connection ...");
             if ("".equals(iceRole)) {
                 try {
                     throw new SkylinkException(
-                            "Trying to get an existing PeerConnection for " + key +
+                            "Trying to get an existing PeerConnection for " + peerId +
                                     ", but which does not exist!");
                 } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
             }
             PCObserver pcObserver = new SkylinkConnection.PCObserver();
-            pcObserver.setMyId(key);
+            pcObserver.setMyId(peerId);
 
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
                 pc = this.peerConnectionFactory.createPeerConnection(
                         skylinkConnectionService.getIceServers(),
                         skylinkMediaService.getPcConstraints(), pcObserver);
-                logMessage("Created a new peer connection");
+                logMessage("[getPeerConnection] Created new PeerConnection for " + peerId + ".");
             }
             /*if (this.myConfig.hasAudio())
                 pc.addStream(this.localMediaStream, this.pcConstraints);*/
@@ -1043,8 +1057,8 @@ public class SkylinkConnection {
             // Initialise and start Health Checker.
             pcObserver.initialiseHealthChecker(iceRole);
 
-            this.peerConnectionPool.put(key, pc);
-            this.pcObserverPool.put(key, pcObserver);
+            this.peerConnectionPool.put(peerId, pc);
+            this.pcObserverPool.put(peerId, pcObserver);
         }
 
         return pc;
@@ -1187,8 +1201,8 @@ public class SkylinkConnection {
         @Override
         public void onIceGatheringChange(
                 PeerConnection.IceGatheringState newState) {
-            if (newState == PeerConnection.IceGatheringState.COMPLETE
-                    && connectionManager.isMCUConnection)
+            /*if (newState == PeerConnection.IceGatheringState.COMPLETE
+                    && connectionManager.isMcuRoom)
                 runOnUiThread(new Runnable() {
                     public void run() {
                         // Prevent thread from executing with disconnect concurrently.
@@ -1206,7 +1220,7 @@ public class SkylinkConnection {
                                     PCObserver.this.myId);
                         }
                     }
-                });
+                });*/
         }
 
         @SuppressLint("NewApi")
@@ -1344,9 +1358,9 @@ public class SkylinkConnection {
 
 
                         pc.setLocalDescription(SDPObserver.this, sdp);
-                        if (!connectionManager.isMCUConnection)
-                            ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
-                                    sdp, SDPObserver.this.myId);
+                        // if (!connectionManager.isMcuRoom)
+                        ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
+                                sdp, SDPObserver.this.myId);
                     }
                 }
             });
