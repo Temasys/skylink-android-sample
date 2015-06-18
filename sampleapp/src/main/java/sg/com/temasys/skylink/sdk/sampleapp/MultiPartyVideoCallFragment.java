@@ -32,7 +32,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         MediaListener, RemotePeerListener, LifeCycleListener {
 
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
-    private static final String ROOM_NAME = "Hangout";
+    private static final String ROOM_NAME = Constants.ROOM_NAME_MULTI;
     private static final String MY_USER_NAME = "videoCallUser";
     public static final String KEY_SELF = "self";
     private static final String ARG_SECTION_NUMBER = "section_number";
@@ -174,7 +174,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onLocalMediaCapture(GLSurfaceView videoView) {
-        if(videoView == null) return;
+        if (videoView == null) return;
         if (!surfaceViews.containsKey(KEY_SELF)) {
             // Add self view if its not already added
             peerLayouts[0].addView(videoView);
@@ -196,7 +196,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     private void addRemotePeerViews(String remotePeerId, GLSurfaceView videoView) {
-        if(videoView == null) return;
+        if (videoView == null) return;
         if (!surfaceViews.containsKey(remotePeerId)) {
             // Add peer view if its not already added
             // Find the frame layout that's empty

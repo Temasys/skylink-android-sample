@@ -35,7 +35,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
 
     private static final String TAG = ChatFragment.class.getCanonicalName();
-    public static final String ROOM_NAME = "chatRoom";
+    public static final String ROOM_NAME = Constants.ROOM_NAME_CHAT;
     public static final String MY_USER_NAME = "chatRoomUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
     private String remotePeerId;

@@ -1260,16 +1260,22 @@ class DataChannelManager {
     // Send a chat message via DC.
     // Format a chat message into DC chat format.
     // Create a ByteBuffer version of a string message.
-    // Returns false if message could not be sent.
+    // Returns false if message could not be sent due to an error.
     public boolean sendDcChat(boolean isPrivate, Object msg, String tid) {
-        // Check if Peer is still in room
-        // if not, abort and inform caller.
-        if (connectionManager.getUserData(tid) == null) return false;
 
         // Get the DC to send message.
         DataChannel dc;
-        if (isMcuRoom) dc = dcMcu;
-        else {
+        if (isMcuRoom) {
+          // Do not send message to MCU
+            // This scenario occurs when iterating through all PC during a broadcast.
+            if (isPeerIdMCU(tid)) {
+                return true;
+            }
+            dc = dcMcu;
+        } else {
+            // Check if Peer is still in room
+            // if not, abort and inform caller.
+            if (connectionManager.getUserData(tid) == null) return false;
             DcObserver dcObserver = dcInfoList.get(tid);
             dc = dcObserver.getDc();
         }

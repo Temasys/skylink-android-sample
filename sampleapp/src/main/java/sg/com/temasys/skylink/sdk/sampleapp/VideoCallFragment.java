@@ -36,6 +36,7 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
  */
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
+    public static final String ROOM_NAME = Constants.ROOM_NAME_VIDEO;
     public static final String MY_USER_NAME = "videoCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
     //set height width for self-video when in call
@@ -47,6 +48,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private Button btnEnterRoom;
     private EditText etRoomName;
     private SkylinkConnection skylinkConnection;
+    private String roomName;
     private String peerId;
     private ViewGroup.LayoutParams selfLayoutParams;
     private boolean audioMuted;
@@ -69,8 +71,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String roomName = etRoomName.getText().toString();
+                roomName = etRoomName.getText().toString();
                 if (roomName.isEmpty()) {
+                    roomName = ROOM_NAME;
                     Toast.makeText(getActivity(), "Please enter valid room name", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -225,7 +228,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             etRoomName.setEnabled(false);
             toggleAudioButton.setVisibility(View.VISIBLE);
             toggleVideoButton.setVisibility(View.VISIBLE);
-            Toast.makeText(getActivity(), "Connected to room + " + etRoomName.getText().toString() + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Connected to room + " + roomName + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
         } else {
             Log.e(TAG, "Skylink Failed " + message);
             Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "

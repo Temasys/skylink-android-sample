@@ -31,7 +31,7 @@ public class DataTransferFragment extends Fragment implements
         RemotePeerListener, DataTransferListener, LifeCycleListener {
 
     private static final String MY_USER_NAME = "fileTransferUser";
-    private static final String ROOM_NAME = "dataTransferRoom";
+    private static final String ROOM_NAME = Constants.ROOM_NAME_DATA;
     private static final String TAG = DataTransferFragment.class.getName();
 
     private Button btnSendDataRoom;
