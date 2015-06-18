@@ -1201,26 +1201,8 @@ public class SkylinkConnection {
         @Override
         public void onIceGatheringChange(
                 PeerConnection.IceGatheringState newState) {
-            /*if (newState == PeerConnection.IceGatheringState.COMPLETE
-                    && connectionManager.isMcuRoom)
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnectSdpSend) {
-                            // If user has indicated intention to disconnect,
-                            // We should no longer process messages from signalling server.
-                            if (skylinkConnectionService.isDisconnected()) {
-                                return;
-                            }
-
-                            SessionDescription sdp = connectionManager.peerConnectionPool
-                                    .get(myId).getLocalDescription();
-                            ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
-                                    sdp,
-                                    PCObserver.this.myId);
-                        }
-                    }
-                });*/
+            logMessage("[onIceGatheringChange] New ICE Gathering State is now: "
+                    + newState.toString() + ".");
         }
 
         @SuppressLint("NewApi")
@@ -1358,7 +1340,6 @@ public class SkylinkConnection {
 
 
                         pc.setLocalDescription(SDPObserver.this, sdp);
-                        // if (!connectionManager.isMcuRoom)
                         ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
                                 sdp, SDPObserver.this.myId);
                     }

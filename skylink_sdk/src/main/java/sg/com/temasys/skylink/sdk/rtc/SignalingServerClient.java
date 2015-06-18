@@ -64,7 +64,6 @@ class SignalingServerClient {
 
         // Initialize SocketIO
         socketIO = IO.socket(sigIP + ":" + sigPort, opts);
-        // socketIO = IO.socket("http://ec2-52-8-2-158.us-west-1.compute.amazonaws.com:6001", opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override
