@@ -65,8 +65,11 @@ class SkylinkMediaService {
                                     && stream.videoTracks.size() <= 1,
                             "Weird-looking stream: " + stream);
                     GLSurfaceView remoteVideoView = null;
+                    int numVideoTracks = stream.videoTracks.size();
                     // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
-                    if ((stream.videoTracks.size() >= 1)) {
+                    if ((numVideoTracks >= 1)) {
+                        Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
+                                " video track(s) has been added to PeerConnection.");
                         remoteVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
 
                         VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
@@ -89,6 +92,8 @@ class SkylinkMediaService {
                         // OR
                         // This is a no audio and no video stream
                         // still send a null videoView to alert user stream is received.
+                        Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " +
+                                "NO video track has been added to PeerConnection.");
                         if (!SkylinkPeerService.isPeerIdMCU(peerId))
                             skylinkConnection.getMediaListener()
                                     .onRemotePeerMediaReceive(peerId, null);

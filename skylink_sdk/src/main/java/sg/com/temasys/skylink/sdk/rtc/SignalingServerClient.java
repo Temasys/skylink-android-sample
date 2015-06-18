@@ -130,12 +130,12 @@ class SignalingServerClient {
 
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
-        Log.d(TAG, "[onMessageJson] Server said:" + jsonStr);
+        Log.d(TAG, "[onMessageJson] Server sent JSON message.");
         delegate.onMessage(jsonStr);
     }
 
     public void onMessage(String data) {
-        Log.d(TAG, "[onMessageString] Server said: " + data);
+        Log.d(TAG, "[onMessageString] Server sent String message");
         delegate.onMessage(data);
     }
 

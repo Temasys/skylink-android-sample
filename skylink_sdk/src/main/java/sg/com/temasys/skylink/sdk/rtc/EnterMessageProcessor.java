@@ -24,8 +24,14 @@ class EnterMessageProcessor implements MessageProcessor {
             return;
         }
 
-        JSONObject userInfoJson = jsonObject.getJSONObject("userInfo");
-        UserInfo userInfo = new UserInfo(userInfoJson);
+        UserInfo userInfo;
+        // Do not process userInfo from MCU.
+        if (SkylinkPeerService.isPeerIdMCU(peerId)) {
+            userInfo = new UserInfo();
+        } else {
+            JSONObject userInfoJson = jsonObject.getJSONObject("userInfo");
+            userInfo = new UserInfo(userInfoJson);
+        }
 
         PeerInfo peerInfo = new PeerInfo();
         peerInfo.setAgent(jsonObject.getString("agent"));
