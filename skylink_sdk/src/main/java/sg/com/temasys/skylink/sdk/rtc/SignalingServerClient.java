@@ -63,7 +63,8 @@ class SignalingServerClient {
         opts.timeout = SOCKET_IO_TIME_OUT_MILLISECONDS;
 
         // Initialize SocketIO
-        socketIO = IO.socket(sigIP + ":" + sigPort, opts);
+        String sigUrl = sigIP + ":" + sigPort;
+        socketIO = IO.socket(sigUrl, opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override

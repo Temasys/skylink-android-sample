@@ -640,7 +640,13 @@ public class SkylinkConnection {
                                     "Unable to share the file with Peer " + tid +
                                             " as the Peer has not enabled data channel.");
                         }
-                        dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                        String sendStatus =
+                                dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                        if (!"".equals(sendStatus)) {
+                            logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                    + sendStatus);
+                            throw new SkylinkException(sendStatus);
+                        }
                     }
                 }
             } else {
@@ -656,7 +662,13 @@ public class SkylinkConnection {
                                 "Unable to share the file with Peer " + tid +
                                         " as the Peer has not enabled data channel.");
                     }
-                    dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                    String sendStatus =
+                            dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                    if (!"".equals(sendStatus)) {
+                        logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                + sendStatus);
+                        throw new SkylinkException(sendStatus);
+                    }
                 }
             }
         } else {

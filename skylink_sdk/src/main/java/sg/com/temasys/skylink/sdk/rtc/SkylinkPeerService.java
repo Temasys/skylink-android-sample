@@ -142,7 +142,7 @@ class SkylinkPeerService {
                 sdpString);
 
         peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(peerId), sessionDescription);
-        Log.d(TAG, "PC - setRemoteDescription. Sending " + sessionDescription.type + " to " + peerId);
+        Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
     }
 
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
