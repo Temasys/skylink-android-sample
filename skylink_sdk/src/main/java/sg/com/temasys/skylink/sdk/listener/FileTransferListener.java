@@ -30,7 +30,7 @@ public interface FileTransferListener {
     /**
      * This is triggered when an ongoing file transfer drops due to some reason.
      *
-     * @param remotePeerId The id of the peer
+     * @param remotePeerId The id of the peer. Null if broadcast file transfer was attempted.
      * @param fileName     The name of the file
      * @param message      Message that possibly tells the reason for dropping
      * @param isExplicit   True if user canceled the transfer explicitly, as opposed to being due to

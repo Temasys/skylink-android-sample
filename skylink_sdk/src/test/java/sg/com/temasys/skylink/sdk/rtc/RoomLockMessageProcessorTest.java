@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 
 /**
  * Tests related to RoomLockMessageProcessor
+ * <p/>
  * Created by janidu on 5/5/15.
  */
 @Config(emulateSdk = 18)

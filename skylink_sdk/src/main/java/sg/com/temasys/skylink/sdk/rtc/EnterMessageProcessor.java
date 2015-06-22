@@ -20,7 +20,7 @@ class EnterMessageProcessor implements MessageProcessor {
         String peerId = jsonObject.getString("mid");
 
         // Do not process enter from MCU.
-        if(SkylinkPeerService.isPeerIdMCU(peerId)) {
+        if (SkylinkPeerService.isPeerIdMCU(peerId)) {
             return;
         }
 

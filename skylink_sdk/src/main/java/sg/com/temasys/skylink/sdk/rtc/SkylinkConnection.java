@@ -627,25 +627,37 @@ public class SkylinkConnection {
 
         if (myConfig.hasFileTransfer()) {
             if (remotePeerId == null) {
-                for (String iPeerId : userInfoMap.keySet()) {
-                    String tid = iPeerId;
-                    PeerInfo peerInfo = peerInfoMap.get(tid);
-                    if (peerInfo == null) {
-                        throw new SkylinkException(
-                                "Unable to share the file with Peer " + tid +
-                                        " as the Peer is no longer in room or has missing PeerInfo.");
-                    } else {
-                        if (!peerInfo.isEnableDataChannel()) {
+                // If MCU in room, it will broadcast so no need to send to everyone.
+                if (isMcuRoom) {
+                    String tid = remotePeerId;
+                    String sendStatus =
+                            dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                    if (!"".equals(sendStatus)) {
+                        logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                + sendStatus);
+                        throw new SkylinkException(sendStatus);
+                    }
+                } else {
+                    for (String iPeerId : userInfoMap.keySet()) {
+                        String tid = iPeerId;
+                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                        if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to share the file with Peer " + tid +
-                                            " as the Peer has not enabled data channel.");
-                        }
-                        String sendStatus =
-                                dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
-                        if (!"".equals(sendStatus)) {
-                            logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
-                                    + sendStatus);
-                            throw new SkylinkException(sendStatus);
+                                            " as the Peer is no longer in room or has missing PeerInfo.");
+                        } else {
+                            if (!peerInfo.isEnableDataChannel()) {
+                                throw new SkylinkException(
+                                        "Unable to share the file with Peer " + tid +
+                                                " as the Peer has not enabled data channel.");
+                            }
+                            String sendStatus =
+                                    dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                            if (!"".equals(sendStatus)) {
+                                logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                        + sendStatus);
+                                throw new SkylinkException(sendStatus);
+                            }
                         }
                     }
                 }
