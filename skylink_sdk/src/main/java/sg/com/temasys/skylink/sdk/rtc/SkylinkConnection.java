@@ -478,6 +478,8 @@ public class SkylinkConnection {
                                             }
 
                                             this.peerConnectionFactory = null;
+                                            this.skylinkMediaService = null;
+                                            this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
                                         }
                                     }
