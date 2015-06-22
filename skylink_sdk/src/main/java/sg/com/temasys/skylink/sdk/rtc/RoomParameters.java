@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnection;
 
 import java.util.List;
@@ -8,16 +7,13 @@ import java.util.List;
 /**
  * Created by janidu on 23/2/15.
  */
-class AppRTCSignalingParameters {
+class RoomParameters {
 
     private List<PeerConnection.IceServer> iceServers;
-    private String gaeBaseHref;
-    private String channelToken;
-    private String postMessageUrl;
-    private boolean initiator;
+    /* MediaConstraints are now read from SkylinkConfig, and not from App Server.
     private MediaConstraints pcConstraints;
     private MediaConstraints audioConstraints;
-    private MediaConstraints videoConstraints;
+    private MediaConstraints videoConstraints;*/
     private String appOwner;
     private String cid;
     private String displayName;
@@ -27,7 +23,6 @@ class AppRTCSignalingParameters {
     private String sid;
     private String start;
     private String timeStamp;
-    private String tokenTempCreated;
     private String userCred;
     private String userId;
     private String protocol;
@@ -40,62 +35,6 @@ class AppRTCSignalingParameters {
 
     public void setIceServers(List<PeerConnection.IceServer> iceServers) {
         this.iceServers = iceServers;
-    }
-
-    public String getGaeBaseHref() {
-        return gaeBaseHref;
-    }
-
-    public void setGaeBaseHref(String gaeBaseHref) {
-        this.gaeBaseHref = gaeBaseHref;
-    }
-
-    public String getChannelToken() {
-        return channelToken;
-    }
-
-    public void setChannelToken(String channelToken) {
-        this.channelToken = channelToken;
-    }
-
-    public String getPostMessageUrl() {
-        return postMessageUrl;
-    }
-
-    public void setPostMessageUrl(String postMessageUrl) {
-        this.postMessageUrl = postMessageUrl;
-    }
-
-    public boolean isInitiator() {
-        return initiator;
-    }
-
-    public void setInitiator(boolean initiator) {
-        this.initiator = initiator;
-    }
-
-    public MediaConstraints getPcConstraints() {
-        return pcConstraints;
-    }
-
-    public void setPcConstraints(MediaConstraints pcConstraints) {
-        this.pcConstraints = pcConstraints;
-    }
-
-    public MediaConstraints getAudioConstraints() {
-        return audioConstraints;
-    }
-
-    public void setAudioConstraints(MediaConstraints audioConstraints) {
-        this.audioConstraints = audioConstraints;
-    }
-
-    public MediaConstraints getVideoConstraints() {
-        return videoConstraints;
-    }
-
-    public void setVideoConstraints(MediaConstraints videoConstraints) {
-        this.videoConstraints = videoConstraints;
     }
 
     public String getAppOwner() {
@@ -168,14 +107,6 @@ class AppRTCSignalingParameters {
 
     public void setTimeStamp(String timeStamp) {
         this.timeStamp = timeStamp;
-    }
-
-    public String getTokenTempCreated() {
-        return tokenTempCreated;
-    }
-
-    public void setTokenTempCreated(String tokenTempCreated) {
-        this.tokenTempCreated = tokenTempCreated;
     }
 
     public String getUserCred() {

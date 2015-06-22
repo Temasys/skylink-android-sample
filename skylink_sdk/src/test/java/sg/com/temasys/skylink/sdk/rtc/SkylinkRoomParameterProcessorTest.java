@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,38 +12,46 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
- * Tests related to CurrentTimeService
+ * Tests related to SkylinkRoomParameterProcessor
  */
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
-public class RoomParameterServiceTest {
+public class SkylinkRoomParameterProcessorTest {
 
     private static final String TAG = SkylinkConnectionTest.class.getName();
+    private AppServerClient appServerClient;
+    private AppServerClientListener appServerClientListener;
+    private SkylinkRoomParameterProcessor skylinkRoomParameterProcessor;
 
     @Before
     public void setUp() throws Exception {
         ShadowLog.stream = System.out;
         Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
+        appServerClientListener = mock(AppServerClientListener.class);
+        skylinkRoomParameterProcessor = new SkylinkRoomParameterProcessor();
+        appServerClient = new AppServerClient(appServerClientListener,
+                skylinkRoomParameterProcessor);
     }
 
     @Test
-    public void testGetParametersForRoomUrl() throws InterruptedException {
+    public void testGetParametersForRoomUrl() throws InterruptedException, IOException, JSONException {
 
         Log.d(TAG, "testGetParametersForRoomUrl");
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        RoomParameterService roomParameterService = new RoomParameterService
-                (new RoomParameterServiceListener() {
+        skylinkRoomParameterProcessor.setRoomParameterListener(
+                new RoomParameterListener() {
                     @Override
-                    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                    public void onRoomParameterSuccessful(RoomParameters params) {
                         Log.d(TAG, "onRoomParameterSuccessful");
                         assertNotNull("Parameters should not be null", params);
                         assertFalse(TextUtils.isEmpty(params.getAppOwner()));
@@ -54,7 +63,6 @@ public class RoomParameterServiceTest {
                         assertFalse(TextUtils.isEmpty(params.getTimeStamp()));
                         assertFalse(TextUtils.isEmpty(params.getUserCred()));
                         assertFalse(TextUtils.isEmpty(params.getUserId()));
-                        assertNotNull(params.getVideoConstraints());
                         assertFalse(TextUtils.isEmpty(params.getIpSigserver()));
                         assertFalse(params.getPortSigserver() == 0);
                         countDownLatch.countDown();
@@ -72,53 +80,41 @@ public class RoomParameterServiceTest {
                         countDownLatch.countDown();
                     }
 
-                    @Override
-                    public void onShouldConnectToRoom() {
-                        assertTrue("Should connect to room", true);
-                        countDownLatch.countDown();
-                    }
-                });
+                }
+        );
 
-        roomParameterService.execute(TestConstants.SKYLINK_CONNECTION_STRING);
+        appServerClient.connectToRoom(TestConstants.SKYLINK_CONNECTION_STRING);
         countDownLatch.await();
     }
 
     @Test
-    public void testGetRoomParametersForInvalidUrl() throws InterruptedException {
+    public void testGetRoomParametersForInvalidUrl() throws InterruptedException, IOException, JSONException {
 
         Log.d(TAG, "testGetRoomParametersForInvalidUrl");
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        RoomParameterService roomParameterService = new RoomParameterService
-                (new RoomParameterServiceListener() {
+        skylinkRoomParameterProcessor.setRoomParameterListener(
+                new RoomParameterListener() {
                     @Override
-                    public void onRoomParameterSuccessful(AppRTCSignalingParameters params) {
+                    public void onRoomParameterSuccessful(RoomParameters params) {
                         fail("Should not be called!! for invalid URL");
                         countDownLatch.countDown();
                     }
 
                     @Override
                     public void onRoomParameterError(int message) {
-                        Log.d(TAG, "onRoomParameterError " + message);
-                        assertTrue(true);
+                        Log.d(TAG, "onRoomParameterError(int): " + message);
                         countDownLatch.countDown();
                     }
 
                     @Override
                     public void onRoomParameterError(String message) {
-                        Log.d(TAG, "onRoomParameterError " + message);
-                        assertTrue(true);
+                        Log.d(TAG, "onRoomParameterError(String): " + message);
                         countDownLatch.countDown();
                     }
 
-                    @Override
-                    public void onShouldConnectToRoom() {
-                        fail("Should not be called!! for invalid URL");
-                        countDownLatch.countDown();
-                    }
                 });
 
-        roomParameterService.execute(TestConstants.INVALID_SKYLINK_CONNECTION_STRING);
+        appServerClient.connectToRoom(TestConstants.INVALID_SKYLINK_CONNECTION_STRING);
         countDownLatch.await();
     }
 }

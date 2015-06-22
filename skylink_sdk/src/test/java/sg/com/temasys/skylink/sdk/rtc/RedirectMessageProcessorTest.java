@@ -37,10 +37,10 @@ public class RedirectMessageProcessorTest {
 
         // Mock objects
         skylinkConnection = spy(SkylinkConnection.getInstance());
-        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
-                skylinkConnection.getIceServersObserver()));
+        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection
+        ));
         signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
-                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory()));
+                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory(), skylinkConnectionService));
         redirectMessageProcessor.setSkylinkConnection(skylinkConnection);
 
         doReturn(skylinkConnectionService)

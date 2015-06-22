@@ -29,9 +29,9 @@ class SignalingServerClient {
     private final String sigIP;
 
     private Socket socketIO;
-    private MessageHandler delegate;
+    private SignalingServerClientListener delegate;
 
-    public SignalingServerClient(MessageHandler delegate,
+    public SignalingServerClient(SignalingServerClientListener delegate,
                                  String signalingIp, int signalingPort) {
         this.delegate = delegate;
         sigIP = signalingIp;
@@ -50,7 +50,7 @@ class SignalingServerClient {
         return socketIO;
     }
 
-    public void setDelegate(MessageHandler delegate) {
+    public void setDelegate(SignalingServerClientListener delegate) {
         this.delegate = delegate;
     }
 
@@ -130,22 +130,22 @@ class SignalingServerClient {
 
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
-        Log.d(TAG, "Server said:" + jsonStr);
+        Log.d(TAG, "[onMessageJson] Server said:" + jsonStr);
         delegate.onMessage(jsonStr);
     }
 
     public void onMessage(String data) {
-        Log.d(TAG, "Server said: " + data);
+        Log.d(TAG, "[onMessageString] Server said: " + data);
         delegate.onMessage(data);
     }
 
     void onDisconnect() {
-        Log.d(TAG, "Disconnected from Signaling server.");
+        Log.d(TAG, "[onDisconnect] Disconnected from Signaling server.");
         delegate.onDisconnect();
     }
 
     void onTimeOut() {
-        Log.d(TAG, "Connection with Signaling server time out.");
+        Log.d(TAG, "[onTimeOut] Connection with Signaling server time out.");
         if (delegate != null) {
             delegate.onClose();
         }
@@ -169,4 +169,20 @@ class SignalingServerClient {
         // Delegate will log message and result in UI disconnect.
         delegate.onError(0, strErr);
     }
+}
+
+/**
+ * Allows another class to decide what to do on each of these events upon connecting to Signaling
+ * server.
+ */
+interface SignalingServerClientListener {
+    void onOpen();
+
+    void onMessage(String data);
+
+    void onDisconnect();
+
+    void onClose();
+
+    void onError(int code, String description);
 }

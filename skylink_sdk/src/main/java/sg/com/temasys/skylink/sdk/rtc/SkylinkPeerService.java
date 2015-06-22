@@ -18,8 +18,8 @@ class SkylinkPeerService {
     private static final String TAG = SkylinkPeerService.class.getSimpleName();
 
     private final SkylinkConnection skylinkConnection;
-
     private SkylinkMediaService skylinkMediaService;
+    private SkylinkConnectionService skylinkConnectionService;
 
     public SkylinkPeerService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
@@ -98,7 +98,7 @@ class SkylinkPeerService {
 
         skylinkConnection.getSkylinkConnectionService().setSid(peerId);
 
-        skylinkConnection.getIceServersObserver().onIceServers(iceServers);
+        skylinkConnectionService.setIceServers(iceServers);
 
         // Set mid and displayName in DataChannelManager
         if (skylinkConnection.getDataChannelManager() != null) {
@@ -211,6 +211,10 @@ class SkylinkPeerService {
     // Getters and Setters
     public void setSkylinkMediaService(SkylinkMediaService skylinkMediaService) {
         this.skylinkMediaService = skylinkMediaService;
+    }
+
+    public void setSkylinkConnectionService(SkylinkConnectionService skylinkConnectionService) {
+        this.skylinkConnectionService = skylinkConnectionService;
     }
 
 }

@@ -100,9 +100,10 @@ class SkylinkMediaService {
     }
 
     /**
-     * Generate MediaConstraints for PC and SDP.
+     * Generate MediaConstraints for PC and SDP. Populate them with values of Audio and Video
+     * receive from SkylinkConfig. Populate PC with P2P security values.
      *
-     * @param skylinkConfig SkylinkConfig to get contraint values from.
+     * @param skylinkConfig SkylinkConfig to get constraint values from.
      */
     void genMediaConstraints(SkylinkConfig skylinkConfig) {
         MediaConstraints[] constraintsArray = new MediaConstraints[2];
@@ -264,7 +265,8 @@ class SkylinkMediaService {
                 // synchronized (lockDisconnect) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING) return;
+                if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
+                    return;
                 if (skylinkConnection.getMyConfig().hasAudioSend()) {
                     Log.d(TAG, "[SDK] Local audio source: Creating...");
                     localAudioSource = peerConnectionFactory
