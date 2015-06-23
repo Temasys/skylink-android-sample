@@ -417,7 +417,7 @@ public class SkylinkConnection {
                                             // Dispose all DC.
                                             String allPeers = null;
                                             if (dataChannelManager != null) {
-                                                dataChannelManager.disposeDC(allPeers);
+                                                dataChannelManager.disposeDC(allPeers, true);
                                             }
 
                                             if (this.peerConnectionPool != null) {
@@ -527,24 +527,34 @@ public class SkylinkConnection {
 
         if (myConfig.hasPeerMessaging()) {
             if (remotePeerId == null) {
-                Iterator<String> iPeerId = this.userInfoMap.keySet()
-                        .iterator();
-                while (iPeerId.hasNext()) {
-                    String tid = iPeerId.next();
-                    PeerInfo peerInfo = peerInfoMap.get(tid);
-                    if (peerInfo == null) {
-                        throw new SkylinkException(
-                                "Unable to send the message to Peer " + tid +
-                                        " as the Peer is no longer in room or has missing PeerInfo.");
-                    } else {
-                        if (!peerInfo.isEnableDataChannel())
-                            throw new SkylinkException(
-                                    "Unable to send the message via data channel to Peer " + tid +
-                                            " as the Peer has not enabled data channel.");
-                    }
-                    if (!dataChannelManager.sendDcChat(false, message, tid))
+                // If MCU in room, it will broadcast so no need to send to everyone.
+                if (isMcuRoom) {
+                    if (!dataChannelManager.sendDcChat(false, message, null)) {
                         throw new SkylinkException(
                                 "Unable to send the message via data channel");
+                    }
+                } else {
+
+                    Iterator<String> iPeerId = this.userInfoMap.keySet()
+                            .iterator();
+                    while (iPeerId.hasNext()) {
+                        String tid = iPeerId.next();
+                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                        if (peerInfo == null) {
+                            throw new SkylinkException(
+                                    "Unable to send the message to Peer " + tid +
+                                            " as the Peer is no longer in room or has missing PeerInfo.");
+                        } else {
+                            if (!peerInfo.isEnableDataChannel())
+                                throw new SkylinkException(
+                                        "Unable to send the message via data channel to Peer " + tid +
+                                                " as the Peer has not enabled data channel.");
+                        }
+                        if (!dataChannelManager.sendDcChat(false, message, tid))
+                            throw new SkylinkException(
+                                    "Unable to send the message via data channel");
+
+                    }
                 }
             } else {
                 String tid = remotePeerId;
@@ -627,6 +637,7 @@ public class SkylinkConnection {
 
         if (myConfig.hasFileTransfer()) {
             if (remotePeerId == null) {
+                // Send to all Peers
                 // If MCU in room, it will broadcast so no need to send to everyone.
                 if (isMcuRoom) {
                     String tid = remotePeerId;
@@ -638,6 +649,7 @@ public class SkylinkConnection {
                         throw new SkylinkException(sendStatus);
                     }
                 } else {
+                    // Send a WRQ to each Peer.
                     for (String iPeerId : userInfoMap.keySet()) {
                         String tid = iPeerId;
                         PeerInfo peerInfo = peerInfoMap.get(tid);
@@ -662,6 +674,7 @@ public class SkylinkConnection {
                     }
                 }
             } else {
+                // Send to specific Peer.
                 String tid = remotePeerId;
                 PeerInfo peerInfo = peerInfoMap.get(tid);
                 if (peerInfo == null) {

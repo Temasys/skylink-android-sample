@@ -447,11 +447,12 @@ class DataChannelManager {
      * Note: For a specific or all DataChannel(s), dispose of native resources attached. DataChannel
      * is that of peer whose peerId is provided. If provided tid is null, all DC will be disposed.
      *
-     * @param {String} peerId - The socketId of the remote Peer of this DataChannel.
+     * @param {String}   peerId - The socketId of the remote Peer of this DataChannel.
+     * @param disconnect Whether to disconnect from room.
      * @method disposeDC
      * @public
      */
-    public void disposeDC(String peerId) {
+    public void disposeDC(String peerId, boolean disconnect) {
 
         // Send to all Peers with DC.
         Iterator<String> iPeerId = dcInfoList.keySet().iterator();
@@ -486,7 +487,7 @@ class DataChannelManager {
         }
 
         // When we leave room, disposeDc for dcMcu.
-        if (isMcuRoom) {
+        if (isMcuRoom && disconnect) {
             dcMcu.unregisterObserver();
             dcMcu.dispose();
         }
@@ -667,7 +668,7 @@ class DataChannelManager {
     }
 
     // Send file chunk requested.
-    public void dataChannelACKHandler(DcObserver dcObserverIn, JSONObject dataJson) {
+    public void dataChannelACKHandler(final DcObserver dcObserverIn, JSONObject dataJson) {
         // Process DC ACK message in JSON format
     /*
     Keys of DataChannel ACK message:
@@ -676,8 +677,21 @@ class DataChannelManager {
     name = Name of the file being transferred, including extension but not file path.
     ackN = Chunk number that is expected (starting from 0); -1: The transfer is rejected.
     */
-
+        // Get DcObserver of Peer (not the MCU, if present)
         final DcObserver dcObserver;
+        if (isMcuRoom) {
+            // For broadcasting dcObserver of MCU is used.
+            if (peerSend == null) {
+                dcObserver = dcObsMcu;
+            } else {
+                dcObserver = dcInfoList.get(peerSend);
+            }
+        } else {
+            dcObserver = dcObserverIn;
+        }
+
+        // Get peerId of Peer (not the MCU, if present)
+        String tidPeer = dcObserver.getTid();
 
         // Get the sender
         String sender = "";
@@ -685,22 +699,6 @@ class DataChannelManager {
             sender = dataJson.getString("sender");
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
-        }
-
-        // Get the DC to send message.
-        DataChannel dc;
-        /*// Get the right DcHandler.
-        DcHandler dcHandler;
-        if (isMcuRoom) {
-            // Get the dcMcu DcHandler for this DC.
-        }*/
-
-        if (isMcuRoom) {
-            dc = dcMcu;
-            dcObserver = dcInfoList.get(peerSend);
-        } else {
-            dcObserver = dcObserverIn;
-            dc = dcObserver.getDc();
         }
 
         // Clear send timer.
@@ -734,6 +732,10 @@ class DataChannelManager {
                         connectionManager.getFileTransferListener().onFileTransferPermissionResponse(tid, filePath, false);
                     }
                 });
+                // End of send operation
+                // Reset peerSend
+                peerSend = "";
+                dcObserver.setNowSending(false);
                 return;
             } else if (chunk == 0) {
                 // Transfer accepted, notify UI.
@@ -769,7 +771,7 @@ class DataChannelManager {
             // Receiver will only request for 1 past the last chunk if the last chunk was still
             // at the full chunkSize.
             // In this case, send an empty string to denote end of file.
-            sendDcString(dc, "");
+            sendDcString(tidPeer, "", true);
             sendLast = true;
         } else if (pos > fileSize) {
             // This happens when the previous chunk was < full size.
@@ -804,7 +806,7 @@ class DataChannelManager {
             String chunkStr = new String(Base64.encodeToString(chunkBA, Base64.DEFAULT));
 
             // Send binary string message
-            sendDcString(dc, chunkStr);
+            sendDcString(tidPeer, chunkStr, true);
         }
 
         // Calculate expected last chunk
@@ -964,13 +966,12 @@ class DataChannelManager {
 
     /**
      * @param dcObserver DcObserver of Peer sending to.
-     * @param dc         DataChannel used to send msg. dcMcu if is MCU room.
      * @param agentStr   Android
      * @param fileName
      * @param timeOut
      * @param isPrivate
      */
-    private void sendWRQ(final DcObserver dcObserver, final DataChannel dc, String agentStr,
+    private void sendWRQ(final DcObserver dcObserver, String agentStr,
                          final String fileName, int timeOut, boolean isPrivate) {
         // Create DC WRQ message in JSON format
     /*
@@ -1009,7 +1010,7 @@ class DataChannelManager {
         }
 
         String msgStr = msgJson.toString();
-        sendDcString(dc, msgStr);
+        sendDcString(tid, msgStr, true);
 
         // Start send timer.
         // Runnable to execute on timeout:
@@ -1061,8 +1062,7 @@ class DataChannelManager {
         }
 
         String msgStr = msgJson.toString();
-        DataChannel dc = dcObserver.getDc();
-        sendDcString(dc, msgStr);
+        sendDcString(tid, msgStr, false);
 
         // Start save timer only if not finalAck or file share decline.
         if (!finalAck && chunk != -1) {
@@ -1128,13 +1128,8 @@ class DataChannelManager {
         }
 
         String msgStr = msgJson.toString();
-        // Get the DC to send message.
-        DataChannel dc;
-        if (isMcuRoom) {
-            dc = dcMcu;
-        } else {
-            dc = dcObserver.getDc();
-        }
+
+        sendDcString(remotePeerId, msgStr, isUploadError);
 
         if (isUploadError) {
             // End of send operation
@@ -1144,9 +1139,9 @@ class DataChannelManager {
             if (remotePeerId.equals(peerRecv)) {
                 // End of receive operation
                 // Reset peerRecv
-                peerRecv = "";
                 // Note that this case cannot be that of same Peer trying to send before previous
                 // send is done as the SDK will(should) prevent this from the sending side.
+                peerRecv = "";
             } else {
                 // Do not reset peerRecv if error due to Peer trying to send
                 // when another Peer is still sending.
@@ -1156,8 +1151,6 @@ class DataChannelManager {
                 Log.d(TAG, logStr);
             }
         }
-
-        sendDcString(dc, msgStr);
     }
 
 
@@ -1199,18 +1192,12 @@ class DataChannelManager {
         }
 
         String msgStr = msgJson.toString();
-        // Get the DC to send message.
-        DataChannel dc;
-        if (isMcuRoom) {
-            dc = dcMcu;
-        } else {
-            dc = dcObserver.getDc();
-        }
+
+        sendDcString(remotePeerId, msgStr, false);
 
         // End of receive operation
         // Reset peerRecv
         peerRecv = "";
-        sendDcString(dc, msgStr);
     }
 
     // API to initiate file transfer.
@@ -1272,16 +1259,13 @@ class DataChannelManager {
         // Send a DataChannel WRQ message.
         int timeOut = TIMEOUT;
         final DcObserver dcObserver;
-        DataChannel dc;
 
         // Get the DcObserver of the Peer
-        dcObserver = dcInfoList.get(tid);
-
-        // Get the DC to send message
-        if (isMcuRoom) {
-            dc = dcMcu;
+        // If broadcasting, use MCU dcObserver.
+        if (tid == null) {
+            dcObserver = dcObsMcu;
         } else {
-            dc = dcObserver.getDc();
+            dcObserver = dcInfoList.get(tid);
         }
 
         // Start of send operation
@@ -1298,7 +1282,7 @@ class DataChannelManager {
         long fileSizeEncoded = adjustedSize * 4 / 3;
         dcObserver.setFileSizeEncoded(fileSizeEncoded);
         // Send WRQ to Peer.
-        sendWRQ(dcObserver, dc, agentStr, fileName, timeOut, isPrivate);
+        sendWRQ(dcObserver, agentStr, fileName, timeOut, isPrivate);
 
     /*// Start send timer.
       // Runnable to execute on timeout:
@@ -1419,23 +1403,19 @@ class DataChannelManager {
 
         // Get the DC to send message.
         DataChannel dc;
-        if (isMcuRoom) {
-            // Do not send message to MCU
-            // This scenario occurs when iterating through all PC during a broadcast.
-            if (isPeerIdMCU(tid)) {
-                return true;
+        // Tid can only be null when in MCU roon and sending public message.
+        if (tid == null) {
+            if (isPrivate) {
+                return false;
             }
-            dc = dcMcu;
+            if (!isMcuRoom) {
+                return false;
+            }
         } else {
             // Check if Peer is still in room
             // if not, abort and inform caller.
             if (connectionManager.getUserData(tid) == null) return false;
-            DcObserver dcObserver = dcInfoList.get(tid);
-            dc = dcObserver.getDc();
         }
-
-        // If PC does not contain DC, return false
-        if (dc == null) return false;
 
         // Create DC chat message in JSON format
         // Keys of DataChannel Chat message:
@@ -1459,7 +1439,7 @@ class DataChannelManager {
         String msgStr = msgJson.toString();
 
         // Send string over DC
-        sendDcString(dc, msgStr);
+        sendDcString(tid, msgStr, true);
         return true;
     }
 
@@ -1490,10 +1470,49 @@ class DataChannelManager {
     // -------------------------------------------------------------------------------------------------
 // DC Common methods
 // -------------------------------------------------------------------------------------------------
-    // Send a string message over DataChannel.
-    // Create a ByteBuffer version of a string message.
-    // Send ByteBuffer via DC.
-    private void sendDcString(DataChannel dc, String msgStr) {
+
+    /**
+     * Send a string message over DataChannel. Create a ByteBuffer version of a string message. Send
+     * ByteBuffer via DC.
+     *
+     * @param tid
+     * @param msgStr
+     * @param isSending True if this is a send file/data/chat operation, false otherwise.
+     */
+    private void sendDcString(String tid, String msgStr, boolean isSending) {
+        DataChannel dc;
+
+        // Select the right DC to use.
+        if (isMcuRoom) {
+            if (isSending) {
+                dc = dcMcu;
+            } else {
+                // Use Peer DC to receive file/data/chat when receiving.
+                DcObserver dcObserver = dcInfoList.get(tid);
+                dc = dcObserver.getDc();
+            }
+        } else {
+            // No MCU in room, hence just use Peer's DC.
+            DcObserver dcObserver = dcInfoList.get(tid);
+            dc = dcObserver.getDc();
+        }
+
+        /*if (tid == null || isPeerIdMCU(tid)) {
+            dc = dcMcu;
+        } else {
+            // Use Peer DC to receive file/data/chat regardless of whether in MCU room.
+            DcObserver dcObserver = dcInfoList.get(tid);
+            dc = dcObserver.getDc();
+            // Use MCU DC to send file/data/chat if in MCU room.
+            if (tid.equals(peerSend) && isMcuRoom) {
+                dc = dcMcu;
+            } else if (!peerRecv.equals(tid)) {
+                // If tid is not null, nor peerSend nor peerRecv, report an error.
+                Log.e(TAG, "[sendDcString] Unable to locate DataChannel for Peer " +
+                        tid + ", hence not sending DC String.");
+            }
+        }*/
+
         // Create DataChannel Buffer from ByteBuffer from chat string.
         // Create byte array using String, using UTF-8 encoding.
         byte[] byteArray = msgStr.getBytes(Charset.forName("UTF-8"));
@@ -1512,7 +1531,6 @@ class DataChannelManager {
         // Send msg via DC.
         dc.send(buffer);
         Log.d(TAG, "Sent DC String: " + msgStr);
-
     }
 
     // -------------------------------------------------------------------------------------------------

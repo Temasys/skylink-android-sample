@@ -84,7 +84,7 @@ class SkylinkPeerService {
 
         // Dispose DataChannel.
         if (dataChannelManager != null) {
-            dataChannelManager.disposeDC(peerId);
+            dataChannelManager.disposeDC(peerId, false);
         }
 
         ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
