@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
@@ -1480,38 +1479,7 @@ class DataChannelManager {
      * @param isSending True if this is a send file/data/chat operation, false otherwise.
      */
     private void sendDcString(String tid, String msgStr, boolean isSending) {
-        DataChannel dc;
-
-        // Select the right DC to use.
-        if (isMcuRoom) {
-            if (isSending) {
-                dc = dcMcu;
-            } else {
-                // Use Peer DC to receive file/data/chat when receiving.
-                DcObserver dcObserver = dcInfoList.get(tid);
-                dc = dcObserver.getDc();
-            }
-        } else {
-            // No MCU in room, hence just use Peer's DC.
-            DcObserver dcObserver = dcInfoList.get(tid);
-            dc = dcObserver.getDc();
-        }
-
-        /*if (tid == null || isPeerIdMCU(tid)) {
-            dc = dcMcu;
-        } else {
-            // Use Peer DC to receive file/data/chat regardless of whether in MCU room.
-            DcObserver dcObserver = dcInfoList.get(tid);
-            dc = dcObserver.getDc();
-            // Use MCU DC to send file/data/chat if in MCU room.
-            if (tid.equals(peerSend) && isMcuRoom) {
-                dc = dcMcu;
-            } else if (!peerRecv.equals(tid)) {
-                // If tid is not null, nor peerSend nor peerRecv, report an error.
-                Log.e(TAG, "[sendDcString] Unable to locate DataChannel for Peer " +
-                        tid + ", hence not sending DC String.");
-            }
-        }*/
+        DataChannel dc = getDcToSend(tid, isSending);
 
         // Create DataChannel Buffer from ByteBuffer from chat string.
         // Create byte array using String, using UTF-8 encoding.
@@ -1531,6 +1499,34 @@ class DataChannelManager {
         // Send msg via DC.
         dc.send(buffer);
         Log.d(TAG, "Sent DC String: " + msgStr);
+    }
+
+    /**
+     * Gets the right DataChannel to use for sending to a Peer. Will take into consideration if MCU
+     * is in the room, And if this is a DC file/data/chat send or receive operation.
+     *
+     * @param tid
+     * @param isSending
+     * @return DataChannel to use for sending.
+     */
+    private DataChannel getDcToSend(String tid, boolean isSending) {
+        DataChannel dc;
+
+        // Select the right DC to use.
+        if (isMcuRoom) {
+            if (isSending) {
+                dc = dcMcu;
+            } else {
+                // Use Peer DC to receive file/data/chat when receiving.
+                DcObserver dcObserver = dcInfoList.get(tid);
+                dc = dcObserver.getDc();
+            }
+        } else {
+            // No MCU in room, hence just use Peer's DC.
+            DcObserver dcObserver = dcInfoList.get(tid);
+            dc = dcObserver.getDc();
+        }
+        return dc;
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -1554,29 +1550,30 @@ class DataChannelManager {
      * @param remotePeerId remotePeerID of a specified peer
      * @param byteArray    Array of bytes
      */
-    public void sendDataToPeer(String remotePeerId, byte[] byteArray) throws SkylinkException {
+    void sendDataToPeer(String remotePeerId, byte[] byteArray) throws SkylinkException {
 
         if (byteArray.length > MAX_TRANSFER_SIZE) {
             throw new SkylinkException("Maximum data length is " + MAX_TRANSFER_SIZE);
         }
 
-        if (TextUtils.isEmpty(remotePeerId)) {
-            // Send to all peers as the remotePeerId is empty
-            if (dcInfoList != null && !dcInfoList.isEmpty()) {
-                for (String peerId : dcInfoList.keySet()) {
-                    Log.d(TAG, "Sending data to remotePeerID " + peerId);
-                    sendData(dcInfoList.get(peerId), byteArray);
-                }
-            }
-        } else {
-            // Send data to specified peer
-            sendData(dcInfoList.get(remotePeerId), byteArray);
+        // If remotePeerId is null, it means sending via MCU to all Peers.
+        String peer = "all Peers in room.";
+        if (remotePeerId != null) {
+            peer = "Peer " + getDisplayName(remotePeerId) + " (" + remotePeerId + ").";
         }
+        Log.d(TAG, "Sending data to " + peer);
+
+        sendData(getDcToSend(remotePeerId, true), byteArray);
     }
 
-    private void sendData(final DcObserver dcObserver, byte[] byteArray) {
+    /**
+     * Use the webrtc DataChannel to send binary data.
+     *
+     * @param dc
+     * @param byteArray
+     */
+    private void sendData(DataChannel dc, byte[] byteArray) {
         Log.d(TAG, "Sending data with byte array length " + byteArray.length);
-        DataChannel dc = dcObserver.getDc();
         dc.send(new DataChannel.Buffer(ByteBuffer.wrap(byteArray), true));
     }
 }

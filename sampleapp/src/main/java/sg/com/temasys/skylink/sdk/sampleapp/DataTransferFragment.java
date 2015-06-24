@@ -64,8 +64,9 @@ public class DataTransferFragment extends Fragment implements
                         skylinkConnection.sendData(peerId, data);
                     } catch (SkylinkException e) {
                         Log.e(TAG, e.getMessage(), e);
+                    } catch (UnsupportedOperationException e) {
+                        Log.e(TAG, e.getMessage(), e);
                     }
-
                 }
             }
         });
@@ -78,6 +79,8 @@ public class DataTransferFragment extends Fragment implements
                 try {
                     skylinkConnection.sendData(null, data);
                 } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                } catch (UnsupportedOperationException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
             }

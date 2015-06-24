@@ -726,22 +726,36 @@ public class SkylinkConnection {
      */
     public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
         if (myConfig != null && myConfig.hasDataTransfer()) {
+            // Hack for initial MCU release
+            if (isMcuRoom) {
+                    /*dataChannelManager.sendDataToPeer(null, data);*/
+                throw new UnsupportedOperationException(
+                        "In this SDK version, we are unable to send binary data " +
+                                "when the room has a MCU.");
+            }
             if (remotePeerId == null) {
-                Iterator<String> iPeerId = this.userInfoMap.keySet()
-                        .iterator();
-                while (iPeerId.hasNext()) {
-                    String tid = iPeerId.next();
-                    PeerInfo peerInfo = peerInfoMap.get(tid);
-                    if (peerInfo == null) {
-                        throw new SkylinkException(
-                                "Unable to send data to Peer " + tid +
-                                        " as the Peer is no longer in room or has missing PeerInfo.");
-                    } else {
-                        if (!peerInfo.isEnableDataChannel())
+                // If MCU in room, it will broadcast so no need to send to everyone.
+                if (isMcuRoom) {
+                    dataChannelManager.sendDataToPeer(null, data);
+                } else {
+
+                    Iterator<String> iPeerId = this.userInfoMap.keySet()
+                            .iterator();
+                    while (iPeerId.hasNext()) {
+                        String tid = iPeerId.next();
+                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                        if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to send data to Peer " + tid +
-                                            " as the Peer has not enabled data channel.");
-                        dataChannelManager.sendDataToPeer(tid, data);
+                                            " as the Peer is no longer in room or has missing PeerInfo.");
+                        } else {
+                            if (!peerInfo.isEnableDataChannel()) {
+                                throw new SkylinkException(
+                                        "Unable to send data to Peer " + tid +
+                                                " as the Peer has not enabled data channel.");
+                            }
+                            dataChannelManager.sendDataToPeer(tid, data);
+                        }
                     }
                 }
             } else {
