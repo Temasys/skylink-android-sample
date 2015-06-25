@@ -26,7 +26,11 @@ class SkylinkPeerService {
     }
 
     static boolean isPeerIdMCU(String peerId) {
-        return peerId.startsWith("MCU");
+        boolean mcu = peerId.startsWith("MCU");
+        if (mcu) {
+            Log.d(TAG, "MCU Detected");
+        }
+        return mcu;
     }
 
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {

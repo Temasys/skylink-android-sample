@@ -370,7 +370,7 @@ class DataChannelManager {
                 Log.d(TAG, "Peer " + tid + "'s DC closed.");
             }
             if (state == DataChannel.State.OPEN)
-                if (!isPeerIdMCU(tid))
+                if (!SkylinkPeerService.isPeerIdMCU(tid))
                     connectionManager.runOnUiThread(new Runnable() {
                         public void run() {
                             connectionManager.getRemotePeerListener().onOpenDataConnection(tid);
@@ -429,7 +429,7 @@ class DataChannelManager {
         dc.registerObserver(dcObserver);
 
         // Add tid and dcObserver pair to dcInfoList if not MCU
-        if (isPeerIdMCU(tid)) {
+        if (SkylinkPeerService.isPeerIdMCU(tid)) {
             dcMcu = dc;
             dcObsMcu = dcObserver;
             tidMcu = tid;
@@ -1537,10 +1537,6 @@ class DataChannelManager {
     private String getDisplayName(String tid) {
         String nick = (String) connectionManager.getUserData(tid);
         return nick;
-    }
-
-    private boolean isPeerIdMCU(String peerId) {
-        return peerId.startsWith("MCU");
     }
 
     /**
