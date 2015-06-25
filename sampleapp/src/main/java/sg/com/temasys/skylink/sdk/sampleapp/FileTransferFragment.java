@@ -48,8 +48,11 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     private ImageView ivFilePreview;
     private SkylinkConnection skylinkConnection;
     private String peerId;
-    private Button sendFile;
-    private String fileName = "demofile.png";
+    private Button sendFilePrivate;
+    private Button sendFileGroup;
+    private String fileName1 = "FileTransferPrivate.png";
+    private String fileName2 = "FireTransferGroup.png";
+    private String fileNameDownloaded = "downloadFile.png";
     private String peerName;
     private boolean connected;
 
@@ -58,7 +61,8 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_file_transfer, container, false);
-        sendFile = (Button) rootView.findViewById(R.id.button2);
+        sendFilePrivate = (Button) rootView.findViewById(R.id.btnSendFilePte);
+        sendFileGroup = (Button) rootView.findViewById(R.id.btnSendFileGrp);
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
         etSenderFilePath = (EditText) rootView.findViewById(R.id.et_file_path);
         ivFilePreview = (ImageView) rootView.findViewById(R.id.iv_file_preview);
@@ -67,42 +71,83 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         //save file raw/R.android.icon to the device's file system
         createExternalStoragePrivatePicture();
 
-        String filePath = getFileToTransfer().getAbsolutePath();
-        //show preview of file to transfer
-        ivFilePreview.setImageURI(Uri.parse(filePath));
-        etSenderFilePath.setText(filePath);
+        // Prepare default file for transfer.
+        prepFile(getFileToTransfer(fileName1).getAbsolutePath());
 
-        sendFile.setOnClickListener(new View.OnClickListener() {
+
+        // Send file to specific Peer.
+        sendFilePrivate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //check if peer exists
-                if (peerId == null) {
-                    Toast.makeText(getActivity(), "There is no peer in the room to send a file to",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                //check if valid file
-                String fName = etSenderFilePath.getText().toString();
-                File file = new File(fName);
-                if (file.exists()) {
-                    ivFilePreview.setImageURI(Uri.parse(fName));
-                    fileName = file.getName();
-                } else {
-                    Toast.makeText(getActivity(), "Please enter a valid filename", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                // Prepare private file for transfer.
+                prepFile(getFileToTransfer(fileName1).getAbsolutePath());
+                sendFile(peerId);
+            }
+        });
 
-                //send request to peer requesting permission for file transfer
-                try {
-                    skylinkConnection.sendFileTransferPermissionRequest(peerId, fileName,
-                            getFileToTransfer().getAbsolutePath());
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
+        // Send file to all Peers in room, i.e. via public (AKA group) message.
+        sendFileGroup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Prepare group file for transfer.
+                prepFile(getFileToTransfer(fileName2).getAbsolutePath());
+                sendFile(null);
             }
         });
 
         return rootView;
+    }
+
+    /**
+     * Prepare file before transfer. Sets file path in edit text. Sets file preview.
+     *
+     * @param filePath
+     */
+    private void prepFile(String filePath) {
+        //show preview of file to transfer
+        ivFilePreview.setImageURI(Uri.parse(filePath));
+        etSenderFilePath.setText(filePath);
+    }
+
+    /**
+     * Sends a file to a Peer or all Peers in room.
+     *
+     * @param tid Peer to send to. Use null to send to all in room.
+     */
+    private void sendFile(String tid) {
+        //check if peer exists
+        if (peerId == null) {
+            Toast.makeText(getActivity(), "There is no peer in the room to send a file to",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //check if valid file
+        String filePath = etSenderFilePath.getText().toString();
+        File file = new File(filePath);
+        String fileName;
+        if (file.exists()) {
+            ivFilePreview.setImageURI(Uri.parse(filePath));
+            fileName = file.getName();
+        } else {
+            Toast.makeText(getActivity(), "Please enter a valid filename", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //send request to peer requesting permission for file transfer
+        try {
+            skylinkConnection.sendFileTransferPermissionRequest(tid, fileName,
+                    getFileToTransfer(fileName).getAbsolutePath());
+            String peer = "";
+            if (tid == null) {
+                peer = "all Peers in room";
+            } else {
+                peer = "Peer " + tid;
+            }
+            String toast = "Sending file to " + peer + ".";
+            Toast.makeText(getActivity(), toast, Toast.LENGTH_SHORT).show();
+        } catch (SkylinkException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
     }
 
 
@@ -223,6 +268,10 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     @Override
     public void onFileTransferPermissionRequest(String peerId, String fileName, boolean isPrivate) {
         Toast.makeText(getActivity(), "Received a file request", Toast.LENGTH_LONG).show();
+        // Take note of download file name.
+        if (!"".equals(fileName)) {
+            fileNameDownloaded = fileName;
+        }
         //send false to reject file transfer
         skylinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
     }
@@ -295,9 +344,10 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     }
 
     /**
-     * @return default file to be transferred.
+     * @param fileName String to be used as the name of the file to be created.
+     * @return File to be transferred from default directory (Pictures directory).
      */
-    private File getFileToTransfer() {
+    private File getFileToTransfer(String fileName) {
         File path = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return new File(path, fileName);
     }
@@ -307,7 +357,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      */
     private String getDownloadedFilePath() {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        return path.getAbsolutePath() + File.separator + "downloadFile.png";
+        return path.getAbsolutePath() + File.separator + fileNameDownloaded;
     }
 
 
@@ -325,22 +375,39 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
      * default file to transfer
      */
     void createExternalStoragePrivatePicture() {
-        // Create a path where we will place our picture in our own private
+        // Create a path where we will place our pictures in our own private
         // pictures directory.  Note that we don't really need to place a
         // picture in DIRECTORY_PICTURES, since the media scanner will see
         // all media in these directories; this may be useful with other
         // media types such as DIRECTORY_MUSIC however to help it classify
         // your media for display to the user.
 
-        File file = getFileToTransfer();
+        // Files to be created on device...
+        File fileCopy1 = getFileToTransfer(fileName1);
+        File fileCopy2 = getFileToTransfer(fileName2);
+
+        // ...copied from resource files here:
+        int fileIn1 = R.raw.icon;
+        int fileIn2 = R.raw.icon_group;
+
+        // Copy resource files into files on Device's directory.
+        copyFile(fileIn1, fileCopy1);
+        copyFile(fileIn2, fileCopy2);
+    }
+
+    /**
+     * @param fileIn   File to be copied as a resource id.
+     * @param fileCopy
+     */
+    private void copyFile(int fileIn, File fileCopy) {
         try {
             // Very simple code to copy a picture from the application's
             // resource into the external file.  Note that this code does
             // no error checking, and assumes the picture is small (does not
             // try to copy it in chunks).  Note that if external storage is
             // not currently mounted this will silently fail.
-            InputStream is = getResources().openRawResource(R.raw.icon);
-            OutputStream os = new FileOutputStream(file);
+            InputStream is = getResources().openRawResource(fileIn);
+            OutputStream os = new FileOutputStream(fileCopy);
             byte[] data = new byte[is.available()];
             is.read(data);
             os.write(data);
@@ -350,7 +417,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
             // Tell the media scanner about the new file so that it is
             // immediately available to the user.
             MediaScannerConnection.scanFile(this.getActivity(),
-                    new String[]{file.toString()}, null,
+                    new String[]{fileCopy.toString()}, null,
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
                             Log.i(EXTERNAL_STORAGE, "Scanned " + path + ":");
@@ -360,7 +427,7 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
         } catch (IOException e) {
             // Unable to create file, likely because external storage is
             // not currently mounted.
-            Log.w(EXTERNAL_STORAGE, "Error writing " + file, e);
+            Log.w(EXTERNAL_STORAGE, "Error writing " + fileCopy, e);
         }
     }
 
