@@ -19,6 +19,7 @@ import static org.mockito.Mockito.spy;
 
 /**
  * Tests related to RedirectMessage.
+ * <p/>
  * Created by janidu on 11/5/15.
  */
 @Config(emulateSdk = 18)

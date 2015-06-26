@@ -393,7 +393,7 @@ class ProtocolHelper {
     }
 
     /**
-     * Dispose all PeerConnections and associated DC.
+     * Dispose all PeerConnections and associated DC. Including MCU DC if present.
      *
      * @param skylinkConnection
      * @param reason
@@ -416,7 +416,7 @@ class ProtocolHelper {
 
                 // Dispose DC
                 if (skylinkConnection.getDataChannelManager() != null) {
-                    skylinkConnection.getDataChannelManager().disposeDC(peerId);
+                    skylinkConnection.getDataChannelManager().disposeDC(peerId, true);
                 }
                 // Dispose PeerConnection
                 disposePeerConnection(peerId, skylinkConnection);

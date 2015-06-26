@@ -53,7 +53,7 @@ public class MuteVideoMessageProcessorTest {
         skylinkConnectionService = mock(SkylinkConnectionService.class);
 
         doReturn(skylinkConfig).when(skylinkConnection).getMyConfig();
-        doReturn(false).when(skylinkConnection).isPeerIdMCU(MID);
+        SkylinkPeerService.isPeerIdMCU(MID);
         doReturn(skylinkConnectionService)
                 .when(skylinkConnection).getSkylinkConnectionService();
         doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)

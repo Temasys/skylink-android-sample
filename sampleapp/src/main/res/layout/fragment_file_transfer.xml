@@ -33,11 +33,18 @@
         />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/btnSendFilePte"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Send File"/>
+        android:text="Send File [Private]"/>
+
+    <Button
+        android:id="@+id/btnSendFileGrp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Send File [Group]"/>
 
     <TextView
         android:layout_width="wrap_content"

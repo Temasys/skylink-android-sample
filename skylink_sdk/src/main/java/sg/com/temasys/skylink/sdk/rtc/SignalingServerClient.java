@@ -63,7 +63,8 @@ class SignalingServerClient {
         opts.timeout = SOCKET_IO_TIME_OUT_MILLISECONDS;
 
         // Initialize SocketIO
-        socketIO = IO.socket(sigIP + ":" + sigPort, opts);
+        String sigUrl = sigIP + ":" + sigPort;
+        socketIO = IO.socket(sigUrl, opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override
@@ -130,12 +131,12 @@ class SignalingServerClient {
 
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
-        Log.d(TAG, "[onMessageJson] Server said:" + jsonStr);
+        Log.d(TAG, "[onMessageJson] Server sent JSON message.");
         delegate.onMessage(jsonStr);
     }
 
     public void onMessage(String data) {
-        Log.d(TAG, "[onMessageString] Server said: " + data);
+        Log.d(TAG, "[onMessageString] Server sent String message");
         delegate.onMessage(data);
     }
 

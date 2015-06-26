@@ -30,6 +30,7 @@ public class UserInfo {
      * @return UserInfo object
      */
     public UserInfo() {
+        userData = "";
     }
 
     /**

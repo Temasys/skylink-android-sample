@@ -78,7 +78,8 @@ public class SkylinkConnection {
     }
 
     private Context applicationContext;
-    private boolean isMCUConnection;
+    private boolean isFirstPeer = true;
+    private boolean isMcuRoom;
     private DataChannelManager dataChannelManager;
     private Map<String, UserInfo> userInfoMap;
     private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
@@ -416,7 +417,7 @@ public class SkylinkConnection {
                                             // Dispose all DC.
                                             String allPeers = null;
                                             if (dataChannelManager != null) {
-                                                dataChannelManager.disposeDC(allPeers);
+                                                dataChannelManager.disposeDC(allPeers, true);
                                             }
 
                                             if (this.peerConnectionPool != null) {
@@ -481,6 +482,9 @@ public class SkylinkConnection {
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
+
+                                            // Reset parameters
+                                            isFirstPeer = true;
                                         }
                                     }
                                 }
@@ -523,24 +527,34 @@ public class SkylinkConnection {
 
         if (myConfig.hasPeerMessaging()) {
             if (remotePeerId == null) {
-                Iterator<String> iPeerId = this.userInfoMap.keySet()
-                        .iterator();
-                while (iPeerId.hasNext()) {
-                    String tid = iPeerId.next();
-                    PeerInfo peerInfo = peerInfoMap.get(tid);
-                    if (peerInfo == null) {
-                        throw new SkylinkException(
-                                "Unable to send the message to Peer " + tid +
-                                        " as the Peer is no longer in room or has missing PeerInfo.");
-                    } else {
-                        if (!peerInfo.isEnableDataChannel())
-                            throw new SkylinkException(
-                                    "Unable to send the message via data channel to Peer " + tid +
-                                            " as the Peer has not enabled data channel.");
-                    }
-                    if (!dataChannelManager.sendDcChat(false, message, tid))
+                // If MCU in room, it will broadcast so no need to send to everyone.
+                if (isMcuRoom) {
+                    if (!dataChannelManager.sendDcChat(false, message, null)) {
                         throw new SkylinkException(
                                 "Unable to send the message via data channel");
+                    }
+                } else {
+
+                    Iterator<String> iPeerId = this.userInfoMap.keySet()
+                            .iterator();
+                    while (iPeerId.hasNext()) {
+                        String tid = iPeerId.next();
+                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                        if (peerInfo == null) {
+                            throw new SkylinkException(
+                                    "Unable to send the message to Peer " + tid +
+                                            " as the Peer is no longer in room or has missing PeerInfo.");
+                        } else {
+                            if (!peerInfo.isEnableDataChannel())
+                                throw new SkylinkException(
+                                        "Unable to send the message via data channel to Peer " + tid +
+                                                " as the Peer has not enabled data channel.");
+                        }
+                        if (!dataChannelManager.sendDcChat(false, message, tid))
+                            throw new SkylinkException(
+                                    "Unable to send the message via data channel");
+
+                    }
                 }
             } else {
                 String tid = remotePeerId;
@@ -623,23 +637,44 @@ public class SkylinkConnection {
 
         if (myConfig.hasFileTransfer()) {
             if (remotePeerId == null) {
-                for (String iPeerId : userInfoMap.keySet()) {
-                    String tid = iPeerId;
-                    PeerInfo peerInfo = peerInfoMap.get(tid);
-                    if (peerInfo == null) {
-                        throw new SkylinkException(
-                                "Unable to share the file with Peer " + tid +
-                                        " as the Peer is no longer in room or has missing PeerInfo.");
-                    } else {
-                        if (!peerInfo.isEnableDataChannel()) {
+                // Send to all Peers
+                // If MCU in room, it will broadcast so no need to send to everyone.
+                if (isMcuRoom) {
+                    String tid = remotePeerId;
+                    String sendStatus =
+                            dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                    if (!"".equals(sendStatus)) {
+                        logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                + sendStatus);
+                        throw new SkylinkException(sendStatus);
+                    }
+                } else {
+                    // Send a WRQ to each Peer.
+                    for (String iPeerId : userInfoMap.keySet()) {
+                        String tid = iPeerId;
+                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                        if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to share the file with Peer " + tid +
-                                            " as the Peer has not enabled data channel.");
+                                            " as the Peer is no longer in room or has missing PeerInfo.");
+                        } else {
+                            if (!peerInfo.isEnableDataChannel()) {
+                                throw new SkylinkException(
+                                        "Unable to share the file with Peer " + tid +
+                                                " as the Peer has not enabled data channel.");
+                            }
+                            String sendStatus =
+                                    dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                            if (!"".equals(sendStatus)) {
+                                logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                        + sendStatus);
+                                throw new SkylinkException(sendStatus);
+                            }
                         }
-                        dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
                     }
                 }
             } else {
+                // Send to specific Peer.
                 String tid = remotePeerId;
                 PeerInfo peerInfo = peerInfoMap.get(tid);
                 if (peerInfo == null) {
@@ -652,7 +687,13 @@ public class SkylinkConnection {
                                 "Unable to share the file with Peer " + tid +
                                         " as the Peer has not enabled data channel.");
                     }
-                    dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                    String sendStatus =
+                            dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
+                    if (!"".equals(sendStatus)) {
+                        logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
+                                + sendStatus);
+                        throw new SkylinkException(sendStatus);
+                    }
                 }
             }
         } else {
@@ -685,22 +726,33 @@ public class SkylinkConnection {
      */
     public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
         if (myConfig != null && myConfig.hasDataTransfer()) {
+            // Hack for initial MCU release
+            if (isMcuRoom) {
+                    /*dataChannelManager.sendDataToPeer(null, data);*/
+                throw new UnsupportedOperationException(
+                        "In this SDK version, we are unable to send binary data " +
+                                "when the room has a MCU.");
+            }
             if (remotePeerId == null) {
-                Iterator<String> iPeerId = this.userInfoMap.keySet()
-                        .iterator();
-                while (iPeerId.hasNext()) {
-                    String tid = iPeerId.next();
-                    PeerInfo peerInfo = peerInfoMap.get(tid);
-                    if (peerInfo == null) {
-                        throw new SkylinkException(
-                                "Unable to send data to Peer " + tid +
-                                        " as the Peer is no longer in room or has missing PeerInfo.");
-                    } else {
-                        if (!peerInfo.isEnableDataChannel())
+                // If MCU in room, it will broadcast so no need to send to everyone.
+                if (isMcuRoom) {
+                    dataChannelManager.sendDataToPeer(null, data);
+                } else {
+                    for (String peerId : this.userInfoMap.keySet()) {
+                        String tid = peerId;
+                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                        if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to send data to Peer " + tid +
-                                            " as the Peer has not enabled data channel.");
-                        dataChannelManager.sendDataToPeer(tid, data);
+                                            " as the Peer is no longer in room or has missing PeerInfo.");
+                        } else {
+                            if (!peerInfo.isEnableDataChannel()) {
+                                throw new SkylinkException(
+                                        "Unable to send data to Peer " + tid +
+                                                " as the Peer has not enabled data channel.");
+                            }
+                            dataChannelManager.sendDataToPeer(tid, data);
+                        }
                     }
                 }
             } else {
@@ -959,13 +1011,19 @@ public class SkylinkConnection {
     List<Object> getWeightedPeerConnection(String key, double weight) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
-            this.isMCUConnection = isPeerIdMCU(key);
-            if (dataChannelManager != null) {
-                dataChannelManager.setIsMcuRoom(isMCUConnection);
-            }
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
+
+        // Check if Peer is MCU
+        // MCU, if present, will always be first Peer to send welcome.
+        if (isFirstPeer) {
+            isFirstPeer = false;
+            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(key);
+            if (dataChannelManager != null && isMcuRoom) {
+                dataChannelManager.setIsMcuRoom(isMcuRoom);
+            }
+        }
 
         List<Object> resultList = new ArrayList<Object>();
         if (weight > 0) {
@@ -997,42 +1055,48 @@ public class SkylinkConnection {
         return getPeerConnection(key, "");
     }
 
-    PeerConnection getPeerConnection(String key, String iceRole) {
+    PeerConnection getPeerConnection(String peerId, String iceRole) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
-            this.isMCUConnection = isPeerIdMCU(key);
-            if (dataChannelManager != null) {
-                dataChannelManager.setIsMcuRoom(isMCUConnection);
-            }
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, PCObserver>();
 
-        PeerConnection pc = this.peerConnectionPool.get(key);
+        // Check if Peer is MCU
+        // MCU, if present, will always be first Peer to send welcome.
+        if (isFirstPeer) {
+            isFirstPeer = false;
+            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(peerId);
+            if (dataChannelManager != null && isMcuRoom) {
+                dataChannelManager.setIsMcuRoom(isMcuRoom);
+            }
+        }
+
+        PeerConnection pc = this.peerConnectionPool.get(peerId);
         if (pc == null) {
             if (this.peerConnectionPool.size() >= MAX_PEER_CONNECTIONS
-                    && !isPeerIdMCU(key))
+                    && !SkylinkPeerService.isPeerIdMCU(peerId))
                 return null;
 
             logMessage("Creating a new peer connection ...");
             if ("".equals(iceRole)) {
                 try {
                     throw new SkylinkException(
-                            "Trying to get an existing PeerConnection for " + key +
+                            "Trying to get an existing PeerConnection for " + peerId +
                                     ", but which does not exist!");
                 } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
             }
             PCObserver pcObserver = new SkylinkConnection.PCObserver();
-            pcObserver.setMyId(key);
+            pcObserver.setMyId(peerId);
 
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
                 pc = this.peerConnectionFactory.createPeerConnection(
                         skylinkConnectionService.getIceServers(),
                         skylinkMediaService.getPcConstraints(), pcObserver);
-                logMessage("Created a new peer connection");
+                logMessage("[getPeerConnection] Created new PeerConnection for " + peerId + ".");
             }
             /*if (this.myConfig.hasAudio())
                 pc.addStream(this.localMediaStream, this.pcConstraints);*/
@@ -1041,8 +1105,8 @@ public class SkylinkConnection {
             // Initialise and start Health Checker.
             pcObserver.initialiseHealthChecker(iceRole);
 
-            this.peerConnectionPool.put(key, pc);
-            this.pcObserverPool.put(key, pcObserver);
+            this.peerConnectionPool.put(peerId, pc);
+            this.pcObserverPool.put(peerId, pcObserver);
         }
 
         return pc;
@@ -1082,10 +1146,6 @@ public class SkylinkConnection {
                     + e.getMessage());
         }
         return result.substring(0, result.length() - 1);
-    }
-
-    boolean isPeerIdMCU(String peerId) {
-        return peerId.startsWith("MCU");
     }
 
 
@@ -1189,26 +1249,8 @@ public class SkylinkConnection {
         @Override
         public void onIceGatheringChange(
                 PeerConnection.IceGatheringState newState) {
-            if (newState == PeerConnection.IceGatheringState.COMPLETE
-                    && connectionManager.isMCUConnection)
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        // Prevent thread from executing with disconnect concurrently.
-                        synchronized (lockDisconnectSdpSend) {
-                            // If user has indicated intention to disconnect,
-                            // We should no longer process messages from signalling server.
-                            if (skylinkConnectionService.isDisconnected()) {
-                                return;
-                            }
-
-                            SessionDescription sdp = connectionManager.peerConnectionPool
-                                    .get(myId).getLocalDescription();
-                            ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
-                                    sdp,
-                                    PCObserver.this.myId);
-                        }
-                    }
-                });
+            logMessage("[onIceGatheringChange] New ICE Gathering State is now: "
+                    + newState.toString() + ".");
         }
 
         @SuppressLint("NewApi")
@@ -1346,9 +1388,8 @@ public class SkylinkConnection {
 
 
                         pc.setLocalDescription(SDPObserver.this, sdp);
-                        if (!connectionManager.isMCUConnection)
-                            ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
-                                    sdp, SDPObserver.this.myId);
+                        ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
+                                sdp, SDPObserver.this.myId);
                     }
                 }
             });
@@ -1393,7 +1434,7 @@ public class SkylinkConnection {
                             if (pc.getRemoteDescription() != null) {
                                 connectionManager.logMessage("SDP onSuccess - drain candidates");
                                 drainRemoteCandidates();
-                                if (!connectionManager.isPeerIdMCU(myId)) {
+                                if (!SkylinkPeerService.isPeerIdMCU(myId)) {
                                     String tid = SDPObserver.this.myId;
                                     PeerInfo peerInfo = peerInfoMap.get(SDPObserver.this.myId);
                                     boolean eDC = false;

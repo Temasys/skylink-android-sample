@@ -35,7 +35,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 public class ChatFragment extends Fragment implements LifeCycleListener, RemotePeerListener, MessagesListener {
 
     private static final String TAG = ChatFragment.class.getCanonicalName();
-    public static final String ROOM_NAME = "chatRoom";
+    public static final String ROOM_NAME = Constants.ROOM_NAME_CHAT;
     public static final String MY_USER_NAME = "chatRoomUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
     private String remotePeerId;
@@ -72,14 +72,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         btnSendPrivateServerMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 //Add chat message to the listview
-                String message = addMessageToListView(true);
+                String message = addMessageToListView(true, false);
 
                 //pass null for remotePeerId to send message to send mesage to all users in the room
                 //sends message using the signalling server
                 skylinkConnection.sendServerMessage(remotePeerId, message);
-
             }
         });
 
@@ -87,30 +85,10 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
         btnSendPublicServerMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 //Add chat message to the listview
-                String message = addMessageToListView(false);
+                String message = addMessageToListView(false, false);
 
                 //pass remotePeerId instead of null to send message to specific peer
-                //sends message using the signalling server
-                skylinkConnection.sendServerMessage(null, message);
-
-                adapter.notifyDataSetChanged();
-            }
-        });
-
-        /** Defining a click event listener for the button "Send Public Server Message" */
-        btnSendPublicServerMessage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //Add chat message to the listview
-                EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
-                String message = edit.getText().toString();
-                chatMessageCollection.add("You : " + message);
-                edit.setText("");
-
-                //pass null for remotePeerId to send message to send mesage to all users in the room
                 //sends message using the signalling server
                 skylinkConnection.sendServerMessage(null, message);
 
@@ -128,7 +106,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 }
 
                 //Add chat message to the listview
-                String message = addMessageToListView(true);
+                String message = addMessageToListView(true, true);
 
                 try {
                     //sends p2p message using the datachannel to the specific user
@@ -151,7 +129,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
                 }
 
                 //Add chat message to the listview
-                String message = addMessageToListView(false);
+                String message = addMessageToListView(false, true);
 
                 try {
                     //sends p2p message using the datachannel to the all users
@@ -174,12 +152,16 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
      * Retrives message written in edit text and adds it to the chatlistview
      *
      * @param isPrivateMessage
+     * @param isP2P
      * @return message that was added to the listview
      */
-    private String addMessageToListView(boolean isPrivateMessage) {
+    private String addMessageToListView(boolean isPrivateMessage, boolean isP2P) {
         EditText edit = (EditText) getActivity().findViewById(R.id.chatMessage);
+        String prefix = "You : ";
+        prefix += isPrivateMessage ? "[PTE]" : "[GRP]";
+        prefix += isP2P ? "[P2P] " : "[SIG] ";
         String message = edit.getText().toString();
-        chatMessageCollection.add(isPrivateMessage ? "You : <Private>" + message : "You : " + message);
+        chatMessageCollection.add(prefix + message);
         edit.setText("");
         adapter.notifyDataSetChanged();
         return message;
@@ -345,10 +327,12 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
 
     @Override
     public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
-        String chatPrefix = "";
+        String chatPrefix = "[SIG] ";
         //add prefix if the chat is a private chat - not seen by other users.
         if (isPrivate) {
-            chatPrefix = "<Private> ";
+            chatPrefix = "[PTE]" + chatPrefix;
+        } else {
+            chatPrefix = "[GRP]" + chatPrefix;
         }
         //add message to listview and update ui
         if (message instanceof String) {
@@ -360,9 +344,11 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     @Override
     public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
         //add prefix if the chat is a private chat - not seen by other users.
-        String chatPrefix = "";
+        String chatPrefix = "[P2P] ";
         if (isPrivate) {
-            chatPrefix = "<Private> ";
+            chatPrefix = "[PTE]" + chatPrefix;
+        } else {
+            chatPrefix = "[GRP]" + chatPrefix;
         }
         //add message to listview and update ui
         if (message instanceof String) {

@@ -19,6 +19,7 @@ import static org.mockito.Mockito.spy;
 
 /**
  * Tests related to ServerMessageProcessor
+ * <p/>
  * Created by janidu on 11/5/15.
  */
 @Config(emulateSdk = 18)
@@ -58,7 +59,7 @@ public class ServerMessageProcessorTest {
         };
 
         doReturn(messagesListener).when(skylinkConnection).getMessagesListener();
-        doReturn(false).when(skylinkConnection).isPeerIdMCU(peerId);
+        SkylinkPeerService.isPeerIdMCU(peerId);
         doReturn(skylinkConnectionService)
                 .when(skylinkConnection).getSkylinkConnectionService();
         doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
@@ -91,7 +92,7 @@ public class ServerMessageProcessorTest {
         };
 
         doReturn(messagesListener).when(skylinkConnection).getMessagesListener();
-        doReturn(false).when(skylinkConnection).isPeerIdMCU(peerId);
+        SkylinkPeerService.isPeerIdMCU(peerId);
         doReturn(skylinkConnectionService)
                 .when(skylinkConnection).getSkylinkConnectionService();
         doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)

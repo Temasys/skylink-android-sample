@@ -25,6 +25,14 @@ class SkylinkPeerService {
         this.skylinkConnection = skylinkConnection;
     }
 
+    static boolean isPeerIdMCU(String peerId) {
+        boolean mcu = peerId.startsWith("MCU");
+        if (mcu) {
+            Log.d(TAG, "MCU Detected");
+        }
+        return mcu;
+    }
+
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
         // Create a new PeerConnection if we can
         PeerConnection peerConnection = skylinkConnection
@@ -58,7 +66,7 @@ class SkylinkPeerService {
 
     void receivedBye(final String peerId) {
 
-        if (!skylinkConnection.isPeerIdMCU(peerId)) {
+        if (!isPeerIdMCU(peerId)) {
             skylinkConnection.runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
@@ -80,7 +88,7 @@ class SkylinkPeerService {
 
         // Dispose DataChannel.
         if (dataChannelManager != null) {
-            dataChannelManager.disposeDC(peerId);
+            dataChannelManager.disposeDC(peerId, false);
         }
 
         ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
@@ -138,7 +146,7 @@ class SkylinkPeerService {
                 sdpString);
 
         peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(peerId), sessionDescription);
-        Log.d(TAG, "PC - setRemoteDescription. Sending " + sessionDescription.type + " to " + peerId);
+        Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
     }
 
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
