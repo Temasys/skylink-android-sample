@@ -122,12 +122,10 @@ public class MainActivity extends ActionBarActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // noinspection SimplifiableIfStatement
+        //noinspection SimplifiableIfStatement
         if (id == R.id.action_build_info) {
-            String versionInfo = "SDK Version: "
-                    + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
-                    + "\n" + "Sample application version: "
-                    + Constants.VERSION_NAME;
+            String versionInfo = "SDK Version: " + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
+                    + "\n" + "Sample application version: " + BuildConfig.VERSION_NAME;
             Log.d(TAG, versionInfo);
             Toast.makeText(this, versionInfo, Toast.LENGTH_LONG).show();
             return true;

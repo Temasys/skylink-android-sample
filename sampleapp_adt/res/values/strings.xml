@@ -2,12 +2,12 @@
 <resources>
 
     <string name="app_name">SampleApp</string>
-    <string name="title_section1">Audio Call</string>
-    <string name="title_section2">Video Call</string>
-    <string name="title_section3">Chat</string>
-    <string name="title_section4">File Transfer</string>
-    <string name="title_section5">Data Transfer</string>
-    <string name="title_section6">Multi-Party Video Call</string>
+    <string name="title_section1"> Audio Call </string>
+    <string name="title_section2"> Video Call </string>
+    <string name="title_section3"> Chat </string>
+    <string name="title_section4"> File Transfer </string>
+    <string name="title_section5"> Data Transfer </string>
+    <string name="title_section6"> Multi-Party Video Call </string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_build_info">Build information</string>
@@ -15,8 +15,9 @@
     <string name="enter_room">Submit</string>
     <string name="send_data_peer">Send to Peer</string>
     <string name="send_data_room">Send to Room</string>
-    <string name="data_transfer_status">Ready to transfer %s bytes</string>
-    <string name="data_transfer_received">Received data %s bytes</string>
+    <string name="data_transfer_status">Ready to transfer %1$s bytes for Private and %2$s bytes for Group.</string>
+    <string name="data_transfer_received_expected">Received data %s bytes</string>
+    <string name="data_transfer_received_unexpected">Warning! Received %s bytes not from the Skylink Android sample app!</string>
     <string name="peer_count">Peer count is %d</string>
     <string name="data_transfer_waiting">Connected to Room %s, waiting for Peers</string>
 
