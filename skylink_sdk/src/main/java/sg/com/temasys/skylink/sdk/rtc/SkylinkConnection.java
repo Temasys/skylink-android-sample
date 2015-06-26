@@ -738,11 +738,8 @@ public class SkylinkConnection {
                 if (isMcuRoom) {
                     dataChannelManager.sendDataToPeer(null, data);
                 } else {
-
-                    Iterator<String> iPeerId = this.userInfoMap.keySet()
-                            .iterator();
-                    while (iPeerId.hasNext()) {
-                        String tid = iPeerId.next();
+                    for (String peerId : this.userInfoMap.keySet()) {
+                        String tid = peerId;
                         PeerInfo peerInfo = peerInfoMap.get(tid);
                         if (peerInfo == null) {
                             throw new SkylinkException(

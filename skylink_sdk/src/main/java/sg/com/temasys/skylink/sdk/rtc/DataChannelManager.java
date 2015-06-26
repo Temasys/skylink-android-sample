@@ -1224,9 +1224,8 @@ class DataChannelManager {
                 sendFtrToPeer(fileName, filePath, tid, false);
             } else {
                 // Send to all Peers with DC.
-                Iterator<String> iPeerId = dcInfoList.keySet().iterator();
-                while (iPeerId.hasNext()) {
-                    tid = iPeerId.next();
+                for (String peerId : dcInfoList.keySet()) {
+                    tid = peerId;
                     sendFtrToPeer(fileName, filePath, tid, false);
                     final String str = str1 + tid + ".";
                     connectionManager.runOnUiThread(new Runnable() {
@@ -1404,10 +1403,7 @@ class DataChannelManager {
         DataChannel dc;
         // Tid can only be null when in MCU roon and sending public message.
         if (tid == null) {
-            if (isPrivate) {
-                return false;
-            }
-            if (!isMcuRoom) {
+            if (isPrivate || !isMcuRoom) {
                 return false;
             }
         } else {

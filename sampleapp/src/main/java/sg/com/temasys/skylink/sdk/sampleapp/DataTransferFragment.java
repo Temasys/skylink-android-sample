@@ -38,8 +38,8 @@ public class DataTransferFragment extends Fragment implements
     private Button btnSendDataPeer;
 
     private SkylinkConnection skylinkConnection;
-    private byte[] data1;
-    private byte[] data2;
+    private byte[] dataPrivate;
+    private byte[] dataGroup;
     private Set<String> peerIds;
     private boolean connected;
 
@@ -58,11 +58,11 @@ public class DataTransferFragment extends Fragment implements
         btnSendDataPeer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Send data1 to specific Peer
+                // Send dataPrivate to specific Peer
                 for (String peerId : peerIds) {
 
                     try {
-                        skylinkConnection.sendData(peerId, data1);
+                        skylinkConnection.sendData(peerId, dataPrivate);
                     } catch (SkylinkException e) {
                         Log.e(TAG, e.getMessage(), e);
                     } catch (UnsupportedOperationException e) {
@@ -76,9 +76,9 @@ public class DataTransferFragment extends Fragment implements
         btnSendDataRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Send data2 to all Peers
+                // Send dataGroup to all Peers
                 try {
-                    skylinkConnection.sendData(null, data2);
+                    skylinkConnection.sendData(null, dataGroup);
                 } catch (SkylinkException e) {
                     Log.e(TAG, e.getMessage(), e);
                 } catch (UnsupportedOperationException e) {
@@ -87,9 +87,9 @@ public class DataTransferFragment extends Fragment implements
             }
         });
 
-        getData2();
+        getDataGroup();
         transferStatus.setText(String.format(getString(R.string.data_transfer_status),
-                String.valueOf(data1.length), String.valueOf(data2.length)));
+                String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
 
         return rootView;
     }
@@ -165,24 +165,26 @@ public class DataTransferFragment extends Fragment implements
     @Override
     public void onDataReceive(String remotePeerId, byte[] data) {
         // Check if it is one of the data that we can send.
-        if (Arrays.equals(data, this.data1) || Arrays.equals(data, this.data2)) {
-            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_received_correct),
+        if (Arrays.equals(data, this.dataPrivate) || Arrays.equals(data, this.dataGroup)) {
+            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_received_expected),
                     String.valueOf(data.length)), Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_received_wrong),
+            // Received some unexpected data that could be from other apps
+            // or perhaps different due to so some problems somewhere.
+            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_received_unexpected),
                     String.valueOf(data.length)), Toast.LENGTH_LONG).show();
         }
     }
 
     /**
-     * Read an image to a byte array and put in data1
+     * Read an image to a byte array and put in dataPrivate
      */
-    private void getData1() {
-        if (data1 == null) {
+    private void getDataPrivate() {
+        if (dataPrivate == null) {
             InputStream inputStream = getActivity().getResources().openRawResource(R.raw.icon);
             try {
-                data1 = new byte[inputStream.available()];
-                inputStream.read(data1);
+                dataPrivate = new byte[inputStream.available()];
+                inputStream.read(dataPrivate);
                 inputStream.close();
             } catch (IOException e) {
                 Log.e(TAG, e.getMessage(), e);
@@ -191,22 +193,22 @@ public class DataTransferFragment extends Fragment implements
     }
 
     /**
-     * Set data2 to contain 2 of data1.
+     * Set dataGroup to contain 2 of dataPrivate.
      */
-    private void getData2() {
-        if (data2 == null) {
-            getData1();
-            int len = data1.length;
-            data2 = new byte[2 * len];
-            System.arraycopy(data1, 0, data2, 0, len);
-            System.arraycopy(data1, 0, data2, len, len);
+    private void getDataGroup() {
+        if (dataGroup == null) {
+            getDataPrivate();
+            int len = dataPrivate.length;
+            dataGroup = new byte[2 * len];
+            System.arraycopy(dataPrivate, 0, dataGroup, 0, len);
+            System.arraycopy(dataPrivate, 0, dataGroup, len, len);
         }
     }
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         peerIds.add(remotePeerId);
-        // Enable data1 send buttons
+        // Enable dataPrivate send buttons
         btnSendDataPeer.setEnabled(true);
         btnSendDataRoom.setEnabled(true);
 
@@ -220,7 +222,7 @@ public class DataTransferFragment extends Fragment implements
             peerIds.remove(remotePeerId);
         }
         if (peerIds.isEmpty()) {
-            // Enable data1 send buttons
+            // Enable dataPrivate send buttons
             btnSendDataPeer.setEnabled(false);
             btnSendDataRoom.setEnabled(false);
         }
