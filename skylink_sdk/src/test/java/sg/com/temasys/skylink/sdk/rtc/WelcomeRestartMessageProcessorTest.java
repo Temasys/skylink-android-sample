@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Purpose of this class is to test WelcomeRestartMessageProcessor
+ * <p/>
  * Created by janidu on 13/5/15.
  */
 @Config(emulateSdk = 18)

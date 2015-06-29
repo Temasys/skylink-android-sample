@@ -13,6 +13,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.fail;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
@@ -25,12 +26,14 @@ public class UpdateUserEventMessageProcessorTest {
     private static final String peerId = "1234";
     private static final String userName = "testUserName";
 
-    private SkylinkConnection skylinkConnection;
     private UpdateUserEventMessageProcessor userEventMessgeProcesor;
+    private SkylinkConnection skylinkConnection;
+    private SkylinkConnectionService skylinkConnectionService;
 
     @Before
     public void setUp() throws Exception {
         skylinkConnection = spy(SkylinkConnection.getInstance());
+        skylinkConnectionService = mock(SkylinkConnectionService.class);
         userEventMessgeProcesor = new UpdateUserEventMessageProcessor();
         userEventMessgeProcesor.setSkylinkConnection(skylinkConnection);
     }
@@ -42,8 +45,11 @@ public class UpdateUserEventMessageProcessorTest {
         jsonObject.put("mid", peerId);
         jsonObject.put("userData", userName);
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when
-                (skylinkConnection).getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
 
         RemotePeerListener remotePeerListener = new RemotePeerListener() {
             @Override

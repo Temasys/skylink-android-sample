@@ -10,14 +10,16 @@ import org.robolectric.annotation.Config;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
+
 /**
- * Tests related to RedirectMessage
+ * Tests related to RedirectMessage.
+ * <p/>
  * Created by janidu on 11/5/15.
  */
 @Config(emulateSdk = 18)
@@ -36,14 +38,17 @@ public class RedirectMessageProcessorTest {
 
         // Mock objects
         skylinkConnection = spy(SkylinkConnection.getInstance());
-        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
-                skylinkConnection.getIceServersObserver()));
+        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection
+        ));
         signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
-                skylinkConnection, new MessageProcessorFactory()));
+                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory(), skylinkConnectionService));
         redirectMessageProcessor.setSkylinkConnection(skylinkConnection);
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
         doReturn(skylinkConnectionService).when(skylinkConnection).getSkylinkConnectionService();
         doReturn(signalingMessageProcessingService).when(skylinkConnectionService)
                 .getSignalingMessageProcessingService();

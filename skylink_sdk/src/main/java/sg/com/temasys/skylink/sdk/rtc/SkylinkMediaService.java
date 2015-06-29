@@ -14,13 +14,32 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+
 /**
  * Created by xiangrong on 25/5/15.
  */
 class SkylinkMediaService {
     private static final String TAG = SkylinkMediaService.class.getName();
+    private static final String MAX_VIDEO_WIDTH_CONSTRAINT = "maxWidth";
+    private static final String MIN_VIDEO_WIDTH_CONSTRAINT = "minWidth";
+
+    private static final String MAX_VIDEO_HEIGHT_CONSTRAINT = "maxHeight";
+    private static final String MIN_VIDEO_HEIGHT_CONSTRAINT = "minHeight";
+
+    private static final String MAX_VIDEO_FPS_CONSTRAINT = "maxFrameRate";
+    private static final String MIN_VIDEO_FPS_CONSTRAINT = "minFrameRate";
+
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
+
+    private int numberOfCameras = 0;
+
+    private MediaConstraints pcConstraints;
+    private MediaConstraints sdpMediaConstraints;
+    private MediaConstraints videoConstraints;
+
 
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
                                SkylinkConnectionService skylinkConnectionService) {
@@ -35,8 +54,8 @@ class SkylinkMediaService {
                 synchronized (lock) {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (skylinkConnection.getConnectionState() ==
-                            SkylinkConnection.ConnectionState.DISCONNECT) return;
+                    if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
+                            SkylinkConnectionService.ConnectionState.DISCONNECTING) return;
 
                         /* Note XR:
                         Do not handle Audio or video tracks manually to satisfy hasVideoReceive() and hasAudioReceive(),
@@ -46,8 +65,11 @@ class SkylinkMediaService {
                                     && stream.videoTracks.size() <= 1,
                             "Weird-looking stream: " + stream);
                     GLSurfaceView remoteVideoView = null;
+                    int numVideoTracks = stream.videoTracks.size();
                     // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
-                    if ((stream.videoTracks.size() >= 1)) {
+                    if ((numVideoTracks >= 1)) {
+                        Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
+                                " video track(s) has been added to PeerConnection.");
                         remoteVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
 
                         VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
@@ -62,7 +84,7 @@ class SkylinkMediaService {
                                 new VideoRenderer(remoteRender));
 
                         final GLSurfaceView rVideoView = remoteVideoView;
-                        if (!skylinkConnection.isPeerIdMCU(peerId))
+                        if (!SkylinkPeerService.isPeerIdMCU(peerId))
                             skylinkConnection.getMediaListener().onRemotePeerMediaReceive(peerId, rVideoView);
                     } else {
                         // If:
@@ -70,7 +92,9 @@ class SkylinkMediaService {
                         // OR
                         // This is a no audio and no video stream
                         // still send a null videoView to alert user stream is received.
-                        if (!skylinkConnection.isPeerIdMCU(peerId))
+                        Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " +
+                                "NO video track has been added to PeerConnection.");
+                        if (!SkylinkPeerService.isPeerIdMCU(peerId))
                             skylinkConnection.getMediaListener()
                                     .onRemotePeerMediaReceive(peerId, null);
                     }
@@ -78,6 +102,36 @@ class SkylinkMediaService {
             }
         });
 
+    }
+
+    /**
+     * Generate MediaConstraints for PC and SDP. Populate them with values of Audio and Video
+     * receive from SkylinkConfig. Populate PC with P2P security values.
+     *
+     * @param skylinkConfig SkylinkConfig to get constraint values from.
+     */
+    void genMediaConstraints(SkylinkConfig skylinkConfig) {
+        MediaConstraints[] constraintsArray = new MediaConstraints[2];
+        sdpMediaConstraints = new MediaConstraints();
+        pcConstraints = new MediaConstraints();
+        constraintsArray[0] = sdpMediaConstraints;
+        constraintsArray[1] = pcConstraints;
+
+        for (MediaConstraints mediaConstraints : constraintsArray) {
+            mediaConstraints.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio",
+                            String.valueOf(skylinkConfig.hasAudioReceive())));
+            mediaConstraints.mandatory
+                    .add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo",
+                            String.valueOf(skylinkConfig.hasVideoReceive())));
+        }
+
+        pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+                "internalSctpDataChannels", "true"));
+        pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+                "DtlsSrtpKeyAgreement", "true"));
+        pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
+                "true"));
     }
 
     /**
@@ -114,9 +168,28 @@ class SkylinkMediaService {
         }
     }
 
+    void setVideoConstrains(SkylinkConfig skylinkConfig) {
+        videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MAX_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MIN_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MAX_VIDEO_HEIGHT_CONSTRAINT, Integer.toString(skylinkConfig.getVideoHeight())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MIN_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
+    }
+
+    /**
+     * Get local media (video and audio) if SkylinkConfig allows it.
+     */
     void startLocalMedia(final Object lock) {
-        final SkylinkConnection.ConnectionState connectionState =
-                skylinkConnection.getConnectionState();
+        final SkylinkConnectionService.ConnectionState connectionState =
+                skylinkConnection.getSkylinkConnectionService().getConnectionState();
         VideoCapturerAndroid localVideoCapturer;
         MediaStream lms;
         AudioSource localAudioSource;
@@ -129,7 +202,7 @@ class SkylinkMediaService {
         synchronized (lock) {
             // If user has indicated intention to disconnect,
             // We should no longer process messages from signalling server.
-            if (connectionState == SkylinkConnection.ConnectionState.DISCONNECT)
+            if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                 return;
 
             if (peerConnectionFactory == null) {
@@ -151,8 +224,7 @@ class SkylinkMediaService {
                     }
 
                     localVideoSource = peerConnectionFactory
-                            .createVideoSource(localVideoCapturer,
-                                    skylinkConnection.getVideoConstraints());
+                            .createVideoSource(localVideoCapturer, videoConstraints);
                     skylinkConnection.setLocalVideoSource(localVideoSource);
 
                     final VideoTrack videoTrack = peerConnectionFactory
@@ -170,7 +242,7 @@ class SkylinkMediaService {
                         synchronized (lock) {
                             // If user has indicated intention to disconnect,
                             // We should no longer process messages from signalling server.
-                            if (connectionState == SkylinkConnection.ConnectionState.DISCONNECT)
+                            if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                                 return;
                             GLSurfaceView localVideoView = null;
                             VideoRendererGui localVideoRendererGui;
@@ -198,7 +270,8 @@ class SkylinkMediaService {
                 // synchronized (lockDisconnect) {
                 // If user has indicated intention to disconnect,
                 // We should no longer process messages from signalling server.
-                if (connectionState == SkylinkConnection.ConnectionState.DISCONNECT) return;
+                if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
+                    return;
                 if (skylinkConnection.getMyConfig().hasAudioSend()) {
                     Log.d(TAG, "[SDK] Local audio source: Creating...");
                     localAudioSource = peerConnectionFactory
@@ -218,15 +291,53 @@ class SkylinkMediaService {
     }
 
     /**
-     * Cycle through likely device names for the camera and return the first capturer that works, or
-     * crash if none do.
+     * Call the internal function to switch camera.
+     *
+     * @param lifeCycleListener
+     */
+
+    boolean switchCamera(final LifeCycleListener lifeCycleListener) {
+        // Switch camera
+        boolean success = false;
+        String strLog = "";
+        // Try to switch camera
+        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
+            // No video is sent or only one camera is available,
+            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
+        } else {
+            success = skylinkConnection.getLocalVideoCapturer().switchCamera(null);
+        }
+        // Log about success or failure in switching camera.
+        if (success) {
+            strLog = "Switched camera.";
+            Log.d(TAG, strLog);
+        } else {
+            // Switch is pending or error while trying to switch.
+            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);
+            Log.e(TAG, strLog);
+        }
+        return success;
+    }
+
+
+    /**
+     * Cycle through likely device names for the camera and return the first capturer that works.
+     * Return null if none available.
      *
      * @return
      */
+
     private VideoCapturerAndroid getVideoCapturer() {
-        String frontCameraDeviceName =
-                VideoCapturerAndroid.getNameOfFrontFacingDevice();
+        // Check if there is a camera on device and disable video call if not.
+        numberOfCameras = VideoCapturerAndroid.getDeviceCount();
+        if (numberOfCameras == 0) {
+            Log.w(TAG, "No camera on device. Video call will not be possible.");
+            return null;
+        }
+
+        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
         Log.d(TAG, "Opening camera: " + frontCameraDeviceName);
+
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
 
@@ -255,8 +366,8 @@ class SkylinkMediaService {
                     synchronized (skylinkConnection.getLockDisconnectMedia()) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (skylinkConnection.getConnectionState() ==
-                                SkylinkConnection.ConnectionState.DISCONNECT) {
+                        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
+                                SkylinkConnectionService.ConnectionState.DISCONNECTING) {
                             return;
                         }
                         skylinkConnection.getMediaListener().onVideoSizeChange(peerId, screenDimensions);
@@ -264,6 +375,23 @@ class SkylinkMediaService {
                 }
             });
         }
+    }
+
+    // Getters and Setters
+    public int getNumberOfCameras() {
+        return numberOfCameras;
+    }
+
+    public void setNumberOfCameras(int numberOfCameras) {
+        this.numberOfCameras = numberOfCameras;
+    }
+
+    public MediaConstraints getPcConstraints() {
+        return pcConstraints;
+    }
+
+    public MediaConstraints getSdpMediaConstraints() {
+        return sdpMediaConstraints;
     }
 
 }

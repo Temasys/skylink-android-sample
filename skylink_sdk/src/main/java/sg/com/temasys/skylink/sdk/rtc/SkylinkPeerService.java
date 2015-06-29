@@ -18,9 +18,19 @@ class SkylinkPeerService {
     private static final String TAG = SkylinkPeerService.class.getSimpleName();
 
     private final SkylinkConnection skylinkConnection;
+    private SkylinkMediaService skylinkMediaService;
+    private SkylinkConnectionService skylinkConnectionService;
 
     public SkylinkPeerService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
+    }
+
+    static boolean isPeerIdMCU(String peerId) {
+        boolean mcu = peerId.startsWith("MCU");
+        if (mcu) {
+            Log.d(TAG, "MCU Detected");
+        }
+        return mcu;
     }
 
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
@@ -56,15 +66,15 @@ class SkylinkPeerService {
 
     void receivedBye(final String peerId) {
 
-        if (!skylinkConnection.isPeerIdMCU(peerId)) {
+        if (!isPeerIdMCU(peerId)) {
             skylinkConnection.runOnUiThread(new Runnable() {
                 public void run() {
                     // Prevent thread from executing with disconnect concurrently.
                     synchronized (skylinkConnection.getLockDisconnect()) {
                         // If user has indicated intention to disconnect,
                         // We should no longer process messages from signalling server.
-                        if (skylinkConnection.getConnectionState() ==
-                                SkylinkConnection.ConnectionState.DISCONNECT) {
+                        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
+                                SkylinkConnectionService.ConnectionState.DISCONNECTING) {
                             return;
                         }
                         skylinkConnection.getRemotePeerListener()
@@ -78,7 +88,7 @@ class SkylinkPeerService {
 
         // Dispose DataChannel.
         if (dataChannelManager != null) {
-            dataChannelManager.disposeDC(peerId);
+            dataChannelManager.disposeDC(peerId, false);
         }
 
         ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
@@ -96,7 +106,7 @@ class SkylinkPeerService {
 
         skylinkConnection.getSkylinkConnectionService().setSid(peerId);
 
-        skylinkConnection.getIceServersObserver().onIceServers(iceServers);
+        skylinkConnectionService.setIceServers(iceServers);
 
         // Set mid and displayName in DataChannelManager
         if (skylinkConnection.getDataChannelManager() != null) {
@@ -108,19 +118,18 @@ class SkylinkPeerService {
         // Check if pcObserverPool has been populated.
         if (skylinkConnection.getPcObserverPool() != null) {
             // If so, chances are this is a rejoin of room.
-            // Send restart to all.
-            skylinkConnection.rejoinRestart();
-        } else {
-            // If not, chances are this is a first join room, or there were no peers from before.
-            // Create afresh all PC related maps.
-            skylinkConnection.initializePcRelatedMaps();
-            // Send enter.
-            try {
-                ProtocolHelper.sendEnter(null, skylinkConnection,
-                        skylinkConnection.getSkylinkConnectionService());
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
+            // Log it
+            Log.d(TAG, "[receivedInRoom] This is a rejoin of room.");
+        }
+
+        // Create afresh all PC related maps.
+        skylinkConnection.initializePcRelatedMaps();
+        // Send enter.
+        try {
+            ProtocolHelper.sendEnter(null, skylinkConnection,
+                    skylinkConnection.getSkylinkConnectionService());
+        } catch (JSONException e) {
+            Log.d(TAG, e.getMessage(), e);
         }
     }
 
@@ -137,7 +146,7 @@ class SkylinkPeerService {
                 sdpString);
 
         peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(peerId), sessionDescription);
-        Log.d(TAG, "PC - setRemoteDescription. Sending " + sessionDescription.type + " to " + peerId);
+        Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
     }
 
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
@@ -202,8 +211,18 @@ class SkylinkPeerService {
         }
 
         peerConnection.createOffer(sdpObserver,
-                skylinkConnection.getSdpMediaConstraints());
+                skylinkMediaService.getSdpMediaConstraints());
 
         Log.d(TAG, "[receivedWelcomeRestart] - createOffer for " + peerId);
     }
+
+    // Getters and Setters
+    public void setSkylinkMediaService(SkylinkMediaService skylinkMediaService) {
+        this.skylinkMediaService = skylinkMediaService;
+    }
+
+    public void setSkylinkConnectionService(SkylinkConnectionService skylinkConnectionService) {
+        this.skylinkConnectionService = skylinkConnectionService;
+    }
+
 }

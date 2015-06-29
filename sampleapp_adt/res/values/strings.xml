@@ -15,8 +15,9 @@
     <string name="enter_room">Submit</string>
     <string name="send_data_peer">Send to Peer</string>
     <string name="send_data_room">Send to Room</string>
-    <string name="data_transfer_status">Ready to transfer %s bytes</string>
-    <string name="data_transfer_received">Received data %s bytes</string>
+    <string name="data_transfer_status">Ready to transfer %1$s bytes for Private and %2$s bytes for Group.</string>
+    <string name="data_transfer_received_expected">Received data %s bytes</string>
+    <string name="data_transfer_received_unexpected">Warning! Received %s bytes not from the Skylink Android sample app!</string>
     <string name="peer_count">Peer count is %d</string>
     <string name="data_transfer_waiting">Connected to Room %s, waiting for Peers</string>
 

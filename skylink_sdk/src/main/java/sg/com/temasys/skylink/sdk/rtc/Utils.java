@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 
@@ -30,6 +32,7 @@ class Utils {
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     public static final String TIME_ZONE_UTC = "UTC";
     public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
+    private static final Handler handler = new Handler(Looper.getMainLooper());
 
     /**
      * Returns the SkylinkConnectionString
@@ -139,6 +142,15 @@ class Utils {
     public static String drainStream(InputStream in) {
         Scanner s = new Scanner(in).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
+    }
+
+    /**
+     * Runs the specified action on the UI thread
+     *
+     * @param action
+     */
+    public static void runOnUiThread(Runnable action) {
+        handler.post(action);
     }
 
     /**

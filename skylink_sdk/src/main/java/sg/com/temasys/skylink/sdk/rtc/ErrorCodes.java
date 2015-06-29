@@ -64,7 +64,17 @@ public class ErrorCodes {
     public static final int DISCONNECT_UNEXPECTED_ERROR = 11;
 
     /**
+     * Error message from Socket.io connection
+     */
+    public static final int SIGNALING_CONNECTION_ERROR = 12;
+
+    /**
+     * Unable to switch camera
+     */
+    public static final int VIDEO_SWITCH_CAMERA_ERROR = 13;
+
+    /**
      * Error message when room parameters cannot be fetched
      */
-    public static final String UNEXPECTED_ERROR_ROOM_PARAMETERS = "Unexpected Error when fetching Room parameters";
+    public static final int UNEXPECTED_ERROR_ROOM_PARAMETERS = 14;
 }

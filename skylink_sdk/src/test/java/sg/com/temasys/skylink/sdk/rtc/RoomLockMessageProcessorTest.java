@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 
 /**
  * Tests related to RoomLockMessageProcessor
+ * <p/>
  * Created by janidu on 5/5/15.
  */
 @Config(emulateSdk = 18)
@@ -41,17 +42,23 @@ public class RoomLockMessageProcessorTest {
         skylinkConnection = spy(SkylinkConnection.getInstance());
         // Mock objects
         skylinkConnection = spy(SkylinkConnection.getInstance());
-        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection,
-                skylinkConnection.getIceServersObserver()));
+        skylinkConnectionService = spy(new SkylinkConnectionService(skylinkConnection
+        ));
         signalingMessageProcessingService = spy(new SignalingMessageProcessingService(
-                skylinkConnection, new MessageProcessorFactory()));
+                skylinkConnection, skylinkConnectionService, new MessageProcessorFactory(), skylinkConnectionService));
         roomLockMessageProcessor.setSkylinkConnection(skylinkConnection);
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
+        doReturn(skylinkConnectionService)
+                .when(skylinkConnection).getSkylinkConnectionService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
         doReturn(skylinkConnectionService).when(skylinkConnection).getSkylinkConnectionService();
         doReturn(signalingMessageProcessingService).when(skylinkConnectionService)
                 .getSignalingMessageProcessingService();
+        doReturn(SkylinkConnectionService.ConnectionState.CONNECTING)
+                .when(skylinkConnectionService).getConnectionState();
+
     }
 
     @Test
@@ -84,8 +91,6 @@ public class RoomLockMessageProcessorTest {
             }
         };
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
         doReturn(true).when(skylinkConnection)
                 .isRoomLocked();
         doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
@@ -127,8 +132,6 @@ public class RoomLockMessageProcessorTest {
             }
         };
 
-        doReturn(SkylinkConnection.ConnectionState.CONNECT).when(skylinkConnection)
-                .getConnectionState();
         doReturn(false).when(skylinkConnection)
                 .isRoomLocked();
         doReturn(lifeCycleListener).when(skylinkConnection).getLifeCycleListener();
