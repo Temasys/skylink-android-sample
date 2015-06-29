@@ -64,6 +64,7 @@ class SignalingServerClient {
 
         // Initialize SocketIO
         String sigUrl = sigIP + ":" + sigPort;
+        Log.d(TAG, "Connecting to the signaling server at: " + sigUrl);
         socketIO = IO.socket(sigUrl, opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
