@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.opengl.EGLContext;
 import android.os.Handler;
@@ -12,14 +11,10 @@ import android.util.Log;
 import org.json.JSONException;
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
-import org.webrtc.DataChannel;
-import org.webrtc.IceCandidate;
 import org.webrtc.MediaCodecVideoEncoder;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
-import org.webrtc.SdpObserver;
-import org.webrtc.SessionDescription;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
@@ -33,7 +28,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import javax.crypto.Mac;
@@ -66,7 +60,7 @@ public class SkylinkConnection {
      */
     public static final int DEFAULT_DURATION = 24;
 
-    private static final String TAG = "SkylinkConnection";
+    private static final String TAG = SkylinkConnection.class.getSimpleName();
 
     private static final int MAX_PEER_CONNECTIONS = 4;
     private static final String MY_SELF = "me";
@@ -83,9 +77,9 @@ public class SkylinkConnection {
     private DataChannelManager dataChannelManager;
     private Map<String, UserInfo> userInfoMap;
     private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
-    private Map<String, PCObserver> pcObserverPool;
+    private Map<String, SkylinkPcObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
-    private Map<String, SDPObserver> sdpObserverPool;
+    private Map<String, SkylinkSdpObserver> sdpObserverPool;
 
     private MediaStream localMediaStream;
 
@@ -129,6 +123,27 @@ public class SkylinkConnection {
     private Object lockDisconnectSdpSet = new Object();
     private Object lockDisconnectSdpDrain = new Object();
     private Object lockDisconnectSdpSend = new Object();
+
+    public Object getLockDisconnectSdp() {
+        return lockDisconnectSdp;
+    }
+
+    public Object getLockDisconnectSdpCreate() {
+        return lockDisconnectSdpCreate;
+    }
+
+    public Object getLockDisconnectSdpSet() {
+        return lockDisconnectSdpSet;
+    }
+
+    public Object getLockDisconnectSdpDrain() {
+        return lockDisconnectSdpDrain;
+    }
+
+    public Object getLockDisconnectSdpSend() {
+        return lockDisconnectSdpSend;
+    }
+
 
     private static SkylinkConnection instance;
     private Handler handler;
@@ -476,9 +491,9 @@ public class SkylinkConnection {
                                                 Log.d(TAG, "Disposing Peer Connection Factory");
                                                 this.peerConnectionFactory.dispose();
                                                 Log.d(TAG, "Disposed Peer Connection Factory");
+                                                this.peerConnectionFactory = null;
                                             }
 
-                                            this.peerConnectionFactory = null;
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
@@ -1013,7 +1028,7 @@ public class SkylinkConnection {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
         }
         if (this.pcObserverPool == null)
-            this.pcObserverPool = new Hashtable<String, PCObserver>();
+            this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
 
         // Check if Peer is MCU
         // MCU, if present, will always be first Peer to send welcome.
@@ -1027,7 +1042,7 @@ public class SkylinkConnection {
 
         List<Object> resultList = new ArrayList<Object>();
         if (weight > 0) {
-            PCObserver pc = this.pcObserverPool.get(key);
+            SkylinkPcObserver pc = this.pcObserverPool.get(key);
             if (pc != null) {
                 if (pc.getMyWeight() > weight) {
                     // Use this welcome (ours will be discarded on peer's side).
@@ -1060,7 +1075,7 @@ public class SkylinkConnection {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
         }
         if (this.pcObserverPool == null)
-            this.pcObserverPool = new Hashtable<String, PCObserver>();
+            this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
 
         // Check if Peer is MCU
         // MCU, if present, will always be first Peer to send welcome.
@@ -1088,7 +1103,7 @@ public class SkylinkConnection {
                     Log.e(TAG, e.getMessage(), e);
                 }
             }
-            PCObserver pcObserver = new SkylinkConnection.PCObserver();
+            SkylinkPcObserver pcObserver = new SkylinkPcObserver(this);
             pcObserver.setMyId(peerId);
 
             // Prevent thread from executing with disconnect concurrently.
@@ -1149,357 +1164,11 @@ public class SkylinkConnection {
     }
 
 
-    // Implementation detail: observe ICE & stream changes and react
-// accordingly.
-    class PCObserver implements PeerConnection.Observer {
-
-        private SkylinkConnection connectionManager = SkylinkConnection.this;
-
-        private PeerConnection pc;
-        private double myWeight;
-        private String myId;
-        private HealthChecker healthChecker;
-
-        public PeerConnection getPc() {
-            return pc;
-        }
-
-        public void setPc(PeerConnection pc) {
-            this.pc = pc;
-        }
-
-        public double getMyWeight() {
-            return myWeight;
-        }
-
-        @SuppressWarnings("unused")
-        public void setMyWeight(double myWeight) {
-            this.myWeight = myWeight;
-        }
-
-        @SuppressWarnings("unused")
-        public String getMyId() {
-            return myId;
-        }
-
-        public void setMyId(String myId) {
-            this.myId = myId;
-        }
-
-        public PCObserver() {
-            super();
-            this.myWeight = new Random(new Date().getTime()).nextDouble()
-                    * (double) 1000000;
-        }
-
-        void initialiseHealthChecker(String iceRole) {
-            healthChecker = new HealthChecker(myId, connectionManager, connectionManager.skylinkConnectionService, connectionManager.localMediaStream, connectionManager.myConfig, pc);
-            healthChecker.setIceRole(iceRole);
-            healthChecker.startRestartTimer();
-        }
-
-        @Override
-        public void onIceCandidate(final IceCandidate candidate) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnectionService.isDisconnected()) {
-                            return;
-                        }
-
-                        ProtocolHelper.sendCandidate(connectionManager.skylinkConnectionService, candidate,
-                                PCObserver.this.myId);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onSignalingChange(PeerConnection.SignalingState newState) {
-        }
-
-        @Override
-        public void onIceConnectionChange(PeerConnection.IceConnectionState newState) {
-            healthChecker.setIceState(newState);
-            Log.d(TAG, "Peer " + myId + " : onIceConnectionChange : iceState : " + newState + ".");
-            switch (newState) {
-                case NEW:
-                    break;
-                case CHECKING:
-                    break;
-                case CONNECTED:
-                    break;
-                case COMPLETED:
-                    break;
-                case DISCONNECTED:
-                    break;
-                case CLOSED:
-                    break;
-                case FAILED:
-                    // restartConnectionInternal(PCObserver.this.myId);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        @Override
-        public void onIceGatheringChange(
-                PeerConnection.IceGatheringState newState) {
-            logMessage("[onIceGatheringChange] New ICE Gathering State is now: "
-                    + newState.toString() + ".");
-        }
-
-        @SuppressLint("NewApi")
-        @Override
-        public void onAddStream(final MediaStream stream) {
-            skylinkMediaService.addMediaStream(stream, this.myId, lockDisconnectMediaLocal);
-        }
-
-        @Override
-        public void onRemoveStream(final MediaStream stream) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnectionService.isDisconnected()) {
-                            return;
-                        }
-
-                        stream.videoTracks.get(0).dispose();
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onDataChannel(final DataChannel dc) {
-            PeerInfo peerInfo = peerInfoMap.get(this.myId);
-            peerInfo.setEnableDataChannel(true);
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (skylinkConnectionService.isDisconnected()) {
-                    return;
-                }
-
-                if (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                        || myConfig.hasDataTransfer()) {
-                    // Create our DataChannel based on given dc.
-                    // It is stored by dataChannelManager.
-                    // Get PeerConnection.
-                    PeerConnection pc = connectionManager.peerConnectionPool.get(this.myId);
-                    String mid = connectionManager.skylinkConnectionService.getSid();
-                    connectionManager.dataChannelManager.createDataChannel(pc,
-                            this.myId, mid, "", dc, this.myId);
-                }
-            }
-        }
-
-        @Override
-        public void onRenegotiationNeeded() {
-            // No need to do anything; AppRTC follows a pre-agreed-upon
-            // signaling/negotiation protocol.
-        }
-    }
-
-    // Implementation detail: handle offer creation/signaling and answer
-// setting,
-// as well as adding remote ICE candidates once the answer SDP is set.
-    class SDPObserver implements SdpObserver {
-
-        private SkylinkConnection connectionManager = SkylinkConnection.this;
-
-        private SessionDescription localSdp;
-
-        private String myId;
-
-        @SuppressWarnings("unused")
-        public String getMyId() {
-            return myId;
-        }
-
-        public void setMyId(String myId) {
-            this.myId = myId;
-        }
-
-        @Override
-        public void onCreateSuccess(final SessionDescription origSdp) {
-            final PeerConnection pc;
-            final SessionDescription sdp;
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnectSdpCreate) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (skylinkConnectionService.isDisconnected()) {
-                    return;
-                }
-
-                abortUnless(this.localSdp == null, "multiple SDP create?!?");
-
-                String sdpType = origSdp.type.canonicalForm();
-
-                // Set the preferred audio codec
-                String sdpString = Utils.preferCodec(origSdp.description,
-                        myConfig.getPreferredAudioCodec().toString(), true);
-
-                // Modify stereo audio in the SDP if required
-                sdpString = Utils.modifyStereoAudio(sdpString, myConfig);
-
-                // If answer, may need to mangle to respect our own MediaConstraints:
-                /* Note XR:
-                The webrtc designed behaviour seems to be that if an offerer SDP indicates to send media,
-                the answerer will generate an SDP to accept it, even if the answerer had put in its
-                MediaConstraints not to accept that media (provided it sends that media):
-                https://code.google.com/p/webrtc/issues/detail?id=2404
-                Hence, for our answerer to respect its own MediaConstraints, the answer SDP will be
-                mangled (if required) to respect the MediaConstraints (sdpMediaConstraints).
-                */
-                if ("answer".equals(sdpType)) {
-                    if (!myConfig.hasAudioReceive() && myConfig.hasAudioSend()) {
-                        sdpString = Utils.sdpAudioSendOnly(sdpString);
-                    }
-                    if (!myConfig.hasVideoReceive() && myConfig.hasVideoSend()) {
-                        sdpString = Utils.sdpVideoSendOnly(sdpString);
-                    }
-                }
-
-                sdp = new SessionDescription(origSdp.type, sdpString);
-
-                this.localSdp = sdp;
-                pc = connectionManager.peerConnectionPool
-                        .get(this.myId);
-            }
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnectSdpSend) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnectionService.isDisconnected()) {
-                            return;
-                        }
-
-
-                        pc.setLocalDescription(SDPObserver.this, sdp);
-                        ProtocolHelper.sendSdp(connectionManager.skylinkConnectionService,
-                                sdp, SDPObserver.this.myId);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onSetSuccess() {
-            final PeerConnection pc;
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnectSdp) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (skylinkConnectionService.isDisconnected()) {
-                    return;
-                }
-
-                pc = connectionManager.peerConnectionPool.get(this.myId);
-            }
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnectSdpSet) {
-
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnectionService.isDisconnected()) {
-                            return;
-                        }
-
-                        if (pc.signalingState() == PeerConnection.SignalingState.HAVE_REMOTE_OFFER) {
-                            if (pc.getRemoteDescription() != null
-                                    && pc.getLocalDescription() == null) {
-                                connectionManager
-                                        .logMessage("Callee, setRemoteDescription succeeded");
-                                pc.createAnswer(SDPObserver.this,
-                                        skylinkMediaService.getSdpMediaConstraints());
-                                connectionManager.logMessage("PC - createAnswer.");
-                            } else {
-                                drainRemoteCandidates();
-                            }
-                        } else {
-                            if (pc.getRemoteDescription() != null) {
-                                connectionManager.logMessage("SDP onSuccess - drain candidates");
-                                drainRemoteCandidates();
-                                if (!SkylinkPeerService.isPeerIdMCU(myId)) {
-                                    String tid = SDPObserver.this.myId;
-                                    PeerInfo peerInfo = peerInfoMap.get(SDPObserver.this.myId);
-                                    boolean eDC = false;
-                                    if (peerInfo != null) eDC = peerInfo.isEnableDataChannel();
-                                    remotePeerListener.onRemotePeerJoin(tid, connectionManager.getUserData(tid), eDC);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onCreateFailure(final String error) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnectionService.isDisconnected()) {
-                            return;
-                        }
-
-                        throw new RuntimeException("createSDP error: " + error);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onSetFailure(final String error) {
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (lockDisconnect) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnectionService.isDisconnected()) {
-                            return;
-                        }
-
-                        throw new RuntimeException("setSDP error: " + error);
-                    }
-                }
-            });
-        }
-
-        private void drainRemoteCandidates() {
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnectSdpDrain) {
-                // If user has indicated intention to disconnect,
-                // We should no longer process messages from signalling server.
-                if (skylinkConnectionService.isDisconnected()) {
-                    return;
-                }
-
-                connectionManager.logMessage("Inside SDPObserver.drainRemoteCandidates()");
-            }
-        }
-
-    }
-
     // Getters and Setters
+
+    SkylinkMediaService getSkylinkMediaService() {
+        return skylinkMediaService;
+    }
 
     SkylinkPeerService getSkylinkPeerService() {
         return skylinkPeerService;
@@ -1585,16 +1254,16 @@ public class SkylinkConnection {
         this.dataChannelManager = dataChannelManager;
     }
 
-    SDPObserver getSdpObserver(String mid) {
+    SkylinkSdpObserver getSdpObserver(String mid) {
 
         if (sdpObserverPool == null) {
-            sdpObserverPool = new Hashtable<String, SDPObserver>();
+            sdpObserverPool = new Hashtable<String, SkylinkSdpObserver>();
         }
 
-        SDPObserver sdpObserver = sdpObserverPool.get(mid);
+        SkylinkSdpObserver sdpObserver = sdpObserverPool.get(mid);
         if (sdpObserver == null) {
-            sdpObserver = new SkylinkConnection.SDPObserver();
-            sdpObserver.setMyId(mid);
+            sdpObserver = new SkylinkSdpObserver(this);
+            sdpObserver.setPeerId(mid);
             sdpObserverPool.put(mid, sdpObserver);
         }
 
@@ -1604,8 +1273,8 @@ public class SkylinkConnection {
     // Initialize all PC related maps.
     void initializePcRelatedMaps() {
         peerConnectionPool = new Hashtable<String, PeerConnection>();
-        pcObserverPool = new Hashtable<String, PCObserver>();
-        sdpObserverPool = new Hashtable<String, SDPObserver>();
+        pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
+        sdpObserverPool = new Hashtable<String, SkylinkSdpObserver>();
         userInfoMap = new Hashtable<String, UserInfo>();
         peerInfoMap = new Hashtable<String, PeerInfo>();
     }
@@ -1614,15 +1283,15 @@ public class SkylinkConnection {
         return userInfoMap;
     }
 
-    Map<String, SDPObserver> getSdpObserverPool() {
+    Map<String, SkylinkSdpObserver> getSdpObserverPool() {
         return sdpObserverPool;
     }
 
-    void setSdpObserverPool(Map<String, SDPObserver> sdpObserverPool) {
+    void setSdpObserverPool(Map<String, SkylinkSdpObserver> sdpObserverPool) {
         this.sdpObserverPool = sdpObserverPool;
     }
 
-    Map<String, PCObserver> getPcObserverPool() {
+    Map<String, SkylinkPcObserver> getPcObserverPool() {
         return pcObserverPool;
     }
 

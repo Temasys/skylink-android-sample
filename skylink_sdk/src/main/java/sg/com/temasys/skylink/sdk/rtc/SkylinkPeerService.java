@@ -200,13 +200,13 @@ class SkylinkPeerService {
         }
 
         if (skylinkConnection.getSdpObserverPool() == null) {
-            skylinkConnection.setSdpObserverPool(new Hashtable<String, SkylinkConnection.SDPObserver>());
+            skylinkConnection.setSdpObserverPool(new Hashtable<String, SkylinkSdpObserver>());
         }
-        SkylinkConnection.SDPObserver sdpObserver = skylinkConnection.getSdpObserverPool()
+        SkylinkSdpObserver sdpObserver = skylinkConnection.getSdpObserverPool()
                 .get(peerId);
         if (sdpObserver == null) {
-            sdpObserver = skylinkConnection.new SDPObserver();
-            sdpObserver.setMyId(peerId);
+            sdpObserver = new SkylinkSdpObserver(skylinkConnection);
+            sdpObserver.setPeerId(peerId);
             skylinkConnection.getSdpObserverPool().put(peerId, sdpObserver);
         }
 

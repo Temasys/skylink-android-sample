@@ -194,7 +194,7 @@ class ProtocolHelper {
      * @param reason
      */
     static void notifyPeerLeaveAll(SkylinkConnection skylinkConnection, String reason) {
-        Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
+        Hashtable<String, SkylinkPcObserver> pcObserverPool = (Hashtable<String, SkylinkPcObserver>) skylinkConnection.getPcObserverPool();
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
@@ -399,7 +399,7 @@ class ProtocolHelper {
      * @param reason
      */
     static void removeAllPeers(final SkylinkConnection skylinkConnection, final String reason) {
-        Hashtable<String, SkylinkConnection.PCObserver> pcObserverPool = (Hashtable<String, SkylinkConnection.PCObserver>) skylinkConnection.getPcObserverPool();
+        Hashtable<String, SkylinkPcObserver> pcObserverPool = (Hashtable<String, SkylinkPcObserver>) skylinkConnection.getPcObserverPool();
         if (pcObserverPool != null) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
