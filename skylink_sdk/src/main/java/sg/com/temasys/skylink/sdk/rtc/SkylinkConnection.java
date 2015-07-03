@@ -21,12 +21,10 @@ import org.webrtc.VideoTrack;
 
 import java.io.IOException;
 import java.security.SignatureException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -1023,62 +1021,68 @@ public class SkylinkConnection {
         }
     }
 
-    List<Object> getWeightedPeerConnection(String key, double weight) {
-        if (this.peerConnectionPool == null) {
-            this.peerConnectionPool = new Hashtable<String, PeerConnection>();
+    /**
+     * When received welcome, check if we should proceed or not.
+     * If we had both sent "enter" to each other (due to entering the room together),
+     * the one whose weight is smaller should continue the handshake,
+     * while the other should abandon handshake.
+     * @param peerId
+     * @param weight
+     * @return True if welcome should be accepted, false if should be dropped.
+     */
+    boolean shouldAcceptWelcome(String peerId, double weight) {
+        // TODO remove after Peer usage.
+        if (this.peerConnectionPool == null || this.pcObserverPool == null) {
+            return true;
         }
-        if (this.pcObserverPool == null)
-            this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
 
-        // Check if Peer is MCU
-        // MCU, if present, will always be first Peer to send welcome.
+        // Record in DataChannelManager if Peer is MCU
+            // MCU, if present, will always be first Peer to send welcome.
         if (isFirstPeer) {
             isFirstPeer = false;
-            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(key);
+            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(peerId);
             if (dataChannelManager != null && isMcuRoom) {
                 dataChannelManager.setIsMcuRoom(isMcuRoom);
             }
         }
 
-        List<Object> resultList = new ArrayList<Object>();
         if (weight > 0) {
-            SkylinkPcObserver pc = this.pcObserverPool.get(key);
-            if (pc != null) {
-                if (pc.getMyWeight() > weight) {
+            SkylinkPcObserver pcObserver = this.pcObserverPool.get(peerId);
+            if (pcObserver != null) {
+                if (pcObserver.getMyWeight() > weight) {
                     // Use this welcome (ours will be discarded on peer's side).
-                    resultList.add(new Boolean(true));
-                    resultList.add(getPeerConnection(key, HealthChecker.ICE_ROLE_OFFERER));
+                    return true;
                 } else {
                     // Discard this welcome (ours will be used on peer's side).
-                    resultList.add(new Boolean(false));
-                    resultList.add(new Boolean(false));
+                    return false;
                 }
             } else {
                 // Use this welcome (we did not send one to the peer).
-                resultList.add(new Boolean(true));
-                resultList.add(getPeerConnection(key, HealthChecker.ICE_ROLE_OFFERER));
+                return true;
             }
         } else {
-            // Peer did not send a weight, use peer's welcome.
-            resultList.add(new Boolean(true));
-            resultList.add(getPeerConnection(key, HealthChecker.ICE_ROLE_OFFERER));
+            // Peer did not send a weight, use Peer's welcome.
+            return true;
         }
-        return resultList;
     }
 
-    PeerConnection getPeerConnection(String key) {
-        return getPeerConnection(key, "");
+    PeerConnection getPeerConnection(String peerId) {
+        if (this.peerConnectionPool == null) {
+            this.peerConnectionPool = new Hashtable<String, PeerConnection>();
+        }
+        PeerConnection pc = this.peerConnectionPool.get(peerId);
+        return pc;
     }
 
-    PeerConnection getPeerConnection(String peerId, String iceRole) {
+    PeerConnection createPC(String peerId, String iceRole, UserInfo userInfo) {
         if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
         }
         if (this.pcObserverPool == null)
             this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
 
-        // Check if Peer is MCU
-        // MCU, if present, will always be first Peer to send welcome.
+        // Record in DataChannelManager if Peer is MCU
+            // MCU, if present, will always be first Peer to send welcome.
         if (isFirstPeer) {
             isFirstPeer = false;
             this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(peerId);
@@ -1089,20 +1093,16 @@ public class SkylinkConnection {
 
         PeerConnection pc = this.peerConnectionPool.get(peerId);
         if (pc == null) {
+            // We have reached the limit of max no. of Peers.
             if (this.peerConnectionPool.size() >= MAX_PEER_CONNECTIONS
-                    && !SkylinkPeerService.isPeerIdMCU(peerId))
+                    && !SkylinkPeerService.isPeerIdMCU(peerId)) {
+                Log.d(TAG, "Unable to create PeerConnection for Peer " + userInfo.getUserData() +
+                        " (" + peerId + ") as I only support " +
+                        getMaxPeerConnections() + " connections in this app.");
                 return null;
-
-            logMessage("Creating a new peer connection ...");
-            if ("".equals(iceRole)) {
-                try {
-                    throw new SkylinkException(
-                            "Trying to get an existing PeerConnection for " + peerId +
-                                    ", but which does not exist!");
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
             }
+            logMessage("Creating a new peer connection ...");
+
             SkylinkPcObserver pcObserver = new SkylinkPcObserver(this);
             pcObserver.setMyId(peerId);
 
@@ -1111,7 +1111,7 @@ public class SkylinkConnection {
                 pc = this.peerConnectionFactory.createPeerConnection(
                         skylinkConnectionService.getIceServers(),
                         skylinkMediaService.getPcConstraints(), pcObserver);
-                logMessage("[getPeerConnection] Created new PeerConnection for " + peerId + ".");
+                logMessage("[createPC] Created new PeerConnection for " + peerId + ".");
             }
             /*if (this.myConfig.hasAudio())
                 pc.addStream(this.localMediaStream, this.pcConstraints);*/

@@ -165,7 +165,8 @@ class ProtocolHelper {
 
             // Create a new peer connection
             PeerConnection peerConnection = skylinkConnection
-                    .getPeerConnection(remotePeerId, HealthChecker.ICE_ROLE_ANSWERER);
+                    .createPC(remotePeerId, HealthChecker.ICE_ROLE_ANSWERER, skylinkConnection
+                            .getUserInfo(remotePeerId));
 
             // TODO: use exact value
             boolean receiveOnly = false;

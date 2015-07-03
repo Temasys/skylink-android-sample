@@ -36,7 +36,7 @@ class SkylinkPeerService {
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
         // Create a new PeerConnection if we can
         PeerConnection peerConnection = skylinkConnection
-                .getPeerConnection(peerId, HealthChecker.ICE_ROLE_ANSWERER);
+                .createPC(peerId, HealthChecker.ICE_ROLE_ANSWERER, userInfo);
 
         // If we are over the max no. of peers, peerConnection here will be null.
         if (peerConnection != null) {
@@ -58,9 +58,8 @@ class SkylinkPeerService {
             }
 
         } else {
-            Log.d(TAG, "I only support "
-                    + skylinkConnection.getMaxPeerConnections()
-                    + " connections are in this app. I am discarding this 'welcome'.");
+            // We have reached the limit of max no. of Peers.
+            Log.d(TAG, "Discarding this \"enter\" due to Peer number limit.");
         }
     }
 
@@ -158,25 +157,31 @@ class SkylinkPeerService {
             }
         }
 
-        skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
-        PeerConnection peerConnection = null;
-        List<Object> weightedConnection = skylinkConnection.getWeightedPeerConnection(peerId, weight);
-        if (!(Boolean) weightedConnection.get(0)) {
-            Log.d(TAG, "Ignoring this welcome");
-            return;
+        // Check if a PC was already created at "enter"
+        if (skylinkConnection.getPeerConnection(peerId) != null) {
+            // Check if should continue with "welcome" or use PC from "enter"
+            if (skylinkConnection.shouldAcceptWelcome(peerId, weight)) {
+                // Remove PC from "enter" to create new PC from "welcome"
+                ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
+            } else {
+                // Do not continue "welcome" but use PC from "enter" instead.
+                Log.d(TAG, "Ignoring this welcome as Peer " + userInfo.getUserData() +
+                        " (" + peerId + ") is processing our welcome.");
+                return;
+            }
         }
 
-        Object secondObject = weightedConnection.get(1);
-        if (secondObject instanceof PeerConnection)
-            peerConnection = (PeerConnection) secondObject;
+        // Create a PC from "welcome"
+        PeerConnection peerConnection =
+                skylinkConnection.createPC(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo);
 
+        // We have reached the limit of max no. of Peers.
         if (peerConnection == null) {
-            Log.d(TAG, "I only support "
-                    + skylinkConnection.getMaxPeerConnections()
-                    + " connections are in this app. I am discarding this 'welcome'.");
+            Log.d(TAG, "Discarding this \"welcome\" due to Peer number limit.");
             return;
         }
 
+        skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
         skylinkConnection.setUserInfo(peerId, userInfo);
 
         boolean receiveOnly = peerInfo.isReceiveOnly();
@@ -196,7 +201,8 @@ class SkylinkPeerService {
                         || skylinkConnection.getMyConfig().hasDataTransfer())) {
             // It is stored by dataChannelManager.
             skylinkConnection.getDataChannelManager().createDataChannel(
-                    peerConnection, skylinkConnection.getSkylinkConnectionService().getSid(), peerId, "", null, peerId);
+                    peerConnection, skylinkConnection.getSkylinkConnectionService().getSid(),
+                    peerId, "", null, peerId);
         }
 
         if (skylinkConnection.getSdpObserverPool() == null) {
