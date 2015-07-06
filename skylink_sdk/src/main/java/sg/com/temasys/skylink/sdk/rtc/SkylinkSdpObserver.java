@@ -54,7 +54,7 @@ class SkylinkSdpObserver implements SdpObserver {
      * @return SkylinkConfig
      */
     private SkylinkConfig getSkylinkConfig() {
-        return skylinkConnection.getMyConfig();
+        return skylinkConnection.getSkylinkConfig();
     }
 
     /**

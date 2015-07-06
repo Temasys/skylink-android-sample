@@ -84,7 +84,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
      * @return SkylinkConfig
      */
     private SkylinkConfig getSkylinkConfig() {
-        return skylinkConnection.getMyConfig();
+        return skylinkConnection.getSkylinkConfig();
     }
 
     /**

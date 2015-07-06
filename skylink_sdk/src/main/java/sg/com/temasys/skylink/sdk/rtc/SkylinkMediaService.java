@@ -142,7 +142,7 @@ class SkylinkMediaService {
     void muteLocalAudio(boolean isMuted) {
         org.webrtc.AudioTrack localAudioTrack = skylinkConnection.getLocalAudioTrack();
 
-        if (skylinkConnection.getMyConfig().hasAudioSend() &&
+        if (skylinkConnection.getSkylinkConfig().hasAudioSend() &&
                 (localAudioTrack.enabled() == isMuted)) {
 
             localAudioTrack.setEnabled(!isMuted);
@@ -159,7 +159,7 @@ class SkylinkMediaService {
     void muteLocalVideo(boolean isMuted) {
 
         org.webrtc.VideoTrack localVideoTrack = skylinkConnection.getLocalVideoTrack();
-        if (skylinkConnection.getMyConfig().hasVideoSend() &&
+        if (skylinkConnection.getSkylinkConfig().hasVideoSend() &&
                 (localVideoTrack.enabled() == isMuted)) {
 
             localVideoTrack.setEnabled(!isMuted);
@@ -214,7 +214,7 @@ class SkylinkMediaService {
                         .createLocalMediaStream("ARDAMS");
                 skylinkConnection.setLocalMediaStream(lms);
 
-                if (skylinkConnection.getMyConfig().hasVideoSend()) {
+                if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
 
                     localVideoCapturer = getVideoCapturer();
                     skylinkConnection.setLocalVideoCapturer(localVideoCapturer);
@@ -246,7 +246,7 @@ class SkylinkMediaService {
                                 return;
                             GLSurfaceView localVideoView = null;
                             VideoRendererGui localVideoRendererGui;
-                            if (skylinkConnection.getMyConfig().hasVideoSend()) {
+                            if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
                                 localVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
                                 localVideoRendererGui = new VideoRendererGui(localVideoView);
 
@@ -272,7 +272,7 @@ class SkylinkMediaService {
                 // We should no longer process messages from signalling server.
                 if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                     return;
-                if (skylinkConnection.getMyConfig().hasAudioSend()) {
+                if (skylinkConnection.getSkylinkConfig().hasAudioSend()) {
                     Log.d(TAG, "[SDK] Local audio source: Creating...");
                     localAudioSource = peerConnectionFactory
                             .createAudioSource(new MediaConstraints());

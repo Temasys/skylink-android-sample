@@ -31,16 +31,16 @@ class InRoomMessageProcessor implements MessageProcessor {
             JSONObject iceServer = iceServers.getJSONObject(i);
             String url = iceServer.getString("url");
 
-            if (skylinkConnection.getMyConfig().isStunDisabled() && url.startsWith("stun:")) {
+            if (skylinkConnection.getSkylinkConfig().isStunDisabled() && url.startsWith("stun:")) {
                 Log.d(TAG, "[SDK] Not adding stun server as stun disabled in config.");
                 continue;
             }
-            if (skylinkConnection.getMyConfig().isTurnDisabled() && url.startsWith("turn:")) {
+            if (skylinkConnection.getSkylinkConfig().isTurnDisabled() && url.startsWith("turn:")) {
                 Log.d(TAG, "[SDK] Not adding turn server as turn disabled in config.");
                 continue;
             }
-            if (skylinkConnection.getMyConfig().getTransport() != null) {
-                url = url + "?transport=" + skylinkConnection.getMyConfig().getTransport();
+            if (skylinkConnection.getSkylinkConfig().getTransport() != null) {
+                url = url + "?transport=" + skylinkConnection.getSkylinkConfig().getTransport();
             }
 
             String credential = iceServer.has("credential") ? iceServer.getString("credential") : "";

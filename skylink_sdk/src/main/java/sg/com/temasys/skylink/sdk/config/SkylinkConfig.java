@@ -33,6 +33,7 @@ public class SkylinkConfig implements Serializable {
     private boolean fileTransfer;
     private boolean dataTransfer;
     private int timeout = 60;
+    private int maxPeers = 4;
     private Map<String, Object> advancedOptions;
     private AudioCodec preferredAudioCodec = AudioCodec.OPUS;
 
@@ -253,6 +254,23 @@ public class SkylinkConfig implements Serializable {
      */
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * @return Gets the maximum number of Peers that we can connect to at one time.
+     */
+    public int getMaxPeers() {
+        return maxPeers;
+    }
+
+    /**
+     * Sets the maximum number of Peers that we can connect to at one time.
+     * If not set, default is 4, i.e. we can connect up to 4 Peers at one time.
+     *
+     * @param maxPeers Timeout config value
+     */
+    public void setMaxPeers(int maxPeers) {
+        this.maxPeers = maxPeers;
     }
 
     /**

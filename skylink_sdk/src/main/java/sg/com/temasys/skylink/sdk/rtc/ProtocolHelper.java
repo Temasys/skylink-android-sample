@@ -163,21 +163,26 @@ class ProtocolHelper {
             // Notify that the connection is restarting
             notifyPeerLeave(skylinkConnection, remotePeerId, PEER_CONNECTION_RESTART);
 
-            // Create a new peer connection
+            // Create a new peer
+            Peer peer = skylinkConnection.getSkylinkPeerService().createPeer(
+                    remotePeerId, HealthChecker.ICE_ROLE_ANSWERER,
+                    skylinkConnection.getUserInfo(remotePeerId));
+
+            /*// Create a new peer connection
             PeerConnection peerConnection = skylinkConnection
-                    .createPC(remotePeerId, HealthChecker.ICE_ROLE_ANSWERER, skylinkConnection
-                            .getUserInfo(remotePeerId));
+                    .createPC(remotePeerId, HealthChecker.ICE_ROLE_ANSWERER, , skylinkConnection
+                            .getUserInfo(remotePeerId));*/
 
             // TODO: use exact value
             boolean receiveOnly = false;
 
             // Add our local media stream to this PC, or not.
             if ((myConfig.hasAudioSend() || myConfig.hasVideoSend()) && !receiveOnly) {
-                peerConnection.addStream(localMediaStream);
+                peer.getPc().addStream(localMediaStream);
                 Log.d(TAG, "Added localMedia Stream");
             }
 
-            if (peerConnection != null) {
+            if (peer.getPc() != null) {
                 // Send "welcome".
                 sendWelcome(remotePeerId, skylinkConnection, true);
             }
@@ -251,7 +256,7 @@ class ProtocolHelper {
         if (remotePeerId != null) {
             enterObject.put("target", remotePeerId);
         }
-        UserInfo userInfo = new UserInfo(skylinkConnection.getMyConfig(), skylinkConnection.getUserData(null));
+        UserInfo userInfo = new UserInfo(skylinkConnection.getSkylinkConfig(), skylinkConnection.getUserData(null));
         UserInfo.setUserInfo(enterObject, userInfo);
         skylinkConnectionService.sendMessage(enterObject);
     }
@@ -271,7 +276,7 @@ class ProtocolHelper {
 
         SkylinkConnectionService skylinkConnectionService =
                 skylinkConnection.getSkylinkConnectionService();
-        SkylinkConfig myConfig = skylinkConnection.getMyConfig();
+        SkylinkConfig myConfig = skylinkConnection.getSkylinkConfig();
 
         String typeStr = "restart";
         if (!isRestart) {

@@ -59,18 +59,10 @@ public class SkylinkConnection {
     public static final int DEFAULT_DURATION = 24;
 
     private static final String TAG = SkylinkConnection.class.getSimpleName();
-
-    private static final int MAX_PEER_CONNECTIONS = 4;
-    private static final String MY_SELF = "me";
-
+    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static boolean factoryStaticInitialized;
-
-    public Context getApplicationContext() {
-        return applicationContext;
-    }
-
+    private static SkylinkConnection instance;
     private Context applicationContext;
-    private boolean isFirstPeer = true;
     private boolean isMcuRoom;
     private DataChannelManager dataChannelManager;
     private Map<String, UserInfo> userInfoMap;
@@ -78,35 +70,28 @@ public class SkylinkConnection {
     private Map<String, SkylinkPcObserver> pcObserverPool;
     private Map<String, PeerConnection> peerConnectionPool;
     private Map<String, SkylinkSdpObserver> sdpObserverPool;
-
     private MediaStream localMediaStream;
-
     private Object myUserData;
     private UserInfo myUserInfo;
     private PeerConnectionFactory peerConnectionFactory;
     private String appKey;
-    private SkylinkConfig myConfig;
+    private SkylinkConfig skylinkConfig;
     private VideoCapturerAndroid localVideoCapturer;
     private AudioSource localAudioSource;
     private AudioTrack localAudioTrack;
     private VideoSource localVideoSource;
     private VideoTrack localVideoTrack;
-
     // Skylink Services
     private SkylinkConnectionService skylinkConnectionService;
     private SkylinkPeerService skylinkPeerService;
     private SkylinkMediaService skylinkMediaService;
-
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
     private MediaListener mediaListener;
     private MessagesListener messagesListener;
     private RemotePeerListener remotePeerListener;
     private DataTransferListener dataTransferListener;
-
     private boolean roomLocked;
-
-
     // Lock objects to prevent threads from executing the following methods concurrently:
     // signalingServerClient.MessageHandler.onMessage
     // SkylinkConnection.disconnect
@@ -121,6 +106,67 @@ public class SkylinkConnection {
     private Object lockDisconnectSdpSet = new Object();
     private Object lockDisconnectSdpDrain = new Object();
     private Object lockDisconnectSdpSend = new Object();
+    private Handler handler;
+
+    private SkylinkConnection() {
+        handler = new Handler(Looper.getMainLooper());
+    }
+
+    /**
+     * @return Existing instance of SkylinkConnection Object if it exists or a new instance if it
+     * doesn't exist.
+     */
+    public static synchronized SkylinkConnection getInstance() {
+        if (instance == null) {
+            instance = new SkylinkConnection();
+        }
+        return instance;
+    }
+
+    // Poor-man's assert(): die with |msg| unless |condition| is true.
+    static void abortUnless(boolean condition, String msg) {
+        if (!condition) {
+            throw new RuntimeException(msg);
+        }
+    }
+
+    /**
+     * Computes RFC 2104-compliant HMAC signature. * @param data The data to be signed.
+     *
+     * @param key The signing key.
+     * @return The Base64-encoded RFC 2104-compliant HMAC signature.
+     * @throws java.security.SignatureException when signature generation fails
+     */
+    private static String calculateRFC2104HMAC(String data, String key)
+            throws SignatureException {
+        String result;
+        try {
+
+            // get an hmac_sha1 key from the raw key bytes
+            SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(),
+                    HMAC_SHA1_ALGORITHM);
+
+            // get an hmac_sha1 Mac instance and initialize with the signing key
+            Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
+            mac.init(signingKey);
+
+            // compute the hmac on input data bytes
+            byte[] rawHmac = mac.doFinal(data.getBytes());
+
+            // base64-encode the hmac
+            result = Base64
+                    .encodeToString(rawHmac, android.util.Base64.DEFAULT);
+
+        } catch (Exception e) {
+            throw new SignatureException("Failed to generate HMAC : "
+                    + e.getMessage());
+        }
+        return result.substring(0, result.length() - 1);
+    }
+
+    public Context getApplicationContext() {
+        return applicationContext;
+    }
 
     public Object getLockDisconnectSdp() {
         return lockDisconnectSdp;
@@ -142,25 +188,6 @@ public class SkylinkConnection {
         return lockDisconnectSdpSend;
     }
 
-
-    private static SkylinkConnection instance;
-    private Handler handler;
-
-    private SkylinkConnection() {
-        handler = new Handler(Looper.getMainLooper());
-    }
-
-    /**
-     * @return Existing instance of SkylinkConnection Object if it exists or a new instance if it
-     * doesn't exist.
-     */
-    public static synchronized SkylinkConnection getInstance() {
-        if (instance == null) {
-            instance = new SkylinkConnection();
-        }
-        return instance;
-    }
-
     /**
      * Creates a new SkylinkConnection object with the specified parameters.
      *
@@ -172,7 +199,7 @@ public class SkylinkConnection {
                      SkylinkConfig config, Context context) {
         logMessage("SkylinkConnection::config=>" + config);
 
-        this.myConfig = new SkylinkConfig(config);
+        this.skylinkConfig = new SkylinkConfig(config);
 
         logMessage("SkylinkConnection::appKey=>" + appKey);
         this.appKey = appKey;
@@ -215,18 +242,18 @@ public class SkylinkConnection {
 
         // Set MediaConstraints
         // For local media
-        skylinkMediaService.setVideoConstrains(this.myConfig);
+        skylinkMediaService.setVideoConstrains(this.skylinkConfig);
         // For PC and SDP
-        skylinkMediaService.genMediaConstraints(myConfig);
+        skylinkMediaService.genMediaConstraints(skylinkConfig);
 
         this.applicationContext = context;
 
         // Instantiate DataChannelManager.
-        if (this.myConfig.hasPeerMessaging() || this.myConfig.hasFileTransfer()
-                || this.myConfig.hasDataTransfer()) {
+        if (this.skylinkConfig.hasPeerMessaging() || this.skylinkConfig.hasFileTransfer()
+                || this.skylinkConfig.hasDataTransfer()) {
             this.dataChannelManager = new DataChannelManager(this,
-                    this.myConfig.getTimeout(), myConfig.hasPeerMessaging(),
-                    myConfig.hasFileTransfer());
+                    this.skylinkConfig.getTimeout(), skylinkConfig.hasPeerMessaging(),
+                    skylinkConfig.hasFileTransfer());
             this.dataChannelManager.setConnectionManager(this);
         }
 
@@ -253,7 +280,7 @@ public class SkylinkConnection {
         }
 
         this.myUserData = userData;
-        this.myUserInfo = new UserInfo(myConfig, this.myUserData);
+        this.myUserInfo = new UserInfo(skylinkConfig, this.myUserData);
 
         // Fetch the current time from a server
         CurrentTimeService currentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
@@ -292,7 +319,7 @@ public class SkylinkConnection {
     public boolean connectToRoom(String skylinkConnectionString, Object userData) {
 
         this.myUserData = userData;
-        this.myUserInfo = new UserInfo(myConfig, this.myUserData);
+        this.myUserInfo = new UserInfo(skylinkConfig, this.myUserData);
 
         logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
 
@@ -496,8 +523,8 @@ public class SkylinkConnection {
                                             this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
 
-                                            // Reset parameters
-                                            isFirstPeer = true;
+                                            /*// Reset parameters
+                                            isFirstPeer = true;*/
                                         }
                                     }
                                 }
@@ -538,7 +565,7 @@ public class SkylinkConnection {
         if (this.skylinkConnectionService == null)
             return;
 
-        if (myConfig.hasPeerMessaging()) {
+        if (skylinkConfig.hasPeerMessaging()) {
             if (remotePeerId == null) {
                 // If MCU in room, it will broadcast so no need to send to everyone.
                 if (isMcuRoom) {
@@ -648,7 +675,7 @@ public class SkylinkConnection {
         if (this.skylinkConnectionService == null)
             return;
 
-        if (myConfig.hasFileTransfer()) {
+        if (skylinkConfig.hasFileTransfer()) {
             if (remotePeerId == null) {
                 // Send to all Peers
                 // If MCU in room, it will broadcast so no need to send to everyone.
@@ -738,7 +765,7 @@ public class SkylinkConnection {
      * @throws SkylinkException
      */
     public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
-        if (myConfig != null && myConfig.hasDataTransfer()) {
+        if (skylinkConfig != null && skylinkConfig.hasDataTransfer()) {
             // Hack for initial MCU release
             if (isMcuRoom) {
                     /*dataChannelManager.sendDataToPeer(null, data);*/
@@ -815,7 +842,7 @@ public class SkylinkConnection {
         if (this.skylinkConnectionService == null) {
             return;
         }
-        if (myConfig.hasFileTransfer()) {
+        if (skylinkConfig.hasFileTransfer()) {
             dataChannelManager.acceptFileTransfer(remotePeerId, isPermitted, filePath);
         }
     }
@@ -949,7 +976,6 @@ public class SkylinkConnection {
             this.remotePeerListener = remotePeerListener;
     }
 
-
     /**
      * Retrieves the user defined data object associated with a peer.
      *
@@ -1014,40 +1040,19 @@ public class SkylinkConnection {
         Log.d(TAG, message);
     }
 
-    // Poor-man's assert(): die with |msg| unless |condition| is true.
-    static void abortUnless(boolean condition, String msg) {
-        if (!condition) {
-            throw new RuntimeException(msg);
-        }
-    }
-
     /**
-     * When received welcome, check if we should proceed or not.
-     * If we had both sent "enter" to each other (due to entering the room together),
-     * the one whose weight is smaller should continue the handshake,
-     * while the other should abandon handshake.
+     * When received welcome, check if we should proceed or not. If we had both sent "enter" to each
+     * other (due to entering the room together), the one whose weight is smaller should continue
+     * the handshake, while the other should abandon handshake.
+     *
      * @param peerId
      * @param weight
      * @return True if welcome should be accepted, false if should be dropped.
      */
     boolean shouldAcceptWelcome(String peerId, double weight) {
-        // TODO remove after Peer usage.
-        if (this.peerConnectionPool == null || this.pcObserverPool == null) {
-            return true;
-        }
-
-        // Record in DataChannelManager if Peer is MCU
-            // MCU, if present, will always be first Peer to send welcome.
-        if (isFirstPeer) {
-            isFirstPeer = false;
-            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(peerId);
-            if (dataChannelManager != null && isMcuRoom) {
-                dataChannelManager.setIsMcuRoom(isMcuRoom);
-            }
-        }
-
+        Peer peer = skylinkPeerService.getPeer(peerId);
+        SkylinkPcObserver pcObserver = peer.getPcObserver();
         if (weight > 0) {
-            SkylinkPcObserver pcObserver = this.pcObserverPool.get(peerId);
             if (pcObserver != null) {
                 if (pcObserver.getMyWeight() > weight) {
                     // Use this welcome (ours will be discarded on peer's side).
@@ -1074,37 +1079,21 @@ public class SkylinkConnection {
         return pc;
     }
 
-    PeerConnection createPC(String peerId, String iceRole, UserInfo userInfo) {
-        if (this.peerConnectionPool == null) {
+    PeerConnection createPC(String peerId, String iceRole, SkylinkPcObserver pcObserver, UserInfo userInfo) {
+        /*if (this.peerConnectionPool == null) {
             this.peerConnectionPool = new Hashtable<String, PeerConnection>();
         }
         if (this.pcObserverPool == null)
-            this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
-
-        // Record in DataChannelManager if Peer is MCU
-            // MCU, if present, will always be first Peer to send welcome.
-        if (isFirstPeer) {
-            isFirstPeer = false;
-            this.isMcuRoom = SkylinkPeerService.isPeerIdMCU(peerId);
-            if (dataChannelManager != null && isMcuRoom) {
-                dataChannelManager.setIsMcuRoom(isMcuRoom);
-            }
-        }
+            this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();*/
 
         PeerConnection pc = this.peerConnectionPool.get(peerId);
         if (pc == null) {
             // We have reached the limit of max no. of Peers.
-            if (this.peerConnectionPool.size() >= MAX_PEER_CONNECTIONS
+            if (this.peerConnectionPool.size() >= skylinkConfig.getMaxPeers()
                     && !SkylinkPeerService.isPeerIdMCU(peerId)) {
-                Log.d(TAG, "Unable to create PeerConnection for Peer " + userInfo.getUserData() +
-                        " (" + peerId + ") as I only support " +
-                        getMaxPeerConnections() + " connections in this app.");
                 return null;
             }
             logMessage("Creating a new peer connection ...");
-
-            SkylinkPcObserver pcObserver = new SkylinkPcObserver(this);
-            pcObserver.setMyId(peerId);
 
             // Prevent thread from executing with disconnect concurrently.
             synchronized (lockDisconnect) {
@@ -1113,7 +1102,7 @@ public class SkylinkConnection {
                         skylinkMediaService.getPcConstraints(), pcObserver);
                 logMessage("[createPC] Created new PeerConnection for " + peerId + ".");
             }
-            /*if (this.myConfig.hasAudio())
+            /*if (this.skylinkConfig.hasAudio())
                 pc.addStream(this.localMediaStream, this.pcConstraints);*/
 
             pcObserver.setPc(pc);
@@ -1127,51 +1116,15 @@ public class SkylinkConnection {
         return pc;
     }
 
-    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-
-    /**
-     * Computes RFC 2104-compliant HMAC signature. * @param data The data to be signed.
-     *
-     * @param key The signing key.
-     * @return The Base64-encoded RFC 2104-compliant HMAC signature.
-     * @throws java.security.SignatureException when signature generation fails
-     */
-    private static String calculateRFC2104HMAC(String data, String key)
-            throws SignatureException {
-        String result;
-        try {
-
-            // get an hmac_sha1 key from the raw key bytes
-            SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(),
-                    HMAC_SHA1_ALGORITHM);
-
-            // get an hmac_sha1 Mac instance and initialize with the signing key
-            Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
-            mac.init(signingKey);
-
-            // compute the hmac on input data bytes
-            byte[] rawHmac = mac.doFinal(data.getBytes());
-
-            // base64-encode the hmac
-            result = Base64
-                    .encodeToString(rawHmac, android.util.Base64.DEFAULT);
-
-        } catch (Exception e) {
-            throw new SignatureException("Failed to generate HMAC : "
-                    + e.getMessage());
-        }
-        return result.substring(0, result.length() - 1);
-    }
-
 
     // Getters and Setters
 
-    SkylinkMediaService getSkylinkMediaService() {
-        return skylinkMediaService;
+    public boolean isMcuRoom() {
+        return isMcuRoom;
     }
 
-    SkylinkPeerService getSkylinkPeerService() {
-        return skylinkPeerService;
+    public void setIsMcuRoom(boolean isMcuRoom) {
+        this.isMcuRoom = isMcuRoom;
     }
 
     MediaStream getLocalMediaStream() {
@@ -1188,10 +1141,6 @@ public class SkylinkConnection {
 
     void setLocalVideoCapturer(VideoCapturerAndroid localVideoCapturer) {
         this.localVideoCapturer = localVideoCapturer;
-    }
-
-    static int getMaxPeerConnections() {
-        return MAX_PEER_CONNECTIONS;
     }
 
     void setUserData(Object myUserData) {
@@ -1250,8 +1199,12 @@ public class SkylinkConnection {
         this.peerConnectionFactory = peerConnectionFactory;
     }
 
-    void setDataChannelManager(DataChannelManager dataChannelManager) {
-        this.dataChannelManager = dataChannelManager;
+    SkylinkMediaService getSkylinkMediaService() {
+        return skylinkMediaService;
+    }
+
+    SkylinkPeerService getSkylinkPeerService() {
+        return skylinkPeerService;
     }
 
     SkylinkSdpObserver getSdpObserver(String mid) {
@@ -1311,24 +1264,28 @@ public class SkylinkConnection {
         return skylinkConnectionService;
     }
 
-    SkylinkConfig getMyConfig() {
-        return myConfig;
+    SkylinkConfig getSkylinkConfig() {
+        return skylinkConfig;
     }
 
     DataChannelManager getDataChannelManager() {
         return dataChannelManager;
     }
 
+    void setDataChannelManager(DataChannelManager dataChannelManager) {
+        this.dataChannelManager = dataChannelManager;
+    }
+
     Object getMyUserData() {
         return myUserData;
     }
 
-    void setRoomLocked(boolean roomLocked) {
-        this.roomLocked = roomLocked;
-    }
-
     boolean isRoomLocked() {
         return roomLocked;
+    }
+
+    void setRoomLocked(boolean roomLocked) {
+        this.roomLocked = roomLocked;
     }
 
 }

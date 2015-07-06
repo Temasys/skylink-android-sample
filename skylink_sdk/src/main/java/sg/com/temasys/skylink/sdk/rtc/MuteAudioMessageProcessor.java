@@ -14,7 +14,7 @@ class MuteAudioMessageProcessor implements MessageProcessor {
 
     @Override
     public void process(JSONObject jsonObject) throws JSONException {
-        if (skylinkConnection.getMyConfig().hasAudioReceive()) {
+        if (skylinkConnection.getSkylinkConfig().hasAudioReceive()) {
 
             final String mid = jsonObject.getString("mid");
             final boolean muted = jsonObject.getBoolean("muted");

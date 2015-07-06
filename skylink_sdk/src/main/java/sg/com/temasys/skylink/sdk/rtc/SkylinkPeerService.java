@@ -13,16 +13,19 @@ import java.util.List;
 /**
  * Created by xiangrong on 4/5/15.
  */
-class SkylinkPeerService {
+class SkylinkPeerService implements PeerPoolClient {
 
     private static final String TAG = SkylinkPeerService.class.getSimpleName();
 
     private final SkylinkConnection skylinkConnection;
     private SkylinkMediaService skylinkMediaService;
     private SkylinkConnectionService skylinkConnectionService;
+    private PeerPool peerPool;
+    private boolean isFirstPeer = true;
 
     public SkylinkPeerService(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
+        this.peerPool = new PeerPool(this);
     }
 
     static boolean isPeerIdMCU(String peerId) {
@@ -34,24 +37,21 @@ class SkylinkPeerService {
     }
 
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
-        // Create a new PeerConnection if we can
-        PeerConnection peerConnection = skylinkConnection
-                .createPC(peerId, HealthChecker.ICE_ROLE_ANSWERER, userInfo);
+        // Create a new Peer if we can
+        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_ANSWERER, userInfo);
 
-        // If we are over the max no. of peers, peerConnection here will be null.
-        if (peerConnection != null) {
-            skylinkConnection.setUserInfo(peerId, userInfo);
-            skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
+        // If we are over the max no. of peers, peer here will be null.
+        if (peer != null) {
+            peer.setUserInfo(userInfo);
+            peer.setPeerInfo(peerInfo);
 
             // Add our local media stream to this PC, or not.
-            if ((skylinkConnection.getMyConfig().hasAudioSend() || skylinkConnection.getMyConfig().hasVideoSend())) {
-                peerConnection.addStream(skylinkConnection.getLocalMediaStream());
+            if ((skylinkConnection.getSkylinkConfig().hasAudioSend() || skylinkConnection.getSkylinkConfig().hasVideoSend())) {
+                peer.getPc().addStream(skylinkConnection.getLocalMediaStream());
                 Log.d(TAG, "Added localMedia Stream");
             }
 
             try {
-                /*ProtocolHelper.sendEnter(null, skylinkConnection,
-                        skylinkConnection.getSkylinkConnectionService());*/
                 ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage(), e);
@@ -61,6 +61,32 @@ class SkylinkPeerService {
             // We have reached the limit of max no. of Peers.
             Log.d(TAG, "Discarding this \"enter\" due to Peer number limit.");
         }
+
+        /*// Create a new PeerConnection if we can
+        PeerConnection peerConnection = skylinkConnection
+                .createPC(peerId, HealthChecker.ICE_ROLE_ANSWERER, , userInfo);
+
+        // If we are over the max no. of peers, peerConnection here will be null.
+        if (peerConnection != null) {
+            skylinkConnection.setUserInfo(peerId, userInfo);
+            skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
+
+            // Add our local media stream to this PC, or not.
+            if ((skylinkConnection.getSkylinkConfig().hasAudioSend() || skylinkConnection.getSkylinkConfig().hasVideoSend())) {
+                peerConnection.addStream(skylinkConnection.getLocalMediaStream());
+                Log.d(TAG, "Added localMedia Stream");
+            }
+
+            try {
+                ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage(), e);
+            }
+
+        } else {
+            // We have reached the limit of max no. of Peers.
+            Log.d(TAG, "Discarding this \"enter\" due to Peer number limit.");
+        }*/
     }
 
     void receivedBye(final String peerId) {
@@ -137,7 +163,7 @@ class SkylinkPeerService {
 
         // Set the preferred audio codec
         String sdpString = Utils.preferCodec(sdp,
-                skylinkConnection.getMyConfig().getPreferredAudioCodec().toString(), true);
+                skylinkConnection.getSkylinkConfig().getPreferredAudioCodec().toString(), true);
 
         // Set the SDP
         SessionDescription sessionDescription = new SessionDescription(
@@ -146,6 +172,18 @@ class SkylinkPeerService {
 
         peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(peerId), sessionDescription);
         Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
+    }
+
+    /**
+     * Get the Peer via its PeerId.
+     * @param peerId
+     * @return
+     */
+    Peer getPeer(String peerId) {
+        if (peerPool == null) {
+            return null;
+        }
+        return peerPool.getPeer(peerId);
     }
 
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
@@ -157,6 +195,69 @@ class SkylinkPeerService {
             }
         }
 
+        // Check if a Peer was already created at "enter"
+        if (peerPool.getPeer(peerId) != null) {
+            // Check if should continue with "welcome" or use Peer from "enter"
+            if (skylinkConnection.shouldAcceptWelcome(peerId, weight)) {
+                // Remove Peer from "enter" to create new Peer from "welcome"
+                ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
+            } else {
+                // Do not continue "welcome" but use Peer from "enter" instead.
+                Log.d(TAG, "Ignoring this welcome as Peer " + userInfo.getUserData() +
+                        " (" + peerId + ") is processing our welcome.");
+                return;
+            }
+        }
+
+        // Create a Peer from "welcome"
+        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo);
+
+        // We have reached the limit of max no. of Peers.
+        if (peer == null) {
+            Log.d(TAG, "Discarding this \"welcome\" due to Peer number limit.");
+            return;
+        }
+
+        peer.setPeerId(peerId);
+        peer.setUserInfo(userInfo);
+
+        boolean receiveOnly = peerInfo.isReceiveOnly();
+
+        // Add our local media stream to this PC, or not.
+        if ((skylinkConnection.getSkylinkConfig().hasAudioSend() ||
+                skylinkConnection.getSkylinkConfig().hasVideoSend()) && !receiveOnly) {
+            peer.getPc().addStream(skylinkConnection.getLocalMediaStream());
+            Log.d(TAG, "Added localMedia Stream");
+        }
+
+        Log.d(TAG, "[receivedWelcomeRestart] - create offer.");
+        // Create DataChannel if both Peer and ourself desires it.
+        if (peerInfo.isEnableDataChannel() &&
+                (skylinkConnection.getSkylinkConfig().hasPeerMessaging()
+                        || skylinkConnection.getSkylinkConfig().hasFileTransfer()
+                        || skylinkConnection.getSkylinkConfig().hasDataTransfer())) {
+            // It is stored by dataChannelManager.
+            skylinkConnection.getDataChannelManager().createDataChannel(
+                    peer.getPc(), skylinkConnection.getSkylinkConnectionService().getSid(),
+                    peerId, "", null, peerId);
+        }
+
+        if (skylinkConnection.getSdpObserverPool() == null) {
+            skylinkConnection.setSdpObserverPool(new Hashtable<String, SkylinkSdpObserver>());
+        }
+        SkylinkSdpObserver sdpObserver = skylinkConnection.getSdpObserverPool()
+                .get(peerId);
+        if (sdpObserver == null) {
+            sdpObserver = new SkylinkSdpObserver(skylinkConnection);
+            sdpObserver.setPeerId(peerId);
+            skylinkConnection.getSdpObserverPool().put(peerId, sdpObserver);
+        }
+
+        peer.getPc().createOffer(sdpObserver,
+                skylinkMediaService.getSdpMediaConstraints());
+        Log.d(TAG, "[receivedWelcomeRestart] - createOffer for " + peerId);
+
+/*
         // Check if a PC was already created at "enter"
         if (skylinkConnection.getPeerConnection(peerId) != null) {
             // Check if should continue with "welcome" or use PC from "enter"
@@ -173,7 +274,7 @@ class SkylinkPeerService {
 
         // Create a PC from "welcome"
         PeerConnection peerConnection =
-                skylinkConnection.createPC(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo);
+                skylinkConnection.createPC(peerId, HealthChecker.ICE_ROLE_OFFERER, , userInfo);
 
         // We have reached the limit of max no. of Peers.
         if (peerConnection == null) {
@@ -187,8 +288,8 @@ class SkylinkPeerService {
         boolean receiveOnly = peerInfo.isReceiveOnly();
 
         // Add our local media stream to this PC, or not.
-        if ((skylinkConnection.getMyConfig().hasAudioSend() ||
-                skylinkConnection.getMyConfig().hasVideoSend()) && !receiveOnly) {
+        if ((skylinkConnection.getSkylinkConfig().hasAudioSend() ||
+                skylinkConnection.getSkylinkConfig().hasVideoSend()) && !receiveOnly) {
             peerConnection.addStream(skylinkConnection.getLocalMediaStream());
             Log.d(TAG, "Added localMedia Stream");
         }
@@ -196,9 +297,9 @@ class SkylinkPeerService {
         Log.d(TAG, "[receivedWelcomeRestart] - create offer.");
         // Create DataChannel if both Peer and ourself desires it.
         if (peerInfo.isEnableDataChannel() &&
-                (skylinkConnection.getMyConfig().hasPeerMessaging()
-                        || skylinkConnection.getMyConfig().hasFileTransfer()
-                        || skylinkConnection.getMyConfig().hasDataTransfer())) {
+                (skylinkConnection.getSkylinkConfig().hasPeerMessaging()
+                        || skylinkConnection.getSkylinkConfig().hasFileTransfer()
+                        || skylinkConnection.getSkylinkConfig().hasDataTransfer())) {
             // It is stored by dataChannelManager.
             skylinkConnection.getDataChannelManager().createDataChannel(
                     peerConnection, skylinkConnection.getSkylinkConnectionService().getSid(),
@@ -217,9 +318,63 @@ class SkylinkPeerService {
         }
 
         peerConnection.createOffer(sdpObserver,
-                skylinkMediaService.getSdpMediaConstraints());
+                skylinkMediaService.getSdpMediaConstraints());*/
+    }
 
-        Log.d(TAG, "[receivedWelcomeRestart] - createOffer for " + peerId);
+    // Internal methods
+    Peer createPeer(String peerId, String iceRole, UserInfo userInfo) {
+        Peer peer;
+        PeerConnection pc;
+        boolean isMcu = false;
+
+        // Check if Peer is MCU
+        // MCU, if present, will always be first Peer to send welcome.
+        if (isFirstPeer) {
+            isFirstPeer = false;
+            isMcu = isPeerIdMCU(peerId);
+            if (isMcu) {
+                // Set SkylinkConnection MCU flag
+                this.skylinkConnection.setIsMcuRoom(isMcu);
+                // Set DataChannelManager MCU flag.
+                if (skylinkConnection.getDataChannelManager() != null) {
+                    skylinkConnection.getDataChannelManager().setIsMcuRoom(skylinkConnection.isMcuRoom());
+                }
+            }
+        }
+
+        // Create a new Peer if there is currently room.
+        if (peerPool.canAddPeer() || isMcu) {
+            // Create SkylinkPcObserver
+            SkylinkPcObserver pcObserver = new SkylinkPcObserver(skylinkConnection);
+            pcObserver.setMyId(peerId);
+            // Create PeerConnection
+            pc = skylinkConnection.createPC(peerId, iceRole, pcObserver, userInfo);
+            // Create SkylinkSdpObserver
+            SkylinkSdpObserver sdpObserver = new SkylinkSdpObserver(skylinkConnection);
+            sdpObserver.setPeerId(peerId);
+            // Create new Peer
+            peer = new Peer(peerId, pc, pcObserver, sdpObserver);
+
+            // Add and return new Peer
+            if (isMcu) {
+                // Set a MCU Peer
+                peerPool.setPeerMcu(peer);
+            } else {
+                // Add a normal Peer if possible
+                if (!peerPool.addPeer(peer)) {
+                    Log.d(TAG, "Unable to create PeerConnection for Peer " + userInfo.getUserData() +
+                            " (" + peerId + ") as I only support " +
+                            skylinkConnection.getSkylinkConfig().getMaxPeers() + " connections " +
+                            "in this app.");
+                    return null;
+                }
+            }
+            return peer;
+        } else {
+            // Return null if Peer cannot be created
+            return null;
+        }
+
     }
 
     // Getters and Setters
@@ -231,4 +386,8 @@ class SkylinkPeerService {
         this.skylinkConnectionService = skylinkConnectionService;
     }
 
+    @Override
+    public int getMaxPeer() {
+        return skylinkConnection.getSkylinkConfig().getMaxPeers();
+    }
 }

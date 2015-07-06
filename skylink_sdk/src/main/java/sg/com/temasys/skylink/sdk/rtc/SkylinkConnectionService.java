@@ -265,7 +265,7 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
                     // If it is Android, send restart.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
                     ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this,
-                            skylinkConnection.getLocalMediaStream(), skylinkConnection.getMyConfig());
+                            skylinkConnection.getLocalMediaStream(), skylinkConnection.getSkylinkConfig());
                 } else {
                     // If web or others, send directed enter
                     // TODO XR: Remove after JS client update to compatible restart protocol.
@@ -285,7 +285,7 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         synchronized (skylinkConnection.getLockDisconnect()) {
             try {
                 ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this, skylinkConnection.getLocalMediaStream(),
-                        skylinkConnection.getMyConfig());
+                        skylinkConnection.getSkylinkConfig());
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
             }
