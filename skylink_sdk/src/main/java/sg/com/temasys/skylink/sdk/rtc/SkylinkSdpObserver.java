@@ -23,9 +23,11 @@ class SkylinkSdpObserver implements SdpObserver {
     private SessionDescription localSdp;
 
     private String peerId;
+    private Peer peer;
 
     public SkylinkSdpObserver(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
+        peer = skylinkConnection.getSkylinkPeerService().getPeer(this.peerId);
     }
 
     @SuppressWarnings("unused")
@@ -119,7 +121,7 @@ class SkylinkSdpObserver implements SdpObserver {
             sdp = new SessionDescription(origSdp.type, sdpString);
 
             this.localSdp = sdp;
-            pc = skylinkConnection.getPeerConnectionPool().get(this.peerId);
+            pc = peer.getPc();
         }
         runOnUiThread(new Runnable() {
             public void run() {
@@ -151,7 +153,7 @@ class SkylinkSdpObserver implements SdpObserver {
                 return;
             }
 
-            pc = skylinkConnection.getPeerConnectionPool().get(this.peerId);
+            pc = peer.getPc();
         }
         runOnUiThread(new Runnable() {
             public void run() {
@@ -181,7 +183,8 @@ class SkylinkSdpObserver implements SdpObserver {
                             drainRemoteCandidates();
                             if (!SkylinkPeerService.isPeerIdMCU(peerId)) {
                                 String tid = SkylinkSdpObserver.this.peerId;
-                                PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(SkylinkSdpObserver.this.peerId);
+                                Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(peerId);
+                                PeerInfo peerInfo = peer.getPeerInfo();
                                 boolean eDC = false;
                                 if (peerInfo != null) eDC = peerInfo.isEnableDataChannel();
                                 skylinkConnection.getRemotePeerListener().onRemotePeerJoin(tid, skylinkConnection.getUserData(tid), eDC);

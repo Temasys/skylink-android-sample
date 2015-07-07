@@ -6,7 +6,6 @@ import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -156,7 +155,7 @@ class HealthChecker {
         try {
             Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : IceConnectionState : " + iceState +
                     " - Restarting (" + restartNumber + ").");
-            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, skylinkConnectionService,
+            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
                     localMediaStream, myConfig);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -195,9 +194,9 @@ class HealthChecker {
     void setIceRole(String iceRole) {
         this.iceRole = iceRole;
         // Check if ICE trickle is enable.
-        Map<String, PeerInfo> peerInfoMap = skylinkConnection.getPeerInfoMap();
-        if (peerInfoMap != null) {
-            PeerInfo peerInfo = peerInfoMap.get(remotePeerId);
+        Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(remotePeerId);
+        if (peer != null) {
+            PeerInfo peerInfo = peer.getPeerInfo();
             if (peerInfo != null) {
                 boolean enableIceTrickle = peerInfo.isEnableIceTrickle();
                 if (!enableIceTrickle) {

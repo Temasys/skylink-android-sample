@@ -5,12 +5,12 @@ package sg.com.temasys.skylink.sdk.rtc;
  */
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * PeerPool manages the Peer objects.
- * It gets info on the max number of peers that can be in the PeerPool at one time.
- * It has logic to constrain number of peers to that max.
+ * PeerPool manages the Peer objects. It gets info on the max number of peers that can be in the
+ * PeerPool at one time. It has logic to constrain number of peers to that max.
  */
 class PeerPool {
 
@@ -25,15 +25,14 @@ class PeerPool {
     Peer peerMcu;
 
     /**
-     * The client object using PeerPool.
-     * Some info, like the max number of Peers at one time will be provided by it.
+     * The client object using PeerPool. Some info, like the max number of Peers at one time will be
+     * provided by it.
      */
     PeerPoolClient peerPoolClient;
 
     /**
-     * Lock for integrity of PeerPool.
-     *  - addPeer will not violate Max Peer.
-     *  - canAddPeer will report after current add or remove Peer is complete.
+     * Lock for integrity of PeerPool. - addPeer will not violate Max Peer. - canAddPeer will report
+     * after current add or remove Peer is complete.
      */
     private Object lock = new Object();
 
@@ -44,13 +43,14 @@ class PeerPool {
 
     /**
      * Add a Peer into PeerPool, if within max Peers limit.
+     *
      * @param peer
      * @return
      */
     boolean addPeer(Peer peer) {
         synchronized (lock) {
             //Check if can add peer
-            if(canAddPeer()) {
+            if (canAddPeer()) {
                 peerMap.put(peer.getPeerId(), peer);
                 return true;
             } else {
@@ -60,16 +60,15 @@ class PeerPool {
     }
 
     /**
-     * Checks if currently possible to add a Peer into PeerPool,
-     * abiding by max number of peers constraint.
-     * Note that this does not guarantee that by the time a Peer is ready to be added into
-     * PeerPool, there will be room to add it in.
-     * addPeer will be the final check of that.
+     * Checks if currently possible to add a Peer into PeerPool, abiding by max number of peers
+     * constraint. Note that this does not guarantee that by the time a Peer is ready to be added
+     * into PeerPool, there will be room to add it in. addPeer will be the final check of that.
+     *
      * @return
      */
     boolean canAddPeer() {
         synchronized (lock) {
-            if(getPeerNumber() < getMaxPeer()) {
+            if (getPeerNumber() < getMaxPeer()) {
                 return true;
             } else {
                 return false;
@@ -80,6 +79,7 @@ class PeerPool {
 
     /**
      * Get a particular Peer.
+     *
      * @param peerId
      * @return Peer or null if unable to find peer.
      */
@@ -87,7 +87,27 @@ class PeerPool {
         return peerMap.get(peerId);
     }
 
-    /** Get the number of Peers currently connected with us.
+    /**
+     * Get the set of PeerIds.
+     *
+     * @return PeerId set.
+     */
+    Set<String> getPeerIdSet() {
+        return peerMap.keySet();
+    }
+
+    /**
+     * Get the set of Peers.
+     *
+     * @return Peer set.
+     */
+    Set<Peer> getPeerSet() {
+        return (Set<Peer>) peerMap.values();
+    }
+
+    /**
+     * Get the number of Peers currently connected with us.
+     *
      * @return
      */
     int getPeerNumber() {
@@ -96,6 +116,7 @@ class PeerPool {
 
     /**
      * Remove a Peer from PeerPool.
+     *
      * @param peerId
      */
     void removePeer(String peerId) {
@@ -108,6 +129,7 @@ class PeerPool {
 
     /**
      * Get max no. Peers allowed from PeerPoolClient.
+     *
      * @return
      */
     private int getMaxPeer() {

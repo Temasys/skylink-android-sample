@@ -264,8 +264,8 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * Sets the maximum number of Peers that we can connect to at one time.
-     * If not set, default is 4, i.e. we can connect up to 4 Peers at one time.
+     * Sets the maximum number of Peers that we can connect to at one time. If not set, default is
+     * 4, i.e. we can connect up to 4 Peers at one time.
      *
      * @param maxPeers Timeout config value
      */

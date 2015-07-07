@@ -23,9 +23,6 @@ import java.io.IOException;
 import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import javax.crypto.Mac;
@@ -65,11 +62,6 @@ public class SkylinkConnection {
     private Context applicationContext;
     private boolean isMcuRoom;
     private DataChannelManager dataChannelManager;
-    private Map<String, UserInfo> userInfoMap;
-    private Map<String, sg.com.temasys.skylink.sdk.rtc.PeerInfo> peerInfoMap;
-    private Map<String, SkylinkPcObserver> pcObserverPool;
-    private Map<String, PeerConnection> peerConnectionPool;
-    private Map<String, SkylinkSdpObserver> sdpObserverPool;
     private MediaStream localMediaStream;
     private Object myUserData;
     private UserInfo myUserInfo;
@@ -83,7 +75,7 @@ public class SkylinkConnection {
     private VideoTrack localVideoTrack;
     // Skylink Services
     private SkylinkConnectionService skylinkConnectionService;
-    private SkylinkPeerService skylinkPeerService;
+    SkylinkPeerService skylinkPeerService;
     private SkylinkMediaService skylinkMediaService;
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
@@ -256,9 +248,6 @@ public class SkylinkConnection {
                     skylinkConfig.hasFileTransfer());
             this.dataChannelManager.setConnectionManager(this);
         }
-
-        // Instantiate other variables
-        peerInfoMap = new Hashtable<String, PeerInfo>();
     }
 
     /**
@@ -398,9 +387,9 @@ public class SkylinkConnection {
         if (TextUtils.isEmpty(remotePeerId)) {
             // If remoteId is provided restart the specific peerConnection
             // Else restart all the peer connections
-            if (pcObserverPool != null) {
+            if (skylinkPeerService.getPeerNumber() > 0) {
                 // Create a new peerId set to prevent concurrent modification of the set
-                Set<String> peerIdSet = new HashSet<String>(pcObserverPool.keySet());
+                Set<String> peerIdSet = new HashSet<String>(skylinkPeerService.getPeerIdSet());
                 for (String peerId : peerIdSet) {
                     skylinkConnectionService.restartConnectionInternal(peerId, this);
                 }
@@ -417,15 +406,6 @@ public class SkylinkConnection {
      */
     void runOnUiThread(Runnable action) {
         handler.post(action);
-    }
-
-    /**
-     * Gets PeerInfo object of a specific peer.
-     *
-     * @param peerId PeerId of specific peer for which PeerInfo is desired.
-     */
-    PeerInfo getPeerInfo(String peerId) {
-        return peerInfoMap.get(peerId);
     }
 
     /**
@@ -460,36 +440,9 @@ public class SkylinkConnection {
                                                 dataChannelManager.disposeDC(allPeers, true);
                                             }
 
-                                            if (this.peerConnectionPool != null) {
-                                                for (PeerConnection peerConnection : this.peerConnectionPool
-                                                        .values()) {
-                                                    // Remove stream before disposing in order to prevent
-                                                    // localMediaStream from being disposed
-                                                    peerConnection.removeStream(localMediaStream);
-                                                    peerConnection.dispose();
-                                                }
-
-                                                this.peerConnectionPool.clear();
-                                            }
-
-                                            this.peerConnectionPool = null;
-
-                                            if (this.pcObserverPool != null) {
-                                                this.pcObserverPool.clear();
-                                            }
-
-                                            this.pcObserverPool = null;
-
-                                            if (this.sdpObserverPool != null) {
-                                                this.sdpObserverPool.clear();
-                                            }
-                                            this.sdpObserverPool = null;
-
-                                            if (this.userInfoMap != null) {
-                                                this.userInfoMap.clear();
-                                            }
-
-                                            this.userInfoMap = null;
+                                            // Dispose and remove all Peers
+                                            skylinkPeerService.removeAllPeers(ProtocolHelper
+                                                    .DISCONNECTING);
 
                                             //Dispose local media streams, sources and tracks
                                             this.localMediaStream = null;
@@ -575,11 +528,9 @@ public class SkylinkConnection {
                     }
                 } else {
 
-                    Iterator<String> iPeerId = this.userInfoMap.keySet()
-                            .iterator();
-                    while (iPeerId.hasNext()) {
-                        String tid = iPeerId.next();
-                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                    for (Peer peer : this.skylinkPeerService.getPeerSet()) {
+                        String tid = peer.getPeerId();
+                        PeerInfo peerInfo = peer.getPeerInfo();
                         if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to send the message to Peer " + tid +
@@ -598,7 +549,8 @@ public class SkylinkConnection {
                 }
             } else {
                 String tid = remotePeerId;
-                PeerInfo peerInfo = peerInfoMap.get(tid);
+                Peer peer = skylinkPeerService.getPeer(tid);
+                PeerInfo peerInfo = peer.getPeerInfo();
                 if (peerInfo == null) {
                     throw new SkylinkException(
                             "Unable to send the message to Peer " + tid +
@@ -690,9 +642,9 @@ public class SkylinkConnection {
                     }
                 } else {
                     // Send a WRQ to each Peer.
-                    for (String iPeerId : userInfoMap.keySet()) {
-                        String tid = iPeerId;
-                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                    for (Peer peer : this.skylinkPeerService.getPeerSet()) {
+                        String tid = peer.getPeerId();
+                        PeerInfo peerInfo = peer.getPeerInfo();
                         if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to share the file with Peer " + tid +
@@ -716,7 +668,8 @@ public class SkylinkConnection {
             } else {
                 // Send to specific Peer.
                 String tid = remotePeerId;
-                PeerInfo peerInfo = peerInfoMap.get(tid);
+                Peer peer = skylinkPeerService.getPeer(tid);
+                PeerInfo peerInfo = peer.getPeerInfo();
                 if (peerInfo == null) {
                     throw new SkylinkException(
                             "Unable to share the file with Peer " + tid +
@@ -778,9 +731,9 @@ public class SkylinkConnection {
                 if (isMcuRoom) {
                     dataChannelManager.sendDataToPeer(null, data);
                 } else {
-                    for (String peerId : this.userInfoMap.keySet()) {
-                        String tid = peerId;
-                        PeerInfo peerInfo = peerInfoMap.get(tid);
+                    for (Peer peer : this.skylinkPeerService.getPeerSet()) {
+                        String tid = peer.getPeerId();
+                        PeerInfo peerInfo = peer.getPeerInfo();
                         if (peerInfo == null) {
                             throw new SkylinkException(
                                     "Unable to send data to Peer " + tid +
@@ -797,7 +750,8 @@ public class SkylinkConnection {
                 }
             } else {
                 String tid = remotePeerId;
-                PeerInfo peerInfo = peerInfoMap.get(tid);
+                Peer peer = skylinkPeerService.getPeer(tid);
+                PeerInfo peerInfo = peer.getPeerInfo();
                 if (peerInfo == null) {
                     throw new SkylinkException(
                             "Unable to send data to Peer " + tid +
@@ -988,8 +942,9 @@ public class SkylinkConnection {
         if (remotePeerId == null) {
             userData = this.myUserData;
         } else {
-            if (this.userInfoMap != null) {
-                UserInfo userInfo = getUserInfo(remotePeerId);
+            Peer peer = skylinkPeerService.getPeer(remotePeerId);
+            if (peer != null) {
+                UserInfo userInfo = peer.getUserInfo();
                 userData = userInfo.getUserData();
             }
         }
@@ -1003,11 +958,14 @@ public class SkylinkConnection {
      * @param userData
      */
     void setUserData(String remotePeerId, Object userData) {
+        // Set self UserData
         if (remotePeerId == null) {
             this.myUserData = userData;
         } else {
-            if (this.userInfoMap != null) {
-                UserInfo userInfo = getUserInfo(remotePeerId);
+            // Set Peer UserData
+            Peer peer = skylinkPeerService.getPeer(remotePeerId);
+            if (peer != null) {
+                UserInfo userInfo = peer.getUserInfo();
                 if (userInfo != null) {
                     userInfo.setUserData(userData);
                 }
@@ -1025,15 +983,12 @@ public class SkylinkConnection {
         if (remotePeerId == null) {
             return this.myUserInfo;
         } else {
-            return this.userInfoMap.get(remotePeerId);
+            Peer peer = skylinkPeerService.getPeer(remotePeerId);
+            if (peer != null) {
+                return peer.getUserInfo();
+            }
         }
-    }
-
-    void setUserInfo(String peerId, UserInfo userInfo) {
-        if (this.userInfoMap == null) {
-            this.userInfoMap = new Hashtable<String, UserInfo>();
-        }
-        this.userInfoMap.put(peerId, userInfo);
+        return null;
     }
 
     void logMessage(String message) {
@@ -1071,47 +1026,21 @@ public class SkylinkConnection {
         }
     }
 
-    PeerConnection getPeerConnection(String peerId) {
-        if (this.peerConnectionPool == null) {
-            this.peerConnectionPool = new Hashtable<String, PeerConnection>();
+    PeerConnection createPc(String peerId, String iceRole, SkylinkPcObserver pcObserver) {
+        PeerConnection pc;
+        logMessage("Creating a new peer connection ...");
+
+        // Prevent thread from executing with disconnect concurrently.
+        synchronized (lockDisconnect) {
+            pc = this.peerConnectionFactory.createPeerConnection(
+                    skylinkConnectionService.getIceServers(),
+                    skylinkMediaService.getPcConstraints(), pcObserver);
+            logMessage("[createPc] Created new PeerConnection for " + peerId + ".");
         }
-        PeerConnection pc = this.peerConnectionPool.get(peerId);
-        return pc;
-    }
 
-    PeerConnection createPC(String peerId, String iceRole, SkylinkPcObserver pcObserver, UserInfo userInfo) {
-        /*if (this.peerConnectionPool == null) {
-            this.peerConnectionPool = new Hashtable<String, PeerConnection>();
-        }
-        if (this.pcObserverPool == null)
-            this.pcObserverPool = new Hashtable<String, SkylinkPcObserver>();*/
-
-        PeerConnection pc = this.peerConnectionPool.get(peerId);
-        if (pc == null) {
-            // We have reached the limit of max no. of Peers.
-            if (this.peerConnectionPool.size() >= skylinkConfig.getMaxPeers()
-                    && !SkylinkPeerService.isPeerIdMCU(peerId)) {
-                return null;
-            }
-            logMessage("Creating a new peer connection ...");
-
-            // Prevent thread from executing with disconnect concurrently.
-            synchronized (lockDisconnect) {
-                pc = this.peerConnectionFactory.createPeerConnection(
-                        skylinkConnectionService.getIceServers(),
-                        skylinkMediaService.getPcConstraints(), pcObserver);
-                logMessage("[createPC] Created new PeerConnection for " + peerId + ".");
-            }
-            /*if (this.skylinkConfig.hasAudio())
-                pc.addStream(this.localMediaStream, this.pcConstraints);*/
-
-            pcObserver.setPc(pc);
-            // Initialise and start Health Checker.
-            pcObserver.initialiseHealthChecker(iceRole);
-
-            this.peerConnectionPool.put(peerId, pc);
-            this.pcObserverPool.put(peerId, pcObserver);
-        }
+        pcObserver.setPc(pc);
+        // Initialise and start Health Checker.
+        pcObserver.initialiseHealthChecker(iceRole);
 
         return pc;
     }
@@ -1205,55 +1134,6 @@ public class SkylinkConnection {
 
     SkylinkPeerService getSkylinkPeerService() {
         return skylinkPeerService;
-    }
-
-    SkylinkSdpObserver getSdpObserver(String mid) {
-
-        if (sdpObserverPool == null) {
-            sdpObserverPool = new Hashtable<String, SkylinkSdpObserver>();
-        }
-
-        SkylinkSdpObserver sdpObserver = sdpObserverPool.get(mid);
-        if (sdpObserver == null) {
-            sdpObserver = new SkylinkSdpObserver(this);
-            sdpObserver.setPeerId(mid);
-            sdpObserverPool.put(mid, sdpObserver);
-        }
-
-        return sdpObserver;
-    }
-
-    // Initialize all PC related maps.
-    void initializePcRelatedMaps() {
-        peerConnectionPool = new Hashtable<String, PeerConnection>();
-        pcObserverPool = new Hashtable<String, SkylinkPcObserver>();
-        sdpObserverPool = new Hashtable<String, SkylinkSdpObserver>();
-        userInfoMap = new Hashtable<String, UserInfo>();
-        peerInfoMap = new Hashtable<String, PeerInfo>();
-    }
-
-    Map<String, UserInfo> getUserInfoMap() {
-        return userInfoMap;
-    }
-
-    Map<String, SkylinkSdpObserver> getSdpObserverPool() {
-        return sdpObserverPool;
-    }
-
-    void setSdpObserverPool(Map<String, SkylinkSdpObserver> sdpObserverPool) {
-        this.sdpObserverPool = sdpObserverPool;
-    }
-
-    Map<String, SkylinkPcObserver> getPcObserverPool() {
-        return pcObserverPool;
-    }
-
-    Map<String, PeerConnection> getPeerConnectionPool() {
-        return peerConnectionPool;
-    }
-
-    Map<String, PeerInfo> getPeerInfoMap() {
-        return peerInfoMap;
     }
 
     Object getLockDisconnect() {

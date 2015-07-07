@@ -7,8 +7,9 @@ import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by xiangrong on 4/5/15.
@@ -28,12 +29,109 @@ class SkylinkPeerService implements PeerPoolClient {
         this.peerPool = new PeerPool(this);
     }
 
+    Peer createPeer(String peerId, String iceRole, UserInfo userInfo) {
+        Peer peer;
+        PeerConnection pc;
+        boolean isMcu = false;
+
+        // Check if Peer is MCU
+        // MCU, if present, will always be first Peer to send welcome.
+        if (isFirstPeer) {
+            isFirstPeer = false;
+            isMcu = isPeerIdMCU(peerId);
+            if (isMcu) {
+                // Set SkylinkConnection MCU flag
+                this.skylinkConnection.setIsMcuRoom(isMcu);
+                // Set DataChannelManager MCU flag.
+                if (skylinkConnection.getDataChannelManager() != null) {
+                    skylinkConnection.getDataChannelManager().setIsMcuRoom(skylinkConnection.isMcuRoom());
+                }
+            }
+        }
+
+        // Create a new Peer if there is currently room.
+        if (peerPool.canAddPeer() || isMcu) {
+            // Create SkylinkPcObserver
+            SkylinkPcObserver pcObserver = new SkylinkPcObserver(skylinkConnection);
+            pcObserver.setMyId(peerId);
+            // Create PeerConnection
+            pc = skylinkConnection.createPc(peerId, iceRole, pcObserver);
+            // Create SkylinkSdpObserver
+            SkylinkSdpObserver sdpObserver = new SkylinkSdpObserver(skylinkConnection);
+            sdpObserver.setPeerId(peerId);
+            // Create new Peer
+            peer = new Peer(peerId, pc, pcObserver, sdpObserver);
+
+            // Add and return new Peer
+            if (isMcu) {
+                // Set a MCU Peer
+                peerPool.setPeerMcu(peer);
+            } else {
+                // Add a normal Peer if possible
+                if (!peerPool.addPeer(peer)) {
+                    Log.d(TAG, "Unable to create PeerConnection for Peer " + userInfo.getUserData() +
+                            " (" + peerId + ") as I only support " +
+                            skylinkConnection.getSkylinkConfig().getMaxPeers() + " connections " +
+                            "in this app.");
+                    return null;
+                }
+            }
+            return peer;
+        } else {
+            // Return null if Peer cannot be created
+            return null;
+        }
+
+    }
+
     static boolean isPeerIdMCU(String peerId) {
         boolean mcu = peerId.startsWith("MCU");
         if (mcu) {
             Log.d(TAG, "MCU Detected");
         }
         return mcu;
+    }
+
+    /**
+     * Dispose all PeerConnections and associated DC. Including MCU DC if present.
+     *
+     * @param reason
+     */
+    void removeAllPeers(final String reason) {
+        if (peerPool.getPeerNumber() > 0) {
+            // Create a new peerId set to prevent concurrent modification of the set
+            Set<String> peerIdSet = new HashSet<String>(peerPool.getPeerIdSet());
+            // Remove each Peer
+            for (final String peerId : peerIdSet) {
+                removePeer(peerId, reason);
+            }
+        }
+    }
+
+    /**
+     * Dispose all objects in Peer and remove Peer from PeerPool. Notify user that Peer has left if
+     * reason is not null.
+     *
+     * @param peerId PeerId of Peer that had left.
+     * @param reason Reason for removing Peer, will be conveyed to user if not null.
+     * @return
+     */
+    boolean removePeer(final String peerId, final String reason) {
+        Peer peer = getPeer(peerId);
+
+        if (peer != null) {
+            if (reason != null) {
+                // Notify that the Peer has left
+                ProtocolHelper.notifyPeerLeave(skylinkConnection, peerId, reason);
+            }
+            // Dispose of webrtc objects in Peer.
+            disposePeer(peerId);
+            // Remove from PeerPool
+            peerPool.removePeer(peerId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
@@ -64,7 +162,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         /*// Create a new PeerConnection if we can
         PeerConnection peerConnection = skylinkConnection
-                .createPC(peerId, HealthChecker.ICE_ROLE_ANSWERER, , userInfo);
+                .createPc(peerId, HealthChecker.ICE_ROLE_ANSWERER, , userInfo);
 
         // If we are over the max no. of peers, peerConnection here will be null.
         if (peerConnection != null) {
@@ -116,12 +214,13 @@ class SkylinkPeerService implements PeerPoolClient {
             dataChannelManager.disposeDC(peerId, false);
         }
 
-        ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
+        disposePeerConnection(peerId, skylinkConnection);
     }
 
 
     void addIceCandidate(String peerId, IceCandidate iceCandidate) {
-        PeerConnection peerConnection = skylinkConnection.getPeerConnection(peerId);
+        Peer peer = getPeer(peerId);
+        PeerConnection peerConnection = peer.getPc();
         if (peerConnection != null) {
             peerConnection.addIceCandidate(iceCandidate);
         }
@@ -141,14 +240,12 @@ class SkylinkPeerService implements PeerPoolClient {
         }
 
         // Check if pcObserverPool has been populated.
-        if (skylinkConnection.getPcObserverPool() != null) {
+        if (getPeerNumber() > 0) {
             // If so, chances are this is a rejoin of room.
             // Log it
             Log.d(TAG, "[receivedInRoom] This is a rejoin of room.");
         }
 
-        // Create afresh all PC related maps.
-        skylinkConnection.initializePcRelatedMaps();
         // Send enter.
         try {
             ProtocolHelper.sendEnter(null, skylinkConnection,
@@ -159,7 +256,8 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     void receivedOfferAnswer(String peerId, String sdp, String type) {
-        PeerConnection peerConnection = skylinkConnection.getPeerConnection(peerId);
+        Peer peer = getPeer(peerId);
+        PeerConnection peerConnection = peer.getPc();
 
         // Set the preferred audio codec
         String sdpString = Utils.preferCodec(sdp,
@@ -170,12 +268,14 @@ class SkylinkPeerService implements PeerPoolClient {
                 SessionDescription.Type.fromCanonicalForm(type),
                 sdpString);
 
-        peerConnection.setRemoteDescription(skylinkConnection.getSdpObserver(peerId), sessionDescription);
+        peerConnection.setRemoteDescription(
+                skylinkConnection.skylinkPeerService.getSdpObserver(peerId, skylinkConnection), sessionDescription);
         Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
     }
 
     /**
      * Get the Peer via its PeerId.
+     *
      * @param peerId
      * @return
      */
@@ -186,13 +286,75 @@ class SkylinkPeerService implements PeerPoolClient {
         return peerPool.getPeer(peerId);
     }
 
+    /**
+     * Get the set of PeerIds.
+     *
+     * @return PeerId set.
+     */
+    Set<String> getPeerIdSet() {
+        return peerPool.getPeerIdSet();
+    }
+
+    /**
+     * Gets PeerInfo object of a specific peer.
+     *  @param peerId PeerId of specific peer for which PeerInfo is desired.
+     *
+     */
+    PeerInfo getPeerInfo(String peerId) {
+        Peer peer = getPeer(peerId);
+        if(peer!=null) {
+            return peer.getPeerInfo();
+        }
+        return null;
+    }
+
+    /**
+     * Get the number of Peers currently connected with us.
+     *
+     * @return
+     */
+    int getPeerNumber() {
+        return peerPool.getPeerNumber();
+    }
+
+    /**
+     * Get the set of Peers.
+     *
+     * @return Peer set.
+     */
+    Set<Peer> getPeerSet() {
+        return peerPool.getPeerSet();
+    }
+
+
+    /**
+     * Get the SkylinkSdpObserver of a Peer.
+     * Create one if none present.
+     *
+     * @param mid
+     * @param skylinkConnection
+     * @return SkylinkSdpObserver or null if Peer is not available.
+     */
+    SkylinkSdpObserver getSdpObserver(String mid, SkylinkConnection skylinkConnection) {
+
+        Peer peer = getPeer(mid);
+        if(peer!=null){
+            SkylinkSdpObserver sdpObserver = peer.getSdpObserver();
+            if(sdpObserver == null) {
+                sdpObserver = new SkylinkSdpObserver(skylinkConnection);
+                sdpObserver.setPeerId(mid);
+            }
+            return sdpObserver;
+        }
+        return null;
+    }
+
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
                                 UserInfo userInfo, double weight, boolean isRestart) {
 
+        // For restart, existing Peer has to be first removed, before processing like a welcome
         if (isRestart) {
-            if (!ProtocolHelper.processRestart(peerId, skylinkConnection)) {
-                return;
-            }
+            removePeer(peerId, ProtocolHelper.PEER_CONNECTION_RESTART);
         }
 
         // Check if a Peer was already created at "enter"
@@ -200,7 +362,7 @@ class SkylinkPeerService implements PeerPoolClient {
             // Check if should continue with "welcome" or use Peer from "enter"
             if (skylinkConnection.shouldAcceptWelcome(peerId, weight)) {
                 // Remove Peer from "enter" to create new Peer from "welcome"
-                ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
+                removePeer(peerId, null);
             } else {
                 // Do not continue "welcome" but use Peer from "enter" instead.
                 Log.d(TAG, "Ignoring this welcome as Peer " + userInfo.getUserData() +
@@ -242,16 +404,8 @@ class SkylinkPeerService implements PeerPoolClient {
                     peerId, "", null, peerId);
         }
 
-        if (skylinkConnection.getSdpObserverPool() == null) {
-            skylinkConnection.setSdpObserverPool(new Hashtable<String, SkylinkSdpObserver>());
-        }
-        SkylinkSdpObserver sdpObserver = skylinkConnection.getSdpObserverPool()
-                .get(peerId);
-        if (sdpObserver == null) {
-            sdpObserver = new SkylinkSdpObserver(skylinkConnection);
-            sdpObserver.setPeerId(peerId);
-            skylinkConnection.getSdpObserverPool().put(peerId, sdpObserver);
-        }
+        // Create SkylinkSdpObserver for Peer.
+        SkylinkSdpObserver sdpObserver = getSdpObserver(peerId, skylinkConnection);
 
         peer.getPc().createOffer(sdpObserver,
                 skylinkMediaService.getSdpMediaConstraints());
@@ -274,7 +428,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         // Create a PC from "welcome"
         PeerConnection peerConnection =
-                skylinkConnection.createPC(peerId, HealthChecker.ICE_ROLE_OFFERER, , userInfo);
+                skylinkConnection.createPc(peerId, HealthChecker.ICE_ROLE_OFFERER, , userInfo);
 
         // We have reached the limit of max no. of Peers.
         if (peerConnection == null) {
@@ -322,59 +476,52 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     // Internal methods
-    Peer createPeer(String peerId, String iceRole, UserInfo userInfo) {
-        Peer peer;
-        PeerConnection pc;
-        boolean isMcu = false;
 
-        // Check if Peer is MCU
-        // MCU, if present, will always be first Peer to send welcome.
-        if (isFirstPeer) {
-            isFirstPeer = false;
-            isMcu = isPeerIdMCU(peerId);
-            if (isMcu) {
-                // Set SkylinkConnection MCU flag
-                this.skylinkConnection.setIsMcuRoom(isMcu);
-                // Set DataChannelManager MCU flag.
-                if (skylinkConnection.getDataChannelManager() != null) {
-                    skylinkConnection.getDataChannelManager().setIsMcuRoom(skylinkConnection.isMcuRoom());
-                }
+    /**
+     * Disposes all webrtc objects in a Peer.
+     *
+     * @param peerId
+     * @return True if properly disposed. False if error occurred.
+     */
+    private boolean disposePeer(String peerId) {
+        Peer peer = getPeer(peerId);
+        if (peer != null) {
+            // Dispose peer connection
+            disposePeerConnection(peerId, skylinkConnection);
+            // Dispose DC
+            if (skylinkConnection.getDataChannelManager() != null) {
+                skylinkConnection.getDataChannelManager().disposeDC(peerId, true);
             }
-        }
-
-        // Create a new Peer if there is currently room.
-        if (peerPool.canAddPeer() || isMcu) {
-            // Create SkylinkPcObserver
-            SkylinkPcObserver pcObserver = new SkylinkPcObserver(skylinkConnection);
-            pcObserver.setMyId(peerId);
-            // Create PeerConnection
-            pc = skylinkConnection.createPC(peerId, iceRole, pcObserver, userInfo);
-            // Create SkylinkSdpObserver
-            SkylinkSdpObserver sdpObserver = new SkylinkSdpObserver(skylinkConnection);
-            sdpObserver.setPeerId(peerId);
-            // Create new Peer
-            peer = new Peer(peerId, pc, pcObserver, sdpObserver);
-
-            // Add and return new Peer
-            if (isMcu) {
-                // Set a MCU Peer
-                peerPool.setPeerMcu(peer);
-            } else {
-                // Add a normal Peer if possible
-                if (!peerPool.addPeer(peer)) {
-                    Log.d(TAG, "Unable to create PeerConnection for Peer " + userInfo.getUserData() +
-                            " (" + peerId + ") as I only support " +
-                            skylinkConnection.getSkylinkConfig().getMaxPeers() + " connections " +
-                            "in this app.");
-                    return null;
-                }
-            }
-            return peer;
+            // Dispose other webrtc objects
+            peer.setPcObserver(null);
+            peer.setSdpObserver(null);
+            return true;
         } else {
-            // Return null if Peer cannot be created
-            return null;
+            return false;
         }
+    }
 
+    /**
+     * Dispose the PeerConnection of a Peer.
+     *
+     * @param remotePeerId
+     * @param skylinkConnection
+     * @return True if the peer connection is disposed successfully, false if Peer does not exists.
+     */
+    private boolean disposePeerConnection(String remotePeerId, SkylinkConnection
+            skylinkConnection) {
+
+        Peer peer = getPeer(remotePeerId);
+        if (peer != null) {
+            PeerConnection peerConnection = peer.getPc();
+            if (peerConnection != null) {
+                // Dispose peer connection
+                peerConnection.removeStream(skylinkConnection.getLocalMediaStream());
+                peerConnection.dispose();
+            }
+            return true;
+        }
+        return false;
     }
 
     // Getters and Setters
@@ -390,4 +537,5 @@ class SkylinkPeerService implements PeerPoolClient {
     public int getMaxPeer() {
         return skylinkConnection.getSkylinkConfig().getMaxPeers();
     }
+
 }

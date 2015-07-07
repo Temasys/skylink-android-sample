@@ -235,9 +235,10 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
      * @param skylinkConnection SkylinkConnection instance.
      */
     void rejoinRestart(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection.getPcObserverPool() != null) {
+        if (skylinkConnection.getSkylinkPeerService().getPeerNumber() > 0) {
             // Create a new peerId set to prevent concurrent modification of the set
-            Set<String> peerIdSet = new HashSet<String>(skylinkConnection.getPcObserverPool().keySet());
+            Set<String> peerIdSet =
+                    new HashSet<String>(skylinkConnection.getSkylinkPeerService().getPeerIdSet());
             for (String peerId : peerIdSet) {
                 rejoinRestart(peerId, skylinkConnection);
             }
@@ -260,11 +261,12 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         synchronized (skylinkConnection.getLockDisconnect()) {
             try {
                 Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
-                PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(remotePeerId);
+                Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(remotePeerId);
+                PeerInfo peerInfo = peer.getPeerInfo();
                 if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
                     // If it is Android, send restart.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
-                    ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this,
+                    ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
                             skylinkConnection.getLocalMediaStream(), skylinkConnection.getSkylinkConfig());
                 } else {
                     // If web or others, send directed enter
@@ -284,7 +286,7 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         }
         synchronized (skylinkConnection.getLockDisconnect()) {
             try {
-                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, this, skylinkConnection.getLocalMediaStream(),
+                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, skylinkConnection.getLocalMediaStream(),
                         skylinkConnection.getSkylinkConfig());
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);

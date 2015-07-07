@@ -186,7 +186,8 @@ class SkylinkPcObserver implements PeerConnection.Observer {
 
     @Override
     public void onDataChannel(final DataChannel dc) {
-        PeerInfo peerInfo = skylinkConnection.getPeerInfoMap().get(this.myId);
+        Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(this.myId);
+        PeerInfo peerInfo = peer.getPeerInfo();
         peerInfo.setEnableDataChannel(true);
         // Prevent thread from executing with disconnect concurrently.
         synchronized (getLockDisconnect()) {
@@ -201,7 +202,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
                 // Create our DataChannel based on given dc.
                 // It is stored by dataChannelManager.
                 // Get PeerConnection.
-                PeerConnection pc = skylinkConnection.getPeerConnectionPool().get(this.myId);
+                PeerConnection pc = peer.getPc();
                 String mid = getSkylinkConnectionService().getSid();
                 skylinkConnection.getDataChannelManager().createDataChannel(pc,
                         this.myId, mid, "", dc, this.myId);
