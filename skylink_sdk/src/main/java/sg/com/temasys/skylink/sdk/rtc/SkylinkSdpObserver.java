@@ -25,9 +25,10 @@ class SkylinkSdpObserver implements SdpObserver {
     private String peerId;
     private Peer peer;
 
-    public SkylinkSdpObserver(SkylinkConnection skylinkConnection) {
+    public SkylinkSdpObserver(String peerId, Peer peer, SkylinkConnection skylinkConnection) {
+        this.peerId = peerId;
+        this.peer = peer;
         this.skylinkConnection = skylinkConnection;
-        peer = skylinkConnection.getSkylinkPeerService().getPeer(this.peerId);
     }
 
     @SuppressWarnings("unused")
@@ -245,4 +246,12 @@ class SkylinkSdpObserver implements SdpObserver {
         }
     }
 
+    // Getters and Setters
+    public Peer getPeer() {
+        return peer;
+    }
+
+    public void setPeer(Peer peer) {
+        this.peer = peer;
+    }
 }

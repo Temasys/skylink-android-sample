@@ -51,30 +51,19 @@ class HealthChecker {
     private SkylinkConnectionService skylinkConnectionService;
     private MediaStream localMediaStream;
     private SkylinkConfig myConfig;
-    private PeerConnection pc;
 
     /**
      * Initialise all required parameters
-     *
      * @param remotePeerId
      * @param skylinkConnection
-     * @param skylinkConnectionService
-     * @param localMediaStream
-     * @param myConfig
-     * @param pc
      */
     HealthChecker(final String remotePeerId,
-                  final SkylinkConnection skylinkConnection,
-                  SkylinkConnectionService skylinkConnectionService,
-                  MediaStream localMediaStream,
-                  SkylinkConfig myConfig,
-                  PeerConnection pc) {
+                  final SkylinkConnection skylinkConnection) {
         this.remotePeerId = remotePeerId;
         this.skylinkConnection = skylinkConnection;
-        this.skylinkConnectionService = skylinkConnectionService;
-        this.localMediaStream = localMediaStream;
-        this.myConfig = myConfig;
-        this.pc = pc;
+        this.skylinkConnectionService = skylinkConnection.getSkylinkConnectionService();
+        this.localMediaStream = skylinkConnection.getLocalMediaStream();
+        this.myConfig = skylinkConnection.getSkylinkConfig();
     }
 
     /**
@@ -170,13 +159,12 @@ class HealthChecker {
     }
 
     /**
-     * Set the iceState and also sets waitMs
+     * Set the iceState
      *
      * @param iceState
      */
     void setIceState(PeerConnection.IceConnectionState iceState) {
         this.iceState = iceState;
-        setWaitMs();
     }
 
     /**
@@ -208,6 +196,8 @@ class HealthChecker {
             }
 
         }
+        // Set waitMs based on iceRole
+        setWaitMs();
         Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : iceRole set to " + iceRole + ".");
     }
 }

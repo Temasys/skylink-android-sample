@@ -29,7 +29,7 @@ class SkylinkPeerService implements PeerPoolClient {
         this.peerPool = new PeerPool(this);
     }
 
-    Peer createPeer(String peerId, String iceRole, UserInfo userInfo) {
+    Peer createPeer(String peerId, String iceRole, UserInfo userInfo, PeerInfo peerInfo) {
         Peer peer;
         PeerConnection pc;
         boolean isMcu = false;
@@ -51,16 +51,25 @@ class SkylinkPeerService implements PeerPoolClient {
 
         // Create a new Peer if there is currently room.
         if (peerPool.canAddPeer() || isMcu) {
+            // Create a basic Peer and populate it more later.
+            peer = new Peer(peerId, skylinkConnection);
+            peer.setUserInfo(userInfo);
+            peer.setPeerInfo(peerInfo);
+
             // Create SkylinkPcObserver
-            SkylinkPcObserver pcObserver = new SkylinkPcObserver(skylinkConnection);
-            pcObserver.setMyId(peerId);
+            SkylinkPcObserver pcObserver = new SkylinkPcObserver(peerId, peer, skylinkConnection);
+            peer.setPcObserver(pcObserver);
+
             // Create PeerConnection
-            pc = skylinkConnection.createPc(peerId, iceRole, pcObserver);
+            pc = skylinkConnection.createPc(peerId, pcObserver);
+            peer.setPc(pc);
+            // Initialise and start Health Checker.
+            peer.initialiseHealthChecker(iceRole);
+
             // Create SkylinkSdpObserver
-            SkylinkSdpObserver sdpObserver = new SkylinkSdpObserver(skylinkConnection);
-            sdpObserver.setPeerId(peerId);
-            // Create new Peer
-            peer = new Peer(peerId, pc, pcObserver, sdpObserver);
+            SkylinkSdpObserver sdpObserver =
+                    new SkylinkSdpObserver(peerId, peer, skylinkConnection);
+            peer.setSdpObserver(sdpObserver);
 
             // Add and return new Peer
             if (isMcu) {
@@ -136,19 +145,16 @@ class SkylinkPeerService implements PeerPoolClient {
 
     void receivedEnter(String peerId, PeerInfo peerInfo, UserInfo userInfo) {
         // Create a new Peer if we can
-        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_ANSWERER, userInfo);
+        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_ANSWERER, userInfo, peerInfo);
 
         // If we are over the max no. of peers, peer here will be null.
         if (peer != null) {
-            peer.setUserInfo(userInfo);
-            peer.setPeerInfo(peerInfo);
 
             // Add our local media stream to this PC, or not.
             if ((skylinkConnection.getSkylinkConfig().hasAudioSend() || skylinkConnection.getSkylinkConfig().hasVideoSend())) {
                 peer.getPc().addStream(skylinkConnection.getLocalMediaStream());
                 Log.d(TAG, "Added localMedia Stream");
             }
-
             try {
                 ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
             } catch (JSONException e) {
@@ -297,12 +303,12 @@ class SkylinkPeerService implements PeerPoolClient {
 
     /**
      * Gets PeerInfo object of a specific peer.
-     *  @param peerId PeerId of specific peer for which PeerInfo is desired.
      *
+     * @param peerId PeerId of specific peer for which PeerInfo is desired.
      */
     PeerInfo getPeerInfo(String peerId) {
         Peer peer = getPeer(peerId);
-        if(peer!=null) {
+        if (peer != null) {
             return peer.getPeerInfo();
         }
         return null;
@@ -329,7 +335,6 @@ class SkylinkPeerService implements PeerPoolClient {
 
     /**
      * Get the SkylinkSdpObserver of a Peer.
-     * Create one if none present.
      *
      * @param mid
      * @param skylinkConnection
@@ -338,12 +343,12 @@ class SkylinkPeerService implements PeerPoolClient {
     SkylinkSdpObserver getSdpObserver(String mid, SkylinkConnection skylinkConnection) {
 
         Peer peer = getPeer(mid);
-        if(peer!=null){
+        if (peer != null) {
             SkylinkSdpObserver sdpObserver = peer.getSdpObserver();
-            if(sdpObserver == null) {
+            /*if(sdpObserver == null) {
                 sdpObserver = new SkylinkSdpObserver(skylinkConnection);
                 sdpObserver.setPeerId(mid);
-            }
+            }*/
             return sdpObserver;
         }
         return null;
@@ -372,7 +377,7 @@ class SkylinkPeerService implements PeerPoolClient {
         }
 
         // Create a Peer from "welcome"
-        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo);
+        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo, new PeerInfo());
 
         // We have reached the limit of max no. of Peers.
         if (peer == null) {

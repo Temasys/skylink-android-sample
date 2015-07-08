@@ -137,13 +137,10 @@ class ProtocolHelper {
             skylinkConnection.getSkylinkPeerService().removePeer(remotePeerId, PEER_CONNECTION_RESTART);
 
             // Create a new peer
-            Peer peer = skylinkConnection.getSkylinkPeerService().createPeer(
-                    remotePeerId, HealthChecker.ICE_ROLE_ANSWERER,userInfoHack);
-
             // TODO XR: Remove all peerInfoHack and userInfoHack after JS client update to
             // compatible restart protocol.
-            peer.setPeerInfo(peerInfoHack);
-            peer.setUserInfo(userInfoHack);
+            Peer peer = skylinkConnection.getSkylinkPeerService().createPeer(
+                    remotePeerId, HealthChecker.ICE_ROLE_ANSWERER, userInfoHack, peerInfoHack);
 
             // Add our local media stream to this PC, or not.
             if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
@@ -256,7 +253,7 @@ class ProtocolHelper {
 
             JSONObject welcomeObject = new JSONObject();
             welcomeObject.put("type", typeStr);
-            welcomeObject.put("weight", peer.getPcObserver().getMyWeight());
+            welcomeObject.put("weight", peer.getWeight());
             welcomeObject.put("mid", skylinkConnectionService.getSid());
             welcomeObject.put("target", remotePeerId);
             welcomeObject.put("rid", skylinkConnectionService.getRoomId());

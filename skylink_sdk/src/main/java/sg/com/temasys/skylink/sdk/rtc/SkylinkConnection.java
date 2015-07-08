@@ -1006,10 +1006,9 @@ public class SkylinkConnection {
      */
     boolean shouldAcceptWelcome(String peerId, double weight) {
         Peer peer = skylinkPeerService.getPeer(peerId);
-        SkylinkPcObserver pcObserver = peer.getPcObserver();
         if (weight > 0) {
-            if (pcObserver != null) {
-                if (pcObserver.getMyWeight() > weight) {
+            if (peer != null) {
+                if (peer.getWeight() > weight) {
                     // Use this welcome (ours will be discarded on peer's side).
                     return true;
                 } else {
@@ -1026,7 +1025,7 @@ public class SkylinkConnection {
         }
     }
 
-    PeerConnection createPc(String peerId, String iceRole, SkylinkPcObserver pcObserver) {
+    PeerConnection createPc(String peerId, SkylinkPcObserver pcObserver) {
         PeerConnection pc;
         logMessage("Creating a new peer connection ...");
 
@@ -1037,10 +1036,6 @@ public class SkylinkConnection {
                     skylinkMediaService.getPcConstraints(), pcObserver);
             logMessage("[createPc] Created new PeerConnection for " + peerId + ".");
         }
-
-        pcObserver.setPc(pc);
-        // Initialise and start Health Checker.
-        pcObserver.initialiseHealthChecker(iceRole);
 
         return pc;
     }

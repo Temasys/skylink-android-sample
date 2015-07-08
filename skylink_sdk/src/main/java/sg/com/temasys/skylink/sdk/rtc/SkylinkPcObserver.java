@@ -8,9 +8,6 @@ import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
-import java.util.Date;
-import java.util.Random;
-
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 
 /**
@@ -23,48 +20,25 @@ class SkylinkPcObserver implements PeerConnection.Observer {
 
     private SkylinkConnection skylinkConnection;
 
-    private PeerConnection pc;
-    private double myWeight;
-    private String myId;
-    private HealthChecker healthChecker;
+    private String peerId;
+    private Peer peer;
 
-    public PeerConnection getPc() {
-        return pc;
-    }
 
-    public void setPc(PeerConnection pc) {
-        this.pc = pc;
-    }
-
-    public double getMyWeight() {
-        return myWeight;
-    }
 
     @SuppressWarnings("unused")
-    public void setMyWeight(double myWeight) {
-        this.myWeight = myWeight;
+    public String getPeerId() {
+        return peerId;
     }
 
-    @SuppressWarnings("unused")
-    public String getMyId() {
-        return myId;
+    public void setPeerId(String peerId) {
+        this.peerId = peerId;
     }
 
-    public void setMyId(String myId) {
-        this.myId = myId;
-    }
-
-    public SkylinkPcObserver(SkylinkConnection skylinkConnection) {
+    public SkylinkPcObserver(String peerId, Peer peer, SkylinkConnection skylinkConnection) {
         super();
+        this.peerId = peerId;
+        this.peer = peer;
         this.skylinkConnection = skylinkConnection;
-        this.myWeight = new Random(new Date().getTime()).nextDouble()
-                * (double) 1000000;
-    }
-
-    void initialiseHealthChecker(String iceRole) {
-        healthChecker = new HealthChecker(myId, skylinkConnection, getSkylinkConnectionService(), skylinkConnection.getLocalMediaStream(), getSkylinkConfig(), pc);
-        healthChecker.setIceRole(iceRole);
-        healthChecker.startRestartTimer();
     }
 
     // Methods to get SkylinkConnection attributes or methods.
@@ -118,7 +92,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
                     }
 
                     ProtocolHelper.sendCandidate(getSkylinkConnectionService(), candidate,
-                            SkylinkPcObserver.this.myId);
+                            SkylinkPcObserver.this.peerId);
                 }
             }
         });
@@ -130,8 +104,8 @@ class SkylinkPcObserver implements PeerConnection.Observer {
 
     @Override
     public void onIceConnectionChange(PeerConnection.IceConnectionState newState) {
-        healthChecker.setIceState(newState);
-        Log.d(TAG, "Peer " + myId + " : onIceConnectionChange : iceState : " + newState + ".");
+        peer.setHealthCheckerIceState(newState);
+        Log.d(TAG, "Peer " + peerId + " : onIceConnectionChange : iceState : " + newState + ".");
         switch (newState) {
             case NEW:
                 break;
@@ -163,7 +137,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
     @SuppressLint("NewApi")
     @Override
     public void onAddStream(final MediaStream stream) {
-        skylinkConnection.getSkylinkMediaService().addMediaStream(stream, this.myId, skylinkConnection.getLockDisconnectMediaLocal());
+        skylinkConnection.getSkylinkMediaService().addMediaStream(stream, this.peerId, skylinkConnection.getLockDisconnectMediaLocal());
     }
 
     @Override
@@ -186,7 +160,6 @@ class SkylinkPcObserver implements PeerConnection.Observer {
 
     @Override
     public void onDataChannel(final DataChannel dc) {
-        Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(this.myId);
         PeerInfo peerInfo = peer.getPeerInfo();
         peerInfo.setEnableDataChannel(true);
         // Prevent thread from executing with disconnect concurrently.
@@ -205,7 +178,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
                 PeerConnection pc = peer.getPc();
                 String mid = getSkylinkConnectionService().getSid();
                 skylinkConnection.getDataChannelManager().createDataChannel(pc,
-                        this.myId, mid, "", dc, this.myId);
+                        this.peerId, mid, "", dc, this.peerId);
             }
         }
     }
@@ -214,5 +187,14 @@ class SkylinkPcObserver implements PeerConnection.Observer {
     public void onRenegotiationNeeded() {
         // No need to do anything; AppRTC follows a pre-agreed-upon
         // signaling/negotiation protocol.
+    }
+
+    // Getters and Setters
+    public Peer getPeer() {
+        return peer;
+    }
+
+    public void setPeer(Peer peer) {
+        this.peer = peer;
     }
 }

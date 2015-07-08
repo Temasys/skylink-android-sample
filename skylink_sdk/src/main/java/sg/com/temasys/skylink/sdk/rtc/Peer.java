@@ -7,6 +7,8 @@ package sg.com.temasys.skylink.sdk.rtc;
 import org.webrtc.DataChannel;
 import org.webrtc.PeerConnection;
 
+import java.util.Date;
+
 /**
  * This class contains all information of a Skylink Peer object.
  */
@@ -16,26 +18,50 @@ public class Peer {
     private PeerConnection pc;
     private SkylinkPcObserver pcObserver;
     private SkylinkSdpObserver sdpObserver;
-    private HealthChecker healthChecker;
     private PeerInfo peerInfo;
-
     private UserInfo userInfo;
     private DataChannel dc;
+    private HealthChecker healthChecker;
+
+    private double weight;
+    private SkylinkConnection skylinkConnection;
 
     public Peer() {
+        this.weight = new Date().getTime();
+        /*this.weight = new Random(new Date().getTime()).nextDouble()
+                * (double) 1000000;*/
+    }
+
+    public Peer(String peerId, SkylinkConnection skylinkConnection) {
+        this();
+        this.peerId = peerId;
+        this.skylinkConnection = skylinkConnection;
     }
 
     public Peer(String peerId, PeerConnection pc, SkylinkPcObserver pcObserver, SkylinkSdpObserver sdpObserver) {
+        this();
         this.peerId = peerId;
         this.pc = pc;
         this.pcObserver = pcObserver;
         this.sdpObserver = sdpObserver;
     }
 
-    void initialiseHealthChecker() {
-
+    void initialiseHealthChecker(String iceRole) {
+        healthChecker = new HealthChecker(peerId, skylinkConnection);
+        healthChecker.setIceRole(iceRole);
+        healthChecker.startRestartTimer();
     }
 
+    /**
+     * Set the iceState
+     *
+     * @param iceState
+     */
+    void setHealthCheckerIceState(PeerConnection.IceConnectionState iceState) {
+        healthChecker.setIceState(iceState);
+    }
+
+        // Getters and Setters
     public String getPeerId() {
         return peerId;
     }
@@ -90,6 +116,14 @@ public class Peer {
 
     public void setUserInfo(UserInfo userInfo) {
         this.userInfo = userInfo;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
     }
 
     public DataChannel getDc() {
