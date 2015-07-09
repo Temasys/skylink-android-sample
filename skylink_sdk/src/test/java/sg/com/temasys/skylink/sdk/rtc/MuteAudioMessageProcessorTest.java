@@ -59,7 +59,7 @@ public class MuteAudioMessageProcessorTest {
 
         skylinkConnection = spy(SkylinkConnection.getInstance());
 
-        doReturn(skylinkConfig).when(skylinkConnection).getMyConfig();
+        doReturn(skylinkConfig).when(skylinkConnection).getSkylinkConfig();
         SkylinkPeerService.isPeerIdMCU(MID);
         doReturn(skylinkConnectionService)
                 .when(skylinkConnection).getSkylinkConnectionService();

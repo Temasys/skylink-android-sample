@@ -4,6 +4,7 @@ package sg.com.temasys.skylink.sdk.rtc;
  * Created by xiangrong on 6/7/15.
  */
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,12 +98,12 @@ class PeerPool {
     }
 
     /**
-     * Get the set of Peers.
+     * Get the Collection of Peers.
      *
-     * @return Peer set.
+     * @return Peer Collection.
      */
-    Set<Peer> getPeerSet() {
-        return (Set<Peer>) peerMap.values();
+    Collection<Peer> getPeerCollection() {
+        return peerMap.values();
     }
 
     /**

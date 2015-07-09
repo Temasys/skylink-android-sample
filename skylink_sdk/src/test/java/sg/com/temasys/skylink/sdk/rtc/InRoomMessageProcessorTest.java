@@ -66,7 +66,7 @@ public class InRoomMessageProcessorTest {
         advancedOptions.put("TURN", true);
         skylinkConfig.setAdvancedOptions(advancedOptions);
 
-        when(mockSkylinkConnection.getMyConfig()).thenReturn(skylinkConfig);
+        when(mockSkylinkConnection.getSkylinkConfig()).thenReturn(skylinkConfig);
 
         inRoomMessageProcessor.setSkylinkConnection(mockSkylinkConnection);
         inRoomMessageProcessor.process(getJson(TURN));
@@ -96,7 +96,7 @@ public class InRoomMessageProcessorTest {
         advancedOptions.put("STUN", true);
         skylinkConfig.setAdvancedOptions(advancedOptions);
 
-        when(mockSkylinkConnection.getMyConfig()).thenReturn(skylinkConfig);
+        when(mockSkylinkConnection.getSkylinkConfig()).thenReturn(skylinkConfig);
 
         inRoomMessageProcessor.setSkylinkConnection(mockSkylinkConnection);
         inRoomMessageProcessor.process(getJson(STUN));
@@ -120,7 +120,7 @@ public class InRoomMessageProcessorTest {
     @Test
     public void testProcessingWithoutAdvancedOptions() throws JSONException {
 
-        when(mockSkylinkConnection.getMyConfig()).thenReturn(new SkylinkConfig());
+        when(mockSkylinkConnection.getSkylinkConfig()).thenReturn(new SkylinkConfig());
 
         inRoomMessageProcessor.setSkylinkConnection(mockSkylinkConnection);
         inRoomMessageProcessor.process(getJson(STUN));

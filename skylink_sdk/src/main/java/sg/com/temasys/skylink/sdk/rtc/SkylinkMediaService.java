@@ -8,7 +8,6 @@ import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
-import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
@@ -33,18 +32,16 @@ class SkylinkMediaService {
 
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
+    private PcShared pcShared;
 
     private int numberOfCameras = 0;
 
-    private MediaConstraints pcConstraints;
-    private MediaConstraints sdpMediaConstraints;
-    private MediaConstraints videoConstraints;
-
-
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
-                               SkylinkConnectionService skylinkConnectionService) {
+                               SkylinkConnectionService skylinkConnectionService,
+                               PcShared pcShared) {
         this.skylinkConnection = skylinkConnection;
         this.skylinkConnectionService = skylinkConnectionService;
+        this.pcShared = pcShared;
     }
 
     void addMediaStream(final MediaStream stream, final String peerId, final Object lock) {
@@ -66,11 +63,12 @@ class SkylinkMediaService {
                             "Weird-looking stream: " + stream);
                     GLSurfaceView remoteVideoView = null;
                     int numVideoTracks = stream.videoTracks.size();
+
                     // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
                     if ((numVideoTracks >= 1)) {
                         Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
                                 " video track(s) has been added to PeerConnection.");
-                        remoteVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
+                        remoteVideoView = new GLSurfaceView(pcShared.getApplicationContext());
 
                         VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
                         MyVideoRendererGuiListener myVideoRendererGuiListener =
@@ -112,10 +110,10 @@ class SkylinkMediaService {
      */
     void genMediaConstraints(SkylinkConfig skylinkConfig) {
         MediaConstraints[] constraintsArray = new MediaConstraints[2];
-        sdpMediaConstraints = new MediaConstraints();
-        pcConstraints = new MediaConstraints();
+        MediaConstraints sdpMediaConstraints = new MediaConstraints();
+        MediaConstraints pcMediaConstraints = new MediaConstraints();
         constraintsArray[0] = sdpMediaConstraints;
-        constraintsArray[1] = pcConstraints;
+        constraintsArray[1] = pcMediaConstraints;
 
         for (MediaConstraints mediaConstraints : constraintsArray) {
             mediaConstraints.mandatory
@@ -126,12 +124,16 @@ class SkylinkMediaService {
                             String.valueOf(skylinkConfig.hasVideoReceive())));
         }
 
-        pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+        pcMediaConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "internalSctpDataChannels", "true"));
-        pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+        pcMediaConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "DtlsSrtpKeyAgreement", "true"));
-        pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
+        pcMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
                 "true"));
+
+        // Set to pcShared
+        pcShared.setSdpMediaConstraints(sdpMediaConstraints);
+        pcShared.setPcMediaConstraints(pcMediaConstraints);
     }
 
     /**
@@ -169,7 +171,7 @@ class SkylinkMediaService {
     }
 
     void setVideoConstrains(SkylinkConfig skylinkConfig) {
-        videoConstraints = new MediaConstraints();
+        MediaConstraints videoConstraints = new MediaConstraints();
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
@@ -182,6 +184,9 @@ class SkylinkMediaService {
                 MIN_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
+
+        // Add to pcShared
+        pcShared.setVideoMediaConstraints(videoConstraints);
     }
 
     /**
@@ -196,7 +201,6 @@ class SkylinkMediaService {
         VideoSource localVideoSource;
         VideoTrack localVideoTrack;
         AudioTrack localAudioTrack;
-        PeerConnectionFactory peerConnectionFactory = skylinkConnection.getPeerConnectionFactory();
 
         // Prevent thread from executing with disconnect concurrently.
         synchronized (lock) {
@@ -205,12 +209,10 @@ class SkylinkMediaService {
             if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                 return;
 
-            if (peerConnectionFactory == null) {
-                peerConnectionFactory = new PeerConnectionFactory();
-                skylinkConnection.setPeerConnectionFactory(peerConnectionFactory);
+            if (skylinkConnection.getLocalMediaStream() == null) {
 
                 Log.d(TAG, "[SDK] Local video source: Creating...");
-                lms = peerConnectionFactory
+                lms = pcShared.getPeerConnectionFactory()
                         .createLocalMediaStream("ARDAMS");
                 skylinkConnection.setLocalMediaStream(lms);
 
@@ -223,11 +225,11 @@ class SkylinkMediaService {
                         throw new RuntimeException("Failed to open capturer");
                     }
 
-                    localVideoSource = peerConnectionFactory
-                            .createVideoSource(localVideoCapturer, videoConstraints);
+                    localVideoSource = pcShared.getPeerConnectionFactory().createVideoSource(
+                            localVideoCapturer, pcShared.getVideoMediaConstraints());
                     skylinkConnection.setLocalVideoSource(localVideoSource);
 
-                    final VideoTrack videoTrack = peerConnectionFactory
+                    final VideoTrack videoTrack = pcShared.getPeerConnectionFactory()
                             .createVideoTrack("ARDAMSv0", localVideoSource);
                     if (videoTrack != null) {
                         lms.addTrack(videoTrack);
@@ -247,7 +249,7 @@ class SkylinkMediaService {
                             GLSurfaceView localVideoView = null;
                             VideoRendererGui localVideoRendererGui;
                             if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
-                                localVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
+                                localVideoView = new GLSurfaceView(pcShared.getApplicationContext());
                                 localVideoRendererGui = new VideoRendererGui(localVideoView);
 
                                 MyVideoRendererGuiListener myVideoRendererGuiListener =
@@ -274,9 +276,9 @@ class SkylinkMediaService {
                     return;
                 if (skylinkConnection.getSkylinkConfig().hasAudioSend()) {
                     Log.d(TAG, "[SDK] Local audio source: Creating...");
-                    localAudioSource = peerConnectionFactory
+                    localAudioSource = pcShared.getPeerConnectionFactory()
                             .createAudioSource(new MediaConstraints());
-                    localAudioTrack = peerConnectionFactory
+                    localAudioTrack = pcShared.getPeerConnectionFactory()
                             .createAudioTrack("ARDAMSa0",
                                     localAudioSource);
                     skylinkConnection.setLocalAudioSource(localAudioSource);
@@ -384,14 +386,6 @@ class SkylinkMediaService {
 
     public void setNumberOfCameras(int numberOfCameras) {
         this.numberOfCameras = numberOfCameras;
-    }
-
-    public MediaConstraints getPcConstraints() {
-        return pcConstraints;
-    }
-
-    public MediaConstraints getSdpMediaConstraints() {
-        return sdpMediaConstraints;
     }
 
 }

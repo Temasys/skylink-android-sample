@@ -59,13 +59,12 @@ public class SkylinkConnection {
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static boolean factoryStaticInitialized;
     private static SkylinkConnection instance;
-    private Context applicationContext;
     private boolean isMcuRoom;
     private DataChannelManager dataChannelManager;
     private MediaStream localMediaStream;
     private Object myUserData;
     private UserInfo myUserInfo;
-    private PeerConnectionFactory peerConnectionFactory;
+    private PcShared pcShared;
     private String appKey;
     private SkylinkConfig skylinkConfig;
     private VideoCapturerAndroid localVideoCapturer;
@@ -156,10 +155,6 @@ public class SkylinkConnection {
         return result.substring(0, result.length() - 1);
     }
 
-    public Context getApplicationContext() {
-        return applicationContext;
-    }
-
     public Object getLockDisconnectSdp() {
         return lockDisconnectSdp;
     }
@@ -210,7 +205,8 @@ public class SkylinkConnection {
 
             /*
             Note XR:
-             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
+             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio
+             and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
             */
             abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
                     true, true, hardwareAccelerated, eglContext
@@ -220,14 +216,18 @@ public class SkylinkConnection {
         }
 
         // Initialise Skylink Services
+        pcShared = new PcShared();
+        pcShared.setApplicationContext(context);
+
         if (this.skylinkPeerService == null) {
-            this.skylinkPeerService = new SkylinkPeerService(this);
+            this.skylinkPeerService = new SkylinkPeerService(this, pcShared);
         }
         if (this.skylinkConnectionService == null) {
             this.skylinkConnectionService = new SkylinkConnectionService(this);
         }
         if (this.skylinkMediaService == null) {
-            this.skylinkMediaService = new SkylinkMediaService(this, skylinkConnectionService);
+            this.skylinkMediaService =
+                    new SkylinkMediaService(this, skylinkConnectionService, pcShared);
             skylinkPeerService.setSkylinkMediaService(skylinkMediaService);
             skylinkPeerService.setSkylinkConnectionService(skylinkConnectionService);
         }
@@ -237,8 +237,6 @@ public class SkylinkConnection {
         skylinkMediaService.setVideoConstrains(this.skylinkConfig);
         // For PC and SDP
         skylinkMediaService.genMediaConstraints(skylinkConfig);
-
-        this.applicationContext = context;
 
         // Instantiate DataChannelManager.
         if (this.skylinkConfig.hasPeerMessaging() || this.skylinkConfig.hasFileTransfer()
@@ -465,19 +463,16 @@ public class SkylinkConnection {
 
                                             this.localVideoCapturer = null;
 
-                                            if (this.peerConnectionFactory != null) {
+                                            if (pcShared.getPeerConnectionFactory() != null) {
                                                 Log.d(TAG, "Disposing Peer Connection Factory");
-                                                this.peerConnectionFactory.dispose();
+                                                pcShared.getPeerConnectionFactory().dispose();
                                                 Log.d(TAG, "Disposed Peer Connection Factory");
-                                                this.peerConnectionFactory = null;
+                                                pcShared.setPeerConnectionFactory(null);
                                             }
 
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
-
-                                            /*// Reset parameters
-                                            isFirstPeer = true;*/
                                         }
                                     }
                                 }
@@ -528,7 +523,7 @@ public class SkylinkConnection {
                     }
                 } else {
 
-                    for (Peer peer : this.skylinkPeerService.getPeerSet()) {
+                    for (Peer peer : this.skylinkPeerService.getPeerCollection()) {
                         String tid = peer.getPeerId();
                         PeerInfo peerInfo = peer.getPeerInfo();
                         if (peerInfo == null) {
@@ -642,7 +637,7 @@ public class SkylinkConnection {
                     }
                 } else {
                     // Send a WRQ to each Peer.
-                    for (Peer peer : this.skylinkPeerService.getPeerSet()) {
+                    for (Peer peer : this.skylinkPeerService.getPeerCollection()) {
                         String tid = peer.getPeerId();
                         PeerInfo peerInfo = peer.getPeerInfo();
                         if (peerInfo == null) {
@@ -731,7 +726,7 @@ public class SkylinkConnection {
                 if (isMcuRoom) {
                     dataChannelManager.sendDataToPeer(null, data);
                 } else {
-                    for (Peer peer : this.skylinkPeerService.getPeerSet()) {
+                    for (Peer peer : this.skylinkPeerService.getPeerCollection()) {
                         String tid = peer.getPeerId();
                         PeerInfo peerInfo = peer.getPeerInfo();
                         if (peerInfo == null) {
@@ -1025,18 +1020,18 @@ public class SkylinkConnection {
         }
     }
 
-    PeerConnection createPc(String peerId, SkylinkPcObserver pcObserver) {
+    PeerConnection createPc(String peerId, SkylinkPcObserver pcObserver,
+                            PeerConnectionFactory peerConnectionFactory) {
         PeerConnection pc;
         logMessage("Creating a new peer connection ...");
 
         // Prevent thread from executing with disconnect concurrently.
         synchronized (lockDisconnect) {
-            pc = this.peerConnectionFactory.createPeerConnection(
+            pc = peerConnectionFactory.createPeerConnection(
                     skylinkConnectionService.getIceServers(),
-                    skylinkMediaService.getPcConstraints(), pcObserver);
+                    pcShared.getPcMediaConstraints(), pcObserver);
             logMessage("[createPc] Created new PeerConnection for " + peerId + ".");
         }
-
         return pc;
     }
 
@@ -1115,12 +1110,8 @@ public class SkylinkConnection {
         return lockDisconnectMsg;
     }
 
-    PeerConnectionFactory getPeerConnectionFactory() {
-        return peerConnectionFactory;
-    }
-
-    void setPeerConnectionFactory(PeerConnectionFactory peerConnectionFactory) {
-        this.peerConnectionFactory = peerConnectionFactory;
+    public PcShared getPcShared() {
+        return pcShared;
     }
 
     SkylinkMediaService getSkylinkMediaService() {

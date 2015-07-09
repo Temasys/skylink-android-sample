@@ -173,7 +173,7 @@ class SkylinkSdpObserver implements SdpObserver {
                             skylinkConnection
                                     .logMessage("Callee, setRemoteDescription succeeded");
                             pc.createAnswer(SkylinkSdpObserver.this,
-                                    skylinkConnection.getSkylinkMediaService().getSdpMediaConstraints());
+                                    skylinkConnection.getPcShared().getSdpMediaConstraints());
                             skylinkConnection.logMessage("PC - createAnswer.");
                         } else {
                             drainRemoteCandidates();

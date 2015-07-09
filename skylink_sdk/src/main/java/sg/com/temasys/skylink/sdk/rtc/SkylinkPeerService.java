@@ -7,6 +7,7 @@ import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,13 +23,25 @@ class SkylinkPeerService implements PeerPoolClient {
     private SkylinkMediaService skylinkMediaService;
     private SkylinkConnectionService skylinkConnectionService;
     private PeerPool peerPool;
+    private PcShared pcShared;
     private boolean isFirstPeer = true;
 
-    public SkylinkPeerService(SkylinkConnection skylinkConnection) {
+    public SkylinkPeerService(SkylinkConnection skylinkConnection, PcShared pcShared) {
         this.skylinkConnection = skylinkConnection;
         this.peerPool = new PeerPool(this);
+        this.pcShared = pcShared;
     }
 
+    /**
+     * Creates a Peer object with all related PeerConnection objects, for e.g.:
+     * PC, SkylinkPcObserver, SkylinkSdpObserver, DC.
+     * Not added into PeerPool yet, should be done in subsequent step(s).
+     * @param peerId
+     * @param iceRole
+     * @param userInfo
+     * @param peerInfo
+     * @return
+     */
     Peer createPeer(String peerId, String iceRole, UserInfo userInfo, PeerInfo peerInfo) {
         Peer peer;
         PeerConnection pc;
@@ -61,7 +74,7 @@ class SkylinkPeerService implements PeerPoolClient {
             peer.setPcObserver(pcObserver);
 
             // Create PeerConnection
-            pc = skylinkConnection.createPc(peerId, pcObserver);
+            pc = skylinkConnection.createPc(peerId, pcObserver, pcShared.getPeerConnectionFactory());
             peer.setPc(pc);
             // Initialise and start Health Checker.
             peer.initialiseHealthChecker(iceRole);
@@ -165,62 +178,14 @@ class SkylinkPeerService implements PeerPoolClient {
             // We have reached the limit of max no. of Peers.
             Log.d(TAG, "Discarding this \"enter\" due to Peer number limit.");
         }
-
-        /*// Create a new PeerConnection if we can
-        PeerConnection peerConnection = skylinkConnection
-                .createPc(peerId, HealthChecker.ICE_ROLE_ANSWERER, , userInfo);
-
-        // If we are over the max no. of peers, peerConnection here will be null.
-        if (peerConnection != null) {
-            skylinkConnection.setUserInfo(peerId, userInfo);
-            skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
-
-            // Add our local media stream to this PC, or not.
-            if ((skylinkConnection.getSkylinkConfig().hasAudioSend() || skylinkConnection.getSkylinkConfig().hasVideoSend())) {
-                peerConnection.addStream(skylinkConnection.getLocalMediaStream());
-                Log.d(TAG, "Added localMedia Stream");
-            }
-
-            try {
-                ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
-
-        } else {
-            // We have reached the limit of max no. of Peers.
-            Log.d(TAG, "Discarding this \"enter\" due to Peer number limit.");
-        }*/
     }
 
     void receivedBye(final String peerId) {
 
         if (!isPeerIdMCU(peerId)) {
-            skylinkConnection.runOnUiThread(new Runnable() {
-                public void run() {
-                    // Prevent thread from executing with disconnect concurrently.
-                    synchronized (skylinkConnection.getLockDisconnect()) {
-                        // If user has indicated intention to disconnect,
-                        // We should no longer process messages from signalling server.
-                        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
-                                SkylinkConnectionService.ConnectionState.DISCONNECTING) {
-                            return;
-                        }
-                        skylinkConnection.getRemotePeerListener()
-                                .onRemotePeerLeave(peerId, "The peer has left the room");
-                    }
-                }
-            });
+            // Actually remove the Peer.
+            removePeer(peerId, "The peer has left the room");
         }
-
-        DataChannelManager dataChannelManager = skylinkConnection.getDataChannelManager();
-
-        // Dispose DataChannel.
-        if (dataChannelManager != null) {
-            dataChannelManager.disposeDC(peerId, false);
-        }
-
-        disposePeerConnection(peerId, skylinkConnection);
     }
 
 
@@ -275,7 +240,7 @@ class SkylinkPeerService implements PeerPoolClient {
                 sdpString);
 
         peerConnection.setRemoteDescription(
-                skylinkConnection.skylinkPeerService.getSdpObserver(peerId, skylinkConnection), sessionDescription);
+                skylinkConnection.skylinkPeerService.getSdpObserver(peerId), sessionDescription);
         Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
     }
 
@@ -324,12 +289,12 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     /**
-     * Get the set of Peers.
+     * Get the Collection of Peers.
      *
-     * @return Peer set.
+     * @return Peer Collection.
      */
-    Set<Peer> getPeerSet() {
-        return peerPool.getPeerSet();
+    Collection<Peer> getPeerCollection() {
+        return peerPool.getPeerCollection();
     }
 
 
@@ -337,18 +302,13 @@ class SkylinkPeerService implements PeerPoolClient {
      * Get the SkylinkSdpObserver of a Peer.
      *
      * @param mid
-     * @param skylinkConnection
      * @return SkylinkSdpObserver or null if Peer is not available.
      */
-    SkylinkSdpObserver getSdpObserver(String mid, SkylinkConnection skylinkConnection) {
+    SkylinkSdpObserver getSdpObserver(String mid) {
 
         Peer peer = getPeer(mid);
         if (peer != null) {
             SkylinkSdpObserver sdpObserver = peer.getSdpObserver();
-            /*if(sdpObserver == null) {
-                sdpObserver = new SkylinkSdpObserver(skylinkConnection);
-                sdpObserver.setPeerId(mid);
-            }*/
             return sdpObserver;
         }
         return null;
@@ -377,7 +337,7 @@ class SkylinkPeerService implements PeerPoolClient {
         }
 
         // Create a Peer from "welcome"
-        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo, new PeerInfo());
+        Peer peer = createPeer(peerId, HealthChecker.ICE_ROLE_OFFERER, userInfo, peerInfo);
 
         // We have reached the limit of max no. of Peers.
         if (peer == null) {
@@ -410,74 +370,11 @@ class SkylinkPeerService implements PeerPoolClient {
         }
 
         // Create SkylinkSdpObserver for Peer.
-        SkylinkSdpObserver sdpObserver = getSdpObserver(peerId, skylinkConnection);
+        SkylinkSdpObserver sdpObserver = getSdpObserver(peerId);
 
         peer.getPc().createOffer(sdpObserver,
-                skylinkMediaService.getSdpMediaConstraints());
+                pcShared.getSdpMediaConstraints());
         Log.d(TAG, "[receivedWelcomeRestart] - createOffer for " + peerId);
-
-/*
-        // Check if a PC was already created at "enter"
-        if (skylinkConnection.getPeerConnection(peerId) != null) {
-            // Check if should continue with "welcome" or use PC from "enter"
-            if (skylinkConnection.shouldAcceptWelcome(peerId, weight)) {
-                // Remove PC from "enter" to create new PC from "welcome"
-                ProtocolHelper.disposePeerConnection(peerId, skylinkConnection);
-            } else {
-                // Do not continue "welcome" but use PC from "enter" instead.
-                Log.d(TAG, "Ignoring this welcome as Peer " + userInfo.getUserData() +
-                        " (" + peerId + ") is processing our welcome.");
-                return;
-            }
-        }
-
-        // Create a PC from "welcome"
-        PeerConnection peerConnection =
-                skylinkConnection.createPc(peerId, HealthChecker.ICE_ROLE_OFFERER, , userInfo);
-
-        // We have reached the limit of max no. of Peers.
-        if (peerConnection == null) {
-            Log.d(TAG, "Discarding this \"welcome\" due to Peer number limit.");
-            return;
-        }
-
-        skylinkConnection.getPeerInfoMap().put(peerId, peerInfo);
-        skylinkConnection.setUserInfo(peerId, userInfo);
-
-        boolean receiveOnly = peerInfo.isReceiveOnly();
-
-        // Add our local media stream to this PC, or not.
-        if ((skylinkConnection.getSkylinkConfig().hasAudioSend() ||
-                skylinkConnection.getSkylinkConfig().hasVideoSend()) && !receiveOnly) {
-            peerConnection.addStream(skylinkConnection.getLocalMediaStream());
-            Log.d(TAG, "Added localMedia Stream");
-        }
-
-        Log.d(TAG, "[receivedWelcomeRestart] - create offer.");
-        // Create DataChannel if both Peer and ourself desires it.
-        if (peerInfo.isEnableDataChannel() &&
-                (skylinkConnection.getSkylinkConfig().hasPeerMessaging()
-                        || skylinkConnection.getSkylinkConfig().hasFileTransfer()
-                        || skylinkConnection.getSkylinkConfig().hasDataTransfer())) {
-            // It is stored by dataChannelManager.
-            skylinkConnection.getDataChannelManager().createDataChannel(
-                    peerConnection, skylinkConnection.getSkylinkConnectionService().getSid(),
-                    peerId, "", null, peerId);
-        }
-
-        if (skylinkConnection.getSdpObserverPool() == null) {
-            skylinkConnection.setSdpObserverPool(new Hashtable<String, SkylinkSdpObserver>());
-        }
-        SkylinkSdpObserver sdpObserver = skylinkConnection.getSdpObserverPool()
-                .get(peerId);
-        if (sdpObserver == null) {
-            sdpObserver = new SkylinkSdpObserver(skylinkConnection);
-            sdpObserver.setPeerId(peerId);
-            skylinkConnection.getSdpObserverPool().put(peerId, sdpObserver);
-        }
-
-        peerConnection.createOffer(sdpObserver,
-                skylinkMediaService.getSdpMediaConstraints());*/
     }
 
     // Internal methods
