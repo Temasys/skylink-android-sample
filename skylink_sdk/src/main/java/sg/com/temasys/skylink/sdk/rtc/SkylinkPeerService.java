@@ -5,7 +5,6 @@ import android.util.Log;
 import org.json.JSONException;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
-import org.webrtc.SessionDescription;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,12 +23,14 @@ class SkylinkPeerService implements PeerPoolClient {
     private SkylinkConnectionService skylinkConnectionService;
     private PeerPool peerPool;
     private PcShared pcShared;
+    private WebrtcPeerService webrtcPeerService;
     private boolean isFirstPeer = true;
 
     public SkylinkPeerService(SkylinkConnection skylinkConnection, PcShared pcShared) {
         this.skylinkConnection = skylinkConnection;
         this.peerPool = new PeerPool(this);
         this.pcShared = pcShared;
+        this.webrtcPeerService = new WebrtcPeerService(pcShared);
     }
 
     /**
@@ -45,7 +46,6 @@ class SkylinkPeerService implements PeerPoolClient {
      */
     Peer createPeer(String peerId, String iceRole, UserInfo userInfo, PeerInfo peerInfo) {
         Peer peer;
-        PeerConnection pc;
         boolean isMcu = false;
 
         // Check if Peer is MCU
@@ -74,9 +74,14 @@ class SkylinkPeerService implements PeerPoolClient {
             SkylinkPcObserver pcObserver = new SkylinkPcObserver(peerId, peer, skylinkConnection);
             peer.setPcObserver(pcObserver);
 
-            // Create PeerConnection
-            pc = skylinkConnection.createPc(peerId, pcObserver, pcShared.getPeerConnectionFactory());
-            peer.setPc(pc);
+            // Prevent thread from executing with disconnect concurrently.
+            synchronized (skylinkConnection.getLockDisconnect()) {
+                // Create PeerConnection
+                if (!webrtcPeerService.addWebrtcP2PComponent(peer, skylinkConnectionService)) {
+                    return null;
+                }
+            }
+
             // Initialise and start Health Checker.
             peer.initialiseHealthChecker(iceRole);
 
@@ -189,13 +194,14 @@ class SkylinkPeerService implements PeerPoolClient {
         }
     }
 
-
+    /**
+     * Adds the remote Peer's ICE Candidates
+     * @param peerId
+     * @param iceCandidate
+     */
     void addIceCandidate(String peerId, IceCandidate iceCandidate) {
         Peer peer = getPeer(peerId);
-        PeerConnection peerConnection = peer.getPc();
-        if (peerConnection != null) {
-            peerConnection.addIceCandidate(iceCandidate);
-        }
+        webrtcPeerService.addIceCandidate(iceCandidate, peer);
     }
 
     void receivedInRoom(String peerId, List<PeerConnection.IceServer> iceServers) {
@@ -228,21 +234,13 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     void receivedOfferAnswer(String peerId, String sdp, String type) {
-        Peer peer = getPeer(peerId);
-        PeerConnection peerConnection = peer.getPc();
-
         // Set the preferred audio codec
         String sdpString = Utils.preferCodec(sdp,
                 skylinkConnection.getSkylinkConfig().getPreferredAudioCodec().toString(), true);
+        Peer peer = getPeer(peerId);
 
-        // Set the SDP
-        SessionDescription sessionDescription = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type),
-                sdpString);
-
-        peerConnection.setRemoteDescription(
-                skylinkConnection.skylinkPeerService.getSdpObserver(peerId), sessionDescription);
-        Log.d(TAG, "PC - setRemoteDescription. Setting " + sessionDescription.type + " from " + peerId);
+        // Set the remote SDP
+        webrtcPeerService.setRemoteSdp(sdpString, peer, type);
     }
 
     /**

@@ -13,7 +13,6 @@ import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.MediaCodecVideoEncoder;
 import org.webrtc.MediaStream;
-import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
@@ -1018,21 +1017,6 @@ public class SkylinkConnection {
             // Peer did not send a weight, use Peer's welcome.
             return true;
         }
-    }
-
-    PeerConnection createPc(String peerId, SkylinkPcObserver pcObserver,
-                            PeerConnectionFactory peerConnectionFactory) {
-        PeerConnection pc;
-        logMessage("Creating a new peer connection ...");
-
-        // Prevent thread from executing with disconnect concurrently.
-        synchronized (lockDisconnect) {
-            pc = peerConnectionFactory.createPeerConnection(
-                    skylinkConnectionService.getIceServers(),
-                    pcShared.getPcMediaConstraints(), pcObserver);
-            logMessage("[createPc] Created new PeerConnection for " + peerId + ".");
-        }
-        return pc;
     }
 
 
