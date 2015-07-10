@@ -61,7 +61,7 @@ public class Peer {
         healthChecker.setIceState(iceState);
     }
 
-        // Getters and Setters
+    // Getters and Setters
     public String getPeerId() {
         return peerId;
     }

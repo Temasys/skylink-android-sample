@@ -33,9 +33,10 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     /**
-     * Creates a Peer object with all related PeerConnection objects, for e.g.:
-     * PC, SkylinkPcObserver, SkylinkSdpObserver, DC.
-     * Not added into PeerPool yet, should be done in subsequent step(s).
+     * Creates a Peer object with all related PeerConnection objects, for e.g.: PC,
+     * SkylinkPcObserver, SkylinkSdpObserver, DC. Not added into PeerPool yet, should be done in
+     * subsequent step(s).
+     *
      * @param peerId
      * @param iceRole
      * @param userInfo

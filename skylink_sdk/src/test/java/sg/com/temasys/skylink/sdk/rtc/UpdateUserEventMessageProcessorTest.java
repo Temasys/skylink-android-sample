@@ -15,6 +15,8 @@ import static junit.framework.TestCase.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by janidu on 12/5/15.
@@ -29,13 +31,19 @@ public class UpdateUserEventMessageProcessorTest {
     private UpdateUserEventMessageProcessor userEventMessgeProcesor;
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
+    private SkylinkPeerService mockSkylinkPeerService;
+    private Peer peer;
 
     @Before
     public void setUp() throws Exception {
         skylinkConnection = spy(SkylinkConnection.getInstance());
+        peer = new Peer(peerId, skylinkConnection);
         skylinkConnectionService = mock(SkylinkConnectionService.class);
         userEventMessgeProcesor = new UpdateUserEventMessageProcessor();
         userEventMessgeProcesor.setSkylinkConnection(skylinkConnection);
+        mockSkylinkPeerService = mock(SkylinkPeerService.class);
+        when(mockSkylinkPeerService.getPeer(peerId)).thenReturn(peer);
+        skylinkConnection.setSkylinkPeerService(mockSkylinkPeerService);
     }
 
     @Test
@@ -77,5 +85,6 @@ public class UpdateUserEventMessageProcessorTest {
 
         doReturn(remotePeerListener).when(skylinkConnection).getRemotePeerListener();
         userEventMessgeProcesor.process(jsonObject);
+        verify(skylinkConnection).setUserData(peerId, userName);
     }
 }

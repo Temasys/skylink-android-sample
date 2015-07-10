@@ -54,6 +54,7 @@ class HealthChecker {
 
     /**
      * Initialise all required parameters
+     *
      * @param remotePeerId
      * @param skylinkConnection
      */

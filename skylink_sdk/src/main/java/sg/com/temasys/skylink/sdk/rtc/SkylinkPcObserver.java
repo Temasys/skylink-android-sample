@@ -24,7 +24,6 @@ class SkylinkPcObserver implements PeerConnection.Observer {
     private Peer peer;
 
 
-
     @SuppressWarnings("unused")
     public String getPeerId() {
         return peerId;

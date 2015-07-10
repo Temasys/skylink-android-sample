@@ -1122,6 +1122,10 @@ public class SkylinkConnection {
         return skylinkPeerService;
     }
 
+    public void setSkylinkPeerService(SkylinkPeerService skylinkPeerService) {
+        this.skylinkPeerService = skylinkPeerService;
+    }
+
     Object getLockDisconnect() {
         return lockDisconnect;
     }

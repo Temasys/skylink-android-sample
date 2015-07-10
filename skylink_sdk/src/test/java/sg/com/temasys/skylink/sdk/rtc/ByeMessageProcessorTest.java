@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
  */
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
-public class ByeMessageProcessorTest implements PeerPoolClient{
+public class ByeMessageProcessorTest {
 
     private static final String TAG = ByeMessageProcessorTest.class.getSimpleName();
     private static final String mid = "1234";
@@ -28,20 +28,18 @@ public class ByeMessageProcessorTest implements PeerPoolClient{
     private MessageProcessor messageProcessor;
     private SkylinkConnection mockSkylinkConnection;
     private SkylinkConnectionService mockSkylinkConnectionService;
-    private PcShared mockPcShared;
+    private SkylinkPeerService mockSkylinkPeerService;
 
     @Before
     public void setUp() throws Exception {
         messageProcessor = new ByeMessageProcessor();
         mockSkylinkConnection = mock(SkylinkConnection.class);
         mockSkylinkConnectionService = mock(SkylinkConnectionService.class);
-        mockPcShared = mock(PcShared.class);
+        mockSkylinkPeerService = mock(SkylinkPeerService.class);
 
-        SkylinkPeerService skylinkPeerService =
-                new SkylinkPeerService(mockSkylinkConnection, mockPcShared);
         when(mockSkylinkConnection.getSkylinkConnectionService())
                 .thenReturn(mockSkylinkConnectionService);
-        when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(skylinkPeerService);
+        when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(mockSkylinkPeerService);
     }
 
     @Test
@@ -64,12 +62,7 @@ public class ByeMessageProcessorTest implements PeerPoolClient{
         messageProcessor.setSkylinkConnection(mockSkylinkConnection);
         messageProcessor.process(jsonObject);
 
-        SkylinkPeerService.isPeerIdMCU(mid);
-        verify(dataChannelManager).disposeDC(mid, false);
+        verify(mockSkylinkPeerService).receivedBye(mid);
     }
 
-    @Override
-    public int getMaxPeer() {
-        return 4;
-    }
 }
