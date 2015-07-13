@@ -52,11 +52,13 @@ public class SkylinkMediaServiceTest {
         mockPcShared = mock(PcShared.class);
 
         localVideoCapturer = mock(VideoCapturerAndroid.class);
-        when(skylinkConnection.getLocalVideoCapturer()).thenReturn(localVideoCapturer);
+        // when(skylinkConnection.getLocalVideoCapturer()).thenReturn(localVideoCapturer);
         when(localVideoCapturer.switchCamera(null)).thenReturn(true);
 
         skylinkMediaService = spy(new SkylinkMediaService(
                 skylinkConnection, skylinkConnectionService, mockPcShared));
+        skylinkMediaService.setLocalVideoCapturer(localVideoCapturer);
+
         counter = new CountDownLatch(1);
     }
 

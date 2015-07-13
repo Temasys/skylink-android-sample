@@ -172,12 +172,13 @@ class SkylinkPcObserver implements PeerConnection.Observer {
             if (getSkylinkConfig().hasPeerMessaging() || getSkylinkConfig().hasFileTransfer()
                     || getSkylinkConfig().hasDataTransfer()) {
                 // Create our DataChannel based on given dc.
-                // It is stored by dataChannelManager.
+                // It is stored by dataChannelManager and Peer.
                 // Get PeerConnection.
                 PeerConnection pc = peer.getPc();
                 String mid = getSkylinkConnectionService().getSid();
-                skylinkConnection.getDataChannelManager().createDataChannel(pc,
+                DataChannel myDc = skylinkConnection.getDataChannelManager().createDataChannel(pc,
                         this.peerId, mid, "", dc, this.peerId);
+                peer.setDc(myDc);
             }
         }
     }

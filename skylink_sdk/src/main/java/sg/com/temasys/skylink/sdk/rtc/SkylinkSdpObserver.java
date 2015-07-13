@@ -90,7 +90,7 @@ class SkylinkSdpObserver implements SdpObserver {
                 return;
             }
 
-            SkylinkConnection.abortUnless(this.localSdp == null, "multiple SDP create?!?");
+            Utils.abortUnless(this.localSdp == null, "multiple SDP create?!?");
 
             String sdpType = origSdp.type.canonicalForm();
 
@@ -188,7 +188,8 @@ class SkylinkSdpObserver implements SdpObserver {
                                 PeerInfo peerInfo = peer.getPeerInfo();
                                 boolean eDC = false;
                                 if (peerInfo != null) eDC = peerInfo.isEnableDataChannel();
-                                skylinkConnection.getRemotePeerListener().onRemotePeerJoin(tid, skylinkConnection.getUserData(tid), eDC);
+                                skylinkConnection.getRemotePeerListener().onRemotePeerJoin(tid,
+                                        skylinkConnection.getSkylinkPeerService().getUserData(tid), eDC);
                             }
                         }
                     }

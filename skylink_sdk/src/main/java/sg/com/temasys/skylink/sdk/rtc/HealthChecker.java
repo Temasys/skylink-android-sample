@@ -63,7 +63,7 @@ class HealthChecker {
         this.remotePeerId = remotePeerId;
         this.skylinkConnection = skylinkConnection;
         this.skylinkConnectionService = skylinkConnection.getSkylinkConnectionService();
-        this.localMediaStream = skylinkConnection.getLocalMediaStream();
+        this.localMediaStream = skylinkConnection.getSkylinkMediaService().getLocalMediaStream();
         this.myConfig = skylinkConnection.getSkylinkConfig();
     }
 

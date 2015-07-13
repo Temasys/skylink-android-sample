@@ -199,7 +199,7 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
             return;
         }
 
-        skylinkConnection.setUserData(userData);
+        getSkylinkPeerService().setUserData(null, userData);
         JSONObject dict = new JSONObject();
         try {
             dict.put("type", "updateUserEvent");
@@ -235,10 +235,10 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
      * @param skylinkConnection SkylinkConnection instance.
      */
     void rejoinRestart(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection.getSkylinkPeerService().getPeerNumber() > 0) {
+        if (getSkylinkPeerService().getPeerNumber() > 0) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet =
-                    new HashSet<String>(skylinkConnection.getSkylinkPeerService().getPeerIdSet());
+                    new HashSet<String>(getSkylinkPeerService().getPeerIdSet());
             for (String peerId : peerIdSet) {
                 rejoinRestart(peerId, skylinkConnection);
             }
@@ -261,13 +261,14 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         synchronized (skylinkConnection.getLockDisconnect()) {
             try {
                 Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
-                Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(remotePeerId);
+                Peer peer = getSkylinkPeerService().getPeer(remotePeerId);
                 PeerInfo peerInfo = peer.getPeerInfo();
                 if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
                     // If it is Android, send restart.
                     Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
                     ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
-                            skylinkConnection.getLocalMediaStream(), skylinkConnection.getSkylinkConfig());
+                            getSkylinkMediaService().getLocalMediaStream(), skylinkConnection
+                                    .getSkylinkConfig());
                 } else {
                     // If web or others, send directed enter
                     // TODO XR: Remove after JS client update to compatible restart protocol.
@@ -286,7 +287,8 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         }
         synchronized (skylinkConnection.getLockDisconnect()) {
             try {
-                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, skylinkConnection.getLocalMediaStream(),
+                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, getSkylinkMediaService()
+                                .getLocalMediaStream(),
                         skylinkConnection.getSkylinkConfig());
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage(), e);
@@ -317,6 +319,15 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
      */
     void sendMuteVideo(boolean isMuted) {
         ProtocolHelper.sendMuteVideo(isMuted, this);
+    }
+
+    // Internal methods
+    private SkylinkPeerService getSkylinkPeerService() {
+        return skylinkConnection.getSkylinkPeerService();
+    }
+
+    private SkylinkMediaService getSkylinkMediaService() {
+        return skylinkConnection.getSkylinkMediaService();
     }
 
     // Getters and Setters

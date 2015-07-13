@@ -467,4 +467,12 @@ class Utils {
 
         return sdpDescription;
     }
+
+    // Poor-man's assert(): die with |msg| unless |condition| is true.
+    static void abortUnless(boolean condition, String msg) {
+        if (!condition) {
+            throw new RuntimeException(msg);
+        }
+    }
+
 }

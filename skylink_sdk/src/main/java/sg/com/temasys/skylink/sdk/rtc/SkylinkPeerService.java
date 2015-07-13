@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.util.Log;
 
 import org.json.JSONException;
+import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 
@@ -17,9 +18,9 @@ import java.util.Set;
 class SkylinkPeerService implements PeerPoolClient {
 
     private static final String TAG = SkylinkPeerService.class.getSimpleName();
+    private UserInfo myUserInfo;
 
     private final SkylinkConnection skylinkConnection;
-    private SkylinkMediaService skylinkMediaService;
     private SkylinkConnectionService skylinkConnectionService;
     private PeerPool peerPool;
     private PcShared pcShared;
@@ -171,7 +172,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
             // Add our local media stream to this PC, or not.
             if ((skylinkConnection.getSkylinkConfig().hasAudioSend() || skylinkConnection.getSkylinkConfig().hasVideoSend())) {
-                peer.getPc().addStream(skylinkConnection.getLocalMediaStream());
+                peer.getPc().addStream(getSkylinkMediaService().getLocalMediaStream());
                 Log.d(TAG, "Added localMedia Stream");
             }
             try {
@@ -196,6 +197,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
     /**
      * Adds the remote Peer's ICE Candidates
+     *
      * @param peerId
      * @param iceCandidate
      */
@@ -214,7 +216,7 @@ class SkylinkPeerService implements PeerPoolClient {
         if (skylinkConnection.getDataChannelManager() != null) {
             skylinkConnection.getDataChannelManager().setMid(peerId);
             skylinkConnection.getDataChannelManager().setDisplayName(
-                    skylinkConnection.getMyUserData().toString());
+                    getUserData(null).toString());
         }
 
         // Check if pcObserverPool has been populated.
@@ -253,7 +255,12 @@ class SkylinkPeerService implements PeerPoolClient {
         if (peerPool == null) {
             return null;
         }
-        return peerPool.getPeer(peerId);
+        // See if we should return MCU Peer or normal Peer.
+        if (isPeerIdMCU(peerId)) {
+            return peerPool.getPeerMcu();
+        } else {
+            return peerPool.getPeer(peerId);
+        }
     }
 
     /**
@@ -322,9 +329,9 @@ class SkylinkPeerService implements PeerPoolClient {
         }
 
         // Check if a Peer was already created at "enter"
-        if (peerPool.getPeer(peerId) != null) {
+        if (getPeer(peerId) != null) {
             // Check if should continue with "welcome" or use Peer from "enter"
-            if (skylinkConnection.shouldAcceptWelcome(peerId, weight)) {
+            if (shouldAcceptWelcome(peerId, weight)) {
                 // Remove Peer from "enter" to create new Peer from "welcome"
                 removePeer(peerId, null);
             } else {
@@ -344,15 +351,15 @@ class SkylinkPeerService implements PeerPoolClient {
             return;
         }
 
-        peer.setPeerId(peerId);
-        peer.setUserInfo(userInfo);
+        /*peer.setPeerId(peerId);
+        peer.setUserInfo(userInfo);*/
 
         boolean receiveOnly = peerInfo.isReceiveOnly();
 
         // Add our local media stream to this PC, or not.
         if ((skylinkConnection.getSkylinkConfig().hasAudioSend() ||
                 skylinkConnection.getSkylinkConfig().hasVideoSend()) && !receiveOnly) {
-            peer.getPc().addStream(skylinkConnection.getLocalMediaStream());
+            peer.getPc().addStream(getSkylinkMediaService().getLocalMediaStream());
             Log.d(TAG, "Added localMedia Stream");
         }
 
@@ -362,10 +369,11 @@ class SkylinkPeerService implements PeerPoolClient {
                 (skylinkConnection.getSkylinkConfig().hasPeerMessaging()
                         || skylinkConnection.getSkylinkConfig().hasFileTransfer()
                         || skylinkConnection.getSkylinkConfig().hasDataTransfer())) {
-            // It is stored by dataChannelManager.
-            skylinkConnection.getDataChannelManager().createDataChannel(
+            // It is stored by dataChannelManager and Peer.
+            DataChannel dc = skylinkConnection.getDataChannelManager().createDataChannel(
                     peer.getPc(), skylinkConnection.getSkylinkConnectionService().getSid(),
                     peerId, "", null, peerId);
+            peer.setDc(dc);
         }
 
         // Create SkylinkSdpObserver for Peer.
@@ -387,12 +395,13 @@ class SkylinkPeerService implements PeerPoolClient {
     private boolean disposePeer(String peerId) {
         Peer peer = getPeer(peerId);
         if (peer != null) {
-            // Dispose peer connection
-            disposePeerConnection(peerId, skylinkConnection);
             // Dispose DC
             if (skylinkConnection.getDataChannelManager() != null) {
                 skylinkConnection.getDataChannelManager().disposeDC(peerId, true);
+                peer.setDc(null);
             }
+            // Dispose peer connection
+            disposePeerConnection(peerId);
             // Dispose other webrtc objects
             peer.setPcObserver(null);
             peer.setSdpObserver(null);
@@ -406,18 +415,16 @@ class SkylinkPeerService implements PeerPoolClient {
      * Dispose the PeerConnection of a Peer.
      *
      * @param remotePeerId
-     * @param skylinkConnection
      * @return True if the peer connection is disposed successfully, false if Peer does not exists.
      */
-    private boolean disposePeerConnection(String remotePeerId, SkylinkConnection
-            skylinkConnection) {
+    private boolean disposePeerConnection(String remotePeerId) {
 
         Peer peer = getPeer(remotePeerId);
         if (peer != null) {
             PeerConnection peerConnection = peer.getPc();
             if (peerConnection != null) {
                 // Dispose peer connection
-                peerConnection.removeStream(skylinkConnection.getLocalMediaStream());
+                peerConnection.removeStream(getSkylinkMediaService().getLocalMediaStream());
                 peerConnection.dispose();
             }
             return true;
@@ -425,9 +432,39 @@ class SkylinkPeerService implements PeerPoolClient {
         return false;
     }
 
+    /**
+     * When received welcome, check if we should proceed or not. If we had both sent "enter" to each
+     * other (due to entering the room together), the one whose weight is smaller should continue
+     * the handshake, while the other should abandon handshake.
+     *
+     * @param peerId
+     * @param weight
+     * @return True if welcome should be accepted, false if should be dropped.
+     */
+    private boolean shouldAcceptWelcome(String peerId, double weight) {
+        Peer peer = getPeer(peerId);
+        if (weight > 0) {
+            if (peer != null) {
+                if (peer.getWeight() > weight) {
+                    // Use this welcome (ours will be discarded on peer's side).
+                    return true;
+                } else {
+                    // Discard this welcome (ours will be used on peer's side).
+                    return false;
+                }
+            } else {
+                // Use this welcome (we did not send one to the peer).
+                return true;
+            }
+        } else {
+            // Peer did not send a weight, use Peer's welcome.
+            return true;
+        }
+    }
+
     // Getters and Setters
-    public void setSkylinkMediaService(SkylinkMediaService skylinkMediaService) {
-        this.skylinkMediaService = skylinkMediaService;
+    private SkylinkMediaService getSkylinkMediaService() {
+        return skylinkConnection.getSkylinkMediaService();
     }
 
     public void setSkylinkConnectionService(SkylinkConnectionService skylinkConnectionService) {
@@ -437,6 +474,92 @@ class SkylinkPeerService implements PeerPoolClient {
     @Override
     public int getMaxPeer() {
         return skylinkConnection.getSkylinkConfig().getMaxPeers();
+    }
+
+    /**
+     * Retrieves the user defined data object of a peer.
+     *
+     * @param remotePeerId The id of the remote peer whose UserData is to be retrieved, or NULL for
+     *                     self.
+     * @return May be a 'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
+     */
+    Object getUserData(String remotePeerId) {
+        Object userData = null;
+        if (remotePeerId == null) {
+            userData = myUserInfo.getUserData();
+        } else {
+            Peer peer = getPeer(remotePeerId);
+            if (peer != null) {
+                UserInfo userInfo = peer.getUserInfo();
+                userData = userInfo.getUserData();
+            }
+        }
+        return userData;
+    }
+
+    /**
+     * Sets the userData for a peer
+     *
+     * @param remotePeerId The id of the remote peer whose UserData is to be set, or NULL for self.
+     * @param userData
+     */
+    void setUserData(String remotePeerId, Object userData) {
+        // Set self UserData
+        if (remotePeerId == null) {
+            if (myUserInfo == null) {
+                myUserInfo = new UserInfo(skylinkConnection.getSkylinkConfig(), userData);
+            } else {
+                myUserInfo.setUserData(userData);
+            }
+        } else {
+            // Set Peer UserData
+            Peer peer = getPeer(remotePeerId);
+            if (peer != null) {
+                UserInfo userInfo = peer.getUserInfo();
+                if (userInfo != null) {
+                    userInfo.setUserData(userData);
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves the UserInfo object of a peer.
+     *
+     * @param remotePeerId The id of the remote peer whose UserInfo is to be retrieved, or NULL for
+     *                     self.
+     * @return UserInfo
+     */
+    UserInfo getUserInfo(String remotePeerId) {
+        if (remotePeerId == null) {
+            return myUserInfo;
+        } else {
+            Peer peer = getPeer(remotePeerId);
+            if (peer != null) {
+                return peer.getUserInfo();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Sets the userInfo to the relevant peer
+     *
+     * @param remotePeerId The id of the remote peer whose userInfo is to be set, or NULL for self.
+     * @param userInfo
+     */
+
+    void setUserInfo(String remotePeerId, UserInfo userInfo) {
+        // Set self UserData
+        if (remotePeerId == null) {
+            myUserInfo = userInfo;
+        } else {
+            // Set Peer UserData
+            Peer peer = getPeer(remotePeerId);
+            if (peer != null) {
+                peer.setUserInfo(userInfo);
+            }
+        }
     }
 
 }

@@ -1,31 +1,17 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.content.Context;
-import android.opengl.EGLContext;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
 import org.json.JSONException;
-import org.webrtc.AudioSource;
-import org.webrtc.AudioTrack;
-import org.webrtc.MediaCodecVideoEncoder;
-import org.webrtc.MediaStream;
-import org.webrtc.PeerConnectionFactory;
-import org.webrtc.VideoCapturerAndroid;
-import org.webrtc.VideoSource;
-import org.webrtc.VideoTrack;
 
 import java.io.IOException;
-import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 import sg.com.temasys.skylink.sdk.adapter.DataTransferAdapter;
 import sg.com.temasys.skylink.sdk.adapter.FileTransferAdapter;
@@ -55,33 +41,29 @@ public class SkylinkConnection {
     public static final int DEFAULT_DURATION = 24;
 
     private static final String TAG = SkylinkConnection.class.getSimpleName();
-    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-    private static boolean factoryStaticInitialized;
     private static SkylinkConnection instance;
-    private boolean isMcuRoom;
-    private DataChannelManager dataChannelManager;
-    private MediaStream localMediaStream;
-    private Object myUserData;
-    private UserInfo myUserInfo;
     private PcShared pcShared;
     private String appKey;
     private SkylinkConfig skylinkConfig;
-    private VideoCapturerAndroid localVideoCapturer;
-    private AudioSource localAudioSource;
-    private AudioTrack localAudioTrack;
-    private VideoSource localVideoSource;
-    private VideoTrack localVideoTrack;
+
     // Skylink Services
     private SkylinkConnectionService skylinkConnectionService;
     SkylinkPeerService skylinkPeerService;
     private SkylinkMediaService skylinkMediaService;
+    private DataChannelManager dataChannelManager;
+
+    // Skylink Listeners
     private FileTransferListener fileTransferListener;
     private LifeCycleListener lifeCycleListener;
     private MediaListener mediaListener;
     private MessagesListener messagesListener;
     private RemotePeerListener remotePeerListener;
     private DataTransferListener dataTransferListener;
+
+    // Room variables
+    private boolean isMcuRoom;
     private boolean roomLocked;
+
     // Lock objects to prevent threads from executing the following methods concurrently:
     // signalingServerClient.MessageHandler.onMessage
     // SkylinkConnection.disconnect
@@ -111,47 +93,6 @@ public class SkylinkConnection {
             instance = new SkylinkConnection();
         }
         return instance;
-    }
-
-    // Poor-man's assert(): die with |msg| unless |condition| is true.
-    static void abortUnless(boolean condition, String msg) {
-        if (!condition) {
-            throw new RuntimeException(msg);
-        }
-    }
-
-    /**
-     * Computes RFC 2104-compliant HMAC signature. * @param data The data to be signed.
-     *
-     * @param key The signing key.
-     * @return The Base64-encoded RFC 2104-compliant HMAC signature.
-     * @throws java.security.SignatureException when signature generation fails
-     */
-    private static String calculateRFC2104HMAC(String data, String key)
-            throws SignatureException {
-        String result;
-        try {
-
-            // get an hmac_sha1 key from the raw key bytes
-            SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(),
-                    HMAC_SHA1_ALGORITHM);
-
-            // get an hmac_sha1 Mac instance and initialize with the signing key
-            Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
-            mac.init(signingKey);
-
-            // compute the hmac on input data bytes
-            byte[] rawHmac = mac.doFinal(data.getBytes());
-
-            // base64-encode the hmac
-            result = Base64
-                    .encodeToString(rawHmac, android.util.Base64.DEFAULT);
-
-        } catch (Exception e) {
-            throw new SignatureException("Failed to generate HMAC : "
-                    + e.getMessage());
-        }
-        return result.substring(0, result.length() - 1);
     }
 
     public Object getLockDisconnectSdp() {
@@ -190,33 +131,8 @@ public class SkylinkConnection {
         logMessage("SkylinkConnection::appKey=>" + appKey);
         this.appKey = appKey;
 
-        if (!factoryStaticInitialized) {
-
-            boolean hardwareAccelerated = false;
-            EGLContext eglContext = null;
-
-            // Enable hardware acceleration if supported
-            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
-                hardwareAccelerated = true;
-                eglContext = VideoRendererGui.getEGLContext();
-                Log.d(TAG, "Enabled hardware acceleration");
-            }
-
-            /*
-            Note XR:
-             PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio
-             and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
-            */
-            abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    true, true, hardwareAccelerated, eglContext
-            ), "Failed to initializeAndroidGlobals");
-
-            factoryStaticInitialized = true;
-        }
-
         // Initialise Skylink Services
-        pcShared = new PcShared();
-        pcShared.setApplicationContext(context);
+        pcShared = new PcShared(context);
 
         if (this.skylinkPeerService == null) {
             this.skylinkPeerService = new SkylinkPeerService(this, pcShared);
@@ -227,7 +143,6 @@ public class SkylinkConnection {
         if (this.skylinkMediaService == null) {
             this.skylinkMediaService =
                     new SkylinkMediaService(this, skylinkConnectionService, pcShared);
-            skylinkPeerService.setSkylinkMediaService(skylinkMediaService);
             skylinkPeerService.setSkylinkConnectionService(skylinkConnectionService);
         }
 
@@ -265,24 +180,27 @@ public class SkylinkConnection {
             return false;
         }
 
-        this.myUserData = userData;
-        this.myUserInfo = new UserInfo(skylinkConfig, this.myUserData);
-
         // Fetch the current time from a server
         CurrentTimeService currentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
             @Override
             public void onCurrentTimeFetched(Date date) {
                 Log.d(TAG, "onCurrentTimeFetched" + date);
-                String connectionString = Utils.getSkylinkConnectionString(roomName, appKey,
-                        secret, date, DEFAULT_DURATION);
-                connectToRoom(connectionString, userData);
+                connectToRoomWithDate(date);
             }
 
             @Override
             public void onCurrentTimeFetchedFailed() {
                 Log.d(TAG, "onCurrentTimeFetchedFailed, using device time");
+                connectToRoomWithDate(new Date());
+            }
+
+            /**
+             * Connect to room with a particular start time.
+             * @param startTime Time the room will become valid.
+             */
+            private void connectToRoomWithDate(Date startTime) {
                 String connectionString = Utils.getSkylinkConnectionString(roomName, appKey,
-                        secret, new Date(), DEFAULT_DURATION);
+                        secret, startTime, DEFAULT_DURATION);
                 connectToRoom(connectionString, userData);
             }
         });
@@ -304,8 +222,8 @@ public class SkylinkConnection {
      */
     public boolean connectToRoom(String skylinkConnectionString, Object userData) {
 
-        this.myUserData = userData;
-        this.myUserInfo = new UserInfo(skylinkConfig, this.myUserData);
+        // Set our UserData
+        skylinkPeerService.setUserData(null, userData);
 
         logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
 
@@ -431,43 +349,16 @@ public class SkylinkConnection {
 
                                             logMessage("Inside SkylinkConnection.disconnectFromRoom");
 
-                                            // Dispose all DC.
-                                            String allPeers = null;
-                                            if (dataChannelManager != null) {
-                                                dataChannelManager.disposeDC(allPeers, true);
-                                            }
-
                                             // Dispose and remove all Peers
                                             skylinkPeerService.removeAllPeers(ProtocolHelper
                                                     .DISCONNECTING);
 
-                                            //Dispose local media streams, sources and tracks
-                                            this.localMediaStream = null;
-                                            this.localAudioTrack = null;
-                                            this.localVideoTrack = null;
+                                            // Dispose and remove local media streams, sources and
+                                            // tracks
+                                            skylinkMediaService.removeLocalMedia();
 
-                                            if (this.localVideoSource != null) {
-                                                // Stop the video source
-                                                this.localVideoSource.stop();
-                                                Log.d(TAG, "Stopped local Video Source");
-                                            }
-
-                                            this.localVideoSource = null;
-                                            this.localAudioSource = null;
-
-                                            // Dispose video capturer
-                                            if (this.localVideoCapturer != null) {
-                                                this.localVideoCapturer.dispose();
-                                            }
-
-                                            this.localVideoCapturer = null;
-
-                                            if (pcShared.getPeerConnectionFactory() != null) {
-                                                Log.d(TAG, "Disposing Peer Connection Factory");
-                                                pcShared.getPeerConnectionFactory().dispose();
-                                                Log.d(TAG, "Disposed Peer Connection Factory");
-                                                pcShared.setPeerConnectionFactory(null);
-                                            }
+                                            // Dispose and remove PeerConnectionFactory
+                                            pcShared.removePcFactory();
 
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
@@ -925,161 +816,50 @@ public class SkylinkConnection {
     }
 
     /**
-     * Retrieves the user defined data object associated with a peer.
+     * Retrieves the user defined data object of a peer.
      *
-     * @param remotePeerId The id of the remote peer whose data is to be retrieved, or NULL for
+     * @param remotePeerId The id of the remote peer whose UserData is to be retrieved, or NULL for
      *                     self.
      * @return May be a 'java.lang.String', 'org.json.JSONObject' or 'org.json.JSONArray'.
      */
     public Object getUserData(String remotePeerId) {
-        Object userData = null;
-        if (remotePeerId == null) {
-            userData = this.myUserData;
-        } else {
-            Peer peer = skylinkPeerService.getPeer(remotePeerId);
-            if (peer != null) {
-                UserInfo userInfo = peer.getUserInfo();
-                userData = userInfo.getUserData();
-            }
-        }
-        return userData;
+        return skylinkPeerService.getUserData(remotePeerId);
     }
 
     /**
-     * Sets the userdata to the relevant peer
+     * Sets the userdata for a peer
      *
-     * @param remotePeerId
+     * @param remotePeerId The id of the remote peer whose UserData is to be set, or NULL for self.
      * @param userData
      */
     void setUserData(String remotePeerId, Object userData) {
-        // Set self UserData
-        if (remotePeerId == null) {
-            this.myUserData = userData;
-        } else {
-            // Set Peer UserData
-            Peer peer = skylinkPeerService.getPeer(remotePeerId);
-            if (peer != null) {
-                UserInfo userInfo = peer.getUserInfo();
-                if (userInfo != null) {
-                    userInfo.setUserData(userData);
-                }
-            }
-        }
+        skylinkPeerService.setUserData(remotePeerId, userData);
     }
 
     /**
-     * Retrieves the UserInfo object associated with a remote peer.
+     * Retrieves the UserInfo object of a Peer.
      *
-     * @param remotePeerId The id of the remote peer whose userInfo is to be retrieved.
+     * @param remotePeerId The id of the remote peer whose UserInfo is to be retrieved, or NULL for
+     *                     self.
      * @return UserInfo
      */
     public UserInfo getUserInfo(String remotePeerId) {
-        if (remotePeerId == null) {
-            return this.myUserInfo;
-        } else {
-            Peer peer = skylinkPeerService.getPeer(remotePeerId);
-            if (peer != null) {
-                return peer.getUserInfo();
-            }
-        }
-        return null;
+        return skylinkPeerService.getUserInfo(remotePeerId);
     }
 
+    // Internal methods
     void logMessage(String message) {
         Log.d(TAG, message);
     }
 
-    /**
-     * When received welcome, check if we should proceed or not. If we had both sent "enter" to each
-     * other (due to entering the room together), the one whose weight is smaller should continue
-     * the handshake, while the other should abandon handshake.
-     *
-     * @param peerId
-     * @param weight
-     * @return True if welcome should be accepted, false if should be dropped.
-     */
-    boolean shouldAcceptWelcome(String peerId, double weight) {
-        Peer peer = skylinkPeerService.getPeer(peerId);
-        if (weight > 0) {
-            if (peer != null) {
-                if (peer.getWeight() > weight) {
-                    // Use this welcome (ours will be discarded on peer's side).
-                    return true;
-                } else {
-                    // Discard this welcome (ours will be used on peer's side).
-                    return false;
-                }
-            } else {
-                // Use this welcome (we did not send one to the peer).
-                return true;
-            }
-        } else {
-            // Peer did not send a weight, use Peer's welcome.
-            return true;
-        }
-    }
-
-
     // Getters and Setters
 
-    public boolean isMcuRoom() {
+    boolean isMcuRoom() {
         return isMcuRoom;
     }
 
-    public void setIsMcuRoom(boolean isMcuRoom) {
+    void setIsMcuRoom(boolean isMcuRoom) {
         this.isMcuRoom = isMcuRoom;
-    }
-
-    MediaStream getLocalMediaStream() {
-        return localMediaStream;
-    }
-
-    void setLocalMediaStream(MediaStream localMediaStream) {
-        this.localMediaStream = localMediaStream;
-    }
-
-    VideoCapturerAndroid getLocalVideoCapturer() {
-        return localVideoCapturer;
-    }
-
-    void setLocalVideoCapturer(VideoCapturerAndroid localVideoCapturer) {
-        this.localVideoCapturer = localVideoCapturer;
-    }
-
-    void setUserData(Object myUserData) {
-        this.myUserData = myUserData;
-    }
-
-    AudioSource getLocalAudioSource() {
-        return localAudioSource;
-    }
-
-    void setLocalAudioSource(AudioSource localAudioSource) {
-        this.localAudioSource = localAudioSource;
-    }
-
-    VideoSource getLocalVideoSource() {
-        return localVideoSource;
-    }
-
-    void setLocalVideoSource(VideoSource localVideoSource) {
-        this.localVideoSource = localVideoSource;
-    }
-
-    AudioTrack getLocalAudioTrack() {
-        return localAudioTrack;
-    }
-
-    void setLocalAudioTrack(AudioTrack localAudioTrack) {
-        this.localAudioTrack = localAudioTrack;
-    }
-
-    VideoTrack getLocalVideoTrack() {
-        return localVideoTrack;
-    }
-
-    void setLocalVideoTrack(VideoTrack localVideoTrack) {
-        this.localVideoTrack = localVideoTrack;
     }
 
     Object getLockDisconnectMediaLocal() {
@@ -1094,7 +874,7 @@ public class SkylinkConnection {
         return lockDisconnectMsg;
     }
 
-    public PcShared getPcShared() {
+    PcShared getPcShared() {
         return pcShared;
     }
 
@@ -1106,7 +886,7 @@ public class SkylinkConnection {
         return skylinkPeerService;
     }
 
-    public void setSkylinkPeerService(SkylinkPeerService skylinkPeerService) {
+    void setSkylinkPeerService(SkylinkPeerService skylinkPeerService) {
         this.skylinkPeerService = skylinkPeerService;
     }
 
@@ -1128,10 +908,6 @@ public class SkylinkConnection {
 
     void setDataChannelManager(DataChannelManager dataChannelManager) {
         this.dataChannelManager = dataChannelManager;
-    }
-
-    Object getMyUserData() {
-        return myUserData;
     }
 
     boolean isRoomLocked() {

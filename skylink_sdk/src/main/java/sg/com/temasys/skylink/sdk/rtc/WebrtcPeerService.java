@@ -15,10 +15,10 @@ import java.util.List;
  */
 
 /**
- * Handles calls to webrtc library for P2P connectivity functions.
- * APIs parameters will generally not be very specific, and functions will extract the specific required parameters from the function parameters.
- * This allows clients to be better buffered from changes in the underlying webrtc APIs that this class will eventually call.
- *
+ * Handles calls to webrtc library for P2P connectivity functions. APIs parameters will generally
+ * not be very specific, and functions will extract the specific required parameters from the
+ * function parameters. This allows clients to be better buffered from changes in the underlying
+ * webrtc APIs that this class will eventually call.
  */
 class WebrtcPeerService implements IWebrtcPeerService {
     private static String TAG = WebrtcPeerService.class.getSimpleName();
@@ -30,6 +30,7 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
     /**
      * Adds a remote Peer's ICE Candidates to the Peer P2P component.
+     *
      * @param iceCandidate
      * @param peer
      */
@@ -70,9 +71,10 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
     /**
      * Set a remote Peer's SDP into the webrtc communication part of the Peer object.
+     *
      * @param sdpString Remote Peer's SDP as a string.
      * @param peer
-     * @param sdpType The type of SDP received, i.e., an offer or an answer.
+     * @param sdpType   The type of SDP received, i.e., an offer or an answer.
      */
     void setRemoteSdp(String sdpString, Peer peer, String sdpType) {
         String peerId = peer.getPeerId();
@@ -92,6 +94,7 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
     /**
      * Adds a remote Peer's ICE Candidates to a PeerConnection using webrtc library.
+     *
      * @param iceCandidate
      * @param pc
      */
@@ -101,6 +104,7 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
     /**
      * Creates a PeerConnection object using webrtc lib.
+     *
      * @param peerConnectionFactory
      * @param iceServers
      * @param pcMediaConstraints
@@ -120,6 +124,7 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
     /**
      * Set a remote Peer's SDP into the Peer's PC.
+     *
      * @param pc
      * @param sdpObserver
      * @param sdp
@@ -131,6 +136,7 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
     /**
      * Creates a SessionDescription object using the SDP's string and type.
+     *
      * @param sdpString
      * @param sdpType
      * @return

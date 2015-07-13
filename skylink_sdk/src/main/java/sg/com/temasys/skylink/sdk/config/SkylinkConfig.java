@@ -16,6 +16,7 @@ public class SkylinkConfig implements Serializable {
     private static final String TAG = SkylinkConfig.class.getName();
     private static final long serialVersionUID = 1L;
 
+    public static int MAX_PEERS = 4;
     public static int MAX_VIDEO_HEIGHT = 480;
     public static int MAX_VIDEO_WIDTH = 640;
     public static int MAX_VIDEO_FPS = 30;
@@ -33,7 +34,7 @@ public class SkylinkConfig implements Serializable {
     private boolean fileTransfer;
     private boolean dataTransfer;
     private int timeout = 60;
-    private int maxPeers = 4;
+    private int maxPeers = MAX_PEERS;
     private Map<String, Object> advancedOptions;
     private AudioCodec preferredAudioCodec = AudioCodec.OPUS;
 

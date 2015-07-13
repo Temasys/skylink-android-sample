@@ -26,7 +26,7 @@ class UpdateUserEventMessageProcessor implements MessageProcessor {
                             return;
                         }
 
-                        skylinkConnection.setUserData(mid, userData);
+                        skylinkConnection.getSkylinkPeerService().setUserData(mid, userData);
                         skylinkConnection.getRemotePeerListener()
                                 .onRemotePeerUserDataReceive(mid, userData);
                     }

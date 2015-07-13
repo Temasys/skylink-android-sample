@@ -41,8 +41,10 @@ public class UpdateUserEventMessageProcessorTest {
         skylinkConnectionService = mock(SkylinkConnectionService.class);
         userEventMessgeProcesor = new UpdateUserEventMessageProcessor();
         userEventMessgeProcesor.setSkylinkConnection(skylinkConnection);
+
         mockSkylinkPeerService = mock(SkylinkPeerService.class);
         when(mockSkylinkPeerService.getPeer(peerId)).thenReturn(peer);
+
         skylinkConnection.setSkylinkPeerService(mockSkylinkPeerService);
     }
 
@@ -85,6 +87,6 @@ public class UpdateUserEventMessageProcessorTest {
 
         doReturn(remotePeerListener).when(skylinkConnection).getRemotePeerListener();
         userEventMessgeProcesor.process(jsonObject);
-        verify(skylinkConnection).setUserData(peerId, userName);
+        verify(mockSkylinkPeerService).setUserData(peerId, userName);
     }
 }

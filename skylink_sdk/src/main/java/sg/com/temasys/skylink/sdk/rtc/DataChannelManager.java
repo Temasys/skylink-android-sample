@@ -1409,7 +1409,7 @@ class DataChannelManager {
         } else {
             // Check if Peer is still in room
             // if not, abort and inform caller.
-            if (connectionManager.getUserData(tid) == null) return false;
+            if (getSkylinkPeerService().getUserData(tid) == null) return false;
         }
 
         // Create DC chat message in JSON format
@@ -1531,8 +1531,12 @@ class DataChannelManager {
     // Gets the display name of a Peer.
     // This overloads the get method for getting self display name.
     private String getDisplayName(String tid) {
-        String nick = (String) connectionManager.getUserData(tid);
+        String nick = (String) getSkylinkPeerService().getUserData(tid);
         return nick;
+    }
+
+    private SkylinkPeerService getSkylinkPeerService() {
+        return connectionManager.getSkylinkPeerService();
     }
 
     /**
