@@ -363,6 +363,12 @@ public class SkylinkConnection {
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
                                             this.skylinkConnectionService = null;
+
+                                            if (this.lifeCycleListener != null) {
+                                                this.lifeCycleListener.onDisconnect(
+                                                        ErrorCodes.DISCONNECT_FROM_ROOM,
+                                                        "User disconnected from the room");
+                                            }
                                         }
                                     }
                                 }
