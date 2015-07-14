@@ -22,9 +22,7 @@ public class Peer {
     private UserInfo userInfo;
     private DataChannel dc;
     private HealthChecker healthChecker;
-
     private double weight;
-    private SkylinkConnection skylinkConnection;
 
     public Peer() {
         this.weight = new Date().getTime();
@@ -35,7 +33,6 @@ public class Peer {
     public Peer(String peerId, SkylinkConnection skylinkConnection) {
         this();
         this.peerId = peerId;
-        this.skylinkConnection = skylinkConnection;
     }
 
     public Peer(String peerId, PeerConnection pc, SkylinkPcObserver pcObserver, SkylinkSdpObserver sdpObserver) {
@@ -46,7 +43,7 @@ public class Peer {
         this.sdpObserver = sdpObserver;
     }
 
-    void initialiseHealthChecker(String iceRole) {
+    void initialiseHealthChecker(String iceRole, SkylinkConnection skylinkConnection) {
         healthChecker = new HealthChecker(peerId, skylinkConnection);
         healthChecker.setIceRole(iceRole);
         healthChecker.startRestartTimer();

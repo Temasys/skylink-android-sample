@@ -220,7 +220,7 @@ class ProtocolHelper {
             enterObject.put("target", remotePeerId);
         }
         UserInfo userInfo = new UserInfo(skylinkConnection.getSkylinkConfig(),
-                getSkylinkPeerService().getUserData(null));
+                skylinkConnection.getSkylinkPeerService().getUserData(null));
         UserInfo.setUserInfo(enterObject, userInfo);
         skylinkConnectionService.sendMessage(enterObject);
     }
@@ -265,7 +265,8 @@ class ProtocolHelper {
             welcomeObject.put("enableDataChannel",
                     (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
                             || myConfig.hasDataTransfer()));
-            UserInfo userInfo = new UserInfo(myConfig, getSkylinkPeerService().getUserData(null));
+            UserInfo userInfo = new UserInfo(myConfig, skylinkConnection.getSkylinkPeerService()
+                    .getUserData(null));
             UserInfo.setUserInfo(welcomeObject, userInfo);
             skylinkConnectionService.sendMessage(welcomeObject);
 
@@ -435,9 +436,5 @@ class ProtocolHelper {
         }
 
         return redirectCode;
-    }
-
-    private static SkylinkPeerService getSkylinkPeerService() {
-        return SkylinkConnection.getInstance().getSkylinkPeerService();
     }
 }

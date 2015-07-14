@@ -10,6 +10,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Provides input on Max no. of Peers that can be added.
+ */
+interface PeerPoolClient {
+    int getMaxPeers();
+}
+
+/**
  * PeerPool manages the Peer objects. It gets info on the max number of peers that can be in the
  * PeerPool at one time. It has logic to constrain number of peers to that max.
  */
@@ -18,18 +25,18 @@ class PeerPool {
     /**
      * ConcurrentHashMap to contain all the current Peers (MCU Peer not included).
      */
-    Map<String, Peer> peerMap;
+    private Map<String, Peer> peerMap;
 
     /**
      * The MCU peer, if it exists in the room.
      */
-    Peer peerMcu;
+    private Peer peerMcu;
 
     /**
      * The client object using PeerPool. Some info, like the max number of Peers at one time will be
      * provided by it.
      */
-    PeerPoolClient peerPoolClient;
+    private PeerPoolClient peerPoolClient;
 
     /**
      * Lock for integrity of PeerPool. - addPeer will not violate Max Peer. - canAddPeer will report
@@ -39,14 +46,14 @@ class PeerPool {
 
     public PeerPool(PeerPoolClient peerPoolClient) {
         this.peerPoolClient = peerPoolClient;
-        peerMap = new ConcurrentHashMap<String, Peer>(peerPoolClient.getMaxPeer());
+        peerMap = new ConcurrentHashMap<String, Peer>(peerPoolClient.getMaxPeers());
     }
 
     /**
      * Add a Peer into PeerPool, if within max Peers limit.
      *
      * @param peer
-     * @return
+     * @return True if successfully added, false if successfully removed.
      */
     boolean addPeer(Peer peer) {
         synchronized (lock) {
@@ -116,13 +123,14 @@ class PeerPool {
     }
 
     /**
-     * Remove a Peer from PeerPool.
-     *
+     * Removes and return a Peer from PeerPool.
      * @param peerId
+     * @return
      */
-    void removePeer(String peerId) {
+    Peer removePeer(String peerId) {
         synchronized (lock) {
-            peerMap.remove(peerId);
+            Peer peer = peerMap.remove(peerId);
+            return peer;
         }
     }
 
@@ -134,7 +142,7 @@ class PeerPool {
      * @return
      */
     private int getMaxPeer() {
-        return peerPoolClient.getMaxPeer();
+        return peerPoolClient.getMaxPeers();
     }
 
     // Getters and Setters
@@ -146,9 +154,4 @@ class PeerPool {
         this.peerMcu = peerMcu;
     }
 
-}
-
-
-interface PeerPoolClient {
-    int getMaxPeer();
 }

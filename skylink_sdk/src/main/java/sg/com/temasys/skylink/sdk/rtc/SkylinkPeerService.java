@@ -84,7 +84,7 @@ class SkylinkPeerService implements PeerPoolClient {
             }
 
             // Initialise and start Health Checker.
-            peer.initialiseHealthChecker(iceRole);
+            peer.initialiseHealthChecker(iceRole, skylinkConnection);
 
             // Create SkylinkSdpObserver
             SkylinkSdpObserver sdpObserver =
@@ -472,7 +472,7 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     @Override
-    public int getMaxPeer() {
+    public int getMaxPeers() {
         return skylinkConnection.getSkylinkConfig().getMaxPeers();
     }
 

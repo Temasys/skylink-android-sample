@@ -48,7 +48,6 @@ class HealthChecker {
     // Required for restart.
     private String remotePeerId;
     private SkylinkConnection skylinkConnection;
-    private SkylinkConnectionService skylinkConnectionService;
     private MediaStream localMediaStream;
     private SkylinkConfig myConfig;
 
@@ -62,7 +61,6 @@ class HealthChecker {
                   final SkylinkConnection skylinkConnection) {
         this.remotePeerId = remotePeerId;
         this.skylinkConnection = skylinkConnection;
-        this.skylinkConnectionService = skylinkConnection.getSkylinkConnectionService();
         this.localMediaStream = skylinkConnection.getSkylinkMediaService().getLocalMediaStream();
         this.myConfig = skylinkConnection.getSkylinkConfig();
     }
