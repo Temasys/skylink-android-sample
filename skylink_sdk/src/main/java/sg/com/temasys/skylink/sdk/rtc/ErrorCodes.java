@@ -77,4 +77,10 @@ public class ErrorCodes {
      * Error message when room parameters cannot be fetched
      */
     public static final int UNEXPECTED_ERROR_ROOM_PARAMETERS = 14;
+
+
+    /**
+     * User disconnected from the room
+     */
+    public static final int DISCONNECT_FROM_ROOM = 15;
 }
