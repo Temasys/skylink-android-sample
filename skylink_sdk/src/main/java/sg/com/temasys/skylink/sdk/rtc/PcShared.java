@@ -16,24 +16,22 @@ import org.webrtc.PeerConnectionFactory;
  * Shares object related to PeerConnection.
  */
 class PcShared {
+    // To be shared amongst PeerConnection related classes.
+    private static PeerConnectionFactory peerConnectionFactory;
+    // Internal variables
+    private static boolean factoryStaticInitialized = false;
     // Static variables
     private static String TAG = PcShared.class.getSimpleName();
 
-    // To be shared amongst PeerConnection related classes.
-    private PeerConnectionFactory peerConnectionFactory;
     private Context applicationContext;
     private MediaConstraints pcMediaConstraints;
     private MediaConstraints sdpMediaConstraints;
     private MediaConstraints videoMediaConstraints;
 
-    // Internal variables
-    private boolean factoryStaticInitialized = false;
-
     PcShared(Context applicationContext) {
         this.applicationContext = applicationContext;
         // Initialize PeerConnectionFactory.
         initializePcFactory(this.applicationContext);
-        peerConnectionFactory = new PeerConnectionFactory();
     }
 
     // APIs
@@ -54,8 +52,8 @@ class PcShared {
 
     /**
      * Initialize PeerConnectionFactory
+     *  @param context
      *
-     * @param context
      */
     private void initializePcFactory(Context context) {
         if (!factoryStaticInitialized) {
@@ -81,46 +79,48 @@ class PcShared {
 
             factoryStaticInitialized = true;
         }
+
+        // Create peerConnectionFactory if required
+            // Only 1 instance required.
+        if (peerConnectionFactory == null) {
+            peerConnectionFactory = new PeerConnectionFactory();
+        }
     }
 
     // Getters and Setters
-    public PeerConnectionFactory getPeerConnectionFactory() {
+    PeerConnectionFactory getPeerConnectionFactory() {
         return peerConnectionFactory;
     }
 
-    public void setPeerConnectionFactory(PeerConnectionFactory peerConnectionFactory) {
-        this.peerConnectionFactory = peerConnectionFactory;
-    }
-
-    public Context getApplicationContext() {
+    Context getApplicationContext() {
         return applicationContext;
     }
 
-    public void setApplicationContext(Context applicationContext) {
+    void setApplicationContext(Context applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    public MediaConstraints getPcMediaConstraints() {
+    MediaConstraints getPcMediaConstraints() {
         return pcMediaConstraints;
     }
 
-    public void setPcMediaConstraints(MediaConstraints pcMediaConstraints) {
+    void setPcMediaConstraints(MediaConstraints pcMediaConstraints) {
         this.pcMediaConstraints = pcMediaConstraints;
     }
 
-    public MediaConstraints getSdpMediaConstraints() {
+    MediaConstraints getSdpMediaConstraints() {
         return sdpMediaConstraints;
     }
 
-    public void setSdpMediaConstraints(MediaConstraints sdpMediaConstraints) {
+    void setSdpMediaConstraints(MediaConstraints sdpMediaConstraints) {
         this.sdpMediaConstraints = sdpMediaConstraints;
     }
 
-    public MediaConstraints getVideoMediaConstraints() {
+    MediaConstraints getVideoMediaConstraints() {
         return videoMediaConstraints;
     }
 
-    public void setVideoMediaConstraints(MediaConstraints videoMediaConstraints) {
+    void setVideoMediaConstraints(MediaConstraints videoMediaConstraints) {
         this.videoMediaConstraints = videoMediaConstraints;
     }
 

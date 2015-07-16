@@ -46,18 +46,20 @@ class WebrtcPeerService implements IWebrtcPeerService {
      * this would be the PeerConnection object.
      *
      * @param peer
-     * @param skylinkConnectionService
+     * @param skylinkConnection
      * @return True if successfully added webrtc component, false otherwise.
      */
-    boolean addWebrtcP2PComponent(Peer peer, SkylinkConnectionService skylinkConnectionService) {
+    boolean addWebrtcP2PComponent(Peer peer, SkylinkConnection skylinkConnection) {
         PeerConnection pc;
         String peerId = peer.getPeerId();
+        List<PeerConnection.IceServer> iceServers =
+                skylinkConnection.getSkylinkConnectionService().getIceServers();
         SkylinkPcObserver pcObserver = peer.getPcObserver();
 
         Log.d(TAG, "Creating a new peer connection ...");
 
         pc = peerConnectionCreate(pcShared.getPeerConnectionFactory(),
-                skylinkConnectionService.getIceServers(),
+                iceServers,
                 pcShared.getPcMediaConstraints(), pcObserver);
 
         if (pc != null) {

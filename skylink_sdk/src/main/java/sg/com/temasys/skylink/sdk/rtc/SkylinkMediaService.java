@@ -37,16 +37,13 @@ class SkylinkMediaService {
     private VideoTrack localVideoTrack;
 
     private SkylinkConnection skylinkConnection;
-    private SkylinkConnectionService skylinkConnectionService;
     private PcShared pcShared;
 
     private int numberOfCameras = 0;
 
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
-                               SkylinkConnectionService skylinkConnectionService,
                                PcShared pcShared) {
         this.skylinkConnection = skylinkConnection;
-        this.skylinkConnectionService = skylinkConnectionService;
         this.pcShared = pcShared;
     }
 
@@ -155,7 +152,7 @@ class SkylinkMediaService {
 
             localAudioTrack.setEnabled(!isMuted);
             // Inform Peers
-            skylinkConnectionService.sendMuteAudio(isMuted);
+            skylinkConnection.getSkylinkConnectionService().sendMuteAudio(isMuted);
         }
     }
 
@@ -172,7 +169,7 @@ class SkylinkMediaService {
 
             localVideoTrack.setEnabled(!isMuted);
             // Inform Peers
-            skylinkConnectionService.sendMuteVideo(isMuted);
+            skylinkConnection.getSkylinkConnectionService().sendMuteVideo(isMuted);
         }
     }
 
@@ -232,6 +229,12 @@ class SkylinkMediaService {
         VideoSource localVideoSource;
         VideoTrack localVideoTrack;
         AudioTrack localAudioTrack;
+
+        // Proceed only if SkylinkConfig sends audio or video
+        if (!skylinkConnection.getSkylinkConfig().hasAudioSend() &&
+                !skylinkConnection.getSkylinkConfig().hasVideoSend()) {
+            return;
+        }
 
         // Prevent thread from executing with disconnect concurrently.
         synchronized (lock) {

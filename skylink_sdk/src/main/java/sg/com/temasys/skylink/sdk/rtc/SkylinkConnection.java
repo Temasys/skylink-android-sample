@@ -141,9 +141,7 @@ public class SkylinkConnection {
             this.skylinkConnectionService = new SkylinkConnectionService(this);
         }
         if (this.skylinkMediaService == null) {
-            this.skylinkMediaService =
-                    new SkylinkMediaService(this, skylinkConnectionService, pcShared);
-            skylinkPeerService.setSkylinkConnectionService(skylinkConnectionService);
+            this.skylinkMediaService = new SkylinkMediaService(this, pcShared);
         }
 
         // Set MediaConstraints
@@ -357,8 +355,10 @@ public class SkylinkConnection {
                                             // tracks
                                             skylinkMediaService.removeLocalMedia();
 
-                                            // Dispose and remove PeerConnectionFactory
-                                            pcShared.removePcFactory();
+                                            // Do not Dispose and remove PeerConnectionFactory
+                                            // to avoid crash on next connection creating PC.
+                                            // Remove PeerConnectionFactory only if quiting App.
+                                            // pcShared.removePcFactory();
 
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;

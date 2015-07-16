@@ -56,7 +56,7 @@ public class SkylinkMediaServiceTest {
         when(localVideoCapturer.switchCamera(null)).thenReturn(true);
 
         skylinkMediaService = spy(new SkylinkMediaService(
-                skylinkConnection, skylinkConnectionService, mockPcShared));
+                skylinkConnection, mockPcShared));
         skylinkMediaService.setLocalVideoCapturer(localVideoCapturer);
 
         counter = new CountDownLatch(1);

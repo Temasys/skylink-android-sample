@@ -90,8 +90,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
                         return;
                     }
 
-                    ProtocolHelper.sendCandidate(getSkylinkConnectionService(), candidate,
-                            SkylinkPcObserver.this.peerId);
+                    ProtocolHelper.sendCandidate(getSkylinkConnectionService(), candidate, peerId);
                 }
             }
         });

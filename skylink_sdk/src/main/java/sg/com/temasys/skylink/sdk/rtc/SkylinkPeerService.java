@@ -5,6 +5,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
+import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
 import java.util.Collection;
@@ -21,7 +22,6 @@ class SkylinkPeerService implements PeerPoolClient {
     private UserInfo myUserInfo;
 
     private final SkylinkConnection skylinkConnection;
-    private SkylinkConnectionService skylinkConnectionService;
     private PeerPool peerPool;
     private PcShared pcShared;
     private WebrtcPeerService webrtcPeerService;
@@ -78,7 +78,7 @@ class SkylinkPeerService implements PeerPoolClient {
             // Prevent thread from executing with disconnect concurrently.
             synchronized (skylinkConnection.getLockDisconnect()) {
                 // Create PeerConnection
-                if (!webrtcPeerService.addWebrtcP2PComponent(peer, skylinkConnectionService)) {
+                if (!webrtcPeerService.addWebrtcP2PComponent(peer, skylinkConnection)) {
                     return null;
                 }
             }
@@ -210,7 +210,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         skylinkConnection.getSkylinkConnectionService().setSid(peerId);
 
-        skylinkConnectionService.setIceServers(iceServers);
+        skylinkConnection.getSkylinkConnectionService().setIceServers(iceServers);
 
         // Set mid and displayName in DataChannelManager
         if (skylinkConnection.getDataChannelManager() != null) {
@@ -424,7 +424,11 @@ class SkylinkPeerService implements PeerPoolClient {
             PeerConnection peerConnection = peer.getPc();
             if (peerConnection != null) {
                 // Dispose peer connection
-                peerConnection.removeStream(getSkylinkMediaService().getLocalMediaStream());
+                // First remove local media if it exists.
+                MediaStream lms = getSkylinkMediaService().getLocalMediaStream();
+                if (lms != null) {
+                    peerConnection.removeStream(lms);
+                }
                 peerConnection.dispose();
             }
             return true;
@@ -465,10 +469,6 @@ class SkylinkPeerService implements PeerPoolClient {
     // Getters and Setters
     private SkylinkMediaService getSkylinkMediaService() {
         return skylinkConnection.getSkylinkMediaService();
-    }
-
-    public void setSkylinkConnectionService(SkylinkConnectionService skylinkConnectionService) {
-        this.skylinkConnectionService = skylinkConnectionService;
     }
 
     @Override
