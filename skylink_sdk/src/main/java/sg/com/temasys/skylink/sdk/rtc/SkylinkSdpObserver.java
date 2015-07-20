@@ -86,7 +86,8 @@ class SkylinkSdpObserver implements SdpObserver {
         synchronized (skylinkConnection.getLockDisconnectSdpCreate()) {
             // If user has indicated intention to disconnect,
             // We should no longer process messages from signalling server.
-            if (getSkylinkConnectionService().isDisconnected()) {
+            if (getSkylinkConnectionService() == null || getSkylinkConnectionService().isDisconnected
+                    ()) {
                 return;
             }
 
@@ -130,7 +131,10 @@ class SkylinkSdpObserver implements SdpObserver {
                 synchronized (skylinkConnection.getLockDisconnectSdpSend()) {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (getSkylinkConnectionService().isDisconnected()) {
+                    if (getSkylinkConnectionService() == null ||
+                            getSkylinkConnectionService().getRoomParameters() == null ||
+                            getSkylinkConnectionService()
+                            .isDisconnected()) {
                         return;
                     }
 
@@ -150,7 +154,8 @@ class SkylinkSdpObserver implements SdpObserver {
         synchronized (skylinkConnection.getLockDisconnectSdp()) {
             // If user has indicated intention to disconnect,
             // We should no longer process messages from signalling server.
-            if (getSkylinkConnectionService().isDisconnected()) {
+            if (getSkylinkConnectionService() == null || getSkylinkConnectionService().isDisconnected
+                    ()) {
                 return;
             }
 
@@ -163,7 +168,8 @@ class SkylinkSdpObserver implements SdpObserver {
 
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (getSkylinkConnectionService().isDisconnected()) {
+                    if (getSkylinkConnectionService() == null || getSkylinkConnectionService()
+                            .isDisconnected()) {
                         return;
                     }
 
@@ -206,7 +212,8 @@ class SkylinkSdpObserver implements SdpObserver {
                 synchronized (getLockDisconnect()) {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (getSkylinkConnectionService().isDisconnected()) {
+                    if (getSkylinkConnectionService() == null || getSkylinkConnectionService()
+                            .isDisconnected()) {
                         return;
                     }
 
@@ -224,7 +231,8 @@ class SkylinkSdpObserver implements SdpObserver {
                 synchronized (getLockDisconnect()) {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (getSkylinkConnectionService().isDisconnected()) {
+                    if (getSkylinkConnectionService() == null || getSkylinkConnectionService()
+                            .isDisconnected()) {
                         return;
                     }
 
@@ -239,7 +247,8 @@ class SkylinkSdpObserver implements SdpObserver {
         synchronized (skylinkConnection.getLockDisconnectSdpDrain()) {
             // If user has indicated intention to disconnect,
             // We should no longer process messages from signalling server.
-            if (getSkylinkConnectionService().isDisconnected()) {
+            if (getSkylinkConnectionService() == null || getSkylinkConnectionService().isDisconnected
+                    ()) {
                 return;
             }
 

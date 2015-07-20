@@ -14,8 +14,9 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Set;
 
 import sg.com.temasys.skylink.sdk.BuildConfig;
 
@@ -139,6 +140,7 @@ class DataChannelManager {
         private String receiveId;
         private String tid;
         private DataChannel dc;
+
         // Timer for handling timeouts
         private DcHandler dcHandler = null;
         // 0.5.5 MCU only supports 1 send operation at a time.
@@ -190,6 +192,10 @@ class DataChannelManager {
                 }
             });
             return dcHandler;
+        }
+
+        public void setDcHandler(DcHandler dcHandler) {
+            this.dcHandler = dcHandler;
         }
 
         public String getFileName() {
@@ -451,20 +457,22 @@ class DataChannelManager {
      * @method disposeDC
      * @public
      */
-    public void disposeDC(String peerId, boolean disconnect) {
+    void disposeDC(String peerId, boolean disconnect) {
 
         // Send to all Peers with DC.
-        Iterator<String> iPeerId = dcInfoList.keySet().iterator();
-        while (iPeerId.hasNext()) {
-            String tid = iPeerId.next();
+        Set<String> peerIdSet = new HashSet<String>(dcInfoList.keySet());
+        for (String tid : peerIdSet) {
 
             if (peerId != null && !tid.equals(peerId)) {
                 continue;
             }
 
-            // Dispose DC.
+            // Dispose DcObserver and DC.
             DcObserver dcObserver = dcInfoList.get(tid);
             if (dcObserver != null) {
+                // Remove the DcHandler
+                dcObserver.setDcHandler(null);
+                // Dispose DC.
                 DataChannel dc = dcObserver.getDc();
                 if (dc != null) {
                     // Do not close dc here!
@@ -472,23 +480,24 @@ class DataChannelManager {
                     dc.dispose();
                 }
             }
-            // Exit loop if required DC has been closed and disposed.
+            // Remove Peer from dcInfoList
+            dcInfoList.remove(tid);
+
+            // Exit loop if only 1 DC is required to be closed and disposed.
             if (peerId != null) {
-                // Remove Peer from dcInfoList
-                dcInfoList.remove(tid);
-                return;
+                break;
             }
         }
 
-        // Clean dcInfoList if all DCs were disposed.
-        if (peerId == null) {
-            dcInfoList.clear();
-        }
-
         // When we leave room, disposeDc for dcMcu.
-        if (isMcuRoom && disconnect) {
-            dcMcu.unregisterObserver();
-            dcMcu.dispose();
+        if (isMcuRoom && disconnect && dcInfoList.size() == 0) {
+            if (dcObsMcu != null) {
+                dcObsMcu.setDcHandler(null);
+                dcMcu.unregisterObserver();
+                dcMcu.dispose();
+                dcObsMcu = null;
+                dcMcu = null;
+            }
         }
     }
 

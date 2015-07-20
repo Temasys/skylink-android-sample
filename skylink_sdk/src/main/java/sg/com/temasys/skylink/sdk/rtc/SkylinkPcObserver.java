@@ -86,7 +86,9 @@ class SkylinkPcObserver implements PeerConnection.Observer {
                 synchronized (getLockDisconnect()) {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (getSkylinkConnectionService().isDisconnected()) {
+                    if (getSkylinkConnectionService() == null ||
+                            getSkylinkConnectionService().getRoomParameters() == null ||
+                            getSkylinkConnectionService().isDisconnected()) {
                         return;
                     }
 
@@ -146,7 +148,8 @@ class SkylinkPcObserver implements PeerConnection.Observer {
                 synchronized (getLockDisconnect()) {
                     // If user has indicated intention to disconnect,
                     // We should no longer process messages from signalling server.
-                    if (getSkylinkConnectionService().isDisconnected()) {
+                    if (getSkylinkConnectionService() == null || getSkylinkConnectionService()
+                            .isDisconnected()) {
                         return;
                     }
 
@@ -164,7 +167,9 @@ class SkylinkPcObserver implements PeerConnection.Observer {
         synchronized (getLockDisconnect()) {
             // If user has indicated intention to disconnect,
             // We should no longer process messages from signalling server.
-            if (getSkylinkConnectionService().isDisconnected()) {
+            if (getSkylinkConnectionService() == null ||
+                    getSkylinkConnectionService().getRoomParameters() == null ||
+                    getSkylinkConnectionService().isDisconnected()) {
                 return;
             }
 

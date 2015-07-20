@@ -116,34 +116,22 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
      */
     @Override
     public void onRoomParameterSuccessful(final RoomParameters params) {
-        Utils.runOnUiThread(new Runnable() {
-            public void run() {
-                if (params != null) {
-                    Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
-                    Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
-                    // Inform that Room parameters have been obtained.
-                    appServerClientListener.onObtainedRoomParameters(params);
-                }
-            }
-        });
+        if (params != null) {
+            Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
+            Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
+            // Inform that Room parameters have been obtained.
+            appServerClientListener.onObtainedRoomParameters(params);
+        }
     }
 
     @Override
     public void onRoomParameterError(final int error) {
-        Utils.runOnUiThread(new Runnable() {
-            public void run() {
-                appServerClientListener.onErrorAppServer(error);
-            }
-        });
+        appServerClientListener.onErrorAppServer(error);
     }
 
     @Override
     public void onRoomParameterError(final String error) {
-        Utils.runOnUiThread(new Runnable() {
-            public void run() {
-                appServerClientListener.onErrorAppServer(error);
-            }
-        });
+        appServerClientListener.onErrorAppServer(error);
 
     }
 }

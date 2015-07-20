@@ -19,6 +19,7 @@ import java.util.Set;
 class SkylinkPeerService implements PeerPoolClient {
 
     private static final String TAG = SkylinkPeerService.class.getSimpleName();
+    private static final String MCU_NAME = "MCU";
     private UserInfo myUserInfo;
 
     private final SkylinkConnection skylinkConnection;
@@ -114,7 +115,7 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     static boolean isPeerIdMCU(String peerId) {
-        boolean mcu = peerId.startsWith("MCU");
+        boolean mcu = MCU_NAME.equals(peerId);
         if (mcu) {
             Log.d(TAG, "MCU Detected");
         }
@@ -122,30 +123,40 @@ class SkylinkPeerService implements PeerPoolClient {
     }
 
     /**
-     * Dispose all PeerConnections and associated DC. Including MCU DC if present.
+     * Dispose all PeerConnections and associated DC.
+     * Including MCU DC if disconnecting.
      *
      * @param reason
+     * @param disconnect True if we intend to disconnect from room. False otherwise.
      */
-    void removeAllPeers(final String reason) {
+    void removeAllPeers(final String reason, boolean disconnect) {
         if (peerPool.getPeerNumber() > 0) {
             // Create a new peerId set to prevent concurrent modification of the set
             Set<String> peerIdSet = new HashSet<String>(peerPool.getPeerIdSet());
             // Remove each Peer
             for (final String peerId : peerIdSet) {
-                removePeer(peerId, reason);
+                removePeer(peerId, reason, true);
             }
+        }
+
+        // If disconnecting from MCU room, need to dispose MCU Peer.
+        if (disconnect && skylinkConnection.isMcuRoom()) {
+            // Remove MCU Peer if in MCU room and disconnecting.
+            removePeer(MCU_NAME, null, disconnect);
         }
     }
 
     /**
-     * Dispose all objects in Peer and remove Peer from PeerPool. Notify user that Peer has left if
-     * reason is not null.
+     * Dispose all objects in Peer and remove Peer from PeerPool.
+     * Notify user that Peer has left if reason is not null.
+     * Able to remove MCU Peer as well.
      *
-     * @param peerId PeerId of Peer that had left.
-     * @param reason Reason for removing Peer, will be conveyed to user if not null.
+     * @param peerId     PeerId of Peer that had left.
+     * @param reason     Reason for removing Peer, will be conveyed to user if not null.
+     * @param disconnect True if we intend to disconnect from room. False otherwise.
      * @return
      */
-    boolean removePeer(final String peerId, final String reason) {
+    boolean removePeer(final String peerId, final String reason, boolean disconnect) {
         Peer peer = getPeer(peerId);
 
         if (peer != null) {
@@ -154,7 +165,7 @@ class SkylinkPeerService implements PeerPoolClient {
                 ProtocolHelper.notifyPeerLeave(skylinkConnection, peerId, reason);
             }
             // Dispose of webrtc objects in Peer.
-            disposePeer(peerId);
+            disposePeer(peerId, disconnect);
             // Remove from PeerPool
             peerPool.removePeer(peerId);
             return true;
@@ -191,7 +202,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         if (!isPeerIdMCU(peerId)) {
             // Actually remove the Peer.
-            removePeer(peerId, "The peer has left the room");
+            removePeer(peerId, "The peer has left the room", false);
         }
     }
 
@@ -247,6 +258,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
     /**
      * Get the Peer via its PeerId.
+     * Able to get any Peer currently connected, including MCU Peer.
      *
      * @param peerId
      * @return
@@ -325,7 +337,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         // For restart, existing Peer has to be first removed, before processing like a welcome
         if (isRestart) {
-            removePeer(peerId, ProtocolHelper.PEER_CONNECTION_RESTART);
+            removePeer(peerId, ProtocolHelper.PEER_CONNECTION_RESTART, false);
         }
 
         // Check if a Peer was already created at "enter"
@@ -333,7 +345,7 @@ class SkylinkPeerService implements PeerPoolClient {
             // Check if should continue with "welcome" or use Peer from "enter"
             if (shouldAcceptWelcome(peerId, weight)) {
                 // Remove Peer from "enter" to create new Peer from "welcome"
-                removePeer(peerId, null);
+                removePeer(peerId, null, false);
             } else {
                 // Do not continue "welcome" but use Peer from "enter" instead.
                 Log.d(TAG, "Ignoring this welcome as Peer " + userInfo.getUserData() +
@@ -388,16 +400,18 @@ class SkylinkPeerService implements PeerPoolClient {
 
     /**
      * Disposes all webrtc objects in a Peer.
+     * All Peers applicable, include MCU Peer.
      *
      * @param peerId
+     * @param disconnect True if we intend to disconnect from room. False otherwise.
      * @return True if properly disposed. False if error occurred.
      */
-    private boolean disposePeer(String peerId) {
+    private boolean disposePeer(String peerId, boolean disconnect) {
         Peer peer = getPeer(peerId);
         if (peer != null) {
             // Dispose DC
             if (skylinkConnection.getDataChannelManager() != null) {
-                skylinkConnection.getDataChannelManager().disposeDC(peerId, true);
+                skylinkConnection.getDataChannelManager().disposeDC(peerId, disconnect);
                 peer.setDc(null);
             }
             // Dispose peer connection
@@ -413,6 +427,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
     /**
      * Dispose the PeerConnection of a Peer.
+     * All Peers applicable, include MCU Peer.
      *
      * @param remotePeerId
      * @return True if the peer connection is disposed successfully, false if Peer does not exists.

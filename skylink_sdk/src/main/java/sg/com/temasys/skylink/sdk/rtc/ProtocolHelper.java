@@ -133,8 +133,9 @@ class ProtocolHelper {
             PeerInfo peerInfoHack = peerOld.getPeerInfo();
             UserInfo userInfoHack = peerOld.getUserInfo();
 
-            // Dispose, remove the Peer, and notify that the connection is restarting
-            skylinkConnection.getSkylinkPeerService().removePeer(remotePeerId, PEER_CONNECTION_RESTART);
+            // Dispose, remove the Peer, and notify that the connection to Peer is restarting
+            skylinkConnection.getSkylinkPeerService().removePeer(remotePeerId,
+                    PEER_CONNECTION_RESTART, false);
 
             // Create a new peer
             // TODO XR: Remove all peerInfoHack and userInfoHack after JS client update to

@@ -87,11 +87,15 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
      * @param params Parameters obtained from App server.
      */
     @Override
-    public void onObtainedRoomParameters(RoomParameters params) {
-        setRoomParameters(params);
-        // Connect to Signaling Server and start signaling process with room.
-        signalingMessageProcessingService.connect(getIpSigServer(),
-                getPortSigServer(), getSid(), getRoomId());
+    public void onObtainedRoomParameters(final RoomParameters params) {
+        skylinkConnection.runOnUiThread(new Runnable() {
+            public void run() {
+                setRoomParameters(params);
+                // Connect to Signaling Server and start signaling process with room.
+                signalingMessageProcessingService.connect(getIpSigServer(),
+                        getPortSigServer(), getSid(), getRoomId());
+            }
+        });
     }
 
     /**
@@ -123,6 +127,7 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
      *
      * @return
      */
+
     boolean isAlreadyConnected() {
         boolean connected = (connectionState == ConnectionState.CONNECTED);
         return connected;

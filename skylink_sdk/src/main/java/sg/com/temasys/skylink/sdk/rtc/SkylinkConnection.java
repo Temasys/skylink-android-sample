@@ -349,16 +349,17 @@ public class SkylinkConnection {
 
                                             // Dispose and remove all Peers
                                             skylinkPeerService.removeAllPeers(ProtocolHelper
-                                                    .DISCONNECTING);
+                                                    .DISCONNECTING, true);
 
                                             // Dispose and remove local media streams, sources and
                                             // tracks
                                             skylinkMediaService.removeLocalMedia();
 
-                                            // Do not Dispose and remove PeerConnectionFactory
-                                            // to avoid crash on next connection creating PC.
-                                            // Remove PeerConnectionFactory only if quiting App.
-                                            // pcShared.removePcFactory();
+                                            //
+                                            // To avoid crash on next connection creating PCFactory,
+                                            // after dispose and remove PeerConnectionFactory,
+                                            // ensure no Handler remains on threads other than this.
+                                            pcShared.removePcFactory();
 
                                             this.skylinkMediaService = null;
                                             this.skylinkPeerService = null;
@@ -859,6 +860,10 @@ public class SkylinkConnection {
     }
 
     // Getters and Setters
+
+    public Handler getHandler() {
+        return handler;
+    }
 
     boolean isMcuRoom() {
         return isMcuRoom;
