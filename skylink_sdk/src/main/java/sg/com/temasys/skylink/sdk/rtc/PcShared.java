@@ -17,7 +17,7 @@ import org.webrtc.PeerConnectionFactory;
  */
 class PcShared {
     // To be shared amongst PeerConnection related classes.
-    private static PeerConnectionFactory peerConnectionFactory;
+    private PeerConnectionFactory peerConnectionFactory;
     // Internal variables
     private static boolean factoryStaticInitialized = false;
     // Static variables
