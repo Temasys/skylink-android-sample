@@ -146,7 +146,8 @@ class SignalingMessageProcessingService implements SignalingServerClientListener
         // If socket reconnects,
         // Will join room again like first time.
         // New PeerId will be issued.
-        ProtocolHelper.removeAllPeers(skylinkConnection, ProtocolHelper.CONNECTION_LOST);
+        skylinkConnection.getSkylinkPeerService().
+                removeAllPeers(ProtocolHelper.CONNECTION_LOST, true);
     }
 
     @Override

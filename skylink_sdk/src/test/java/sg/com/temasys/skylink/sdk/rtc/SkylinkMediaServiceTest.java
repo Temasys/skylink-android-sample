@@ -38,6 +38,7 @@ public class SkylinkMediaServiceTest {
     private SkylinkConnection skylinkConnection;
     private SkylinkConnectionService skylinkConnectionService;
     private SkylinkMediaService skylinkMediaService;
+    private PcShared mockPcShared;
     private LifeCycleListener lifeCycleListener;
     private VideoCapturerAndroid localVideoCapturer;
     private CountDownLatch counter;
@@ -48,12 +49,16 @@ public class SkylinkMediaServiceTest {
         ShadowLog.stream = System.out;
         skylinkConnection = mock(SkylinkConnection.class);
         skylinkConnectionService = mock(SkylinkConnectionService.class);
+        mockPcShared = mock(PcShared.class);
 
         localVideoCapturer = mock(VideoCapturerAndroid.class);
-        when(skylinkConnection.getLocalVideoCapturer()).thenReturn(localVideoCapturer);
+        // when(skylinkConnection.getLocalVideoCapturer()).thenReturn(localVideoCapturer);
         when(localVideoCapturer.switchCamera(null)).thenReturn(true);
 
-        skylinkMediaService = spy(new SkylinkMediaService(skylinkConnection, skylinkConnectionService));
+        skylinkMediaService = spy(new SkylinkMediaService(
+                skylinkConnection, mockPcShared));
+        skylinkMediaService.setLocalVideoCapturer(localVideoCapturer);
+
         counter = new CountDownLatch(1);
     }
 

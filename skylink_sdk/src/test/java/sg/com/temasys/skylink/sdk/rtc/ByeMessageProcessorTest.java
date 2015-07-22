@@ -28,17 +28,18 @@ public class ByeMessageProcessorTest {
     private MessageProcessor messageProcessor;
     private SkylinkConnection mockSkylinkConnection;
     private SkylinkConnectionService mockSkylinkConnectionService;
+    private SkylinkPeerService mockSkylinkPeerService;
 
     @Before
     public void setUp() throws Exception {
         messageProcessor = new ByeMessageProcessor();
         mockSkylinkConnection = mock(SkylinkConnection.class);
         mockSkylinkConnectionService = mock(SkylinkConnectionService.class);
+        mockSkylinkPeerService = mock(SkylinkPeerService.class);
 
-        SkylinkPeerService skylinkPeerService = new SkylinkPeerService(mockSkylinkConnection);
         when(mockSkylinkConnection.getSkylinkConnectionService())
                 .thenReturn(mockSkylinkConnectionService);
-        when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(skylinkPeerService);
+        when(mockSkylinkConnection.getSkylinkPeerService()).thenReturn(mockSkylinkPeerService);
     }
 
     @Test
@@ -61,7 +62,7 @@ public class ByeMessageProcessorTest {
         messageProcessor.setSkylinkConnection(mockSkylinkConnection);
         messageProcessor.process(jsonObject);
 
-        SkylinkPeerService.isPeerIdMCU(mid);
-        verify(dataChannelManager).disposeDC(mid, false);
+        verify(mockSkylinkPeerService).receivedBye(mid);
     }
+
 }

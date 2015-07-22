@@ -8,7 +8,6 @@ import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
-import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
@@ -30,21 +29,22 @@ class SkylinkMediaService {
 
     private static final String MAX_VIDEO_FPS_CONSTRAINT = "maxFrameRate";
     private static final String MIN_VIDEO_FPS_CONSTRAINT = "minFrameRate";
+    private VideoCapturerAndroid localVideoCapturer;
+    private MediaStream localMediaStream;
+    private AudioSource localAudioSource;
+    private AudioTrack localAudioTrack;
+    private VideoSource localVideoSource;
+    private VideoTrack localVideoTrack;
 
     private SkylinkConnection skylinkConnection;
-    private SkylinkConnectionService skylinkConnectionService;
+    private PcShared pcShared;
 
     private int numberOfCameras = 0;
 
-    private MediaConstraints pcConstraints;
-    private MediaConstraints sdpMediaConstraints;
-    private MediaConstraints videoConstraints;
-
-
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
-                               SkylinkConnectionService skylinkConnectionService) {
+                               PcShared pcShared) {
         this.skylinkConnection = skylinkConnection;
-        this.skylinkConnectionService = skylinkConnectionService;
+        this.pcShared = pcShared;
     }
 
     void addMediaStream(final MediaStream stream, final String peerId, final Object lock) {
@@ -61,16 +61,17 @@ class SkylinkMediaService {
                         Do not handle Audio or video tracks manually to satisfy hasVideoReceive() and hasAudioReceive(),
                         as webrtc sdp will take care of it, albeit possibly with us doing SDP mangling when we are the answerer.
                         */
-                    skylinkConnection.abortUnless(stream.audioTracks.size() <= 1
+                    Utils.abortUnless(stream.audioTracks.size() <= 1
                                     && stream.videoTracks.size() <= 1,
                             "Weird-looking stream: " + stream);
                     GLSurfaceView remoteVideoView = null;
                     int numVideoTracks = stream.videoTracks.size();
+
                     // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
                     if ((numVideoTracks >= 1)) {
                         Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
                                 " video track(s) has been added to PeerConnection.");
-                        remoteVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
+                        remoteVideoView = new GLSurfaceView(pcShared.getApplicationContext());
 
                         VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
                         MyVideoRendererGuiListener myVideoRendererGuiListener =
@@ -112,10 +113,10 @@ class SkylinkMediaService {
      */
     void genMediaConstraints(SkylinkConfig skylinkConfig) {
         MediaConstraints[] constraintsArray = new MediaConstraints[2];
-        sdpMediaConstraints = new MediaConstraints();
-        pcConstraints = new MediaConstraints();
+        MediaConstraints sdpMediaConstraints = new MediaConstraints();
+        MediaConstraints pcMediaConstraints = new MediaConstraints();
         constraintsArray[0] = sdpMediaConstraints;
-        constraintsArray[1] = pcConstraints;
+        constraintsArray[1] = pcMediaConstraints;
 
         for (MediaConstraints mediaConstraints : constraintsArray) {
             mediaConstraints.mandatory
@@ -126,12 +127,16 @@ class SkylinkMediaService {
                             String.valueOf(skylinkConfig.hasVideoReceive())));
         }
 
-        pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+        pcMediaConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "internalSctpDataChannels", "true"));
-        pcConstraints.optional.add(new MediaConstraints.KeyValuePair(
+        pcMediaConstraints.optional.add(new MediaConstraints.KeyValuePair(
                 "DtlsSrtpKeyAgreement", "true"));
-        pcConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
+        pcMediaConstraints.optional.add(new MediaConstraints.KeyValuePair("googDscp",
                 "true"));
+
+        // Set to pcShared
+        pcShared.setSdpMediaConstraints(sdpMediaConstraints);
+        pcShared.setPcMediaConstraints(pcMediaConstraints);
     }
 
     /**
@@ -140,14 +145,14 @@ class SkylinkMediaService {
      * @param isMuted Flag that specifies whether audio should be mute
      */
     void muteLocalAudio(boolean isMuted) {
-        org.webrtc.AudioTrack localAudioTrack = skylinkConnection.getLocalAudioTrack();
+        org.webrtc.AudioTrack localAudioTrack = getLocalAudioTrack();
 
-        if (skylinkConnection.getMyConfig().hasAudioSend() &&
+        if (skylinkConnection.getSkylinkConfig().hasAudioSend() &&
                 (localAudioTrack.enabled() == isMuted)) {
 
             localAudioTrack.setEnabled(!isMuted);
             // Inform Peers
-            skylinkConnectionService.sendMuteAudio(isMuted);
+            skylinkConnection.getSkylinkConnectionService().sendMuteAudio(isMuted);
         }
     }
 
@@ -158,18 +163,43 @@ class SkylinkMediaService {
      */
     void muteLocalVideo(boolean isMuted) {
 
-        org.webrtc.VideoTrack localVideoTrack = skylinkConnection.getLocalVideoTrack();
-        if (skylinkConnection.getMyConfig().hasVideoSend() &&
+        org.webrtc.VideoTrack localVideoTrack = getLocalVideoTrack();
+        if (skylinkConnection.getSkylinkConfig().hasVideoSend() &&
                 (localVideoTrack.enabled() == isMuted)) {
 
             localVideoTrack.setEnabled(!isMuted);
             // Inform Peers
-            skylinkConnectionService.sendMuteVideo(isMuted);
+            skylinkConnection.getSkylinkConnectionService().sendMuteVideo(isMuted);
         }
     }
 
+    /**
+     * Dispose and remove local media streams, sources and tracks
+     */
+    void removeLocalMedia() {
+        localMediaStream = null;
+        localAudioTrack = null;
+        localVideoTrack = null;
+
+        if (localVideoSource != null) {
+            // Stop the video source
+            localVideoSource.stop();
+            Log.d(TAG, "Stopped local Video Source");
+        }
+
+        localVideoSource = null;
+        localAudioSource = null;
+
+        // Dispose video capturer
+        if (localVideoCapturer != null) {
+            localVideoCapturer.dispose();
+        }
+
+        localVideoCapturer = null;
+    }
+
     void setVideoConstrains(SkylinkConfig skylinkConfig) {
-        videoConstraints = new MediaConstraints();
+        MediaConstraints videoConstraints = new MediaConstraints();
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MIN_VIDEO_WIDTH_CONSTRAINT, Integer.toString(skylinkConfig.getVideoWidth())));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
@@ -182,6 +212,9 @@ class SkylinkMediaService {
                 MIN_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 MAX_VIDEO_FPS_CONSTRAINT, Integer.toString(skylinkConfig.getVideoFps())));
+
+        // Add to pcShared
+        pcShared.setVideoMediaConstraints(videoConstraints);
     }
 
     /**
@@ -196,7 +229,12 @@ class SkylinkMediaService {
         VideoSource localVideoSource;
         VideoTrack localVideoTrack;
         AudioTrack localAudioTrack;
-        PeerConnectionFactory peerConnectionFactory = skylinkConnection.getPeerConnectionFactory();
+
+        // Proceed only if SkylinkConfig sends audio or video
+        if (!skylinkConnection.getSkylinkConfig().hasAudioSend() &&
+                !skylinkConnection.getSkylinkConfig().hasVideoSend()) {
+            return;
+        }
 
         // Prevent thread from executing with disconnect concurrently.
         synchronized (lock) {
@@ -205,34 +243,32 @@ class SkylinkMediaService {
             if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                 return;
 
-            if (peerConnectionFactory == null) {
-                peerConnectionFactory = new PeerConnectionFactory();
-                skylinkConnection.setPeerConnectionFactory(peerConnectionFactory);
+            if (getLocalMediaStream() == null) {
 
                 Log.d(TAG, "[SDK] Local video source: Creating...");
-                lms = peerConnectionFactory
+                lms = pcShared.getPeerConnectionFactory()
                         .createLocalMediaStream("ARDAMS");
-                skylinkConnection.setLocalMediaStream(lms);
+                setLocalMediaStream(lms);
 
-                if (skylinkConnection.getMyConfig().hasVideoSend()) {
+                if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
 
                     localVideoCapturer = getVideoCapturer();
-                    skylinkConnection.setLocalVideoCapturer(localVideoCapturer);
+                    setLocalVideoCapturer(localVideoCapturer);
 
                     if (localVideoCapturer == null) {
                         throw new RuntimeException("Failed to open capturer");
                     }
 
-                    localVideoSource = peerConnectionFactory
-                            .createVideoSource(localVideoCapturer, videoConstraints);
-                    skylinkConnection.setLocalVideoSource(localVideoSource);
+                    localVideoSource = pcShared.getPeerConnectionFactory().createVideoSource(
+                            localVideoCapturer, pcShared.getVideoMediaConstraints());
+                    setLocalVideoSource(localVideoSource);
 
-                    final VideoTrack videoTrack = peerConnectionFactory
+                    final VideoTrack videoTrack = pcShared.getPeerConnectionFactory()
                             .createVideoTrack("ARDAMSv0", localVideoSource);
                     if (videoTrack != null) {
                         lms.addTrack(videoTrack);
                         localVideoTrack = videoTrack;
-                        skylinkConnection.setLocalVideoTrack(localVideoTrack);
+                        setLocalVideoTrack(localVideoTrack);
                     }
                 }
 
@@ -246,8 +282,8 @@ class SkylinkMediaService {
                                 return;
                             GLSurfaceView localVideoView = null;
                             VideoRendererGui localVideoRendererGui;
-                            if (skylinkConnection.getMyConfig().hasVideoSend()) {
-                                localVideoView = new GLSurfaceView(skylinkConnection.getApplicationContext());
+                            if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
+                                localVideoView = new GLSurfaceView(pcShared.getApplicationContext());
                                 localVideoRendererGui = new VideoRendererGui(localVideoView);
 
                                 MyVideoRendererGuiListener myVideoRendererGuiListener =
@@ -257,7 +293,7 @@ class SkylinkMediaService {
 
                                 VideoRenderer.Callbacks localRender = localVideoRendererGui.create(0,
                                         0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                                skylinkConnection.getLocalVideoTrack().addRenderer(new VideoRenderer(localRender));
+                                getLocalVideoTrack().addRenderer(new VideoRenderer(localRender));
                             }
 
                             Log.d(TAG, "[SDK] Local video source: Created.");
@@ -272,15 +308,15 @@ class SkylinkMediaService {
                 // We should no longer process messages from signalling server.
                 if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                     return;
-                if (skylinkConnection.getMyConfig().hasAudioSend()) {
+                if (skylinkConnection.getSkylinkConfig().hasAudioSend()) {
                     Log.d(TAG, "[SDK] Local audio source: Creating...");
-                    localAudioSource = peerConnectionFactory
+                    localAudioSource = pcShared.getPeerConnectionFactory()
                             .createAudioSource(new MediaConstraints());
-                    localAudioTrack = peerConnectionFactory
+                    localAudioTrack = pcShared.getPeerConnectionFactory()
                             .createAudioTrack("ARDAMSa0",
                                     localAudioSource);
-                    skylinkConnection.setLocalAudioSource(localAudioSource);
-                    skylinkConnection.setLocalAudioTrack(localAudioTrack);
+                    setLocalAudioSource(localAudioSource);
+                    setLocalAudioTrack(localAudioTrack);
                     lms.addTrack(localAudioTrack);
                     Log.d(TAG, "[SDK] Local audio source: Created.");
                 }
@@ -301,11 +337,11 @@ class SkylinkMediaService {
         boolean success = false;
         String strLog = "";
         // Try to switch camera
-        if (numberOfCameras < 2 || skylinkConnection.getLocalVideoCapturer() == null) {
+        if (numberOfCameras < 2 || getLocalVideoCapturer() == null) {
             // No video is sent or only one camera is available,
             strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
         } else {
-            success = skylinkConnection.getLocalVideoCapturer().switchCamera(null);
+            success = getLocalVideoCapturer().switchCamera(null);
         }
         // Log about success or failure in switching camera.
         if (success) {
@@ -339,6 +375,10 @@ class SkylinkMediaService {
         Log.d(TAG, "Opening camera: " + frontCameraDeviceName);
 
         return VideoCapturerAndroid.create(frontCameraDeviceName);
+    }
+
+    MediaStream getLocalMediaStream() {
+        return localMediaStream;
     }
 
     /*
@@ -386,12 +426,48 @@ class SkylinkMediaService {
         this.numberOfCameras = numberOfCameras;
     }
 
-    public MediaConstraints getPcConstraints() {
-        return pcConstraints;
+    void setLocalMediaStream(MediaStream localMediaStream) {
+        this.localMediaStream = localMediaStream;
     }
 
-    public MediaConstraints getSdpMediaConstraints() {
-        return sdpMediaConstraints;
+    VideoCapturerAndroid getLocalVideoCapturer() {
+        return localVideoCapturer;
+    }
+
+    void setLocalVideoCapturer(VideoCapturerAndroid localVideoCapturer) {
+        this.localVideoCapturer = localVideoCapturer;
+    }
+
+    AudioSource getLocalAudioSource() {
+        return localAudioSource;
+    }
+
+    void setLocalAudioSource(AudioSource localAudioSource) {
+        this.localAudioSource = localAudioSource;
+    }
+
+    VideoSource getLocalVideoSource() {
+        return localVideoSource;
+    }
+
+    void setLocalVideoSource(VideoSource localVideoSource) {
+        this.localVideoSource = localVideoSource;
+    }
+
+    AudioTrack getLocalAudioTrack() {
+        return localAudioTrack;
+    }
+
+    void setLocalAudioTrack(AudioTrack localAudioTrack) {
+        this.localAudioTrack = localAudioTrack;
+    }
+
+    VideoTrack getLocalVideoTrack() {
+        return localVideoTrack;
+    }
+
+    void setLocalVideoTrack(VideoTrack localVideoTrack) {
+        this.localVideoTrack = localVideoTrack;
     }
 
 }

@@ -10,7 +10,13 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 /**
  * Created by xiangrong on 5/5/15.
  */
+
+
 // TODO: Add unit tests.
+
+/**
+ * Object to keep track of Peer information.
+ */
 public class UserInfo {
 
     private final String TAG = UserInfo.class.getName();

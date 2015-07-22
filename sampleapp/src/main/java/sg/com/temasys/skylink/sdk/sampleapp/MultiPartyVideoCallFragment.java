@@ -23,6 +23,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
+import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
@@ -275,6 +276,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDisconnect(int errorCode, String message) {
+        if(errorCode== ErrorCodes.DISCONNECT_FROM_ROOM) {
+            Log.d(TAG, "We have successfully disconnected from the room.");
+        }
         Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 

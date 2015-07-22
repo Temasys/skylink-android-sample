@@ -6,7 +6,6 @@ import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -49,33 +48,21 @@ class HealthChecker {
     // Required for restart.
     private String remotePeerId;
     private SkylinkConnection skylinkConnection;
-    private SkylinkConnectionService skylinkConnectionService;
     private MediaStream localMediaStream;
     private SkylinkConfig myConfig;
-    private PeerConnection pc;
 
     /**
      * Initialise all required parameters
      *
      * @param remotePeerId
      * @param skylinkConnection
-     * @param skylinkConnectionService
-     * @param localMediaStream
-     * @param myConfig
-     * @param pc
      */
     HealthChecker(final String remotePeerId,
-                  final SkylinkConnection skylinkConnection,
-                  SkylinkConnectionService skylinkConnectionService,
-                  MediaStream localMediaStream,
-                  SkylinkConfig myConfig,
-                  PeerConnection pc) {
+                  final SkylinkConnection skylinkConnection) {
         this.remotePeerId = remotePeerId;
         this.skylinkConnection = skylinkConnection;
-        this.skylinkConnectionService = skylinkConnectionService;
-        this.localMediaStream = localMediaStream;
-        this.myConfig = myConfig;
-        this.pc = pc;
+        this.localMediaStream = skylinkConnection.getSkylinkMediaService().getLocalMediaStream();
+        this.myConfig = skylinkConnection.getSkylinkConfig();
     }
 
     /**
@@ -156,7 +143,7 @@ class HealthChecker {
         try {
             Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : IceConnectionState : " + iceState +
                     " - Restarting (" + restartNumber + ").");
-            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, skylinkConnectionService,
+            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
                     localMediaStream, myConfig);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -171,13 +158,12 @@ class HealthChecker {
     }
 
     /**
-     * Set the iceState and also sets waitMs
+     * Set the iceState
      *
      * @param iceState
      */
     void setIceState(PeerConnection.IceConnectionState iceState) {
         this.iceState = iceState;
-        setWaitMs();
     }
 
     /**
@@ -195,9 +181,9 @@ class HealthChecker {
     void setIceRole(String iceRole) {
         this.iceRole = iceRole;
         // Check if ICE trickle is enable.
-        Map<String, PeerInfo> peerInfoMap = skylinkConnection.getPeerInfoMap();
-        if (peerInfoMap != null) {
-            PeerInfo peerInfo = peerInfoMap.get(remotePeerId);
+        Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(remotePeerId);
+        if (peer != null) {
+            PeerInfo peerInfo = peer.getPeerInfo();
             if (peerInfo != null) {
                 boolean enableIceTrickle = peerInfo.isEnableIceTrickle();
                 if (!enableIceTrickle) {
@@ -209,6 +195,8 @@ class HealthChecker {
             }
 
         }
+        // Set waitMs based on iceRole
+        setWaitMs();
         Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : iceRole set to " + iceRole + ".");
     }
 }
