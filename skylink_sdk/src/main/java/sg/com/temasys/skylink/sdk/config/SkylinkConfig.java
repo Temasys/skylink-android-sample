@@ -25,6 +25,7 @@ public class SkylinkConfig implements Serializable {
     private int videoWidth = MAX_VIDEO_WIDTH;
     private int videoFps = MAX_VIDEO_FPS;
 
+    private boolean mirrorLocalView = true;
     private boolean stereoAudio = true;
     private boolean audioSend;
     private boolean videoSend;
@@ -238,6 +239,25 @@ public class SkylinkConfig implements Serializable {
      */
     public void setHasDataTransfer(boolean dataTransfer) {
         this.dataTransfer = dataTransfer;
+    }
+
+    /**
+     *
+     * @return mirrorLocalView Config to set if local view should be mirrored.
+     */
+    public boolean isMirrorLocalView() {
+        return mirrorLocalView;
+    }
+
+    /**
+     * Sets whether local view rendered is a mirror image of the actual video.
+     * Default is true.
+     *
+     * @param mirrorLocalView True to mirror local view, false to show local view as it is.
+     *
+     */
+    public void setMirrorLocalView(boolean mirrorLocalView) {
+        this.mirrorLocalView = mirrorLocalView;
     }
 
     /**

@@ -13,6 +13,8 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.util.ArrayList;
+
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
@@ -35,11 +37,14 @@ class SkylinkMediaService {
     private AudioTrack localAudioTrack;
     private VideoSource localVideoSource;
     private VideoTrack localVideoTrack;
+    private GLSurfaceView localVideoView;
+    private VideoRenderer localVideoRender;
 
     private SkylinkConnection skylinkConnection;
     private PcShared pcShared;
 
     private int numberOfCameras = 0;
+    private boolean cameraUsingFront = true;
 
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
                                PcShared pcShared) {
@@ -71,7 +76,7 @@ class SkylinkMediaService {
                     if ((numVideoTracks >= 1)) {
                         Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
                                 " video track(s) has been added to PeerConnection.");
-                        remoteVideoView = new GLSurfaceView(pcShared.getApplicationContext());
+                        /*remoteVideoView = new GLSurfaceView(pcShared.getApplicationContext());
 
                         VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
                         MyVideoRendererGuiListener myVideoRendererGuiListener =
@@ -82,7 +87,11 @@ class SkylinkMediaService {
                         VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
                                 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
                         stream.videoTracks.get(0).addRenderer(
-                                new VideoRenderer(remoteRender));
+                                new VideoRenderer(remoteRender));*/
+
+                        remoteVideoView = createVideoView(stream.videoTracks.get(0),
+                                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                                false);
 
                         final GLSurfaceView rVideoView = remoteVideoView;
                         if (!SkylinkPeerService.isPeerIdMCU(peerId))
@@ -280,21 +289,16 @@ class SkylinkMediaService {
                             // We should no longer process messages from signalling server.
                             if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                                 return;
+
                             GLSurfaceView localVideoView = null;
-                            VideoRendererGui localVideoRendererGui;
                             if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
-                                localVideoView = new GLSurfaceView(pcShared.getApplicationContext());
-                                localVideoRendererGui = new VideoRendererGui(localVideoView);
-
-                                MyVideoRendererGuiListener myVideoRendererGuiListener =
-                                        new MyVideoRendererGuiListener();
-                                localVideoRendererGui.setListener(myVideoRendererGuiListener);
-
-
-                                VideoRenderer.Callbacks localRender = localVideoRendererGui.create(0,
-                                        0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                                getLocalVideoTrack().addRenderer(new VideoRenderer(localRender));
+                                localVideoView = createVideoView(
+                                        getLocalVideoTrack(),
+                                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                                        true
+                                );
                             }
+                            SkylinkMediaService.this.localVideoView = localVideoView;
 
                             Log.d(TAG, "[SDK] Local video source: Created.");
                             skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
@@ -327,6 +331,69 @@ class SkylinkMediaService {
     }
 
     /**
+     * Create and return a GLSurfaceView from a VideoTrack.
+     *
+     * @param videoTrack  To which place the renderer
+     * @param scalingType
+     * @param isLocal     Whether or not this is for the local video view.
+     * @return
+     */
+    private GLSurfaceView createVideoView(
+            VideoTrack videoTrack, VideoRendererGui.ScalingType scalingType, boolean isLocal) {
+
+        boolean mirror = false;
+        // For local video view, check if config says to mirror it.
+        if(isLocal && cameraUsingFront) {
+            mirror = skylinkConnection.getSkylinkConfig().isMirrorLocalView();
+        }
+
+        ArrayList<Object> input = genVideoViewFromVideoTrack(videoTrack, scalingType, mirror);
+        GLSurfaceView videoView = (GLSurfaceView) input.get(0);
+
+        // For local video view,
+        // previous renderer, if any, has to be removed.
+        if (isLocal) {
+            VideoRenderer videoRenderer = (VideoRenderer) input.get(1);
+            if (localVideoRender != null) {
+                videoTrack.removeRenderer(localVideoRender);
+            }
+            // Record new local VideoRenderer
+            localVideoRender = videoRenderer;
+        }
+        return videoView;
+    }
+
+    /**
+     * Create a GLSurfaceView and its VideoRenderer from a VideoTrack.
+     *
+     * @param videoTrack
+     * @param scalingType
+     * @param mirror      Whether the output video should be left-right reflected, like a mirror.
+     * @return ArrayList containing the GLSurfaceView and its VideoRenderer.
+     */
+    private ArrayList<Object> genVideoViewFromVideoTrack(
+            VideoTrack videoTrack,
+            VideoRendererGui.ScalingType scalingType, boolean mirror) {
+        GLSurfaceView videoView = new GLSurfaceView(pcShared.getApplicationContext());
+        VideoRendererGui videoRendererGui = new VideoRendererGui(videoView);
+
+        MyVideoRendererGuiListener myVideoRendererGuiListener =
+                new MyVideoRendererGuiListener();
+        videoRendererGui.setListener(myVideoRendererGuiListener);
+
+        // Create and add new renderer
+        VideoRenderer videoRenderer = new VideoRenderer(videoRendererGui.create(
+                0, 0, 100, 100,
+                scalingType,
+                mirror));
+        videoTrack.addRenderer(videoRenderer);
+        ArrayList<Object> output = new ArrayList<Object>();
+        output.add(0, (Object) videoView);
+        output.add(1, (Object) videoRenderer);
+        return output;
+    }
+
+    /**
      * Call the internal function to switch camera.
      *
      * @param lifeCycleListener
@@ -342,11 +409,22 @@ class SkylinkMediaService {
             strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
         } else {
             success = getLocalVideoCapturer().switchCamera(null);
+//            localVideoView.setRenderer(null);
         }
         // Log about success or failure in switching camera.
         if (success) {
             strLog = "Switched camera.";
             Log.d(TAG, strLog);
+            cameraUsingFront = !cameraUsingFront;
+            localVideoView = null;
+            localVideoView = createVideoView(getLocalVideoTrack(),
+                    VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                    true
+            );
+            Log.d(TAG, "[switchCamera] Local video source: Created.");
+            skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
+            Log.d(TAG, "[switchCamera] Local video source: Sent to App.");
+
         } else {
             // Switch is pending or error while trying to switch.
             lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);

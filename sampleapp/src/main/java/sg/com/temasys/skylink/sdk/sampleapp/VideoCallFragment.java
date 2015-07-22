@@ -275,10 +275,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onLocalMediaCapture(GLSurfaceView videoView) {
         if (videoView != null) {
-            //show media on screen
+            View self = parentFragment.findViewWithTag("self");
             videoView.setTag("self");
-            parentFragment.removeView(videoView);
-            parentFragment.addView(videoView);
             // Allow self view to switch between different cameras (if any) when tapped.
             videoView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -286,6 +284,27 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                     skylinkConnection.switchCamera();
                 }
             });
+
+            if (self == null) {
+                //show media on screen
+                parentFragment.removeView(videoView);
+                parentFragment.addView(videoView);
+            } else {
+                videoView.setLayoutParams(self.getLayoutParams());
+
+                View peer = parentFragment.findViewWithTag("peer");
+                if (peer != null) {
+                    parentFragment.removeView(peer);
+                }
+
+                parentFragment.removeView(self);
+                parentFragment.addView(videoView);
+                
+                if (peer != null) {
+                    parentFragment.addView(peer);
+                }
+            }
+
         }
     }
 
