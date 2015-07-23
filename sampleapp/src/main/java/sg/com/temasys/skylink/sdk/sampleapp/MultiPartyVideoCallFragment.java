@@ -170,6 +170,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        config.setMirrorLocalView(true);
         return config;
     }
 

@@ -191,6 +191,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        config.setMirrorLocalView(true);
         return config;
     }
 
@@ -292,14 +293,17 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             } else {
                 videoView.setLayoutParams(self.getLayoutParams());
 
+                // If peer video exists, remove it first.
                 View peer = parentFragment.findViewWithTag("peer");
                 if (peer != null) {
                     parentFragment.removeView(peer);
                 }
 
+                // Remove the old self video and add the new one.
                 parentFragment.removeView(self);
                 parentFragment.addView(videoView);
-                
+
+                // Return the peer video, if it was there before.
                 if (peer != null) {
                     parentFragment.addView(peer);
                 }
@@ -366,7 +370,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         // Resize self view
         View self = parentFragment.findViewWithTag("self");
         if (this.selfLayoutParams == null) {
-            // Get the original size of the layout
+            // Record the original size of the layout
             this.selfLayoutParams = self.getLayoutParams();
         }
 
@@ -374,12 +378,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         parentFragment.removeView(self);
         parentFragment.addView(self);
 
-        // Remove peer video if it exist
+        // Remove previous peer video if it exist
         View viewToRemove = parentFragment.findViewWithTag("peer");
         if (viewToRemove != null) {
             parentFragment.removeView(viewToRemove);
         }
 
+        // Add new peer video
         videoView.setTag("peer");
         parentFragment.addView(videoView);
 

@@ -14,13 +14,12 @@ import org.webrtc.VideoCapturerAndroid;
 
 import java.util.concurrent.CountDownLatch;
 
+import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -36,20 +35,25 @@ public class SkylinkMediaServiceTest {
 
     private static final String TAG = SkylinkMediaServiceTest.class.getName();
     private SkylinkConnection skylinkConnection;
+    private SkylinkConfig skylinkConfig;
     private SkylinkConnectionService skylinkConnectionService;
     private SkylinkMediaService skylinkMediaService;
     private PcShared mockPcShared;
     private LifeCycleListener lifeCycleListener;
     private VideoCapturerAndroid localVideoCapturer;
     private CountDownLatch counter;
-    private boolean pass = false;
+    private boolean shouldMirror = true;
 
     @Before
     public void setUp() throws Exception {
         ShadowLog.stream = System.out;
         skylinkConnection = mock(SkylinkConnection.class);
+        skylinkConfig = mock(SkylinkConfig.class);
         skylinkConnectionService = mock(SkylinkConnectionService.class);
         mockPcShared = mock(PcShared.class);
+
+        when(skylinkConfig.isMirrorLocalView()).thenReturn(shouldMirror);
+        when(skylinkConnection.getSkylinkConfig()).thenReturn(skylinkConfig);
 
         localVideoCapturer = mock(VideoCapturerAndroid.class);
         // when(skylinkConnection.getLocalVideoCapturer()).thenReturn(localVideoCapturer);
@@ -67,54 +71,9 @@ public class SkylinkMediaServiceTest {
         assertNotNull(skylinkMediaService);
     }
 
-    @Test
-    public void testSwitchCameraWith0Cameras() throws InterruptedException {
-        // Prepare test objects
-        //Set Camera number to 0.
-        skylinkMediaService.setNumberOfCameras(0);
-
-        lifeCycleListener = new LifeCycleListener() {
-            @Override
-            public void onConnect(boolean isSuccessful, String message) {
-                fail("onConnect should not be called.");
-                counter.countDown();
-            }
-
-            @Override
-            public void onWarning(int errorCode, String message) {
-                assertEquals(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, errorCode);
-                counter.countDown();
-            }
-
-            @Override
-            public void onDisconnect(int errorCode, String message) {
-                fail("onDisconnect should not be called.");
-                counter.countDown();
-            }
-
-            @Override
-            public void onReceiveLog(String message) {
-                fail("onReceiveLog should not be called.");
-                counter.countDown();
-            }
-
-            @Override
-            public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-                fail("onLockRoomStatusChange should not be called.");
-                counter.countDown();
-            }
-        };
-
-        // Test method
-        boolean success = false;
-        success = skylinkMediaService.switchCamera(lifeCycleListener);
-        counter.await();
-        // Ensure positive outcome method NOT called.
-        assertFalse(success);
-    }
-
-    @Test
-    public void testSwitchCameraWith1Cameras() throws InterruptedException {
+    // TODO
+    /*@Test
+    public void testSwitchCameraWithNoMirroring() throws InterruptedException {
         // Prepare test objects
         //Set Camera number to 1.
         skylinkMediaService.setNumberOfCameras(1);
@@ -153,14 +112,15 @@ public class SkylinkMediaServiceTest {
 
         // Test method
         boolean success = false;
-        success = skylinkMediaService.switchCamera(lifeCycleListener);
+        success = skylinkMediaService.switchCameraAndRender(lifeCycleListener);
         counter.await();
         // Ensure positive outcome method NOT called.
         assertFalse(success);
-    }
+    }*/
 
-    @Test
-    public void testSwitchCameraWith2Cameras() throws InterruptedException {
+    // TODO
+    /*@Test
+    public void testSwitchCameraWithMirroring() throws InterruptedException {
         // Prepare test objects
         //Set Camera number to 2.
         final int numCam = 2;
@@ -198,6 +158,48 @@ public class SkylinkMediaServiceTest {
         success = skylinkMediaService.switchCamera(lifeCycleListener);
         // Ensure positive outcome method IS called.
         assertTrue(success);
+    }*/
+
+    @Test
+    public void testSwitchCameraWith0Cameras() {
+        // Prepare test objects
+        //Set Camera number to 0.
+        final int numCam = 0;
+        skylinkMediaService.setNumberOfCameras(numCam);
+
+        // Test method
+        String strLog = null;
+        strLog = skylinkMediaService.switchCamera();
+        // Ensure positive outcome NOT true.
+        assertFalse(strLog == null);
+    }
+
+    @Test
+    public void testSwitchCameraWith1Cameras() {
+        // Prepare test objects
+        //Set Camera number to 1.
+        final int numCam = 1;
+        skylinkMediaService.setNumberOfCameras(numCam);
+
+        // Test method
+        String strLog = null;
+        strLog = skylinkMediaService.switchCamera();
+        // Ensure positive outcome NOT true.
+        assertFalse(strLog == null);
+    }
+
+    @Test
+    public void testSwitchCameraWith2Cameras() {
+        // Prepare test objects
+        //Set Camera number to 2.
+        final int numCam = 2;
+        skylinkMediaService.setNumberOfCameras(numCam);
+
+        // Test method
+        String strLog = null;
+        strLog = skylinkMediaService.switchCamera();
+        // Ensure positive outcome IS true.
+        assertTrue(strLog == null);
     }
 
 }

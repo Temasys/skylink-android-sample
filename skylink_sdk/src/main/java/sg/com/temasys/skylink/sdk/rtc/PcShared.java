@@ -52,8 +52,8 @@ class PcShared {
 
     /**
      * Initialize PeerConnectionFactory
-     *  @param context
      *
+     * @param context
      */
     private void initializePcFactory(Context context) {
         if (!factoryStaticInitialized) {
@@ -81,7 +81,7 @@ class PcShared {
         }
 
         // Create peerConnectionFactory if required
-            // Only 1 instance required.
+        // Only 1 instance required.
         if (peerConnectionFactory == null) {
             peerConnectionFactory = new PeerConnectionFactory();
         }

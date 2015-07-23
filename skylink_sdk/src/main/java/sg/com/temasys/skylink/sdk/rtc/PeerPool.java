@@ -124,6 +124,7 @@ class PeerPool {
 
     /**
      * Removes and return a Peer from PeerPool.
+     *
      * @param peerId
      * @return
      */
