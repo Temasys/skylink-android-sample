@@ -134,7 +134,7 @@ class SkylinkSdpObserver implements SdpObserver {
                     if (getSkylinkConnectionService() == null ||
                             getSkylinkConnectionService().getRoomParameters() == null ||
                             getSkylinkConnectionService()
-                            .isDisconnected()) {
+                                    .isDisconnected()) {
                         return;
                     }
 

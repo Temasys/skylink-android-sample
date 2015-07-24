@@ -13,6 +13,8 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.util.ArrayList;
+
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 
@@ -35,11 +37,14 @@ class SkylinkMediaService {
     private AudioTrack localAudioTrack;
     private VideoSource localVideoSource;
     private VideoTrack localVideoTrack;
+    private VideoRenderer localVideoRender;
 
     private SkylinkConnection skylinkConnection;
     private PcShared pcShared;
 
     private int numberOfCameras = 0;
+
+    private boolean cameraUsingFront = true;
 
     public SkylinkMediaService(SkylinkConnection skylinkConnection,
                                PcShared pcShared) {
@@ -71,18 +76,10 @@ class SkylinkMediaService {
                     if ((numVideoTracks >= 1)) {
                         Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
                                 " video track(s) has been added to PeerConnection.");
-                        remoteVideoView = new GLSurfaceView(pcShared.getApplicationContext());
 
-                        VideoRendererGui gui = new VideoRendererGui(remoteVideoView);
-                        MyVideoRendererGuiListener myVideoRendererGuiListener =
-                                new MyVideoRendererGuiListener();
-                        myVideoRendererGuiListener.setPeerId(peerId);
-                        gui.setListener(myVideoRendererGuiListener);
-
-                        VideoRenderer.Callbacks remoteRender = gui.create(0, 0,
-                                100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                        stream.videoTracks.get(0).addRenderer(
-                                new VideoRenderer(remoteRender));
+                        remoteVideoView = createVideoView(stream.videoTracks.get(0),
+                                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                                false);
 
                         final GLSurfaceView rVideoView = remoteVideoView;
                         if (!SkylinkPeerService.isPeerIdMCU(peerId))
@@ -280,20 +277,14 @@ class SkylinkMediaService {
                             // We should no longer process messages from signalling server.
                             if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                                 return;
+
                             GLSurfaceView localVideoView = null;
-                            VideoRendererGui localVideoRendererGui;
                             if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
-                                localVideoView = new GLSurfaceView(pcShared.getApplicationContext());
-                                localVideoRendererGui = new VideoRendererGui(localVideoView);
-
-                                MyVideoRendererGuiListener myVideoRendererGuiListener =
-                                        new MyVideoRendererGuiListener();
-                                localVideoRendererGui.setListener(myVideoRendererGuiListener);
-
-
-                                VideoRenderer.Callbacks localRender = localVideoRendererGui.create(0,
-                                        0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-                                getLocalVideoTrack().addRenderer(new VideoRenderer(localRender));
+                                localVideoView = createVideoView(
+                                        getLocalVideoTrack(),
+                                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                                        true
+                                );
                             }
 
                             Log.d(TAG, "[SDK] Local video source: Created.");
@@ -327,26 +318,102 @@ class SkylinkMediaService {
     }
 
     /**
-     * Call the internal function to switch camera.
+     * Create and return a GLSurfaceView from a VideoTrack. Knows whether to mirror local video
+     * based on SkylinkConfig. No mirroring for remote video.
+     *
+     * @param videoTrack  To which place the renderer
+     * @param scalingType
+     * @param isLocal     Whether or not this is for the local video view.
+     * @return
+     */
+    private GLSurfaceView createVideoView(
+            VideoTrack videoTrack, VideoRendererGui.ScalingType scalingType, boolean isLocal) {
+
+        boolean mirrorFrontVideo = skylinkConnection.getSkylinkConfig().isMirrorLocalView();
+        boolean mirrorThisVideo = false;
+        // For local video view, check if config says to mirror it.
+        if (isLocal && cameraUsingFront) {
+            mirrorThisVideo = mirrorFrontVideo;
+        }
+
+        ArrayList<Object> input = genVideoViewFromVideoTrack(videoTrack, scalingType, mirrorThisVideo);
+        GLSurfaceView videoView = (GLSurfaceView) input.get(0);
+
+        // For local video view when SkylinkConfig is set to mirror,
+        // Remove previous renderer, if any.
+        if (isLocal && mirrorFrontVideo) {
+            VideoRenderer videoRenderer = (VideoRenderer) input.get(1);
+            if (localVideoRender != null) {
+                videoTrack.removeRenderer(localVideoRender);
+            }
+            // Record new local VideoRenderer
+            localVideoRender = videoRenderer;
+        }
+        return videoView;
+    }
+
+    /**
+     * Create a GLSurfaceView and its VideoRenderer from a VideoTrack.
+     *
+     * @param videoTrack
+     * @param scalingType
+     * @param mirror      Whether the output video should be left-right reflected, like a mirror.
+     * @return ArrayList containing the GLSurfaceView and its VideoRenderer.
+     */
+    private ArrayList<Object> genVideoViewFromVideoTrack(
+            VideoTrack videoTrack,
+            VideoRendererGui.ScalingType scalingType, boolean mirror) {
+        GLSurfaceView videoView = new GLSurfaceView(pcShared.getApplicationContext());
+        VideoRendererGui videoRendererGui = new VideoRendererGui(videoView);
+
+        MyVideoRendererGuiListener myVideoRendererGuiListener =
+                new MyVideoRendererGuiListener();
+        videoRendererGui.setListener(myVideoRendererGuiListener);
+
+        // Create and add new renderer
+        VideoRenderer videoRenderer = new VideoRenderer(videoRendererGui.create(
+                0, 0, 100, 100,
+                scalingType,
+                mirror));
+        videoTrack.addRenderer(videoRenderer);
+        ArrayList<Object> output = new ArrayList<Object>();
+        output.add(0, (Object) videoView);
+        output.add(1, (Object) videoRenderer);
+        return output;
+    }
+
+    /**
+     * Switch camera used between all available cameras on the phone
+     * Render videoView again if local front videoView set to be mirrored.
      *
      * @param lifeCycleListener
      */
 
-    boolean switchCamera(final LifeCycleListener lifeCycleListener) {
+    boolean switchCameraAndRender(final LifeCycleListener lifeCycleListener) {
         // Switch camera
         boolean success = false;
         String strLog = "";
         // Try to switch camera
-        if (numberOfCameras < 2 || getLocalVideoCapturer() == null) {
-            // No video is sent or only one camera is available,
-            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
-        } else {
-            success = getLocalVideoCapturer().switchCamera(null);
+        strLog = switchCamera();
+        if (strLog == null) {
+            success = true;
         }
+
         // Log about success or failure in switching camera.
         if (success) {
             strLog = "Switched camera.";
             Log.d(TAG, strLog);
+            cameraUsingFront = !cameraUsingFront;
+            // Change videoView if config sets front camera to be mirrored
+            if (skylinkConnection.getSkylinkConfig().isMirrorLocalView()) {
+                GLSurfaceView localVideoView = createVideoView(getLocalVideoTrack(),
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                        true
+                );
+                Log.d(TAG, "[switchCamera] New local video view and renderer created.");
+                skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
+                Log.d(TAG, "[switchCamera] New local video view sent to App.");
+            }
         } else {
             // Switch is pending or error while trying to switch.
             lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);
@@ -355,6 +422,27 @@ class SkylinkMediaService {
         return success;
     }
 
+    /**
+     * Switch camera used between all available cameras on the phone.
+     *
+     * @return null if successful or the error message if not.
+     */
+    String switchCamera() {
+        boolean success = false;
+        String strLog = null;
+        // Try to switch camera
+        if (numberOfCameras < 2 || getLocalVideoCapturer() == null) {
+            // No video is sent or only one camera is available,
+            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
+        } else {
+            success = getLocalVideoCapturer().switchCamera(null);
+            if (!success) {
+                strLog = "Encountered error when switching camera, even though we have at least 2" +
+                        " cameras (Number of cameras: " + numberOfCameras + ".";
+            }
+        }
+        return strLog;
+    }
 
     /**
      * Cycle through likely device names for the camera and return the first capturer that works.
@@ -418,6 +506,10 @@ class SkylinkMediaService {
     }
 
     // Getters and Setters
+    public boolean isCameraUsingFront() {
+        return cameraUsingFront;
+    }
+
     public int getNumberOfCameras() {
         return numberOfCameras;
     }

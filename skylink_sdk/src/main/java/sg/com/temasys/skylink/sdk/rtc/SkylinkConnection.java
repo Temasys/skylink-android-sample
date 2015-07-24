@@ -126,7 +126,7 @@ public class SkylinkConnection {
                      SkylinkConfig config, Context context) {
         logMessage("SkylinkConnection::config=>" + config);
 
-        this.skylinkConfig = new SkylinkConfig(config);
+        this.skylinkConfig = config;
 
         logMessage("SkylinkConnection::appKey=>" + appKey);
         this.appKey = appKey;
@@ -699,7 +699,7 @@ public class SkylinkConnection {
      * @return True or false based on whether the switch was successful or not.
      */
     public boolean switchCamera() {
-        return skylinkMediaService.switchCamera(lifeCycleListener);
+        return skylinkMediaService.switchCameraAndRender(lifeCycleListener);
     }
 
     /**

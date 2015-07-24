@@ -25,6 +25,10 @@ public class SkylinkConfig implements Serializable {
     private int videoWidth = MAX_VIDEO_WIDTH;
     private int videoFps = MAX_VIDEO_FPS;
 
+    /**
+     * Config to set if local front camera video view should be mirrored.
+     */
+    private boolean mirrorLocalView;
     private boolean stereoAudio = true;
     private boolean audioSend;
     private boolean videoSend;
@@ -77,33 +81,6 @@ public class SkylinkConfig implements Serializable {
      */
     public SkylinkConfig() {
         super();
-    }
-
-    /**
-     * Creates a new SkylinkConfig (Copy constructor).
-     *
-     * @param config Configuration object with settings to copy from.
-     */
-    public SkylinkConfig(SkylinkConfig config) {
-        super();
-        this.audioSend = config.audioSend;
-        this.videoSend = config.videoSend;
-        this.audioReceive = config.audioReceive;
-        this.videoReceive = config.videoReceive;
-        this.peerMessaging = config.peerMessaging;
-        this.fileTransfer = config.fileTransfer;
-        this.dataTransfer = config.dataTransfer;
-        this.preferredAudioCodec = config.preferredAudioCodec;
-        this.timeout = config.timeout;
-
-        if (config.videoWidth > 0 && config.videoHeight > 0) {
-            this.videoWidth = Math.min(config.videoWidth, MAX_VIDEO_WIDTH);
-            this.videoHeight = Math.min(config.videoHeight, MAX_VIDEO_HEIGHT);
-        }
-
-        if (config.videoFps > 0) {
-            this.videoFps = Math.min(config.videoFps, MAX_VIDEO_FPS);
-        }
     }
 
     /**
@@ -241,6 +218,31 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
+     * @return mirrorLocalView Config to set if local front camera video view should be mirrored.
+     */
+    public boolean isMirrorLocalView() {
+        return mirrorLocalView;
+    }
+
+    /**
+     * Sets whether local view rendered is a mirror image of the actual video. Default is false.
+     * When set to true:
+     *
+     * - Only front (and not back) camera local view will be mirrored.
+     *
+     * - This will not change (e.g. mirror) the remote video view of us as seen by a remote Peer.
+     *
+     * - Will create a new GLSurfaceView (at onLocalMediaCapture) each time camera is switched.
+     *
+     *      - User need to handle this new GLSurfaceView to display self video correctly.
+     *
+     * @param mirrorLocalView True to mirror local view, false to show local view as it is.
+     */
+    public void setMirrorLocalView(boolean mirrorLocalView) {
+        this.mirrorLocalView = mirrorLocalView;
+    }
+
+    /**
      * @return Timeout config value.
      */
     public int getTimeout() {
@@ -361,7 +363,7 @@ public class SkylinkConfig implements Serializable {
      * @param videoHeight
      */
     public void setVideoHeight(int videoHeight) {
-        this.videoHeight = videoHeight;
+        this.videoHeight = Math.min(videoHeight, MAX_VIDEO_HEIGHT);
     }
 
     /**
@@ -377,7 +379,7 @@ public class SkylinkConfig implements Serializable {
      * @param videoWidth
      */
     public void setVideoWidth(int videoWidth) {
-        this.videoWidth = videoWidth;
+        this.videoWidth = Math.min(videoWidth, MAX_VIDEO_WIDTH);
     }
 
     /**
@@ -406,10 +408,10 @@ public class SkylinkConfig implements Serializable {
     /**
      * Sets the video FPS
      *
-     * @param videoFPS
+     * @param videoFps
      */
-    public void setVideoFps(int videoFPS) {
-        this.videoFps = videoFPS;
+    public void setVideoFps(int videoFps) {
+        this.videoFps = Math.min(videoFps, MAX_VIDEO_FPS);
     }
 
     @Override

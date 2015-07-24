@@ -60,7 +60,7 @@ public class SkylinkConnectionTest {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         skylinkConfig.setVideoHeight(SkylinkConfig.MAX_VIDEO_HEIGHT - 1);
 
-        SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
+        SkylinkConfig newConfig = skylinkConfig;
         assertEquals(newConfig.getVideoHeight(), SkylinkConfig.MAX_VIDEO_HEIGHT - 1);
     }
 
@@ -69,7 +69,7 @@ public class SkylinkConnectionTest {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         skylinkConfig.setVideoHeight(SkylinkConfig.MAX_VIDEO_HEIGHT + 1);
 
-        SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
+        SkylinkConfig newConfig = skylinkConfig;
         assertEquals(newConfig.getVideoHeight(), SkylinkConfig.MAX_VIDEO_HEIGHT);
     }
 
@@ -78,7 +78,7 @@ public class SkylinkConnectionTest {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         skylinkConfig.setVideoWidth(SkylinkConfig.MAX_VIDEO_WIDTH - 1);
 
-        SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
+        SkylinkConfig newConfig = skylinkConfig;
         assertEquals(newConfig.getVideoWidth(), SkylinkConfig.MAX_VIDEO_WIDTH - 1);
     }
 
@@ -87,7 +87,7 @@ public class SkylinkConnectionTest {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         skylinkConfig.setVideoWidth(SkylinkConfig.MAX_VIDEO_WIDTH + 1);
 
-        SkylinkConfig newConfig = new SkylinkConfig(skylinkConfig);
+        SkylinkConfig newConfig = skylinkConfig;
         assertEquals(newConfig.getVideoWidth(), SkylinkConfig.MAX_VIDEO_WIDTH);
     }
 
@@ -117,7 +117,7 @@ public class SkylinkConnectionTest {
     public void testVideoFPSMax() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         skylinkConfig.setVideoFps(SkylinkConfig.MAX_VIDEO_FPS - 1);
-        assertEquals(new SkylinkConfig(skylinkConfig).getVideoFps(), SkylinkConfig.MAX_VIDEO_FPS - 1);
+        assertEquals(skylinkConfig.getVideoFps(), SkylinkConfig.MAX_VIDEO_FPS - 1);
     }
 
     @Test
