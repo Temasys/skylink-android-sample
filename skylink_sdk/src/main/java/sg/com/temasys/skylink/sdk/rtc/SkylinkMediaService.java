@@ -394,13 +394,6 @@ class SkylinkMediaService {
         boolean success = false;
         String strLog = "";
         // Try to switch camera
-        /*if (numberOfCameras < 2 || getLocalVideoCapturer() == null) {
-            // No video is sent or only one camera is available,
-            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
-        } else {
-            success = getLocalVideoCapturer().switchCamera(null);
-        }*/
-
         strLog = switchCamera();
         if (strLog == null) {
             success = true;
