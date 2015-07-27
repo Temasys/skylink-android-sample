@@ -323,6 +323,13 @@ public class SkylinkConnection {
 
     /**
      * Disconnects from the room we are currently in.
+     * <p/>
+     * Once disconnect is complete, {@link LifeCycleListener#onDisconnect(int, String)}
+     * will be called.
+     * <p/>
+     * To connect to a room after this,
+     * {@link sg.com.temasys.skylink.sdk.rtc.SkylinkConnection#init(String, SkylinkConfig, Context)}
+     * and {@link #connectToRoom(String, Object)} will have to be called.
      */
     public void disconnectFromRoom() {
         // Prevent thread from executing with WebServerClient methods concurrently.
@@ -506,7 +513,8 @@ public class SkylinkConnection {
     }
 
     /**
-     * Sends request(s) to share file with a specific remote peer or to all remote peers in a direct
+     * Sends request(s) to share file with a specific remote peer or to all remote peers in a
+     * direct
      * peer to peer manner in the same room.
      *
      * @param remotePeerId The id of the remote peer to send the file to. Use 'null' if the file is
@@ -812,7 +820,8 @@ public class SkylinkConnection {
     /**
      * Sets the specified remote peer listener object.
      *
-     * @param remotePeerListener The remote peer listener object that will receive callbacks related
+     * @param remotePeerListener The remote peer listener object that will receive callbacks
+     *                           related
      *                           to remote Peers.
      */
     public void setRemotePeerListener(RemotePeerListener remotePeerListener) {
