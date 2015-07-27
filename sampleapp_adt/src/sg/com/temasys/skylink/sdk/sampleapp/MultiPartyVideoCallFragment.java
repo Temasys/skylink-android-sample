@@ -23,6 +23,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
+import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
@@ -169,17 +170,19 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        config.setMirrorLocalView(true);
         return config;
     }
 
     @Override
     public void onLocalMediaCapture(GLSurfaceView videoView) {
         if (videoView == null) return;
-        if (!surfaceViews.containsKey(KEY_SELF)) {
-            // Add self view if its not already added
-            peerLayouts[0].addView(videoView);
-            surfaceViews.put(KEY_SELF, videoView);
+        if (surfaceViews.containsKey(KEY_SELF)) {
+            // Remove self view if its already added
+            peerLayouts[0].removeAllViews();
         }
+        peerLayouts[0].addView(videoView);
+        surfaceViews.put(KEY_SELF, videoView);
         // Allow self view to switch between different cameras (if any) when tapped.
         videoView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -275,7 +278,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-
+        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+            Log.d(TAG, "We have successfully disconnected from the room.");
+        }
+        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 
     @Override

@@ -266,6 +266,7 @@ public class DataTransferFragment extends Fragment implements
     @Override
     public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, "onDisconnect " + message);
+        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 
     @Override
