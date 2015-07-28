@@ -170,6 +170,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
+        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
     }
 
     @Override

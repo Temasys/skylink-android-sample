@@ -218,23 +218,36 @@ public class SkylinkConfig implements Serializable {
     }
 
     /**
-     * @return mirrorLocalView Config to set if local front camera video view should be mirrored.
+     * @return mirrorLocalView Whether local front camera video view will be mirrored.
      */
     public boolean isMirrorLocalView() {
         return mirrorLocalView;
     }
 
     /**
-     * Sets whether local view rendered is a mirror image of the actual video. Default is false.
+     * Sets whether local view rendered is a mirror image of the actual video.
+     * <p/>
+     * Default is false.
+     * <p/>
      * When set to true:
-     *
-     * - Only front (and not back) camera local view will be mirrored.
-     *
-     * - This will not change (e.g. mirror) the remote video view of us as seen by a remote Peer.
-     *
-     * - Will create a new GLSurfaceView (at onLocalMediaCapture) each time camera is switched.
-     *
-     *      - User need to handle this new GLSurfaceView to display self video correctly.
+     * <p/>
+     * <ul>
+     * <p/>
+     * <li>Only front (and not back) camera local view will be mirrored.</li>
+     * <p/>
+     * <li>This will not change (e.g. mirror) the remote video view of us as seen by a remote
+     * Peer.</li>
+     * <p/>
+     * <li>Will create a new GLSurfaceView (at onLocalMediaCapture) each time camera is
+     * switched.</li>
+     * <p/>
+     * <ul>
+     * <p/>
+     * <li>User need to handle this new GLSurfaceView to display self video correctly.</li>
+     * <p/>
+     * </ul>
+     * <p/>
+     * </ul>
      *
      * @param mirrorLocalView True to mirror local view, false to show local view as it is.
      */
