@@ -37,17 +37,23 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 public class VideoCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
     public static final String ROOM_NAME = Constants.ROOM_NAME_VIDEO;
+    private static String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_PEER_ID = "peerId";
     public static final String MY_USER_NAME = "videoCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
+
+    private static GLSurfaceView videoViewSelf;
+    private static GLSurfaceView videoViewRemote;
+
     //set height width for self-video when in call
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
-    private LinearLayout parentFragment;
+    private LinearLayout linearLayout;
     private Button toggleAudioButton;
     private Button toggleVideoButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
-    private SkylinkConnection skylinkConnection;
+    private static SkylinkConnection skylinkConnection;
     private String roomName;
     private String peerId;
     private ViewGroup.LayoutParams selfLayoutParams;
@@ -55,18 +61,31 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private boolean videoMuted;
     private boolean connected;
     private AudioRouter audioRouter;
+    private boolean orientationChange;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Initialize views
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
-        parentFragment = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
+        linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
 
         toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
         toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
+
+        // Check if it was an orientation change
+        if(savedInstanceState != null){
+            connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
+            // Set the appropriate UI if already connected.
+            if(connected) {
+                onConnectUIChange();
+                peerId = savedInstanceState.getString(BUNDLE_PEER_ID, null);
+                addSelfView(videoViewSelf);
+                addRemoteView(peerId, videoViewRemote);
+            }
+        }
 
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,7 +125,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
                 // Use the Audio router to switch between headphone and headset
                 audioRouter.startAudioRouting(getActivity().getApplicationContext());
-                connected = true;
             }
         });
 
@@ -203,10 +221,22 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // Note that orientation change is happening.
+        orientationChange = true;
+        // Save states for fragment restart
+        outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
+        outState.putString(BUNDLE_PEER_ID, peerId);
+    }
+
+    @Override
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
         super.onDetach();
-        if (skylinkConnection != null && connected) {
+        // Disconnect from room only if already connected and not changing orientation.
+        if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             skylinkConnection.setLifeCycleListener(null);
             skylinkConnection.setMediaListener(null);
@@ -214,6 +244,103 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             connected = false;
             audioRouter.stopAudioRouting(getActivity().getApplicationContext());
         }
+    }
+
+    /**
+     * Change certain UI elements once connected to room.
+     */
+    private void onConnectUIChange() {
+        etRoomName.setEnabled(false);
+        btnEnterRoom.setVisibility(View.GONE);
+        toggleAudioButton.setVisibility(View.VISIBLE);
+        toggleVideoButton.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Add or update our self VideoView into the app.
+     * @param videoView
+     */
+    private void addSelfView(GLSurfaceView videoView) {
+        if (videoView != null) {
+            View self = linearLayout.findViewWithTag("self");
+            videoView.setTag("self");
+            // Allow self view to switch between different cameras (if any) when tapped.
+            videoView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    skylinkConnection.switchCamera();
+                }
+            });
+
+            if (self == null) {
+                //show media on screen
+                // Remove view from previous parent, if any.
+                LinearLayout parentFragmentOld = (LinearLayout) videoView.getParent();
+                if(parentFragmentOld != null ) {
+                    parentFragmentOld.removeView(videoView);
+                }
+                // Add view to parent
+                linearLayout.addView(videoView);
+            } else {
+                videoView.setLayoutParams(self.getLayoutParams());
+
+                // If peer video exists, remove it first.
+                View peer = linearLayout.findViewWithTag("peer");
+                if (peer != null) {
+                    linearLayout.removeView(peer);
+                }
+
+                // Remove the old self video and add the new one.
+                linearLayout.removeView(self);
+                linearLayout.addView(videoView);
+
+                // Return the peer video, if it was there before.
+                if (peer != null) {
+                    linearLayout.addView(peer);
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Add or update remote Peer's VideoView into the app.
+     * @param remotePeerId
+     * @param videoView
+     */
+    private void addRemoteView(String remotePeerId, GLSurfaceView videoView) {
+        if (videoView == null) {
+            return;
+        }
+
+        // Resize self view
+        View self = linearLayout.findViewWithTag("self");
+        if (this.selfLayoutParams != null) {
+            // Record the original size of the layout
+            this.selfLayoutParams = self.getLayoutParams();
+        }
+
+        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
+        linearLayout.removeView(self);
+        linearLayout.addView(self);
+
+        // Remove previous peer video if it exists
+        View viewToRemove = linearLayout.findViewWithTag("peer");
+        if (viewToRemove != null) {
+            linearLayout.removeView(viewToRemove);
+        }
+
+        // Add new peer video
+        videoView.setTag("peer");
+        // Remove view from previous parent, if any.
+        LinearLayout parentFragmentOld = (LinearLayout) videoView.getParent();
+        if(parentFragmentOld != null ) {
+            parentFragmentOld.removeView(videoView);
+        }
+        // Add view to parent
+        linearLayout.addView(videoView);
+
+        this.peerId = remotePeerId;
     }
 
     /***
@@ -230,9 +357,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
-            etRoomName.setEnabled(false);
-            toggleAudioButton.setVisibility(View.VISIBLE);
-            toggleVideoButton.setVisibility(View.VISIBLE);
+            connected = true;
+            onConnectUIChange();
             Toast.makeText(getActivity(), "Connected to room " + roomName + " as " + MY_USER_NAME, Toast.LENGTH_SHORT).show();
         } else {
             Log.e(TAG, "Skylink Failed " + message);
@@ -275,41 +401,8 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
      */
     @Override
     public void onLocalMediaCapture(GLSurfaceView videoView) {
-        if (videoView != null) {
-            View self = parentFragment.findViewWithTag("self");
-            videoView.setTag("self");
-            // Allow self view to switch between different cameras (if any) when tapped.
-            videoView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    skylinkConnection.switchCamera();
-                }
-            });
-
-            if (self == null) {
-                //show media on screen
-                parentFragment.removeView(videoView);
-                parentFragment.addView(videoView);
-            } else {
-                videoView.setLayoutParams(self.getLayoutParams());
-
-                // If peer video exists, remove it first.
-                View peer = parentFragment.findViewWithTag("peer");
-                if (peer != null) {
-                    parentFragment.removeView(peer);
-                }
-
-                // Remove the old self video and add the new one.
-                parentFragment.removeView(self);
-                parentFragment.addView(videoView);
-
-                // Return the peer video, if it was there before.
-                if (peer != null) {
-                    parentFragment.addView(peer);
-                }
-            }
-
-        }
+        videoViewSelf = videoView;
+        addSelfView(videoView);
     }
 
     @Override
@@ -357,38 +450,14 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
-        if (videoView == null) {
-            return;
-        }
-
         if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
             Toast.makeText(getActivity(), " You are already in connection with two peers",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Resize self view
-        View self = parentFragment.findViewWithTag("self");
-        if (this.selfLayoutParams == null) {
-            // Record the original size of the layout
-            this.selfLayoutParams = self.getLayoutParams();
-        }
-
-        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
-        parentFragment.removeView(self);
-        parentFragment.addView(self);
-
-        // Remove previous peer video if it exist
-        View viewToRemove = parentFragment.findViewWithTag("peer");
-        if (viewToRemove != null) {
-            parentFragment.removeView(viewToRemove);
-        }
-
-        // Add new peer video
-        videoView.setTag("peer");
-        parentFragment.addView(videoView);
-
-        this.peerId = remotePeerId;
+        videoViewRemote = videoView;
+        addRemoteView(remotePeerId, videoView);
     }
 
     @Override
@@ -396,12 +465,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
         if (remotePeerId != null && remotePeerId.equals(this.peerId)) {
             this.peerId = null;
-            View peerView = parentFragment.findViewWithTag("peer");
-            parentFragment.removeView(peerView);
+            View peerView = linearLayout.findViewWithTag("peer");
+            linearLayout.removeView(peerView);
+            videoViewRemote = null;
 
             // Resize self view to original size
             if (this.selfLayoutParams != null) {
-                View self = parentFragment.findViewWithTag("self");
+                View self = linearLayout.findViewWithTag("self");
                 self.setLayoutParams(selfLayoutParams);
             }
         }
