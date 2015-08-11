@@ -46,9 +46,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private static final String BUNDLE_AUDIO_MUTED = "audioMuted";
     private static final String BUNDLE_VIDEO_MUTED = "videoMuted";
 
-    static GLSurfaceView videoViewSelf;
-    static GLSurfaceView videoViewRemote;
-    static SkylinkConnection skylinkConnection;
+    private static GLSurfaceView videoViewSelf;
+    private static GLSurfaceView videoViewRemote;
+    private static SkylinkConnection skylinkConnection;
 
     //set height width for self-video when in call
     public static final int WIDTH = 350;
@@ -63,9 +63,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     private boolean audioMuted;
     private boolean videoMuted;
     private boolean connected;
-    private AudioRouter audioRouter;
     private boolean orientationChange;
     private Activity parentActivity;
+    private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -178,46 +178,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         parentActivity.setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
-    private void initializeAudioRouter() {
-        if (audioRouter == null) {
-            audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) parentActivity.
-                    getSystemService(android.content.Context.AUDIO_SERVICE)));
-        }
-    }
-
-    private void initializeSkylinkConnection() {
-        if (skylinkConnection == null) {
-            skylinkConnection = SkylinkConnection.getInstance();
-            //the app_key and app_secret is obtained from the temasys developer console.
-            skylinkConnection.init(getString(R.string.app_key),
-                    getSkylinkConfig(), this.parentActivity.getApplicationContext());
-            // Set listeners to receive callbacks when events are triggered
-            setListeners();
-        }
-    }
-
-    /**
-     * Set listeners to receive callbacks when events are triggered
-     */
-    private void setListeners() {
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
-    }
-
-    private SkylinkConfig getSkylinkConfig() {
-        SkylinkConfig config = new SkylinkConfig();
-        //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
-        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        config.setHasPeerMessaging(true);
-        config.setHasFileTransfer(true);
-        config.setTimeout(Constants.TIME_OUT);
-        config.setMirrorLocalView(true);
-        return config;
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -253,6 +213,50 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 audioRouter.stopAudioRouting(parentActivity.getApplicationContext());
             }
         }
+    }
+
+    /***
+     * Helper methods
+     */
+
+    private SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig config = new SkylinkConfig();
+        //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY, AUDIO_AND_VIDEO;
+        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        config.setHasPeerMessaging(true);
+        config.setHasFileTransfer(true);
+        config.setTimeout(Constants.TIME_OUT);
+        config.setMirrorLocalView(true);
+        return config;
+    }
+
+    private void initializeAudioRouter() {
+        if (audioRouter == null) {
+            audioRouter = AudioRouter.getInstance();
+            audioRouter.init(((AudioManager) parentActivity.
+                    getSystemService(android.content.Context.AUDIO_SERVICE)));
+        }
+    }
+
+    private void initializeSkylinkConnection() {
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            //the app_key and app_secret is obtained from the temasys developer console.
+            skylinkConnection.init(getString(R.string.app_key),
+                    getSkylinkConfig(), this.parentActivity.getApplicationContext());
+            // Set listeners to receive callbacks when events are triggered
+            setListeners();
+        }
+    }
+
+    /**
+     * Set listeners to receive callbacks when events are triggered
+     */
+    private void setListeners() {
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setMediaListener(this);
+        skylinkConnection.setRemotePeerListener(this);
     }
 
     /***
@@ -422,18 +426,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
-    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId +
-                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onWarning(int errorCode, String message) {
-        Log.d(TAG, message + "warning");
-        Toast.makeText(parentActivity, "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
     public void onDisconnect(int errorCode, String message) {
         Log.d(TAG, message + " disconnected");
         Toast.makeText(parentActivity, "onDisconnect " + message, Toast.LENGTH_LONG).show();
@@ -441,8 +433,20 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     }
 
     @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        Toast.makeText(parentActivity, "Peer " + remotePeerId +
+                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onReceiveLog(String message) {
         Log.d(TAG, message + " on receive log");
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
+        Log.d(TAG, message + "warning");
+        Toast.makeText(parentActivity, "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -463,6 +467,18 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onVideoSizeChange(String peerId, Point size) {
         Log.d(TAG, "PeerId: " + peerId + " got size " + size.toString());
+    }
+
+    @Override
+    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
+        if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
+            Toast.makeText(parentActivity, " You are already in connection with two peers",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        videoViewRemote = videoView;
+        addRemoteView(remotePeerId, videoView);
     }
 
     @Override
@@ -501,18 +517,6 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         Log.d(TAG, "video height " + remotePeerUserInfo.getVideoHeight());
         Log.d(TAG, "video width " + remotePeerUserInfo.getVideoHeight());
         Log.d(TAG, "video frameRate " + remotePeerUserInfo.getVideoFps());
-    }
-
-    @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
-        if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
-            Toast.makeText(parentActivity, " You are already in connection with two peers",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        videoViewRemote = videoView;
-        addRemoteView(remotePeerId, videoView);
     }
 
     @Override
