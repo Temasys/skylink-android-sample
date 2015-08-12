@@ -164,11 +164,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDetach() {
-        //close the connection when the fragment is detached, so the streams are not open.
         super.onDetach();
         // Remove all views from layouts.
         emptyLayout();
-        // Disconnect from room only if already connected and not changing orientation.
+        // Close the room connection when this sample app is finished, so the streams can be closed.
+            // I.e. already connected and not changing orientation.
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             connected = false;
