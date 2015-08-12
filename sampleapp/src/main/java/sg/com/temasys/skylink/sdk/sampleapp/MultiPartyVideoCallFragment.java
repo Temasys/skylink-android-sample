@@ -11,14 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.temasys.skylink.sampleapp.R;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -87,7 +86,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 addViews();
             }
         } else {
-            videoViewRemoteMap = new HashMap<String, GLSurfaceView>();
+            videoViewRemoteMap = new ConcurrentHashMap<String, GLSurfaceView>();
             // Initialize the skylink connection
             initializeSkylinkConnection();
 
@@ -102,7 +101,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             Log.d(TAG, "Connection String" + skylinkConnectionString);
             skylinkConnection.connectToRoom(skylinkConnectionString,
                     MY_USER_NAME);
-            connected = true;
 
             // Use the Audio router to switch between headphone and headset
             audioRouter.startAudioRouting(getActivity().getApplicationContext());
@@ -152,6 +150,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         //update actionbar title
         ((MainActivity) activity).onSectionAttached(
                 getArguments().getInt(ARG_SECTION_NUMBER));
+        parentActivity = getActivity();
     }
 
     @Override
@@ -167,14 +166,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
         super.onDetach();
+        // Remove all views from layouts.
+        emptyLayout();
         // Disconnect from room only if already connected and not changing orientation.
-        if (parentActivity == null) {
-            return;
-        }
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             connected = false;
-            if (audioRouter != null) {
+            if (audioRouter != null && parentActivity != null) {
                 audioRouter.stopAudioRouting(parentActivity.getApplicationContext());
             }
         }
@@ -232,15 +230,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (videoView == null) return;
 
         // Remove video from previous parent, if any.
-        LinearLayout parentFragmentOld = (LinearLayout) videoView.getParent();
-        if (parentFragmentOld != null) {
-            parentFragmentOld.removeView(videoView);
-        }
+        Utils.removeViewFromParent(videoView);
 
         // Remove self view if its already added
         videoViewLayouts[0].removeAllViews();
-        /*if (videoViewRemoteMap.containsKey(KEY_SELF)) {
-        }*/
         videoViewLayouts[0].addView(videoView);
         // videoViewRemoteMap.put(KEY_SELF, videoView);
         // Allow self view to switch between different cameras (if any) when tapped.
@@ -262,10 +255,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (videoView == null) return;
 
         // Remove video from previous parent, if any.
-        LinearLayout parentFragmentOld = (LinearLayout) videoView.getParent();
-        if (parentFragmentOld != null) {
-            parentFragmentOld.removeView(videoView);
-        }
+        Utils.removeViewFromParent(videoView);
 
         // Remove any existing VideoView of this remote Peer.
         removePeerView(remotePeerId);
@@ -295,6 +285,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     /**
+     * Remove all videoViews from layouts.
+     */
+    private void emptyLayout() {
+        for (Map.Entry<String, GLSurfaceView> entry : videoViewRemoteMap.entrySet()) {
+            GLSurfaceView videoView = entry.getValue();
+            Utils.removeViewFromParent(videoView);
+        }
+    }
+
+    /**
      * Remove any existing VideoView of a remote Peer and remove remote Peer from record.
      *
      * @param remotePeerId
@@ -318,6 +318,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
+            connected = true;
             Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_waiting),
                     ROOM_NAME), Toast.LENGTH_LONG).show();
         } else {
@@ -328,10 +329,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDisconnect(int errorCode, String message) {
+        skylinkConnection = null;
+        String log = message;
         if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
-            Log.d(TAG, "We have successfully disconnected from the room.");
+            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
+                    + message;
+            Log.d(TAG, log);
         }
-        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
     }
 
     @Override

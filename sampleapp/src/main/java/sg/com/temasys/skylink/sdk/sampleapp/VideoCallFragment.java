@@ -28,6 +28,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
+import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
@@ -202,6 +203,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
     public void onDetach() {
         //close the connection when the fragment is detached, so the streams are not open.
         super.onDetach();
+        // Remove all views from layouts.
+        Utils.removeViewFromParent(videoViewSelf);
+        Utils.removeViewFromParent(videoViewRemote);
         // Disconnect from room only if already connected and not changing orientation.
         if (parentActivity == null) {
             return;
@@ -306,16 +310,14 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
                 linearLayout.removeView(peer);
             }
 
-            //show new video on screen
-            // Remove video from previous parent, if any.
-            LinearLayout parentFragmentOld = (LinearLayout) videoView.getParent();
-            if (parentFragmentOld != null) {
-                parentFragmentOld.removeView(videoView);
-            }
-            // And new self video.
+            // Show new video on screen
+                // Remove video from previous parent, if any.
+            Utils.removeViewFromParent(videoView);
+
+                // And new self video.
             linearLayout.addView(videoView);
 
-            // Return the peer video, if it was there before.
+                // Return the peer video, if it was there before.
             if (peer != null) {
                 linearLayout.addView(peer);
             }
@@ -349,10 +351,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         // Add new peer video
         videoView.setTag("peer");
         // Remove view from previous parent, if any.
-        LinearLayout parentFragmentOld = (LinearLayout) videoView.getParent();
-        if (parentFragmentOld != null) {
-            parentFragmentOld.removeView(videoView);
-        }
+        Utils.removeViewFromParent(videoView);
         // Add view to parent
         linearLayout.addView(videoView);
 
@@ -427,9 +426,14 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        Log.d(TAG, message + " disconnected");
-        Toast.makeText(parentActivity, "onDisconnect " + message, Toast.LENGTH_LONG).show();
         skylinkConnection = null;
+        String log = message;
+        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
+                    + message;
+            Log.d(TAG, log);
+        }
+        Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
     }
 
     @Override

@@ -1,7 +1,9 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.opengl.GLSurfaceView;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
@@ -116,5 +118,20 @@ class Utils {
         DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
         df.setTimeZone(tz);
         return df.format(date);
+    }
+
+    /**
+     * Remove video from containing layout, if any.
+     *
+     * @param videoView
+     */
+    public static void removeViewFromParent(GLSurfaceView videoView) {
+        Object viewParent = videoView.getParent();
+        if (viewParent != null) {
+            // If parent is a ViewGroup, remove from parent.
+            if (ViewGroup.class.isInstance(viewParent)) {
+                ((ViewGroup) viewParent).removeView(videoView);
+            }
+        }
     }
 }
