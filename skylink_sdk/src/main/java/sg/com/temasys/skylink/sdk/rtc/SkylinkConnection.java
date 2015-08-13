@@ -612,6 +612,7 @@ public class SkylinkConnection {
     /**
      * Sends a byte array to a specified remotePeer or to all participants of the room if the
      * remotePeerId is null
+     * The maximum of size of the byte array is 65456 bytes.
      *
      * @param remotePeerId remotePeerID of a specified peer
      * @param data         Array of bytes

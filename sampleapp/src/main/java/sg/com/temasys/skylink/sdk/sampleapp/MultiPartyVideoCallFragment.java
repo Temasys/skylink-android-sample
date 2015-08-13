@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
@@ -55,6 +56,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private boolean orientationChange;
     private Activity parentActivity;
     private AudioRouter audioRouter;
+    private Context applicationContext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -85,8 +87,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 // Add all existing VideoViews to UI
                 addViews();
             }
-        } else {
+        }
+
+        if (!connected) {
             videoViewRemoteMap = new ConcurrentHashMap<String, GLSurfaceView>();
+            skylinkConnection = null;
             // Initialize the skylink connection
             initializeSkylinkConnection();
 
@@ -103,7 +108,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                     MY_USER_NAME);
 
             // Use the Audio router to switch between headphone and headset
-            audioRouter.startAudioRouting(getActivity().getApplicationContext());
+            audioRouter.startAudioRouting(applicationContext);
         }
 
         return rootView;
@@ -115,7 +120,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
 
         // Allow volume to be controlled using volume keys
-        getActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        parentActivity.setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
@@ -151,6 +156,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         ((MainActivity) activity).onSectionAttached(
                 getArguments().getInt(ARG_SECTION_NUMBER));
         parentActivity = getActivity();
+        applicationContext = parentActivity.getApplicationContext();
     }
 
     @Override
@@ -168,12 +174,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         // Remove all views from layouts.
         emptyLayout();
         // Close the room connection when this sample app is finished, so the streams can be closed.
-            // I.e. already connected and not changing orientation.
+        // I.e. already connected and not changing orientation.
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             connected = false;
-            if (audioRouter != null && parentActivity != null) {
-                audioRouter.stopAudioRouting(parentActivity.getApplicationContext());
+            if (audioRouter != null && applicationContext != null) {
+                audioRouter.stopAudioRouting(applicationContext);
             }
         }
     }
@@ -197,7 +203,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private void initializeAudioRouter() {
         if (audioRouter == null) {
             audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) getActivity().
+            audioRouter.init(((AudioManager) applicationContext.
                     getSystemService(android.content.Context.AUDIO_SERVICE)));
         }
     }
@@ -207,7 +213,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             skylinkConnection = SkylinkConnection.getInstance();
             //the app_key and app_secret is obtained from the temasys developer console.
             skylinkConnection.init(getString(R.string.app_key),
-                    getSkylinkConfig(), this.getActivity().getApplicationContext());
+                    getSkylinkConfig(), this.applicationContext);
             // Set listeners to receive callbacks when events are triggered
             setListeners();
         }
@@ -319,10 +325,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
             connected = true;
-            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_waiting),
+            Toast.makeText(applicationContext, String.format(getString(R.string.data_transfer_waiting),
                     ROOM_NAME), Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason :" +
+            Toast.makeText(applicationContext, "Skylink Connection Failed\nReason :" +
                     " " + message, Toast.LENGTH_SHORT).show();
         }
     }
@@ -334,9 +340,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
-            Log.d(TAG, log);
         }
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        Toast.makeText(applicationContext, log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
     }
 
     @Override

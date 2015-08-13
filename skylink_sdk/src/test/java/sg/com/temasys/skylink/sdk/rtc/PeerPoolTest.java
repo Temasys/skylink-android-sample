@@ -92,10 +92,10 @@ public class PeerPoolTest implements PeerPoolClient {
     public void testPeerPoolConcurrent() throws InterruptedException, BrokenBarrierException {
 
         final CyclicBarrier barrierReady = new CyclicBarrier(MAX_PEER_COUNT);
-        final CyclicBarrier barrierDone = new CyclicBarrier(MAX_PEER_COUNT+1);
+        final CyclicBarrier barrierDone = new CyclicBarrier(MAX_PEER_COUNT + 1);
 
         // Start multiple threads to add Peers.
-        for(int i=0; i<MAX_PEER_COUNT; ++i){
+        for (int i = 0; i < MAX_PEER_COUNT; ++i) {
             Thread thread = getThread(barrierReady, barrierDone, i, true);
             thread.start();
         }
@@ -105,7 +105,7 @@ public class PeerPoolTest implements PeerPoolClient {
         assertEquals(MAX_PEER_COUNT, peerPool.getPeerNumber());
 
         // Start multiple threads to remove Peers.
-        for(int i=0; i<MAX_PEER_COUNT; ++i){
+        for (int i = 0; i < MAX_PEER_COUNT; ++i) {
             Thread thread = getThread(barrierReady, barrierDone, i, false);
             thread.start();
         }
@@ -118,6 +118,7 @@ public class PeerPoolTest implements PeerPoolClient {
     /**
      * Create thread to add or remove Peer when all Peers are ready to add.
      * Assert that add or remove Peer is successful.
+     *
      * @param barrierReady
      * @param barrierDone
      * @param id
@@ -140,7 +141,7 @@ public class PeerPoolTest implements PeerPoolClient {
                     e.printStackTrace();
                 }
 
-                if(addPeers) {
+                if (addPeers) {
                     assertTrue(peerPool.addPeer(peer));
                 } else {
                     assertNotNull(peerPool.removePeer(peerId));

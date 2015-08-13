@@ -85,13 +85,14 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
             // Set the appropriate UI if already connected.
             if (connected) {
-                onConnectUIChange();
-                initializeAudioRouter();
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
                 peerId = savedInstanceState.getString(BUNDLE_PEER_ID, null);
                 audioMuted = savedInstanceState.getBoolean(BUNDLE_AUDIO_MUTED);
                 videoMuted = savedInstanceState.getBoolean(BUNDLE_VIDEO_MUTED);
+                // Set the appropriate UI if already connected.
+                onConnectUIChange();
+                initializeAudioRouter();
                 addSelfView(videoViewSelf);
                 addRemoteView(peerId, videoViewRemote);
             }
@@ -206,7 +207,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         Utils.removeViewFromParent(videoViewSelf);
         Utils.removeViewFromParent(videoViewRemote);
         // Close the room connection when this sample app is finished, so the streams can be closed.
-            // I.e. already connected and not changing orientation.
+        // I.e. already connected and not changing orientation.
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             connected = false;
@@ -308,13 +309,13 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
             }
 
             // Show new video on screen
-                // Remove video from previous parent, if any.
+            // Remove video from previous parent, if any.
             Utils.removeViewFromParent(videoView);
 
-                // And new self video.
+            // And new self video.
             linearLayout.addView(videoView);
 
-                // Return the peer video, if it was there before.
+            // Return the peer video, if it was there before.
             if (peer != null) {
                 linearLayout.addView(peer);
             }
@@ -428,9 +429,9 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
         if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
-            Log.d(TAG, log);
         }
         Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
     }
 
     @Override

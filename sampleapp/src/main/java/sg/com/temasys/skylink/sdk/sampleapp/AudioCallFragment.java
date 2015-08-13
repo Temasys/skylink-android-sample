@@ -67,15 +67,14 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
             connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
             // Set the appropriate UI if already connected.
             if (connected) {
+                // Set listeners to receive callbacks when events are triggered
+                setListeners();
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 remotePeerId = savedInstanceState.getString(BUNDLE_PEER_ID, null);
                 remotePeerName = savedInstanceState.getString(BUNDLE_PEER_NAME, null);
-
+                // Set the appropriate UI if already connected.
                 onConnectUIChange();
                 initializeAudioRouter();
-
-                // Set listeners to receive callbacks when events are triggered
-                setListeners();
             }
         }
 
@@ -209,7 +208,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
      */
     private void onConnectUIChange() {
         btnAudioCall.setEnabled(false);
-        Utils.setRoomDetails(peerJoined, tvRoomDetails, this.remotePeerName, ROOM_NAME, MY_USER_NAME);
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
     }
 
     /***
@@ -225,7 +224,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
             Log.d(TAG, "Skylink Connected");
-            Utils.setRoomDetails(peerJoined, tvRoomDetails, this.remotePeerName, ROOM_NAME, MY_USER_NAME);
+            Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
         } else {
             Toast.makeText(parentActivity, "Skylink Connection Failed\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -240,13 +239,15 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
+
         String log = message;
         if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
-            Log.d(TAG, log);
         }
         Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
     }
 
     @Override
@@ -299,7 +300,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         if (userData instanceof String) {
             remotePeerName = (String) userData;
         }
-        Utils.setRoomDetails(peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
     }
 
     @Override
@@ -321,6 +322,6 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         this.remotePeerId = null;
         remotePeerName = null;
         //update textview to show room status
-        Utils.setRoomDetails(peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
     }
 }
