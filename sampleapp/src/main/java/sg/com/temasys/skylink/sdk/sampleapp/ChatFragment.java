@@ -307,7 +307,7 @@ public class ChatFragment extends Fragment implements LifeCycleListener, RemoteP
     }
 
     /**
-     * Change certain UI elements once connected to room.
+     * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
         Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);

@@ -29,7 +29,7 @@ class Utils {
     public static void setRoomDetails(boolean isConnected, boolean isPeerInRoom, TextView textView,
                                       String peerName, String roomName, String userName) {
         String roomDetails = "You are not connected to any room";
-        if(isConnected) {
+        if (isConnected) {
             roomDetails = "Room Name : " + roomName
                     + "\nYou are signed in as : " + userName + "\n";
             if (isPeerInRoom) {

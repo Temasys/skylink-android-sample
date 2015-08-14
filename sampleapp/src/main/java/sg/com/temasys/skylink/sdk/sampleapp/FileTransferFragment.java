@@ -29,6 +29,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
+import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
@@ -42,10 +43,6 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     public static final String MY_USER_NAME = "fileTransferUser";
     public static final String EXTERNAL_STORAGE = "ExternalStorage";
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private TextView tvRoomDetails;
-    private EditText etSenderFilePath;
-    private TextView tvFileTransferDetails;
-    private ImageView ivFilePreview;
 
     // Constants for configuration change
     private static final String BUNDLE_IS_CONNECTED = "isConnected";
@@ -53,14 +50,18 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
     private static final String BUNDLE_PEER_ID = "peerId";
     private static final String BUNDLE_PEER_NAME = "remotePeerName";
 
-    private static SkylinkConnection skylinkConnection;
 
+    private TextView tvRoomDetails;
+    private EditText etSenderFilePath;
+    private TextView tvFileTransferDetails;
+    private ImageView ivFilePreview;
     private Button sendFilePrivate;
     private Button sendFileGroup;
     private String fileNamePrivate = "FileTransferPrivate.png";
     private String fileNameGroup = "FireTransferGroup.png";
     private String fileNameDownloaded = "downloadFile.png";
 
+    private static SkylinkConnection skylinkConnection;
     private String remotePeerId;
     private String remotePeerName;
     private boolean connected;
@@ -373,8 +374,14 @@ public class FileTransferFragment extends Fragment implements LifeCycleListener,
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        Log.d(TAG, message + " disconnected");
-        Toast.makeText(parentActivity, "onDisconnect " + message, Toast.LENGTH_LONG).show();
+        skylinkConnection = null;
+        String log = message;
+        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
+                    + message;
+        }
+        Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
     }
 
     @Override

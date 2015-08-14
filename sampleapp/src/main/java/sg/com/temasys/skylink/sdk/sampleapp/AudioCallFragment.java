@@ -41,11 +41,10 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     private static final String BUNDLE_PEER_ID = "peerId";
     private static final String BUNDLE_PEER_NAME = "remotePeerName";
 
-    private static SkylinkConnection skylinkConnection;
-
     private TextView tvRoomDetails;
     private Button btnAudioCall;
 
+    private static SkylinkConnection skylinkConnection;
     private String remotePeerId;
     private String remotePeerName;
     private boolean connected;
@@ -100,7 +99,6 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
                                 appSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
                 skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
-                connected = true;
 
                 // Use the Audio router to switch between headphone and headset
                 audioRouter.startAudioRouting(parentActivity.getApplicationContext());
@@ -204,7 +202,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
      */
 
     /**
-     * Change certain UI elements once connected to room.
+     * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
         btnAudioCall.setEnabled(false);
@@ -223,6 +221,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
+            connected = true;
             Log.d(TAG, "Skylink Connected");
             Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME, MY_USER_NAME);
         } else {

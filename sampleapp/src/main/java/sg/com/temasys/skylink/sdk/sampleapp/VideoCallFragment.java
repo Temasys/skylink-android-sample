@@ -266,7 +266,7 @@ public class VideoCallFragment extends Fragment implements LifeCycleListener, Me
      */
 
     /**
-     * Change certain UI elements once connected to room.
+     * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
         btnEnterRoom.setVisibility(View.GONE);
