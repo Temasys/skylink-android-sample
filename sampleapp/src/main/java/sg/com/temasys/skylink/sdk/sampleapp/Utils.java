@@ -1,7 +1,9 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.opengl.GLSurfaceView;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
@@ -24,14 +26,17 @@ class Utils {
     private Utils() {
     }
 
-    public static void setRoomDetails(boolean isPeerInRoom, TextView textView,
+    public static void setRoomDetails(boolean isConnected, boolean isPeerInRoom, TextView textView,
                                       String peerName, String roomName, String userName) {
-        String roomDetails = "Room Name : " + roomName
-                + "\nYou are signed in as : " + userName + "\n";
-        if (isPeerInRoom) {
-            roomDetails += "Peer Name : " + peerName;
-        } else {
-            roomDetails += "You are alone in this room";
+        String roomDetails = "You are not connected to any room";
+        if (isConnected) {
+            roomDetails = "Room Name : " + roomName
+                    + "\nYou are signed in as : " + userName + "\n";
+            if (isPeerInRoom) {
+                roomDetails += "Peer Name : " + peerName;
+            } else {
+                roomDetails += "You are alone in this room";
+            }
         }
         textView.setText(roomDetails);
     }
@@ -116,5 +121,22 @@ class Utils {
         DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
         df.setTimeZone(tz);
         return df.format(date);
+    }
+
+    /**
+     * Remove video from containing layout, if any.
+     *
+     * @param videoView
+     */
+    public static void removeViewFromParent(GLSurfaceView videoView) {
+        if (videoView != null) {
+            Object viewParent = videoView.getParent();
+            if (viewParent != null) {
+                // If parent is a ViewGroup, remove from parent.
+                if (ViewGroup.class.isInstance(viewParent)) {
+                    ((ViewGroup) viewParent).removeView(videoView);
+                }
+            }
+        }
     }
 }

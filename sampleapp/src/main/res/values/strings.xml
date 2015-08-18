@@ -13,6 +13,7 @@
     <string name="action_build_info">Build information</string>
     <string name="enter_room_name">Enter Room Name</string>
     <string name="enter_room">Submit</string>
+    <string name="no_peer">No Peer in the room.</string>
     <string name="send_data_peer">Send to Peer</string>
     <string name="send_data_room">Send to Room</string>
     <string name="data_transfer_status">Ready to transfer %1$s bytes for Private and %2$s bytes for Group.</string>

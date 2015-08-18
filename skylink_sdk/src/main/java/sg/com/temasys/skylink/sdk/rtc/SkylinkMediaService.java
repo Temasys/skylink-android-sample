@@ -406,12 +406,17 @@ class SkylinkMediaService {
             cameraUsingFront = !cameraUsingFront;
             // Change videoView if config sets front camera to be mirrored
             if (skylinkConnection.getSkylinkConfig().isMirrorLocalView()) {
-                GLSurfaceView localVideoView = createVideoView(getLocalVideoTrack(),
+                final GLSurfaceView localVideoView = createVideoView(getLocalVideoTrack(),
                         VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
                         true
                 );
                 Log.d(TAG, "[switchCamera] New local video view and renderer created.");
-                skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
+                skylinkConnection.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
+                    }
+                });
                 Log.d(TAG, "[switchCamera] New local video view sent to App.");
             }
         } else {
