@@ -1,0 +1,12 @@
+/.gradle
+/adtSample/build
+/adtSample/src/main/res/values/config.xml
+/import-summary.txt
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/adtSample/src/main/gen
+/adtSample/src/main/bin
+

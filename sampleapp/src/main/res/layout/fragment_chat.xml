@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="You are not connected to any room"
+        android:id="@+id/tv_room_details"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"/>
+
+
+    <ListView
+        android:id="@+id/lv_messages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/tv_room_details"
+        android:layout_above="@+id/chatMessage">
+    </ListView>
+
+
+    <EditText
+        android:id="@+id/chatMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter a Message"
+        android:layout_above="@+id/btn_send_private_chat"
+        android:layout_alignParentStart="true"/>
+
+
+    <Button
+        android:id="@+id/btn_send_private_chat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Private P2P Message"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/btn_send_server_message"
+        android:layout_toStartOf="@+id/btn_send_p2p_public_message"
+        android:layout_alignTop="@+id/btn_send_p2p_public_message"/>
+
+    <Button
+        android:id="@+id/btn_send_server_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Private Server Message"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/btn_send_p2p_public_message"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Group Server Message"
+        android:id="@+id/btn_send_public_server_message"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/btn_send_private_chat"/>
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Group P2P Message"
+        android:id="@+id/btn_send_p2p_public_message"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@+id/btn_send_public_server_message"
+        android:layout_toEndOf="@+id/btn_send_server_message"/>
+
+</RelativeLayout>
