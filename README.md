@@ -18,7 +18,7 @@ Please do not hesitate to reach get in touch with us if you encounter any issue 
 You can raise tickets on our [support portal](http://support.temasys.com.sg/) or on github
 
 
-License
---------
-[APACHE 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+Copyright and License
+----------------------
+Copyright 2015 Temasys Communications Pte Ltd under [APACHE 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) license
 
