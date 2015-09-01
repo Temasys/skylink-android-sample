@@ -65,8 +65,8 @@ public class MainActivity extends ActionBarActivity
         Fragment fragmentToLaunch = getFragmentToLaunch(position);
 
         fragmentManager.beginTransaction()
-                .replace(R.id.container, fragmentToLaunch)
-                .commit();
+                       .replace(R.id.container, fragmentToLaunch)
+                       .commit();
     }
 
     public void onSectionAttached(int number) {
@@ -124,8 +124,9 @@ public class MainActivity extends ActionBarActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_build_info) {
-            String versionInfo = "SDK Version: " + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
-                    + "\n" + "Sample application version: " + BuildConfig.VERSION_NAME;
+            String versionInfo =
+                    "SDK Version: " + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
+                            + "\n" + "Sample application version: " + BuildConfig.VERSION_NAME;
             Log.d(TAG, versionInfo);
             Toast.makeText(this, versionInfo, Toast.LENGTH_LONG).show();
             return true;

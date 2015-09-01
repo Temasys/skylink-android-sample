@@ -5,22 +5,22 @@
                 android:orientation="vertical">
 
     <TextView
+        android:id="@+id/tv_room_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="You are not connected to any room"
-        android:id="@+id/tv_room_details"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"/>
+        android:text="You are not connected to any room"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
 
 
     <ListView
         android:id="@+id/lv_messages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/chatMessage"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/tv_room_details"
-        android:layout_above="@+id/chatMessage">
+        android:layout_below="@id/tv_room_details">
     </ListView>
 
 
@@ -28,47 +28,47 @@
         android:id="@+id/chatMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter a Message"
         android:layout_above="@+id/btn_send_private_chat"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true"
+        android:hint="Enter a Message"/>
 
 
     <Button
         android:id="@+id/btn_send_private_chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Private P2P Message"
-        android:layout_alignParentStart="true"
         android:layout_above="@+id/btn_send_server_message"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/btn_send_p2p_public_message"
         android:layout_toStartOf="@+id/btn_send_p2p_public_message"
-        android:layout_alignTop="@+id/btn_send_p2p_public_message"/>
+        android:text="Private P2P Message"/>
 
     <Button
         android:id="@+id/btn_send_server_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Private Server Message"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/btn_send_p2p_public_message"/>
+        android:layout_below="@+id/btn_send_p2p_public_message"
+        android:text="Private Server Message"/>
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Group Server Message"
         android:id="@+id/btn_send_public_server_message"
-        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/btn_send_private_chat"/>
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/btn_send_private_chat"
+        android:text="Group Server Message"/>
 
 
     <Button
+        android:id="@+id/btn_send_p2p_public_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Group P2P Message"
-        android:id="@+id/btn_send_p2p_public_message"
-        android:layout_alignParentEnd="true"
         android:layout_above="@+id/btn_send_public_server_message"
-        android:layout_toEndOf="@+id/btn_send_server_message"/>
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/btn_send_server_message"
+        android:text="Group P2P Message"/>
 
 </RelativeLayout>

@@ -1,7 +1,9 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.opengl.GLSurfaceView;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
@@ -16,22 +18,25 @@ import javax.crypto.spec.SecretKeySpec;
 
 class Utils {
 
-    private static final String TAG = Utils.class.getName();
-    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     public static final String TIME_ZONE_UTC = "UTC";
     public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
+    private static final String TAG = Utils.class.getName();
+    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
     private Utils() {
     }
 
-    public static void setRoomDetails(boolean isPeerInRoom, TextView textView,
-                                      String peerName, String roomName, String userName) {
-        String roomDetails = "Room Name : " + roomName
-                + "\nYou are signed in as : " + userName + "\n";
-        if (isPeerInRoom) {
-            roomDetails += "Peer Name : " + peerName;
-        } else {
-            roomDetails += "You are alone in this room";
+    public static void setRoomDetails(boolean isConnected, boolean isPeerInRoom, TextView textView,
+            String peerName, String roomName, String userName) {
+        String roomDetails = "You are not connected to any room";
+        if (isConnected) {
+            roomDetails = "Room Name : " + roomName
+                    + "\nYou are signed in as : " + userName + "\n";
+            if (isPeerInRoom) {
+                roomDetails += "Peer Name : " + peerName;
+            } else {
+                roomDetails += "You are alone in this room";
+            }
         }
         textView.setText(roomDetails);
     }
@@ -48,8 +53,8 @@ class Utils {
      * @return
      */
     public static String getSkylinkConnectionString(String roomName, String appKey,
-                                                    String secret,
-                                                    Date startTime, int duration) {
+            String secret,
+            Date startTime, int duration) {
 
         Log.d(TAG, "Room name " + roomName);
         Log.d(TAG, "App Key " + appKey);
@@ -116,5 +121,22 @@ class Utils {
         DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
         df.setTimeZone(tz);
         return df.format(date);
+    }
+
+    /**
+     * Remove video from containing layout, if any.
+     *
+     * @param videoView
+     */
+    public static void removeViewFromParent(GLSurfaceView videoView) {
+        if (videoView != null) {
+            Object viewParent = videoView.getParent();
+            if (viewParent != null) {
+                // If parent is a ViewGroup, remove from parent.
+                if (ViewGroup.class.isInstance(viewParent)) {
+                    ((ViewGroup) viewParent).removeView(videoView);
+                }
+            }
+        }
     }
 }

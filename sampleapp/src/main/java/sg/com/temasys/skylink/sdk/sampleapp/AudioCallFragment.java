@@ -22,32 +22,60 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
+import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
  * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
  * lavanyasudharsanam on 20/1/15.
  */
-public class AudioCallFragment extends Fragment implements LifeCycleListener, MediaListener, RemotePeerListener {
-    private static final String TAG = AudioCallFragment.class.getCanonicalName();
+public class AudioCallFragment extends Fragment
+        implements LifeCycleListener, MediaListener, RemotePeerListener {
     public static final String ROOM_NAME = Constants.ROOM_NAME_AUDIO;
     public static final String MY_USER_NAME = "audioCallUser";
+    private static final String TAG = AudioCallFragment.class.getCanonicalName();
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private SkylinkConnection skylinkConnection;
+
+    // Constants for configuration change
+    private static final String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
+    private static final String BUNDLE_PEER_ID = "peerId";
+    private static final String BUNDLE_PEER_NAME = "remotePeerName";
+    private static SkylinkConnection skylinkConnection;
     private TextView tvRoomDetails;
+    private Button btnAudioCall;
     private String remotePeerId;
-    private String peerName;
+    private String remotePeerName;
     private boolean connected;
+    private boolean peerJoined;
+    private boolean orientationChange;
+    private Activity parentActivity;
     private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
 
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
+        btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
 
-        final Button btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
+        // Check if it was an orientation change
+        if (savedInstanceState != null) {
+            connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
+            // Set the appropriate UI if already connected.
+            if (connected) {
+                // Set listeners to receive callbacks when events are triggered
+                setListeners();
+                peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
+                remotePeerId = savedInstanceState.getString(BUNDLE_PEER_ID, null);
+                remotePeerName = savedInstanceState.getString(BUNDLE_PEER_NAME, null);
+                // Set the appropriate UI if already connected.
+                onConnectUIChange();
+                initializeAudioRouter();
+            }
+        }
+
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,26 +91,27 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
                 // Obtaining the Skylink connection string done locally
                 // In a production environment the connection string should be given
-                // by an entity external to the App, such as an App server that holds the Skylink App secret
+                // by an entity external to the App, such as an App server that holds the Skylink
+                // App secret
                 // In order to avoid keeping the App secret within the application
                 String skylinkConnectionString = Utils.
-                        getSkylinkConnectionString(ROOM_NAME, appKey,
-                                appSecret, new Date(), SkylinkConnection.DEFAULT_DURATION);
+                                                              getSkylinkConnectionString(ROOM_NAME,
+                                                                      appKey,
+                                                                      appSecret, new Date(),
+                                                                      SkylinkConnection
+                                                                              .DEFAULT_DURATION);
 
-                skylinkConnection.connectToRoom(skylinkConnectionString,
-                        MY_USER_NAME);
-                connected = true;
+                skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
 
                 // Use the Audio router to switch between headphone and headset
+                audioRouter.startAudioRouting(parentActivity.getApplicationContext());
 
-                audioRouter.startAudioRouting(getActivity().getApplicationContext());
+                onConnectUIChange();
 
-                btnAudioCall.setEnabled(false);
-                Toast.makeText(getActivity(), "Connecting....",
+                Toast.makeText(parentActivity, "Connecting....",
                         Toast.LENGTH_SHORT).show();
             }
         });
-
         return rootView;
     }
 
@@ -93,46 +122,45 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         getActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
-    private void initializeAudioRouter() {
-        if (audioRouter == null) {
-            audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) getActivity().
-                    getSystemService(android.content.Context.AUDIO_SERVICE)));
-        }
-    }
-
-    private void initializeSkylinkConnection() {
-        if (skylinkConnection == null) {
-            skylinkConnection = SkylinkConnection.getInstance();
-            skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
-                    this.getActivity().getApplicationContext());
-
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setMediaListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         //update actionbar title
         ((MainActivity) activity).onSectionAttached(
                 getArguments().getInt(ARG_SECTION_NUMBER));
+        parentActivity = getActivity();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Note that orientation change is happening.
+        orientationChange = true;
+        // Save states for fragment restart
+        outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
+        outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
+        outState.putString(BUNDLE_PEER_ID, remotePeerId);
+        outState.putString(BUNDLE_PEER_NAME, remotePeerName);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        if (skylinkConnection != null && connected) {
+
+        // Close the room connection when this sample app is finished, so the streams can be closed.
+        // I.e. already connected and not changing orientation.
+        if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
-            skylinkConnection.setLifeCycleListener(null);
-            skylinkConnection.setMediaListener(null);
-            skylinkConnection.setRemotePeerListener(null);
             connected = false;
-            audioRouter.stopAudioRouting(getActivity().getApplicationContext());
+            if (audioRouter != null && parentActivity != null) {
+                audioRouter.stopAudioRouting(parentActivity.getApplicationContext());
+            }
         }
     }
+
+    /***
+     * Helper methods
+     */
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
@@ -142,6 +170,50 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
         return config;
+    }
+
+    private void initializeAudioRouter() {
+        if (audioRouter == null) {
+            audioRouter = AudioRouter.getInstance();
+            audioRouter.init(((AudioManager) parentActivity.
+                                                                   getSystemService(
+                                                                           android.content
+                                                                                   .Context
+                                                                                   .AUDIO_SERVICE)));
+        }
+    }
+
+    private void initializeSkylinkConnection() {
+        if (skylinkConnection == null) {
+            skylinkConnection = SkylinkConnection.getInstance();
+            skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
+                    this.parentActivity.getApplicationContext());
+
+            // Set listeners to receive callbacks when events are triggered
+            setListeners();
+        }
+    }
+
+    /**
+     * Set listeners to receive callbacks when events are triggered
+     */
+    private void setListeners() {
+        skylinkConnection.setLifeCycleListener(this);
+        skylinkConnection.setMediaListener(this);
+        skylinkConnection.setRemotePeerListener(this);
+    }
+
+    /***
+     * UI helper methods
+     */
+
+    /**
+     * Change certain UI elements once connected to room or when Peer(s) join or leave.
+     */
+    private void onConnectUIChange() {
+        btnAudioCall.setEnabled(false);
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
+                MY_USER_NAME);
     }
 
     /***
@@ -156,10 +228,12 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     @Override
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
+            connected = true;
             Log.d(TAG, "Skylink Connected");
-            Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+            Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
+                    MY_USER_NAME);
         } else {
-            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason : "
+            Toast.makeText(parentActivity, "Skylink Connection Failed\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
         }
     }
@@ -171,8 +245,17 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        Log.d(TAG, message + " disconnected");
-        Toast.makeText(getActivity(), "onDisconnect " + message, Toast.LENGTH_LONG).show();
+        skylinkConnection = null;
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
+                MY_USER_NAME);
+
+        String log = message;
+        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
+                    + message;
+        }
+        Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
     }
 
     @Override
@@ -182,7 +265,7 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+        Toast.makeText(parentActivity, "Peer " + remotePeerId +
                 " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
@@ -215,16 +298,19 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // If there is an existing peer, prevent new remotePeer from joining call.
         if (this.remotePeerId != null) {
-            Toast.makeText(getActivity(), "Rejected third peer from joining conversation",
+            Toast.makeText(parentActivity, "Rejected third peer from joining conversation",
                     Toast.LENGTH_SHORT).show();
             return;
         }
-        //if first remote peer to join room, keep track of user and update text-view to display details
+        //if first remote peer to join room, keep track of user and update text-view to display
+        // details
         this.remotePeerId = remotePeerId;
+        peerJoined = true;
         if (userData instanceof String) {
-            this.peerName = (String) userData;
-            Utils.setRoomDetails(true, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+            remotePeerName = (String) userData;
         }
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
+                MY_USER_NAME);
     }
 
     @Override
@@ -240,11 +326,13 @@ public class AudioCallFragment extends Fragment implements LifeCycleListener, Me
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
-        Toast.makeText(getActivity(), "Your peer has left the room", Toast.LENGTH_SHORT).show();
+        Toast.makeText(parentActivity, "Your peer has left the room", Toast.LENGTH_SHORT).show();
         //reset peerId
+        peerJoined = false;
         this.remotePeerId = null;
-        this.peerName = null;
+        remotePeerName = null;
         //update textview to show room status
-        Utils.setRoomDetails(false, tvRoomDetails, this.peerName, ROOM_NAME, MY_USER_NAME);
+        Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
+                MY_USER_NAME);
     }
 }

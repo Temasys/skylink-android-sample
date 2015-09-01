@@ -20,18 +20,6 @@ public class AudioRouter {
 
     private AudioManager audioManager;
 
-    /**
-     * Gets an instance of the AudioRouter
-     *
-     * @return
-     */
-    public static synchronized AudioRouter getInstance() {
-        if (instance == null) {
-            instance = new AudioRouter();
-        }
-        return instance;
-    }
-
     private AudioRouter() {
         headsetBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -56,6 +44,18 @@ public class AudioRouter {
     }
 
     /**
+     * Gets an instance of the AudioRouter
+     *
+     * @return
+     */
+    public static synchronized AudioRouter getInstance() {
+        if (instance == null) {
+            instance = new AudioRouter();
+        }
+        return instance;
+    }
+
+    /**
      * Initialize the Audio router
      *
      * @param audioManager
@@ -70,7 +70,8 @@ public class AudioRouter {
      * @param context
      */
     public void startAudioRouting(Context context) {
-        context.registerReceiver(headsetBroadcastReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+        context.registerReceiver(headsetBroadcastReceiver,
+                new IntentFilter(Intent.ACTION_HEADSET_PLUG));
         setAudioPath();
     }
 
