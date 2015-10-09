@@ -10,8 +10,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/sampleapp" />
             <option value="$PROJECT_DIR$/skylink_sdk" />
+            <option value="$PROJECT_DIR$/../skylink-android-sample/sampleapp" />
           </set>
         </option>
       </GradleProjectSettings>

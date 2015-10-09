@@ -35,8 +35,6 @@ class SignalingServerClient {
                                  String signalingIp, int signalingPort) {
         this.delegate = delegate;
         sigIP = signalingIp;
-        // sigIP = "http://192.168.1.125";
-        // sigIP = "http://sgbeta.signaling.temasys.com.sg";
         sigPort = SIG_PORT_DEFAULT;
         try {
             connectSigServer();
@@ -64,6 +62,10 @@ class SignalingServerClient {
 
         // Initialize SocketIO
         String sigUrl = sigIP + ":" + sigPort;
+        // sigUrl = "http://192.168.1.125:6001";
+        // sigUrl = "http://sgbeta.signaling.temasys.com.sg:6001";
+        // sigUrl = "http://ec2-52-8-93-170.us-west-1.compute.amazonaws.com:6001";
+        // sigUrl = "http://192.168.1.54:6001";
         Log.d(TAG, "Connecting to the signaling server at: " + sigUrl);
         socketIO = IO.socket(sigUrl, opts);
 
