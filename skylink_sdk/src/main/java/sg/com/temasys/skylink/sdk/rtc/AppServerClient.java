@@ -30,14 +30,12 @@ package sg.com.temasys.skylink.sdk.rtc;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Connects to an App server and process the response from the App server.
@@ -77,11 +75,15 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
                 String result = "";
                 try {
                     // Connect to App server
-                    HttpClient httpclient = new DefaultHttpClient();
-                    HttpResponse httpResponse = httpclient.execute(new HttpGet(url));
+
+                    URL urlFromString = new URL(url);
+
+                    HttpURLConnection urlConnection = (HttpURLConnection)urlFromString.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
 
                     // and get server response
-                    inputStream = httpResponse.getEntity().getContent();
+                    inputStream = urlConnection.getInputStream();
 
                     if (inputStream != null) {
                         result = Utils.convertInputStreamToString(inputStream);
