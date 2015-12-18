@@ -19,7 +19,8 @@ repositories {
 
 dependencies {
     compile files('libs/libjingle_peerconnection_9127.jar')
-    compile ('com.github.nkzawa:socket.io-client:0.5.0'){
+    compile ('io.socket:socket.io-client:0.6.2') {
+        // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'
     }
     testCompile 'junit:junit:4.11'

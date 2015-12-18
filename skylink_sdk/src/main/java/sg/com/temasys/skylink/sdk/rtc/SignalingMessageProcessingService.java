@@ -2,7 +2,7 @@ package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Log;
 
-import com.github.nkzawa.socketio.client.Socket;
+import io.socket.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
