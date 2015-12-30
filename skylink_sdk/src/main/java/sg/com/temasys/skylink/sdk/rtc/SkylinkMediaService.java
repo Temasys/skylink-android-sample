@@ -6,10 +6,13 @@ import android.util.Log;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
+import org.webrtc.CameraEnumerationAndroid;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
+import org.webrtc.RendererCommon;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoRenderer;
+import org.webrtc.VideoRendererGui;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
@@ -78,8 +81,8 @@ class SkylinkMediaService {
                                 " video track(s) has been added to PeerConnection.");
 
                         remoteVideoView = createVideoView(stream.videoTracks.get(0),
-                                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                                false);
+                                RendererCommon.ScalingType.SCALE_ASPECT_FILL,
+                                peerId);
 
                         final GLSurfaceView rVideoView = remoteVideoView;
                         if (!SkylinkPeerService.isPeerIdMCU(peerId))
@@ -282,8 +285,8 @@ class SkylinkMediaService {
                             if (skylinkConnection.getSkylinkConfig().hasVideoSend()) {
                                 localVideoView = createVideoView(
                                         getLocalVideoTrack(),
-                                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                                        true
+                                        RendererCommon.ScalingType.SCALE_ASPECT_FILL,
+                                        null
                                 );
                             }
 
@@ -323,20 +326,25 @@ class SkylinkMediaService {
      *
      * @param videoTrack  To which place the renderer
      * @param scalingType
-     * @param isLocal     Whether or not this is for the local video view.
+     * @param peerId      PeerId of the Peer to whom the videoTrack belongs. null for local videoTrack.
      * @return
      */
     private GLSurfaceView createVideoView(
-            VideoTrack videoTrack, VideoRendererGui.ScalingType scalingType, boolean isLocal) {
+            VideoTrack videoTrack, RendererCommon.ScalingType scalingType, String peerId) {
 
         boolean mirrorFrontVideo = skylinkConnection.getSkylinkConfig().isMirrorLocalView();
         boolean mirrorThisVideo = false;
+        boolean isLocal = false;
+        if (peerId == null) {
+            isLocal = true;
+        }
         // For local video view, check if config says to mirror it.
         if (isLocal && cameraUsingFront) {
             mirrorThisVideo = mirrorFrontVideo;
         }
 
-        ArrayList<Object> input = genVideoViewFromVideoTrack(videoTrack, scalingType, mirrorThisVideo);
+        ArrayList<Object> input = genVideoViewFromVideoTrack(videoTrack, scalingType,
+                mirrorThisVideo, peerId);
         GLSurfaceView videoView = (GLSurfaceView) input.get(0);
 
         // For local video view when SkylinkConfig is set to mirror,
@@ -358,23 +366,31 @@ class SkylinkMediaService {
      * @param videoTrack
      * @param scalingType
      * @param mirror      Whether the output video should be left-right reflected, like a mirror.
+     * @param peerId
      * @return ArrayList containing the GLSurfaceView and its VideoRenderer.
      */
     private ArrayList<Object> genVideoViewFromVideoTrack(
             VideoTrack videoTrack,
-            VideoRendererGui.ScalingType scalingType, boolean mirror) {
+            RendererCommon.ScalingType scalingType, boolean mirror, String peerId) {
         GLSurfaceView videoView = new GLSurfaceView(pcShared.getApplicationContext());
-        VideoRendererGui videoRendererGui = new VideoRendererGui(videoView);
 
-        MyVideoRendererGuiListener myVideoRendererGuiListener =
-                new MyVideoRendererGuiListener();
-        videoRendererGui.setListener(myVideoRendererGuiListener);
+        // Sets the GLSurfaceView and VideoRendererGui instance (only 1 at any time).
+        VideoRendererGui.setView(videoView, null);
 
         // Create and add new renderer
-        VideoRenderer videoRenderer = new VideoRenderer(videoRendererGui.create(
+        // Create a VideoRenderer.Callbacks implemented by YuvImageRenderer.
+        VideoRenderer.Callbacks yuvImageRenderer = VideoRendererGui.create(
                 0, 0, 100, 100,
                 scalingType,
-                mirror));
+                mirror);
+        VideoRenderer videoRenderer = new VideoRenderer(yuvImageRenderer);
+
+        VideoRendererEventsListener videoRendererEventsListener =
+                new VideoRendererEventsListener();
+        videoRendererEventsListener.setPeerId(peerId);
+        // Associate the VideoRender.Callbacks with its renderEvents.
+        VideoRendererGui.setRendererEvents(yuvImageRenderer, videoRendererEventsListener);
+
         videoTrack.addRenderer(videoRenderer);
         ArrayList<Object> output = new ArrayList<Object>();
         output.add(0, (Object) videoView);
@@ -407,8 +423,8 @@ class SkylinkMediaService {
             // Change videoView if config sets front camera to be mirrored
             if (skylinkConnection.getSkylinkConfig().isMirrorLocalView()) {
                 final GLSurfaceView localVideoView = createVideoView(getLocalVideoTrack(),
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                        true
+                        RendererCommon.ScalingType.SCALE_ASPECT_FILL,
+                        null
                 );
                 Log.d(TAG, "[switchCamera] New local video view and renderer created.");
                 skylinkConnection.runOnUiThread(new Runnable() {
@@ -458,16 +474,16 @@ class SkylinkMediaService {
 
     private VideoCapturerAndroid getVideoCapturer() {
         // Check if there is a camera on device and disable video call if not.
-        numberOfCameras = VideoCapturerAndroid.getDeviceCount();
+        numberOfCameras = CameraEnumerationAndroid.getDeviceCount();
         if (numberOfCameras == 0) {
             Log.w(TAG, "No camera on device. Video call will not be possible.");
             return null;
         }
 
-        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
+        String frontCameraDeviceName = CameraEnumerationAndroid.getNameOfFrontFacingDevice();
         Log.d(TAG, "Opening camera: " + frontCameraDeviceName);
 
-        return VideoCapturerAndroid.create(frontCameraDeviceName);
+        return VideoCapturerAndroid.create(frontCameraDeviceName, null);
     }
 
     MediaStream getLocalMediaStream() {
@@ -475,11 +491,11 @@ class SkylinkMediaService {
     }
 
     /*
-     * VideoRendererGui.VideoRendererGuiListener
+     * RendererCommon.RendererEvents implementation
      */
-    private class MyVideoRendererGuiListener implements
-            VideoRendererGuiListener {
+    private class VideoRendererEventsListener implements RendererCommon.RendererEvents {
 
+        // peerId is null for local video videoRenderer.
         private String peerId = null;
 
         public String getPeerId() {
@@ -491,7 +507,43 @@ class SkylinkMediaService {
         }
 
         @Override
-        public void updateDisplaySize(final Point screenDimensions) {
+        /**
+         * Callback fired once first frame is rendered.
+         * Log the event for now.
+         */
+        public void onFirstFrameRendered() {
+            skylinkConnection.runOnUiThread(new Runnable() {
+                @SuppressWarnings("unused")
+                public void run() {
+                    // Prevent thread from executing with disconnect concurrently.
+                    synchronized (skylinkConnection.getLockDisconnectMedia()) {
+                        // If user has indicated intention to disconnect,
+                        // We should no longer process messages from signalling server.
+                        if (skylinkConnection.getSkylinkConnectionService().getConnectionState() ==
+                                SkylinkConnectionService.ConnectionState.DISCONNECTING) {
+                            return;
+                        }
+                        String pid = peerId;
+                        if (pid == null) {
+                            pid = "Self";
+                        } else {
+                            pid = "Peer " + pid;
+                        }
+                        Log.d(TAG, "First Frame rendered for " + pid + ".");
+                    }
+                }
+            });
+        }
+
+        @Override
+        /**
+         * Callback fired when rendered frame resolution or rotation has changed.
+         * Inform user about change.
+         */
+        public void onFrameResolutionChanged(int videoWidth, int videoHeight, int rotation) {
+            //TODO XR: Add a rotation callback to Skylink SDK api or change the existing
+            // onVideoSizeChange callback.
+            final Point screenDimensions = new Point(videoWidth, videoHeight);
             skylinkConnection.runOnUiThread(new Runnable() {
                 @SuppressWarnings("unused")
                 public void run() {

@@ -128,9 +128,14 @@ class SkylinkPcObserver implements PeerConnection.Observer {
     }
 
     @Override
+    public void onIceConnectionReceivingChange(boolean receiving) {
+        Log.d(TAG, "Peer " + peerId + " : IceConnectionReceiving changed to " + receiving);
+    }
+
+    @Override
     public void onIceGatheringChange(
             PeerConnection.IceGatheringState newState) {
-        Log.d(TAG, "[onIceGatheringChange] New ICE Gathering State is now: "
+        Log.d(TAG, "Peer " + peerId + " : [onIceGatheringChange] New ICE Gathering State is now: "
                 + newState.toString() + ".");
     }
 
