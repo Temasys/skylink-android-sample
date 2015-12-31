@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    compile files('libs/libjingle_peerconnection_9127.jar')
+    compile 'io.pristine:libjingle:9944@aar'
     compile ('io.socket:socket.io-client:0.6.2') {
         // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'
@@ -37,6 +37,7 @@ dependencies {
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.0"
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 23

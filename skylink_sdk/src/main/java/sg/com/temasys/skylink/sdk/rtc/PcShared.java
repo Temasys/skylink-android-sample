@@ -7,6 +7,7 @@ import android.util.Log;
 import org.webrtc.MediaCodecVideoEncoder;
 import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnectionFactory;
+import org.webrtc.VideoRendererGui;
 
 /**
  * Created by xiangrong on 9/7/15.
@@ -59,24 +60,19 @@ class PcShared {
         if (!factoryStaticInitialized) {
 
             boolean hardwareAccelerated = false;
-            EGLContext eglContext = null;
 
             // Enable hardware acceleration if supported
             if (MediaCodecVideoEncoder.isVp8HwSupported()) {
                 hardwareAccelerated = true;
-                eglContext = VideoRendererGui.getEGLContext();
                 Log.d(TAG, "Enabled hardware acceleration");
             }
-
             /*
             Note XR:
              PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio
              and initializeVideo, as otherwise, new PeerConnectionFactory() crashes.
             */
             Utils.abortUnless(PeerConnectionFactory.initializeAndroidGlobals(context,
-                    true, true, hardwareAccelerated, eglContext
-            ), "Failed to initializeAndroidGlobals");
-
+                    true, true, hardwareAccelerated), "Failed to initializeAndroidGlobals");
             factoryStaticInitialized = true;
         }
 
@@ -84,6 +80,8 @@ class PcShared {
         // Only 1 instance required.
         if (peerConnectionFactory == null) {
             peerConnectionFactory = new PeerConnectionFactory();
+            EGLContext eglContext = VideoRendererGui.getEGLContext();
+            peerConnectionFactory.setVideoHwAccelerationOptions(eglContext);
         }
     }
 

@@ -383,6 +383,23 @@ class DataChannelManager {
                         }
                     });
         }
+
+        @Override
+        // The data channel's bufferedAmount has changed.
+        // bufferedAmount is the number of bytes of application data (UTF-8 text and binary data)
+        // that have been queued using SendBuffer but have not yet been transmitted
+        // to the network.
+        public void onBufferedAmountChange(long previousAmount) {
+            // Log the current and changed amount:
+            final long now = dc.bufferedAmount();
+            final long changed = now - previousAmount;
+            connectionManager.runOnUiThread(new Runnable() {
+                public void run() {
+                    Log.d(TAG, "Peer " + tid + "'s DC bufferedAmount has changed by " + changed
+                            + " bytes. It is now " + now + " bytes.");
+                }
+            });
+        }
     }
 
 // -------------------------------------------------------------------------------------------------
