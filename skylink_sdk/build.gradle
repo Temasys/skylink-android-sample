@@ -37,7 +37,6 @@ dependencies {
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.0"
-    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 23
@@ -53,8 +52,6 @@ android {
     lintOptions {
         abortOnError false
     }
-
-    useLibrary 'org.apache.http.legacy'
 
 }
 
