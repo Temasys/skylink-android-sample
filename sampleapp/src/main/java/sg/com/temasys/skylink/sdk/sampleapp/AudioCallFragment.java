@@ -54,7 +54,7 @@ public class AudioCallFragment extends Fragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
 
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
@@ -95,11 +95,11 @@ public class AudioCallFragment extends Fragment
                 // App secret
                 // In order to avoid keeping the App secret within the application
                 String skylinkConnectionString = Utils.
-                                                              getSkylinkConnectionString(ROOM_NAME,
-                                                                      appKey,
-                                                                      appSecret, new Date(),
-                                                                      SkylinkConnection
-                                                                              .DEFAULT_DURATION);
+                        getSkylinkConnectionString(ROOM_NAME,
+                                appKey,
+                                appSecret, new Date(),
+                                SkylinkConnection
+                                        .DEFAULT_DURATION);
 
                 skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
 
@@ -169,6 +169,9 @@ public class AudioCallFragment extends Fragment
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        // Allow only 1 remote Peer to join.
+        config.setMaxPeers(1);
+
         return config;
     }
 
@@ -176,10 +179,10 @@ public class AudioCallFragment extends Fragment
         if (audioRouter == null) {
             audioRouter = AudioRouter.getInstance();
             audioRouter.init(((AudioManager) parentActivity.
-                                                                   getSystemService(
-                                                                           android.content
-                                                                                   .Context
-                                                                                   .AUDIO_SERVICE)));
+                    getSystemService(
+                            android.content
+                                    .Context
+                                    .AUDIO_SERVICE)));
         }
     }
 
@@ -296,14 +299,7 @@ public class AudioCallFragment extends Fragment
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        // If there is an existing peer, prevent new remotePeer from joining call.
-        if (this.remotePeerId != null) {
-            Toast.makeText(parentActivity, "Rejected third peer from joining conversation",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        //if first remote peer to join room, keep track of user and update text-view to display
-        // details
+        // When remote peer joins room, keep track of user and update text-view to display details
         this.remotePeerId = remotePeerId;
         peerJoined = true;
         if (userData instanceof String) {
