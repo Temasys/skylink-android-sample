@@ -10,7 +10,6 @@ import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,7 +67,7 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         // Initialize views
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
         linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
@@ -134,11 +133,11 @@ public class VideoCallFragment extends Fragment
                 // App secret
                 // In order to avoid keeping the App secret within the application
                 String skylinkConnectionString = Utils.
-                                                              getSkylinkConnectionString(roomName,
-                                                                      appKey,
-                                                                      appSecret, new Date(),
-                                                                      SkylinkConnection
-                                                                              .DEFAULT_DURATION);
+                        getSkylinkConnectionString(roomName,
+                                appKey,
+                                appSecret, new Date(),
+                                SkylinkConnection
+                                        .DEFAULT_DURATION);
 
                 skylinkConnection.connectToRoom(skylinkConnectionString,
                         MY_USER_NAME);
@@ -233,6 +232,8 @@ public class VideoCallFragment extends Fragment
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
         config.setMirrorLocalView(true);
+        // Allow only 1 remote Peer to join.
+        config.setMaxPeers(1);
         return config;
     }
 
@@ -240,10 +241,10 @@ public class VideoCallFragment extends Fragment
         if (audioRouter == null) {
             audioRouter = AudioRouter.getInstance();
             audioRouter.init(((AudioManager) parentActivity.
-                                                                   getSystemService(
-                                                                           android.content
-                                                                                   .Context
-                                                                                   .AUDIO_SERVICE)));
+                    getSystemService(
+                            android.content
+                                    .Context
+                                    .AUDIO_SERVICE)));
         }
     }
 
@@ -457,7 +458,7 @@ public class VideoCallFragment extends Fragment
     public void onWarning(int errorCode, String message) {
         Log.d(TAG, message + "warning");
         Toast.makeText(parentActivity, "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT)
-             .show();
+                .show();
     }
 
     /**
@@ -483,12 +484,6 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
-        if (!TextUtils.isEmpty(this.peerId) && !remotePeerId.equals(this.peerId)) {
-            Toast.makeText(parentActivity, " You are already in connection with two peers",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         videoViewRemote = videoView;
         addRemoteView(remotePeerId, videoView);
     }
