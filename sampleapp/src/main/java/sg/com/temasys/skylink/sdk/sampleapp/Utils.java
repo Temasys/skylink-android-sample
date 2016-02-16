@@ -26,14 +26,48 @@ class Utils {
     private Utils() {
     }
 
+    /**
+     * Set certain room UI for single party room.
+     *
+     * @param isConnected
+     * @param isPeerInRoom
+     * @param textView
+     * @param peerName
+     * @param roomName
+     * @param userName
+     */
     public static void setRoomDetails(boolean isConnected, boolean isPeerInRoom, TextView textView,
-            String peerName, String roomName, String userName) {
+                                      String peerName, String roomName, String userName) {
         String roomDetails = "You are not connected to any room";
         if (isConnected) {
             roomDetails = "Room Name : " + roomName
                     + "\nYou are signed in as : " + userName + "\n";
             if (isPeerInRoom) {
                 roomDetails += "Peer Name : " + peerName;
+            } else {
+                roomDetails += "You are alone in this room";
+            }
+        }
+        textView.setText(roomDetails);
+    }
+
+    /**
+     * Set certain room UI for multi party room.
+     *
+     * @param isConnected
+     * @param isPeerInRoom
+     * @param textView
+     * @param roomName
+     * @param userName
+     */
+    public static void setRoomDetailsMulti(boolean isConnected, boolean isPeerInRoom,
+                                           TextView textView, String roomName, String userName) {
+        String roomDetails = "You are not connected to any room";
+        if (isConnected) {
+            roomDetails = "Room Name : " + roomName
+                    + "\nYou are signed in as : " + userName + "\n";
+            if (isPeerInRoom) {
+                roomDetails += "Peer(s) are in the room";
             } else {
                 roomDetails += "You are alone in this room";
             }
@@ -53,8 +87,8 @@ class Utils {
      * @return
      */
     public static String getSkylinkConnectionString(String roomName, String appKey,
-            String secret,
-            Date startTime, int duration) {
+                                                    String secret,
+                                                    Date startTime, int duration) {
 
         Log.d(TAG, "Room name " + roomName);
         Log.d(TAG, "App Key " + appKey);
@@ -139,4 +173,5 @@ class Utils {
             }
         }
     }
+
 }

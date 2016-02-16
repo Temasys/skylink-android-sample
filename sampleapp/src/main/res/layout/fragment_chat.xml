@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_room_details"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="You are not connected to any room"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+    <ScrollView
+        android:id="@+id/scroll_room"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        >
 
+        <TextView
+            android:id="@+id/tv_room_details"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="You are not connected to any room"
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
+    </ScrollView>
 
     <ListView
         android:id="@+id/lv_messages"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/chatMessage"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/tv_room_details">
+        android:layout_height="0dp"
+        android:layout_weight="8"
+        >
     </ListView>
 
 
@@ -28,47 +32,89 @@
         android:id="@+id/chatMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_send_private_chat"
-        android:layout_alignParentStart="true"
         android:hint="Enter a Message"/>
 
+    <ScrollView
+        android:id="@+id/scroll_peers"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        >
 
-    <Button
-        android:id="@+id/btn_send_private_chat"
-        android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/lin_layout_peers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RadioGroup
+                    android:id="@+id/radio_grp_peers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_peer_all"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_all_peers"
+                        android:visibility="invisible"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_peer1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:visibility="invisible"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_peer2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:visibility="invisible"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_peer3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:visibility="invisible"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_peer4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:visibility="invisible"/>
+
+                </RadioGroup>
+            </HorizontalScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/lin_layout_buttons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_send_server_message"
-        android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/btn_send_p2p_public_message"
-        android:layout_toStartOf="@+id/btn_send_p2p_public_message"
-        android:text="Private P2P Message"/>
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btn_send_server_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/btn_send_p2p_public_message"
-        android:text="Private Server Message"/>
+        <Button
+            android:id="@+id/btn_send_server_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Server Msg"/>
 
-    <Button
-        android:id="@+id/btn_send_public_server_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/btn_send_private_chat"
-        android:text="Group Server Message"/>
+        <Button
+            android:id="@+id/btn_send_p2p_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="P2P Msg"/>
+    </LinearLayout>
 
-
-    <Button
-        android:id="@+id/btn_send_p2p_public_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_send_public_server_message"
-        android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/btn_send_server_message"
-        android:text="Group P2P Message"/>
-
-</RelativeLayout>
+</LinearLayout>
