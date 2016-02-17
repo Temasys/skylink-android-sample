@@ -328,11 +328,13 @@ public class ChatFragment extends MultiPartyFragment
     public void onConnect(boolean isSuccess, String message) {
         //update textview if connection is successful
         if (isSuccess) {
+            // [MultiParty]
             // Set the appropriate UI if already connected.
             onConnectUIChange();
         } else {
             connected = false;
-            Toast.makeText(parentActivity, "Skylink Connection Failed\nReason : "
+            Log.d(TAG, "Skylink failed to connect!");
+            Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
         }
     }

@@ -4,22 +4,23 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:gravity="fill_horizontal|fill_vertical">
+    android:gravity="fill_horizontal|fill_vertical"
+    android:orientation="horizontal">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent">
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:orientation="vertical">
 
         <TextView
+            android:id="@+id/tv_room_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
-            android:id="@+id/tv_room_details"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"/>
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         <ImageView
             android:id="@+id/iv_file_preview"
@@ -29,45 +30,115 @@
             />
 
         <EditText
+            android:id="@+id/et_file_path"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/et_file_path"
-            android:hint="Path of file to transfer"
             android:editable="false"
+            android:hint="Path of file to transfer"
             />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text=""
-            android:textIsSelectable="true"
-            android:id="@+id/tv_file_transfer_details"
-            />
     </LinearLayout>
 
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:gravity="center_vertical|center_horizontal">
+        android:layout_weight="6"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnSendFilePte"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Send File [Private]"/>
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/btnSendFileGrp"
-            android:layout_width="wrap_content"
+            <RadioGroup
+                android:id="@+id/radio_grp_peers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer_all"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_all_peers"
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+            </RadioGroup>
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:id="@+id/lin_layout_buttons"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="Send File [Group]"/>
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_send_file_pte"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Send File"/>
+
+            <Button
+                android:id="@+id/btn_send_file_grp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Send File [Group]"/>
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/scroll_room"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <TextView
+                    android:id="@+id/tv_file_transfer_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textIsSelectable="true"
+                    />
+            </HorizontalScrollView>
+        </ScrollView>
+
     </LinearLayout>
 
 

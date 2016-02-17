@@ -13,8 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="Medium Text"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
 
 
     <ImageView
@@ -32,29 +32,93 @@
         android:hint="Path of file to transfer"
         />
 
-    <Button
-        android:id="@+id/btnSendFilePte"
-        android:layout_width="wrap_content"
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioGroup
+            android:id="@+id/radio_grp_peers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/radio_btn_peer_all"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_all_peers"
+                android:visibility="invisible"/>
+
+            <RadioButton
+                android:id="@+id/radio_btn_peer1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:visibility="invisible"/>
+
+            <RadioButton
+                android:id="@+id/radio_btn_peer2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:visibility="invisible"/>
+
+            <RadioButton
+                android:id="@+id/radio_btn_peer3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:visibility="invisible"/>
+
+            <RadioButton
+                android:id="@+id/radio_btn_peer4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:visibility="invisible"/>
+
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:id="@+id/lin_layout_buttons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="Send File [Private]"/>
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnSendFileGrp"
-        android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/btn_send_file_pte"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Send File"/>
+
+        <Button
+            android:id="@+id/btn_send_file_grp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Send File [Group]"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scroll_room"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="Send File [Group]"/>
+        >
 
-    <TextView
-        android:id="@+id/tv_file_transfer_details"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textIsSelectable="true"
-        />
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-
+            <TextView
+                android:id="@+id/tv_file_transfer_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textIsSelectable="true"
+                />
+        </HorizontalScrollView>
+    </ScrollView>
 </LinearLayout>
