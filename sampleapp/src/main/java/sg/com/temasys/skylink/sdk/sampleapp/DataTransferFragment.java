@@ -2,12 +2,14 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,10 +17,9 @@ import com.temasys.skylink.sampleapp.R;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
@@ -28,9 +29,9 @@ import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
-public class DataTransferFragment extends Fragment implements
-                                                   RemotePeerListener, DataTransferListener,
-                                                   LifeCycleListener {
+public class DataTransferFragment extends MultiPartyFragment implements
+        RemotePeerListener, DataTransferListener,
+        LifeCycleListener {
 
     private static final String MY_USER_NAME = "DataTransferUser";
     private static final String ROOM_NAME = Constants.ROOM_NAME_DATA;
@@ -38,14 +39,16 @@ public class DataTransferFragment extends Fragment implements
 
     // Constants for configuration change
     private static final String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
     private static SkylinkConnection skylinkConnection;
-    private static Set<String> peerIdSet;
     private static byte[] dataPrivate;
     private static byte[] dataGroup;
-    TextView transferStatus;
+    private TextView tvRoomDetails;
+    private TextView transferStatus;
     private Button btnSendDataRoom;
     private Button btnSendDataPeer;
     private boolean connected;
+    private boolean peerJoined;
     private boolean orientationChange;
     private Activity parentActivity;
 
@@ -56,12 +59,26 @@ public class DataTransferFragment extends Fragment implements
         super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_data_transfer, container, false);
 
+        peerRadioGroup = (RadioGroup) rootView.findViewById(R.id.radio_grp_peers);
+        peerAll = (RadioButton) rootView.findViewById(R.id.radio_btn_peer_all);
+        peer1 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer1);
+        peer2 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer2);
+        peer3 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer3);
+        peer4 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer4);
+
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
         transferStatus = (TextView) rootView.findViewById(R.id.txt_data_transfer_status);
         btnSendDataRoom = (Button) rootView.findViewById(R.id.btn_send_data_to_room);
         btnSendDataPeer = (Button) rootView.findViewById(R.id.btn_send_data_to_peer);
 
         String appKey = getString(R.string.app_key);
         String appSecret = getString(R.string.app_secret);
+
+        // [MultiParty]
+        // Initialise peerList if required.
+        if (peerList == null) {
+            peerList = new ArrayList<Pair<String, String>>();
+        }
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
@@ -70,12 +87,26 @@ public class DataTransferFragment extends Fragment implements
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
                 // Set states
+                peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
+                // [MultiParty]
+                // Populate peerList
+                popPeerList(peerList, savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST), skylinkConnection);
+                // Set the appropriate UI if already connected.
+                onConnectUIChange();
             }
+        } else {
+            // [MultiParty]
+            // Just set room details
+            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
 
+        // Show info about data sizes that can be transferred.
+        getDataGroup();
+        transferStatus.setText(String.format(getString(R.string.data_transfer_status),
+                String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
+
+
         if (!connected) {
-            peerIdSet = new HashSet<>();
-            getDataGroup();
 
             skylinkConnection = null;
             // Initialize the skylink connection
@@ -87,49 +118,71 @@ public class DataTransferFragment extends Fragment implements
             // secret
             // In order to avoid keeping the App secret within the application
             String skylinkConnectionString = Utils.
-                                                          getSkylinkConnectionString(ROOM_NAME,
-                                                                  appKey,
-                                                                  appSecret, new Date(),
-                                                                  SkylinkConnection
-                                                                          .DEFAULT_DURATION);
+                    getSkylinkConnectionString(ROOM_NAME,
+                            appKey, appSecret, new Date(),
+                            SkylinkConnection.DEFAULT_DURATION);
 
-            skylinkConnection.connectToRoom(skylinkConnectionString,
-                    MY_USER_NAME);
+            skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
+            connected = true;
         }
 
-        // Set UI
-        onConnectUIChange();
+        btnSendDataPeer.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // [MultiParty]
+                        String remotePeerId = getPeerIdSelectedWithWarning(
+                                DataTransferFragment.this.peerList, DataTransferFragment.this.peerRadioGroup,
+                                R.id.radio_btn_peer_all, DataTransferFragment.this.parentActivity);
+                        // Do not allow button actions if there are no Peers in the room.
+                        if ("".equals(remotePeerId)) {
+                            return;
+                        }
 
-        btnSendDataPeer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Send dataPrivate to specific Peer
-                for (String peerId : peerIdSet) {
+                        // Send dataPrivate to specific Peer
+                        try {
+                            skylinkConnection.sendData(remotePeerId, dataPrivate);
+                        } catch (SkylinkException e) {
+                            Log.e(TAG, e.getMessage(), e);
+                        } catch (UnsupportedOperationException e) {
+                            Log.e(TAG, e.getMessage(), e);
+                        }
 
-                    try {
-                        skylinkConnection.sendData(peerId, dataPrivate);
-                    } catch (SkylinkException e) {
-                        Log.e(TAG, e.getMessage(), e);
-                    } catch (UnsupportedOperationException e) {
-                        Log.e(TAG, e.getMessage(), e);
                     }
                 }
-            }
-        });
+        );
 
-        btnSendDataRoom.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Send dataGroup to all Peers
-                try {
-                    skylinkConnection.sendData(null, dataGroup);
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage(), e);
-                } catch (UnsupportedOperationException e) {
-                    Log.e(TAG, e.getMessage(), e);
+        btnSendDataRoom.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // [MultiParty]
+                        // Do not allow button actions if there are no Peers in the room.
+                        if (getPeerNum(peerList) == 0) {
+                            Toast.makeText(parentActivity,
+                                    getString(R.string.warn_no_peer_message),
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // Select All Peers RadioButton if not already selected
+                        String remotePeerId = getPeerIdSelected(
+                                peerRadioGroup, R.id.radio_btn_peer_all, parentActivity);
+                        if (remotePeerId != null) {
+                            peerAll.setChecked(true);
+                        }
+
+                        // Send dataGroup to all Peers
+                        try {
+                            skylinkConnection.sendData(null, dataGroup);
+                        } catch (SkylinkException e) {
+                            Log.e(TAG, e.getMessage(), e);
+                        } catch (UnsupportedOperationException e) {
+                            Log.e(TAG, e.getMessage(), e);
+                        }
+                    }
                 }
-            }
-        });
+
+        );
 
         return rootView;
     }
@@ -155,6 +208,9 @@ public class DataTransferFragment extends Fragment implements
         orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
+        outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
+        // [MultiParty]
+        outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList(peerList));
     }
 
     @Override
@@ -175,6 +231,7 @@ public class DataTransferFragment extends Fragment implements
 
     /**
      * Set dataGroup to contain 2 of dataPrivate.
+     * Will get dataPrivate if dataGroup and dataPrivate are null.
      */
     private void getDataGroup() {
         if (dataGroup == null) {
@@ -191,7 +248,7 @@ public class DataTransferFragment extends Fragment implements
      */
     private void getDataPrivate() {
         if (dataPrivate == null) {
-            InputStream inputStream = getActivity().getResources().openRawResource(R.raw.icon);
+            InputStream inputStream = parentActivity.getResources().openRawResource(R.raw.icon);
             try {
                 dataPrivate = new byte[inputStream.available()];
                 inputStream.read(dataPrivate);
@@ -218,7 +275,7 @@ public class DataTransferFragment extends Fragment implements
             skylinkConnection = SkylinkConnection.getInstance();
             //the app_key and app_secret is obtained from the temasys developer console.
             skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
-                    this.getActivity().getApplicationContext());
+                    this.parentActivity.getApplicationContext());
 
             //set listeners to receive callbacks when events are triggered
             setListeners();
@@ -242,18 +299,9 @@ public class DataTransferFragment extends Fragment implements
      * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
-        // Enable data buttons IFF at least 1 Peer is in the room.
-        if (peerIdSet != null && !peerIdSet.isEmpty()) {
-            btnSendDataPeer.setEnabled(true);
-            btnSendDataRoom.setEnabled(true);
-            // Show info about data sizes that can be transferred.
-            transferStatus.setText(String.format(getString(R.string.data_transfer_status),
-                    String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
-        } else {
-            btnSendDataPeer.setEnabled(false);
-            btnSendDataRoom.setEnabled(false);
-            transferStatus.setText(String.format(getString(R.string.no_peer)));
-        }
+        // [MultiParty]
+        Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+        fillPeerRadioBtn(peerList, peerAll, peerRadioGroup);
     }
 
     /***
@@ -262,20 +310,23 @@ public class DataTransferFragment extends Fragment implements
      */
 
     @Override
-    public void onConnect(boolean isSuccessful, String message) {
-        if (isSuccessful) {
-            connected = true;
-            Toast.makeText(getActivity(), String.format(getString(R.string.data_transfer_waiting),
-                    ROOM_NAME), Toast.LENGTH_LONG).show();
+    public void onConnect(boolean isSuccess, String message) {
+        //Update textview if connection is successful
+        if (isSuccess) {
+            // [MultiParty]
+            // Set the appropriate UI if already connected.
+            onConnectUIChange();
         } else {
-            Toast.makeText(getActivity(), "Skylink Connection Failed\nReason :" +
-                    " " + message, Toast.LENGTH_SHORT).show();
+            connected = false;
+            Log.d(TAG, "Skylink failed to connect!");
+            Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(getActivity(), "Peer " + remotePeerId +
+        Toast.makeText(parentActivity, "Peer " + remotePeerId +
                 " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
@@ -287,11 +338,13 @@ public class DataTransferFragment extends Fragment implements
     @Override
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
-        // Reset PeerId set
-        peerIdSet.clear();
         dataPrivate = null;
         dataGroup = null;
-
+        // [MultiParty]
+        // Reset peerList
+        peerList.clear();
+        // Set the appropriate UI after disconnecting.
+        onConnectUIChange();
         String log = message;
         if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
@@ -313,25 +366,33 @@ public class DataTransferFragment extends Fragment implements
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        peerIdSet.add(remotePeerId);
-
-        // Set UI
-        onConnectUIChange();
-
-        Toast.makeText(getActivity(), String.format(getString(R.string.peer_count),
-                peerIdSet.size()), Toast.LENGTH_LONG).show();
+        // [MultiParty]
+        //When remote peer joins room, keep track of user and update UI.
+        addPeerRadioBtn(remotePeerId, userData.toString(), peerList, peerAll, peerRadioGroup);
+        //Set room status if it's the only peer in the room.
+        if (getPeerNum(peerList) == 1) {
+            peerJoined = true;
+            // Update textview to show room status
+            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME,
+                    MY_USER_NAME);
+        }
     }
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
-        if (peerIdSet.contains(remotePeerId)) {
-            peerIdSet.remove(remotePeerId);
-        }
-        // Set UI
-        onConnectUIChange();
+        Toast.makeText(parentActivity, "Peer " + remotePeerId + " has left the room",
+                Toast.LENGTH_SHORT).show();
+        // [MultiParty]
+        // Remove the Peer.
+        removePeerRadioBtn(remotePeerId, peerList, peerAll, peerRadioGroup);
 
-        Toast.makeText(parentActivity, String.format(getString(R.string.peer_count),
-                peerIdSet.size()), Toast.LENGTH_LONG).show();
+        //Set room status if there are no more peers.
+        if (peerList.size() == 0) {
+            peerJoined = false;
+            // Update textview to show room status
+            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME,
+                    MY_USER_NAME);
+        }
     }
 
     @Override
@@ -354,13 +415,13 @@ public class DataTransferFragment extends Fragment implements
     public void onDataReceive(String remotePeerId, byte[] data) {
         // Check if it is one of the data that we can send.
         if (Arrays.equals(data, this.dataPrivate) || Arrays.equals(data, this.dataGroup)) {
-            Toast.makeText(getActivity(),
+            Toast.makeText(parentActivity,
                     String.format(getString(R.string.data_transfer_received_expected),
                             String.valueOf(data.length)), Toast.LENGTH_SHORT).show();
         } else {
             // Received some unexpected data that could be from other apps
             // or perhaps different due to so some problems somewhere.
-            Toast.makeText(getActivity(),
+            Toast.makeText(parentActivity,
                     String.format(getString(R.string.data_transfer_received_unexpected),
                             String.valueOf(data.length)), Toast.LENGTH_LONG).show();
         }

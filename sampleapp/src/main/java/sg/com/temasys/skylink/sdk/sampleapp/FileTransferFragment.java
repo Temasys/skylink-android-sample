@@ -113,7 +113,12 @@ public class FileTransferFragment extends MultiPartyFragment
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
             }
+        } else {
+            // [MultiParty]
+            // Just set room details
+            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
+
 
         if (!connected) {
             // Copy files raw/R.raw.icon and raw/R.raw.icon_group to the device's file system
@@ -435,6 +440,8 @@ public class FileTransferFragment extends MultiPartyFragment
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
         // [MultiParty]
+        // Reset peerList
+        peerList.clear();
         // Set the appropriate UI after disconnecting.
         onConnectUIChange();
         String log = message;

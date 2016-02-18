@@ -115,6 +115,10 @@ public class ChatFragment extends MultiPartyFragment
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
             }
+        } else {
+            // [MultiParty]
+            // Just set room details
+            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
 
         if (!connected) {
@@ -354,6 +358,8 @@ public class ChatFragment extends MultiPartyFragment
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
         // [MultiParty]
+        // Reset peerList
+        peerList.clear();
         Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         // Reset chat collection
         chatMessageCollection.clear();

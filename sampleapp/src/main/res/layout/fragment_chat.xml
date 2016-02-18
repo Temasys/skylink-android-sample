@@ -15,7 +15,7 @@
             android:id="@+id/tv_room_details"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="You are not connected to any room"
+            android:text=""
             android:textAppearance="?android:attr/textAppearanceSmall"/>
     </ScrollView>
 

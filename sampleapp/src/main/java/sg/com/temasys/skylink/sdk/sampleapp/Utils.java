@@ -52,7 +52,10 @@ class Utils {
     }
 
     /**
-     * Set certain room UI for multi party room.
+     * Set Room status info on UI for multi party room, including:
+     * - Whether connected to a room and room name.
+     * - User name
+     * - If there are Peers in the room.
      *
      * @param isConnected
      * @param isPeerInRoom
@@ -64,7 +67,7 @@ class Utils {
                                            TextView textView, String roomName, String userName) {
         String roomDetails = "You are not connected to any room";
         if (isConnected) {
-            roomDetails = "Room Name : " + roomName
+            roomDetails = "Now connected to Room named : " + roomName
                     + "\nYou are signed in as : " + userName + "\n";
             if (isPeerInRoom) {
                 roomDetails += "Peer(s) are in the room";
