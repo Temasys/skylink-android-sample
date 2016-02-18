@@ -31,8 +31,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
  * Created by janidu on 3/3/15.
  */
 public class MultiPartyVideoCallFragment extends Fragment implements
-                                                          MediaListener, RemotePeerListener,
-                                                          LifeCycleListener {
+        MediaListener, RemotePeerListener,
+        LifeCycleListener {
 
     public static final String KEY_SELF = "self";
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
@@ -61,7 +61,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_video_multiparty, container, false);
 
@@ -102,15 +102,15 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             // secret
             // In order to avoid keeping the App secret within the application
             String skylinkConnectionString = Utils.
-                                                          getSkylinkConnectionString(ROOM_NAME,
-                                                                  appKey,
-                                                                  appSecret, new Date(),
-                                                                  SkylinkConnection
-                                                                          .DEFAULT_DURATION);
+                    getSkylinkConnectionString(ROOM_NAME,
+                            appKey,
+                            appSecret, new Date(),
+                            SkylinkConnection
+                                    .DEFAULT_DURATION);
 
             Log.d(TAG, "Connection String" + skylinkConnectionString);
-            skylinkConnection.connectToRoom(skylinkConnectionString,
-                    MY_USER_NAME);
+            skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
+            connected = true;
 
             // Use the Audio router to switch between headphone and headset
             audioRouter.startAudioRouting(applicationContext);
@@ -210,10 +210,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (audioRouter == null) {
             audioRouter = AudioRouter.getInstance();
             audioRouter.init(((AudioManager) applicationContext.
-                                                                       getSystemService(
-                                                                               android.content
-                                                                                       .Context
-                                                                                       .AUDIO_SERVICE)));
+                    getSystemService(
+                            android.content
+                                    .Context
+                                    .AUDIO_SERVICE)));
         }
     }
 
@@ -338,13 +338,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
-            connected = true;
             Toast.makeText(applicationContext,
                     String.format(getString(R.string.data_transfer_waiting),
                             ROOM_NAME), Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(applicationContext, "Skylink Connection Failed\nReason :" +
-                    " " + message, Toast.LENGTH_SHORT).show();
+            connected = false;
+            Log.d(TAG, "Skylink failed to connect!");
+            Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
+                    + message, Toast.LENGTH_SHORT).show();
         }
     }
 

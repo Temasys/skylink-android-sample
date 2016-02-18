@@ -64,7 +64,6 @@ public class FileTransferFragment extends MultiPartyFragment
     private boolean connected;
     private boolean peerJoined;
     private boolean orientationChange;
-    private Activity parentActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -109,7 +108,8 @@ public class FileTransferFragment extends MultiPartyFragment
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
                 // Populate peerList
-                popPeerList(peerList, savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST), skylinkConnection);
+                popPeerList(savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST),
+                        skylinkConnection);
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
             }
@@ -148,7 +148,7 @@ public class FileTransferFragment extends MultiPartyFragment
         peerRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if(checkedId == R.id.radio_btn_peer_all) {
+                if (checkedId == R.id.radio_btn_peer_all) {
                     // Prepare group file for transfer.
                     prepFile(getFileToTransfer(fileNameGroup).getAbsolutePath());
                 } else {
@@ -163,11 +163,9 @@ public class FileTransferFragment extends MultiPartyFragment
             @Override
             public void onClick(View v) {
                 // [MultiParty]
-                String remotePeerId = getPeerIdSelectedWithWarning(
-                        FileTransferFragment.this.peerList, FileTransferFragment.this.peerRadioGroup,
-                        R.id.radio_btn_peer_all, FileTransferFragment.this.parentActivity);
+                String remotePeerId = getPeerIdSelectedWithWarning();
                 // Do not allow button actions if there are no Peers in the room.
-                if("".equals(remotePeerId)) {
+                if ("".equals(remotePeerId)) {
                     return;
                 }
 
@@ -181,16 +179,15 @@ public class FileTransferFragment extends MultiPartyFragment
             public void onClick(View v) {
                 // [MultiParty]
                 // Do not allow button actions if there are no Peers in the room.
-                if (getPeerNum(peerList) == 0) {
+                if (getPeerNum() == 0) {
                     Toast.makeText(parentActivity,
                             getString(R.string.warn_no_peer_message),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
                 // Select All Peers RadioButton if not already selected
-                String remotePeerId = getPeerIdSelected(
-                        peerRadioGroup, R.id.radio_btn_peer_all, parentActivity);
-                if( remotePeerId != null) {
+                String remotePeerId = getPeerIdSelected();
+                if (remotePeerId != null) {
                     peerAll.setChecked(true);
                     // Prepare group file for transfer.
                     prepFile(getFileToTransfer(fileNameGroup).getAbsolutePath());
@@ -261,7 +258,7 @@ public class FileTransferFragment extends MultiPartyFragment
         outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
-        outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList(peerList));
+        outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList());
     }
 
     @Override
@@ -297,7 +294,7 @@ public class FileTransferFragment extends MultiPartyFragment
             skylinkConnection = SkylinkConnection.getInstance();
             //the app_key and app_secret is obtained from the temasys developer console.
             skylinkConnection.init(getString(R.string.app_key),
-                    getSkylinkConfig(), this.parentActivity.getApplicationContext());
+                    getSkylinkConfig(), parentActivity.getApplicationContext());
 
             //set listeners to receive callbacks when events are triggered
             setListeners();
@@ -363,7 +360,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
             // Tell the media scanner about the new file so that it is
             // immediately available to the user.
-            MediaScannerConnection.scanFile(this.parentActivity,
+            MediaScannerConnection.scanFile(parentActivity,
                     new String[]{fileCopy.toString()}, null,
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
@@ -384,7 +381,7 @@ public class FileTransferFragment extends MultiPartyFragment
     private void onConnectUIChange() {
         // [MultiParty]
         Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
-        fillPeerRadioBtn(peerList, peerAll, peerRadioGroup);
+        fillPeerRadioBtn();
     }
 
     /**
@@ -527,9 +524,9 @@ public class FileTransferFragment extends MultiPartyFragment
                 Toast.LENGTH_SHORT).show();
         // [MultiParty]
         //When remote peer joins room, keep track of user and update UI.
-        addPeerRadioBtn(remotePeerId, userData.toString(), peerList, peerAll, peerRadioGroup);
+        addPeerRadioBtn(remotePeerId, userData.toString());
         //Set room status if it's the only peer in the room.
-        if (getPeerNum(peerList) == 1) {
+        if (getPeerNum() == 1) {
             peerJoined = true;
             // Update textview to show room status
             Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME,
@@ -570,7 +567,7 @@ public class FileTransferFragment extends MultiPartyFragment
                 Toast.LENGTH_SHORT).show();
         // [MultiParty]
         // Remove the Peer.
-        removePeerRadioBtn(remotePeerId, peerList, peerAll, peerRadioGroup);
+        removePeerRadioBtn(remotePeerId);
 
         //Set room status if there are no more peers.
         if (peerList.size() == 0) {

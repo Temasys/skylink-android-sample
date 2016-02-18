@@ -102,6 +102,7 @@ public class AudioCallFragment extends Fragment
                                         .DEFAULT_DURATION);
 
                 skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
+                connected = true;
 
                 // Use the Audio router to switch between headphone and headset
                 audioRouter.startAudioRouting(parentActivity.getApplicationContext());
@@ -231,12 +232,13 @@ public class AudioCallFragment extends Fragment
     @Override
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
-            connected = true;
             Log.d(TAG, "Skylink Connected");
             Utils.setRoomDetails(connected, peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
                     MY_USER_NAME);
         } else {
-            Toast.makeText(parentActivity, "Skylink Connection Failed\nReason : "
+            connected = false;
+            Log.d(TAG, "Skylink failed to connect!");
+            Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
         }
     }

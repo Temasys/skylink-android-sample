@@ -90,7 +90,8 @@ public class DataTransferFragment extends MultiPartyFragment implements
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
                 // Populate peerList
-                popPeerList(peerList, savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST), skylinkConnection);
+                popPeerList(savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST),
+                        skylinkConnection);
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
             }
@@ -131,9 +132,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                     @Override
                     public void onClick(View v) {
                         // [MultiParty]
-                        String remotePeerId = getPeerIdSelectedWithWarning(
-                                DataTransferFragment.this.peerList, DataTransferFragment.this.peerRadioGroup,
-                                R.id.radio_btn_peer_all, DataTransferFragment.this.parentActivity);
+                        String remotePeerId = getPeerIdSelectedWithWarning();
                         // Do not allow button actions if there are no Peers in the room.
                         if ("".equals(remotePeerId)) {
                             return;
@@ -158,7 +157,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                     public void onClick(View v) {
                         // [MultiParty]
                         // Do not allow button actions if there are no Peers in the room.
-                        if (getPeerNum(peerList) == 0) {
+                        if (getPeerNum() == 0) {
                             Toast.makeText(parentActivity,
                                     getString(R.string.warn_no_peer_message),
                                     Toast.LENGTH_SHORT).show();
@@ -166,7 +165,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                         }
                         // Select All Peers RadioButton if not already selected
                         String remotePeerId = getPeerIdSelected(
-                                peerRadioGroup, R.id.radio_btn_peer_all, parentActivity);
+                        );
                         if (remotePeerId != null) {
                             peerAll.setChecked(true);
                         }
@@ -210,7 +209,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
-        outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList(peerList));
+        outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList());
     }
 
     @Override
@@ -275,7 +274,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
             skylinkConnection = SkylinkConnection.getInstance();
             //the app_key and app_secret is obtained from the temasys developer console.
             skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
-                    this.parentActivity.getApplicationContext());
+                    parentActivity.getApplicationContext());
 
             //set listeners to receive callbacks when events are triggered
             setListeners();
@@ -301,7 +300,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
     private void onConnectUIChange() {
         // [MultiParty]
         Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
-        fillPeerRadioBtn(peerList, peerAll, peerRadioGroup);
+        fillPeerRadioBtn();
     }
 
     /***
@@ -368,9 +367,9 @@ public class DataTransferFragment extends MultiPartyFragment implements
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // [MultiParty]
         //When remote peer joins room, keep track of user and update UI.
-        addPeerRadioBtn(remotePeerId, userData.toString(), peerList, peerAll, peerRadioGroup);
+        addPeerRadioBtn(remotePeerId, userData.toString());
         //Set room status if it's the only peer in the room.
-        if (getPeerNum(peerList) == 1) {
+        if (getPeerNum() == 1) {
             peerJoined = true;
             // Update textview to show room status
             Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME,
@@ -384,7 +383,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                 Toast.LENGTH_SHORT).show();
         // [MultiParty]
         // Remove the Peer.
-        removePeerRadioBtn(remotePeerId, peerList, peerAll, peerRadioGroup);
+        removePeerRadioBtn(remotePeerId);
 
         //Set room status if there are no more peers.
         if (peerList.size() == 0) {
