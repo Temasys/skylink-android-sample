@@ -45,6 +45,7 @@ public class ChatFragment extends MultiPartyFragment
 
     // Constants for configuration change
     private static final String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_IS_CONNECT_ATTEMPTED = "isConnectAttempted";
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
 
     private static SkylinkConnection skylinkConnection;
@@ -57,9 +58,17 @@ public class ChatFragment extends MultiPartyFragment
     private BaseAdapter adapter;
 
     private boolean connected;
+    // Flag for having taken action to connect.
+    // True if action taken to connect and outcome is:
+    // - not yet known.
+    // - successful.
+    // False if:
+    // - no action taken to connect.
+    // - Connection was unsuccessful or failed.
+    // - action taken to disconnect.
+    private boolean connectAttempted;
     private boolean peerJoined;
     private boolean orientationChange;
-    private Activity parentActivity;
 
 
     @Override
@@ -104,6 +113,7 @@ public class ChatFragment extends MultiPartyFragment
         // Check if it was an orientation change
         if (savedInstanceState != null) {
             connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
+            connectAttempted = savedInstanceState.getBoolean(BUNDLE_IS_CONNECT_ATTEMPTED);
             if (connected) {
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
@@ -122,7 +132,7 @@ public class ChatFragment extends MultiPartyFragment
             Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
 
-        if (!connected) {
+        if (!connectAttempted) {
             skylinkConnection = null;
             // Initialize the skylink connection
             initializeSkylinkConnection();
@@ -139,7 +149,7 @@ public class ChatFragment extends MultiPartyFragment
                             SkylinkConnection.DEFAULT_DURATION);
 
             skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
-            connected = true;
+            connectAttempted = true;
         }
 
         /** Defining a click event listener for the button "Send Server Message" */
@@ -209,6 +219,7 @@ public class ChatFragment extends MultiPartyFragment
         orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
+        outState.putBoolean(BUNDLE_IS_CONNECT_ATTEMPTED, connectAttempted);
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
         outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList());
@@ -225,7 +236,7 @@ public class ChatFragment extends MultiPartyFragment
         // I.e. already connected and not changing orientation.
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
-            connected = false;
+            connectAttempted = false;
         }
     }
 
@@ -331,9 +342,10 @@ public class ChatFragment extends MultiPartyFragment
         if (isSuccess) {
             // [MultiParty]
             // Set the appropriate UI if already connected.
+            connected = true;
             onConnectUIChange();
         } else {
-            connected = false;
+            connectAttempted = false;
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -354,6 +366,7 @@ public class ChatFragment extends MultiPartyFragment
     @Override
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
+        connected = false;
         // [MultiParty]
         // Reset peerList
         peerList.clear();

@@ -39,6 +39,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
 
     // Constants for configuration change
     private static final String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_IS_CONNECT_ATTEMPTED = "isConnectAttempted";
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
     private static SkylinkConnection skylinkConnection;
     private static byte[] dataPrivate;
@@ -48,9 +49,17 @@ public class DataTransferFragment extends MultiPartyFragment implements
     private Button btnSendDataRoom;
     private Button btnSendDataPeer;
     private boolean connected;
+    // Flag for having taken action to connect.
+    // True if action taken to connect and outcome is:
+    // - not yet known.
+    // - successful.
+    // False if:
+    // - no action taken to connect.
+    // - Connection was unsuccessful or failed.
+    // - action taken to disconnect.
+    private boolean connectAttempted;
     private boolean peerJoined;
     private boolean orientationChange;
-    private Activity parentActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle
@@ -83,6 +92,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         // Check if it was an orientation change
         if (savedInstanceState != null) {
             connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
+            connectAttempted = savedInstanceState.getBoolean(BUNDLE_IS_CONNECT_ATTEMPTED);
             if (connected) {
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
@@ -107,7 +117,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                 String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
 
 
-        if (!connected) {
+        if (!connectAttempted) {
 
             skylinkConnection = null;
             // Initialize the skylink connection
@@ -124,7 +134,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                             SkylinkConnection.DEFAULT_DURATION);
 
             skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
-            connected = true;
+            connectAttempted = true;
         }
 
         btnSendDataPeer.setOnClickListener(
@@ -138,9 +148,14 @@ public class DataTransferFragment extends MultiPartyFragment implements
                             return;
                         }
 
-                        // Send dataPrivate to specific Peer
                         try {
-                            skylinkConnection.sendData(remotePeerId, dataPrivate);
+                            if (remotePeerId == null) {
+                                // Send dataGroup to all Peer(s)
+                                skylinkConnection.sendData(remotePeerId, dataGroup);
+                            } else {
+                                // Send dataPrivate to specific Peer
+                                skylinkConnection.sendData(remotePeerId, dataPrivate);
+                            }
                         } catch (SkylinkException e) {
                             Log.e(TAG, e.getMessage(), e);
                         } catch (UnsupportedOperationException e) {
@@ -207,6 +222,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
+        outState.putBoolean(BUNDLE_IS_CONNECT_ATTEMPTED, connectAttempted);
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
         outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList());
@@ -220,7 +236,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         // I.e. already connected and not changing orientation.
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
-            connected = false;
+            connectAttempted = false;
         }
     }
 
@@ -314,9 +330,10 @@ public class DataTransferFragment extends MultiPartyFragment implements
         if (isSuccess) {
             // [MultiParty]
             // Set the appropriate UI if already connected.
+            connected = true;
             onConnectUIChange();
         } else {
-            connected = false;
+            connectAttempted = false;
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -337,6 +354,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
     @Override
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
+        connected = false;
         dataPrivate = null;
         dataGroup = null;
         // [MultiParty]
