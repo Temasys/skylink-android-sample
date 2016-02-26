@@ -15,3 +15,22 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keep class android.support.v7.** { *; }
+-keep interface android.support.v7.** { *; }
+
+-keep class org.webrtc.** { *; }
+-dontwarn okio.**
+
+
+-keep public class * {
+    public *;
+}
+
+-keepclassmembers class * {
+    public *;
+}
+
+-keepattributes Exceptions,InnerClasses
+-keepparameternames
+

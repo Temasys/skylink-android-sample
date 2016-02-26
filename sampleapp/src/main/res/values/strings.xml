@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">SampleApp</string>
+    <string name="label_all_peers">All Peer(s)</string>
     <string name="title_section1"> Audio Call </string>
     <string name="title_section2"> Video Call </string>
     <string name="title_section3"> Chat </string>
@@ -32,4 +33,6 @@
 
     <string name="enable_video">Enable Video</string>
     <string name="enabled_video">Enabled Video</string>
+    <string name="warn_no_peer_message">There is no peer in the room to send a message to.</string>
+    <string name="warn_no_sel_message">You have not selected a Peer to send a message to.</string>
 </resources>
