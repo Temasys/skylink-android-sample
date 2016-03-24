@@ -32,7 +32,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
+import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
@@ -298,6 +298,10 @@ public class FileTransferFragment extends MultiPartyFragment
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        // To enable logs from Skylink SDK (e.g. during debugging),
+        // Uncomment the following. Do not enable logs for production apps!
+        // config.setEnableLogs(true);
+
         return config;
     }
 
@@ -443,7 +447,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
     @Override
     public void onWarning(int errorCode, String message) {
-        Log.d(TAG, message + "warning");
+        Log.d(TAG, message + "Warning: " + message);
     }
 
     @Override
@@ -456,7 +460,7 @@ public class FileTransferFragment extends MultiPartyFragment
         // Set the appropriate UI after disconnecting.
         onConnectUIChange();
         String log = message;
-        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
         }
@@ -466,7 +470,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
     @Override
     public void onReceiveLog(String message) {
-        Log.d(TAG, message + " on receive log");
+        Log.d(TAG, "On receive log: " + message);
     }
 
     /**
@@ -538,7 +542,12 @@ public class FileTransferFragment extends MultiPartyFragment
                 Toast.LENGTH_SHORT).show();
         // [MultiParty]
         //When remote peer joins room, keep track of user and update UI.
-        addPeerRadioBtn(remotePeerId, userData.toString());
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        addPeerRadioBtn(remotePeerId, nick);
         //Set room status if it's the only peer in the room.
         if (getPeerNum() == 1) {
             peerJoined = true;

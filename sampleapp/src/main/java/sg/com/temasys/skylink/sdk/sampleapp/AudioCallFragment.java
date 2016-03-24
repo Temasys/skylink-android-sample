@@ -22,7 +22,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
+import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
@@ -170,6 +170,10 @@ public class AudioCallFragment extends Fragment
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        // To enable logs from Skylink SDK (e.g. during debugging),
+        // Uncomment the following. Do not enable logs for production apps!
+        // config.setEnableLogs(true);
+
         // Allow only 1 remote Peer to join.
         config.setMaxPeers(1);
 
@@ -255,7 +259,7 @@ public class AudioCallFragment extends Fragment
                 MY_USER_NAME);
 
         String log = message;
-        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
         }
@@ -280,8 +284,13 @@ public class AudioCallFragment extends Fragment
     }
 
     @Override
-    public void onVideoSizeChange(String remotePeerId, Point point) {
-        Log.d(TAG, point.toString() + "got size");
+    public void onVideoSizeChange(String peerId, Point size) {
+        String peer = "Peer " + peerId;
+        // If peerId is null, this call is for our local video.
+        if (peerId == null) {
+            peer = "We've";
+        }
+        Log.d(TAG, peer + " got video size changed to: " + size.toString() + ".");
     }
 
     @Override
@@ -296,7 +305,7 @@ public class AudioCallFragment extends Fragment
 
     @Override
     public void onRemotePeerMediaReceive(String s, GLSurfaceView glSurfaceView) {
-        Log.d(TAG, "onRemotePeerVideoToggle");
+        Log.d(TAG, "onRemotePeerMediaReceive");
     }
 
     @Override

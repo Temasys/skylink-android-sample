@@ -65,8 +65,8 @@ public class MainActivity extends ActionBarActivity
         Fragment fragmentToLaunch = getFragmentToLaunch(position);
 
         fragmentManager.beginTransaction()
-                       .replace(R.id.container, fragmentToLaunch)
-                       .commit();
+                .replace(R.id.container, fragmentToLaunch)
+                .commit();
     }
 
     public void onSectionAttached(int number) {

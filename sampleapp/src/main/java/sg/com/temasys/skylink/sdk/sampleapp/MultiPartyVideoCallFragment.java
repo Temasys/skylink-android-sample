@@ -24,7 +24,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
+import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
@@ -96,11 +96,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             // Initialize the skylink connection
             initializeSkylinkConnection();
 
-            // Obtaining the Skylink connection string done locally
+            // Obtaining the Skylink connection string locally.
             // In a production environment the connection string should be given
-            // by an entity external to the App, such as an App server that holds the Skylink App
-            // secret
-            // In order to avoid keeping the App secret within the application
+            // by an entity external to the App,
+            // such as an App server that holds the Skylink App secret.
+            // This is to avoid keeping the App secret within the application
             String skylinkConnectionString = Utils.
                     getSkylinkConnectionString(ROOM_NAME,
                             appKey,
@@ -108,7 +108,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                             SkylinkConnection
                                     .DEFAULT_DURATION);
 
-            Log.d(TAG, "Connection String" + skylinkConnectionString);
+            // The skylinkConnectionString should not be logged in production,
+            // as it contains potentially sensitive information like the Skylink App key.
             skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
             connected = true;
 
@@ -201,8 +202,15 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(Constants.TIME_OUT);
         config.setMirrorLocalView(true);
+        config.setTimeout(Constants.TIME_OUT);
+        // To enable logs from Skylink SDK (e.g. during debugging),
+        // Uncomment the following. Do not enable logs for production apps!
+        // config.setEnableLogs(true);
+
+        // Allow only 3 remote Peers to join, due to current UI design.
+        config.setMaxPeers(3);
+
         return config;
     }
 
@@ -353,7 +361,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
         String log = message;
-        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
         }
@@ -389,7 +397,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onVideoSizeChange(String peerId, Point size) {
-        Log.d(TAG, "[onVideoSizeChange] Peer:" + peerId + ", size:" + size.x + "," + size.y + ".");
+        String peer = "Peer " + peerId;
+        // If peerId is null, this call is for our local video.
+        if (peerId == null) {
+            peer = "We've";
+        }
+        Log.d(TAG, peer + " got video size changed to: " + size.toString() + ".");
     }
 
     @Override
@@ -404,7 +417,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
-        Log.d(TAG, "onRemotePeerAudioToggle");
+        Log.d(TAG, "onRemotePeerAudioToggle for Peer " + remotePeerId + ".");
     }
 
     /**
@@ -419,18 +432,24 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        Log.d(TAG, "onRemotePeerJoin");
+        Log.d(TAG, "onRemotePeerJoin for Peer " + remotePeerId + ".");
 
     }
 
     @Override
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Log.d(TAG, "onRemotePeerUserDataReceive");
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        String log = "onRemotePeerUserDataReceive for Peer " + remotePeerId + ":\n" + nick;
+        Log.d(TAG, log);
     }
 
     @Override
     public void onOpenDataConnection(String remotePeerId) {
-        Log.d(TAG, "onOpenDataConnection");
+        Log.d(TAG, "onOpenDataConnection for Peer " + remotePeerId + ".");
     }
 
 }

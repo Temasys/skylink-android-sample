@@ -41,6 +41,7 @@ public class MultiPartyFragment extends Fragment {
 
     /**
      * Add Peer name to next available Radio button.
+     *
      * @param peerId PeerId of the Peer to add.
      * @param nick   Nickname of the Peer to add. Empty string if not available.
      */
@@ -57,7 +58,6 @@ public class MultiPartyFragment extends Fragment {
      * Populate radio buttons from top to bottom with PeerId and nick.
      * Unpopulated radio buttons will be invisible.
      * Ensure All Peer button is visible IFF there are Peer(s), invisible otherwise.
-     *
      */
     void fillPeerRadioBtn() {
         // Check for initialised peerList
@@ -100,6 +100,7 @@ public class MultiPartyFragment extends Fragment {
 
     /**
      * Get a String array of PeerIds from a ArrayList<Pair<String, String>> peerList provided.
+     *
      * @return String array of PeerIds.
      */
     String[] getPeerIdList() {
@@ -147,7 +148,7 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return
      */
-    String getPeerIdSelectedWithWarning(){
+    String getPeerIdSelectedWithWarning() {
         // Do not allow button actions if there are no Peers in the room.
         if (getPeerNum() == 0) {
             Toast.makeText(parentActivity,
@@ -185,7 +186,8 @@ public class MultiPartyFragment extends Fragment {
 
     /**
      * Populate peerList from a list of PeerIds of remote Peers, using info from SkylinkConnection.
-     * @param peerIdList String Array of PeerIds of remote Peer(s) in the room.
+     *
+     * @param peerIdList        String Array of PeerIds of remote Peer(s) in the room.
      * @param skylinkConnection SkylinkConnection instance serving this Sample.
      */
     void popPeerList(String[] peerIdList, SkylinkConnection skylinkConnection) {
@@ -202,6 +204,7 @@ public class MultiPartyFragment extends Fragment {
 
     /**
      * Remove Peer name from Radio buttons.
+     *
      * @param peerId PeerId of the Peer to remove.
      */
     void removePeerRadioBtn(String peerId) {

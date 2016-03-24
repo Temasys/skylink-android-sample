@@ -25,7 +25,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
+import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
@@ -282,6 +282,10 @@ public class DataTransferFragment extends MultiPartyFragment implements
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasDataTransfer(true);
         config.setTimeout(Constants.TIME_OUT);
+        // To enable logs from Skylink SDK (e.g. during debugging),
+        // Uncomment the following. Do not enable logs for production apps!
+        // config.setEnableLogs(true);
+
         return config;
     }
 
@@ -335,7 +339,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         } else {
             connectAttempted = false;
             Log.d(TAG, "Skylink failed to connect!");
-            Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
+            Toast.makeText(parentActivity, "Skylink failed to connect!\nReason: "
                     + message, Toast.LENGTH_SHORT).show();
         }
     }
@@ -363,7 +367,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         // Set the appropriate UI after disconnecting.
         onConnectUIChange();
         String log = message;
-        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
         }
@@ -385,7 +389,12 @@ public class DataTransferFragment extends MultiPartyFragment implements
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         // [MultiParty]
         //When remote peer joins room, keep track of user and update UI.
-        addPeerRadioBtn(remotePeerId, userData.toString());
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        addPeerRadioBtn(remotePeerId, nick);
         //Set room status if it's the only peer in the room.
         if (getPeerNum() == 1) {
             peerJoined = true;

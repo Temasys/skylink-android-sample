@@ -27,7 +27,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.rtc.ErrorCodes;
+import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
@@ -230,8 +230,12 @@ public class VideoCallFragment extends Fragment
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(Constants.TIME_OUT);
         config.setMirrorLocalView(true);
+        config.setTimeout(Constants.TIME_OUT);
+        // To enable logs from Skylink SDK (e.g. during debugging),
+        // Uncomment the following. Do not enable logs for production apps!
+        // config.setEnableLogs(true);
+
         // Allow only 1 remote Peer to join.
         config.setMaxPeers(1);
         return config;
@@ -435,7 +439,7 @@ public class VideoCallFragment extends Fragment
     public void onDisconnect(int errorCode, String message) {
         skylinkConnection = null;
         String log = message;
-        if (errorCode == ErrorCodes.DISCONNECT_FROM_ROOM) {
+        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
                     + message;
         }
@@ -479,7 +483,12 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onVideoSizeChange(String peerId, Point size) {
-        Log.d(TAG, "PeerId: " + peerId + " got size " + size.toString());
+        String peer = "Peer " + peerId;
+        // If peerId is null, this call is for our local video.
+        if (peerId == null) {
+            peer = "We've";
+        }
+        Log.d(TAG, peer + " got video size changed to: " + size.toString() + ".");
     }
 
     @Override

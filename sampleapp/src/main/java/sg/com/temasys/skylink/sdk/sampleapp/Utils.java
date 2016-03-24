@@ -94,7 +94,6 @@ class Utils {
                                                     Date startTime, int duration) {
 
         Log.d(TAG, "Room name " + roomName);
-        Log.d(TAG, "App Key " + appKey);
         Log.d(TAG, "startTime " + startTime);
         Log.d(TAG, "duration " + duration);
 
