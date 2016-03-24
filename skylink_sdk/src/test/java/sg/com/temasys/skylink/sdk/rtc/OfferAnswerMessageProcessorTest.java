@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class OfferAnswerMessageProcessorTest {
 
-    private static final String TAG = OfferAnswerMessageProcessorTest.class.getSimpleName();
+    private static final String TAG = OfferAnswerMessageProcessorTest.class.getName();
     private static final String targetId = "1234";
     private static final String mid = "testMyId";
     private static final String sdp = "testSDP";

@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -18,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
 
 /**
  * Purpose of this class is to test WelcomeRestartMessageProcessor
@@ -90,7 +89,7 @@ public class WelcomeRestartMessageProcessorTest {
     public void testProcessWelcomeRestart(String type) throws Exception {
         String logStr = "[" + TAG + "] Testing for " + type + "...";
         System.out.print(logStr);
-        Log.d(TAG, logStr);
+        logD(TAG, logStr);
 
         boolean isRestart = false;
         if (typeRestart.equals(type)) {
@@ -134,7 +133,7 @@ public class WelcomeRestartMessageProcessorTest {
 
         logStr = "[" + TAG + "] Testing done.";
         System.out.print(logStr);
-        Log.d(TAG, logStr);
+        logD(TAG, logStr);
     }
 
     private JSONObject getJsonObject(String type) throws JSONException {

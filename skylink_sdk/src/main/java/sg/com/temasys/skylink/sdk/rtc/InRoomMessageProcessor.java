@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,12 +8,16 @@ import org.webrtc.PeerConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logI;
+
+
 /**
  * Purpose of this message processor is to handle inRoom message types
  */
 class InRoomMessageProcessor implements MessageProcessor {
 
-    private static final String TAG = InRoomMessageProcessor.class.getSimpleName();
+    private static final String TAG = InRoomMessageProcessor.class.getName();
 
     private SkylinkConnection skylinkConnection;
 
@@ -32,11 +34,17 @@ class InRoomMessageProcessor implements MessageProcessor {
             String url = iceServer.getString("url");
 
             if (skylinkConnection.getSkylinkConfig().isStunDisabled() && url.startsWith("stun:")) {
-                Log.d(TAG, "[SDK] Not adding stun server as stun disabled in config.");
+                String info = "[INFO] Not adding STUN server as STUN is disabled in SkylinkConfig.";
+                String debug = info + "\nDetails: Url: " + url;
+                logI(TAG, info);
+                logD(TAG, debug);
                 continue;
             }
             if (skylinkConnection.getSkylinkConfig().isTurnDisabled() && url.startsWith("turn:")) {
-                Log.d(TAG, "[SDK] Not adding turn server as turn disabled in config.");
+                String info = "[INFO] Not adding TURN server as TURN is disabled in SkylinkConfig.";
+                String debug = info + "\nDetails: Url: " + url;
+                logI(TAG, info);
+                logD(TAG, debug);
                 continue;
             }
             if (skylinkConnection.getSkylinkConfig().getTransport() != null) {
@@ -45,8 +53,7 @@ class InRoomMessageProcessor implements MessageProcessor {
 
             String credential = iceServer.has("credential") ? iceServer.getString("credential") : "";
 
-            Log.d(TAG, "[SDK] url [" + url
-                    + "] - credential [" + credential + "]");
+            logD(TAG, "ICE server adding...\nurl: " + url + ";\ncredential: " + credential + ".");
 
             PeerConnection.IceServer server = new PeerConnection.IceServer(url, "", credential);
             result.add(server);

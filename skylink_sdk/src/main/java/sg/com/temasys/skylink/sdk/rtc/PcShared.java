@@ -2,12 +2,13 @@ package sg.com.temasys.skylink.sdk.rtc;
 
 import android.content.Context;
 import android.opengl.EGLContext;
-import android.util.Log;
 
 import org.webrtc.MediaCodecVideoEncoder;
 import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoRendererGui;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
 
 /**
  * Created by xiangrong on 9/7/15.
@@ -22,7 +23,10 @@ class PcShared {
     // Internal variables
     private static boolean factoryStaticInitialized = false;
     // Static variables
-    private static String TAG = PcShared.class.getSimpleName();
+    private static String TAG = PcShared.class.getName();
+    // Flags to track if specific hardware acceleration is available on Device.
+    public static boolean vp8HwSupported = MediaCodecVideoEncoder.isVp8HwSupported();
+    public static boolean h264HwSupported = MediaCodecVideoEncoder.isH264HwSupported();
 
     private Context applicationContext;
     private MediaConstraints pcMediaConstraints;
@@ -42,9 +46,9 @@ class PcShared {
      */
     void removePcFactory() {
         if (peerConnectionFactory != null) {
-            Log.d(TAG, "Disposing Peer Connection Factory");
+            logD(TAG, "Peer Connection Factory disposing...");
             peerConnectionFactory.dispose();
-            Log.d(TAG, "Disposed Peer Connection Factory");
+            logD(TAG, "Peer Connection Factory Disposed!");
             peerConnectionFactory = null;
         }
     }
@@ -60,12 +64,17 @@ class PcShared {
         if (!factoryStaticInitialized) {
 
             boolean hardwareAccelerated = false;
-
+            String info = "[INFO] Following hardware acceleration is supported on this device:\n" +
+                    "VP8: " + vp8HwSupported + "\nH264: " + h264HwSupported + ".";
             // Enable hardware acceleration if supported
-            if (MediaCodecVideoEncoder.isVp8HwSupported()) {
+            if (vp8HwSupported || h264HwSupported) {
                 hardwareAccelerated = true;
-                Log.d(TAG, "Enabled hardware acceleration");
+                info += "\nHardware acceleration enabled in SkylinkConnection!";
+            } else {
+                info += "\nHardware acceleration not enabled in SkylinkConnection!";
             }
+            logD(TAG, info);
+
             /*
             Note XR:
              PeerConnectionFactory.initializeAndroidGlobals to always use true for initializeAudio

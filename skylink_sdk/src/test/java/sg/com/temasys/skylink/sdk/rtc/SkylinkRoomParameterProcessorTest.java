@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.junit.Before;
@@ -19,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
 
 /**
  * Tests related to SkylinkRoomParameterProcessor
@@ -45,14 +45,14 @@ public class SkylinkRoomParameterProcessorTest {
     @Test
     public void testGetParametersForRoomUrl() throws InterruptedException, IOException, JSONException {
 
-        Log.d(TAG, "testGetParametersForRoomUrl");
+        logD(TAG, "testGetParametersForRoomUrl");
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         skylinkRoomParameterProcessor.setRoomParameterListener(
                 new RoomParameterListener() {
                     @Override
                     public void onRoomParameterSuccessful(RoomParameters params) {
-                        Log.d(TAG, "onRoomParameterSuccessful");
+                        logD(TAG, "onRoomParameterSuccessful");
                         assertNotNull("Parameters should not be null", params);
                         assertFalse(TextUtils.isEmpty(params.getAppOwner()));
                         assertFalse(TextUtils.isEmpty(params.getCid()));
@@ -65,12 +65,6 @@ public class SkylinkRoomParameterProcessorTest {
                         assertFalse(TextUtils.isEmpty(params.getUserId()));
                         assertFalse(TextUtils.isEmpty(params.getIpSigserver()));
                         assertFalse(params.getPortSigserver() == 0);
-                        countDownLatch.countDown();
-                    }
-
-                    @Override
-                    public void onRoomParameterError(int message) {
-                        fail("Should not be called!!");
                         countDownLatch.countDown();
                     }
 
@@ -90,7 +84,7 @@ public class SkylinkRoomParameterProcessorTest {
     @Test
     public void testGetRoomParametersForInvalidUrl() throws InterruptedException, IOException, JSONException {
 
-        Log.d(TAG, "testGetRoomParametersForInvalidUrl");
+        logD(TAG, "testGetRoomParametersForInvalidUrl");
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         skylinkRoomParameterProcessor.setRoomParameterListener(
                 new RoomParameterListener() {
@@ -101,14 +95,8 @@ public class SkylinkRoomParameterProcessorTest {
                     }
 
                     @Override
-                    public void onRoomParameterError(int message) {
-                        Log.d(TAG, "onRoomParameterError(int): " + message);
-                        countDownLatch.countDown();
-                    }
-
-                    @Override
                     public void onRoomParameterError(String message) {
-                        Log.d(TAG, "onRoomParameterError(String): " + message);
+                        logD(TAG, "onRoomParameterError(String): " + message);
                         countDownLatch.countDown();
                     }
 

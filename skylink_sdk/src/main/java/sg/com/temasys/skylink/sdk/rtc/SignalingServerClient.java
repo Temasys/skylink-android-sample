@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
@@ -9,6 +7,10 @@ import java.net.URISyntaxException;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logI;
+
 
 class SignalingServerClient {
 
@@ -18,10 +20,12 @@ class SignalingServerClient {
     private final static int SIG_PORT_DEFAULT = 443;
     private final static int SIG_PORT_FAILOVER = 3443;
     private final static int SOCKET_IO_TIME_OUT_MILLISECONDS = 60000;
+    // private final static int SIG_PORT_DEFAULT = 80;
     // private final int SIG_PORT_DEFAULT = 9000;
     // private final int SIG_PORT_FAILOVER = 9000;
     // private final int SIG_PORT_DEFAULT = 8018;
     // private final int SIG_PORT_FAILOVER = 8018;
+    public static final String SIG_SERVER_STAGING = "http://staging-signaling.temasys.com.sg";
 
     private boolean isConnected;
     private int retry = 0;
@@ -39,8 +43,10 @@ class SignalingServerClient {
         try {
             connectSigServer();
         } catch (URISyntaxException e) {
-            Log.e(TAG, e.getMessage(), e);
-            delegate.onError(0, e.getLocalizedMessage());
+            String debug = "Attempted to connect to Signalling Server but " +
+                    "obtained URI Syntax error. Exception:\n" + e.getMessage();
+            delegate.onError(SignalingServerClientListener.ERROR_SIG_SERVER_URI_SYNTAX, debug);
+            delegate.onError(0, e.getMessage());
         }
     }
 
@@ -62,11 +68,12 @@ class SignalingServerClient {
 
         // Initialize SocketIO
         String sigUrl = sigIP + ":" + sigPort;
+        // sigUrl = SIG_SERVER_STAGING + ":" + sigPort;
         // sigUrl = "http://192.168.1.125:6001";
         // sigUrl = "http://sgbeta.signaling.temasys.com.sg:6001";
         // sigUrl = "http://ec2-52-8-93-170.us-west-1.compute.amazonaws.com:6001";
         // sigUrl = "http://192.168.1.54:6001";
-        Log.d(TAG, "Connecting to the signaling server at: " + sigUrl);
+        logD(TAG, "Connecting to the Signaling server at: " + sigUrl);
         socketIO = IO.socket(sigUrl, opts);
 
         socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
@@ -117,47 +124,56 @@ class SignalingServerClient {
     }
 
     void onConnect() {
-        Log.d(TAG, "Connected to Signaling server.");
+        String info = "Connected to the room!";
+        String debug = info + " I.e. to Signaling server.";
         // Reconnection will follow same logic as first connect.
         // Just log reconnection for awareness.
         if (isConnected) {
-            Log.d(TAG, "onConnect() called after reconnecting to Signaling server.");
+            debug = "onConnect() called after reconnecting to Signaling server.";
         } else {
             isConnected = true;
+            logI(TAG, info);
         }
+        logD(TAG, debug);
         delegate.onOpen();
     }
 
     void onReconnect() {
-        Log.d(TAG, "Reconnected to Signaling server.");
+        String info = "Reconnected to the room!";
+        String debug = info + " I.e. to Signaling server.";
+        logI(TAG, info);
+        logD(TAG, debug);
     }
 
     public void onMessage(JSONObject json) {
         String jsonStr = json.toString();
-        Log.d(TAG, "[onMessageJson] Server sent JSON message.");
+        logD(TAG, "[onMessageJson] Server sent JSON message.");
         delegate.onMessage(jsonStr);
     }
 
     public void onMessage(String data) {
-        Log.d(TAG, "[onMessageString] Server sent String message");
+        logD(TAG, "[onMessageString] Server sent String message");
         delegate.onMessage(data);
     }
 
     void onDisconnect() {
-        Log.d(TAG, "[onDisconnect] Disconnected from Signaling server.");
+        String info = "We have been just disconnected from the room.";
+        String debug = "[onDisconnect] " + info + " I.e. From the Signaling server.";
+        logI(TAG, info);
+        logD(TAG, debug);
         delegate.onDisconnect();
     }
 
     void onTimeOut() {
-        Log.d(TAG, "[onTimeOut] Connection with Signaling server time out.");
+        logD(TAG, "[onTimeOut] Connection with Signaling server time out.");
         if (delegate != null) {
             delegate.onClose();
         }
     }
 
     void onError(Object... args) {
-        String strErr = args[0].toString();
-        Log.d(TAG, "An Error occured: " + strErr);
+        // Logging of errors will be done at delegate's onError, so no need to do it here.
+        String strErr = "Received error (" + args[0].toString() + ").\n";
         // If it was handshake error, switch to fail over port, and connect
         // again.
         if (!isConnected && retry++ < RETRY_MAX) {
@@ -165,13 +181,24 @@ class SignalingServerClient {
             try {
                 connectSigServer();
             } catch (URISyntaxException e) {
-                Log.e(TAG, e.getMessage(), e);
-                delegate.onError(0, e.getLocalizedMessage());
+                String debug = strErr +
+                        "Attempted to reconnect to Signalling Server but " +
+                        "obtained URI Syntax error. Exception:\n" +
+                        e.getMessage();
+                delegate.onError(SignalingServerClientListener.ERROR_SIG_SERVER_URI_SYNTAX, debug);
             }
             return;
         }
         // Delegate will log message and result in UI disconnect.
-        delegate.onError(0, strErr);
+        String debug = strErr;
+        if (isConnected) {
+            debug += "Still connected to Signaling Server, so not attempting to reconnect.";
+        } else {
+            debug += "Exceeded Max reconnect attempt(s) (" + RETRY_MAX +
+                    "), so not attempting to reconnect.";
+        }
+        ;
+        delegate.onError(SignalingServerClientListener.ERROR_SIG_SERVER_SOCKET, debug);
     }
 }
 
@@ -180,6 +207,9 @@ class SignalingServerClient {
  * server.
  */
 interface SignalingServerClientListener {
+    static final int ERROR_SIG_SERVER_SOCKET = 0;
+    static final int ERROR_SIG_SERVER_URI_SYNTAX = 1;
+
     void onOpen();
 
     void onMessage(String data);

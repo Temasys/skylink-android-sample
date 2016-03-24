@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class ByeMessageProcessorTest {
 
-    private static final String TAG = ByeMessageProcessorTest.class.getSimpleName();
+    private static final String TAG = ByeMessageProcessorTest.class.getName();
     private static final String mid = "1234";
 
     private MessageProcessor messageProcessor;

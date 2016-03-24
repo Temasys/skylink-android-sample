@@ -6,6 +6,8 @@ import org.webrtc.SessionDescription;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+
 /**
  * Created by xiangrong on 2/7/15.
  */
@@ -17,7 +19,7 @@ import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
  */
 class SkylinkSdpObserver implements SdpObserver {
 
-    private static final String TAG = SkylinkSdpObserver.class.getSimpleName();
+    private static final String TAG = SkylinkSdpObserver.class.getName();
 
     private SkylinkConnection skylinkConnection;
     private SessionDescription localSdp;
@@ -172,24 +174,25 @@ class SkylinkSdpObserver implements SdpObserver {
                             .isDisconnected()) {
                         return;
                     }
-
+                    String tid = SkylinkSdpObserver.this.peerId;
                     if (pc.signalingState() == PeerConnection.SignalingState.HAVE_REMOTE_OFFER) {
                         if (pc.getRemoteDescription() != null
                                 && pc.getLocalDescription() == null) {
-                            skylinkConnection
-                                    .logMessage("Callee, setRemoteDescription succeeded");
+                            logD(TAG, "[onSetSuccess] set Remote \"offer\" succeeded for Peer " +
+                                    tid + ".");
                             pc.createAnswer(SkylinkSdpObserver.this,
                                     skylinkConnection.getPcShared().getSdpMediaConstraints());
-                            skylinkConnection.logMessage("PC - createAnswer.");
+                            logD(TAG, "[onSetSuccess] Created \"answer\" for Peer " + tid + ".");
                         } else {
                             drainRemoteCandidates();
                         }
                     } else {
                         if (pc.getRemoteDescription() != null) {
-                            skylinkConnection.logMessage("SDP onSuccess - drain candidates");
+                            logD(TAG, "[onSetSuccess] set Remote \"answer\" succeeded for Peer " +
+                                    tid + " - time to drain candidates (if any).");
                             drainRemoteCandidates();
                             if (!SkylinkPeerService.isPeerIdMCU(peerId)) {
-                                String tid = SkylinkSdpObserver.this.peerId;
+
                                 Peer peer = skylinkConnection.getSkylinkPeerService().getPeer(peerId);
                                 PeerInfo peerInfo = peer.getPeerInfo();
                                 boolean eDC = false;
@@ -242,6 +245,7 @@ class SkylinkSdpObserver implements SdpObserver {
         });
     }
 
+    // NOTE XR: This is not doing anything now. Check if it should.
     private void drainRemoteCandidates() {
         // Prevent thread from executing with disconnect concurrently.
         synchronized (skylinkConnection.getLockDisconnectSdpDrain()) {
@@ -252,7 +256,7 @@ class SkylinkSdpObserver implements SdpObserver {
                 return;
             }
 
-            skylinkConnection.logMessage("Inside SDPObserver.drainRemoteCandidates()");
+            logD(TAG, "[SkylinkSdpObserver.drainRemoteCandidates] Not doing anything for now.");
         }
     }
 

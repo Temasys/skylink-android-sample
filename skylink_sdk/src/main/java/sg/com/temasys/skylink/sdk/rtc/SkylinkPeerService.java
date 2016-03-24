@@ -1,8 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
-import org.json.JSONException;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
@@ -13,12 +10,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
+
 /**
  * Created by xiangrong on 4/5/15.
  */
 class SkylinkPeerService implements PeerPoolClient {
 
-    private static final String TAG = SkylinkPeerService.class.getSimpleName();
+    private static final String TAG = SkylinkPeerService.class.getName();
     private static final String MCU_NAME = "MCU";
     private UserInfo myUserInfo;
 
@@ -99,10 +100,13 @@ class SkylinkPeerService implements PeerPoolClient {
             } else {
                 // Add a normal Peer if possible
                 if (!peerPool.addPeer(peer)) {
-                    Log.d(TAG, "Unable to create PeerConnection for Peer " + userInfo.getUserData() +
-                            " (" + peerId + ") as I only support " +
-                            skylinkConnection.getSkylinkConfig().getMaxPeers() + " connections " +
-                            "in this app.");
+                    String warn = "Unable to connect with Peer " + userInfo.getUserData() +
+                            " (" + peerId + ") as we only support " +
+                            skylinkConnection.getSkylinkConfig().getMaxPeers() +
+                            " concurrent connections in this app.";
+                    String debug = warn + " I.e. unable to form PeerConnection.";
+                    logW(TAG, warn);
+                    logD(TAG, debug);
                     return null;
                 }
             }
@@ -117,7 +121,7 @@ class SkylinkPeerService implements PeerPoolClient {
     static boolean isPeerIdMCU(String peerId) {
         boolean mcu = MCU_NAME.equals(peerId);
         if (mcu) {
-            Log.d(TAG, "MCU Detected");
+            logD(TAG, "[isPeerIdMCU] MCU Detected!");
         }
         return mcu;
     }
@@ -182,19 +186,18 @@ class SkylinkPeerService implements PeerPoolClient {
         if (peer != null) {
 
             // Add our local media stream to this PC, or not.
-            if ((skylinkConnection.getSkylinkConfig().hasAudioSend() || skylinkConnection.getSkylinkConfig().hasVideoSend())) {
+            if ((skylinkConnection.getSkylinkConfig().hasAudioSend() ||
+                    skylinkConnection.getSkylinkConfig().hasVideoSend())) {
                 peer.getPc().addStream(getSkylinkMediaService().getLocalMediaStream());
-                Log.d(TAG, "Added localMedia Stream");
+                String debug = "[receivedEnter] Added localMedia Stream to Peer " +
+                        peerId + ".";
+                logD(TAG, debug);
             }
-            try {
-                ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
-            }
+            ProtocolHelper.sendWelcome(peerId, skylinkConnection, false);
 
         } else {
             // We have reached the limit of max no. of Peers.
-            Log.d(TAG, "Discarding this \"enter\" due to Peer number limit.");
+            logD(TAG, "[receivedEnter] Discarding this \"enter\" due to Peer number limit.");
         }
     }
 
@@ -234,15 +237,21 @@ class SkylinkPeerService implements PeerPoolClient {
         if (getPeerNumber() > 0) {
             // If so, chances are this is a rejoin of room.
             // Log it
-            Log.d(TAG, "[receivedInRoom] This is a rejoin of room.");
+            String debug = "[receivedInRoom] Rejoined room and obtained \"inRoom\"." +
+                    "Rejoined as PeerNumber was greater than 0, at " + getPeerNumber() + ".";
+            logD(TAG, debug);
         }
 
         // Send enter.
         try {
             ProtocolHelper.sendEnter(null, skylinkConnection,
                     skylinkConnection.getSkylinkConnectionService());
-        } catch (JSONException e) {
-            Log.d(TAG, e.getMessage(), e);
+        } catch (SkylinkException e) {
+            String error = "[ERROR] Unable to connect to Peer(s) on joining room!";
+            String debug = error + "Details: Unable to send \"enter\"!\nException: " +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
     }
 
@@ -335,10 +344,14 @@ class SkylinkPeerService implements PeerPoolClient {
     void receivedWelcomeRestart(String peerId, PeerInfo peerInfo,
                                 UserInfo userInfo, double weight, boolean isRestart) {
 
+        // String to track if this is welcome or restart.
+        String type = "welcome";
         // For restart, existing Peer has to be first removed, before processing like a welcome
         if (isRestart) {
+            type = "restart";
             removePeer(peerId, ProtocolHelper.PEER_CONNECTION_RESTART, false);
         }
+        logD(TAG, "Received a \"" + type + "\" from Peer " + peerId + ".");
 
         // Check if a Peer was already created at "enter"
         if (getPeer(peerId) != null) {
@@ -348,8 +361,10 @@ class SkylinkPeerService implements PeerPoolClient {
                 removePeer(peerId, null, false);
             } else {
                 // Do not continue "welcome" but use Peer from "enter" instead.
-                Log.d(TAG, "Ignoring this welcome as Peer " + userInfo.getUserData() +
-                        " (" + peerId + ") is processing our welcome.");
+                String debug = "Ignoring this \"" + type + "\" as Peer " + userInfo.getUserData() +
+                        " (" + peerId + ") is processing our \"" + type + "\"." +
+                        " Based on agreed rules, Peer should process our \"" + type + "\".";
+                logD(TAG, debug);
                 return;
             }
         }
@@ -359,7 +374,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         // We have reached the limit of max no. of Peers.
         if (peer == null) {
-            Log.d(TAG, "Discarding this \"welcome\" due to Peer number limit.");
+            logD(TAG, "Discarding this \"" + type + "\" due to Peer number limit.");
             return;
         }
 
@@ -372,10 +387,10 @@ class SkylinkPeerService implements PeerPoolClient {
         if ((skylinkConnection.getSkylinkConfig().hasAudioSend() ||
                 skylinkConnection.getSkylinkConfig().hasVideoSend()) && !receiveOnly) {
             peer.getPc().addStream(getSkylinkMediaService().getLocalMediaStream());
-            Log.d(TAG, "Added localMedia Stream");
+            logD(TAG, "Added localMedia Stream to Peer " + peerId + "'s PC on \"" + type + "\".");
         }
 
-        Log.d(TAG, "[receivedWelcomeRestart] - create offer.");
+        logD(TAG, "[receivedWelcomeRestart] - Creating offer.");
         // Create DataChannel if both Peer and ourself desires it.
         if (peerInfo.isEnableDataChannel() &&
                 (skylinkConnection.getSkylinkConfig().hasPeerMessaging()
@@ -393,7 +408,7 @@ class SkylinkPeerService implements PeerPoolClient {
 
         peer.getPc().createOffer(sdpObserver,
                 pcShared.getSdpMediaConstraints());
-        Log.d(TAG, "[receivedWelcomeRestart] - createOffer for " + peerId);
+        logD(TAG, "[receivedWelcomeRestart] - Created Offer for " + peerId + ".");
     }
 
     // Internal methods

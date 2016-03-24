@@ -65,7 +65,7 @@ public class RedirectMessageProcessorTest {
 
             @Override
             public void onWarning(int errorCode, String message) {
-                assertEquals(ErrorCodes.REDIRECT_REASON_FAST_MSG, errorCode);
+                assertEquals(Errors.REDIRECT_REASON_FAST_MSG, errorCode);
                 assertTrue(TEST_INFO.equals(message));
             }
 
@@ -110,7 +110,7 @@ public class RedirectMessageProcessorTest {
 
             @Override
             public void onDisconnect(int errorCode, String message) {
-                assertEquals(ErrorCodes.REDIRECT_REASON_LOCKED, errorCode);
+                assertEquals(Errors.REDIRECT_REASON_LOCKED, errorCode);
                 assertTrue(TEST_INFO.equals(message));
             }
 

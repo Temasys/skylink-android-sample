@@ -20,7 +20,5 @@ interface RoomParameterProcessor {
 interface RoomParameterListener {
     public void onRoomParameterSuccessful(RoomParameters params);
 
-    public void onRoomParameterError(int message);
-
     public void onRoomParameterError(String message);
 }

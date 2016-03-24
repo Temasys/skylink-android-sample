@@ -1,9 +1,10 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
 
 /**
  * Purpose is to process room lock message types
@@ -12,7 +13,7 @@ import org.json.JSONObject;
  */
 class RoomLockMessageProcessor implements MessageProcessor {
 
-    private static final String TAG = RoomLockMessageProcessor.class.getSimpleName();
+    private static final String TAG = RoomLockMessageProcessor.class.getName();
 
     private SkylinkConnection skylinkConnection;
 
@@ -40,8 +41,11 @@ class RoomLockMessageProcessor implements MessageProcessor {
                                 skylinkConnection.getLifeCycleListener());
                         skylinkConnection.setRoomLocked(roomLocked);
                     } catch (JSONException e) {
-                        Log.e(TAG, e.getMessage(), e);
-                        signalingMessageProcessingService.onSignalingMessageException(e);
+                        String warn = "[WARN] Received a malformed room lock toggle message!" +
+                                "Not using it!";
+                        String debug = warn + "\nException: " + e.getMessage();
+                        logW(TAG, warn);
+                        logD(TAG, debug);
                     }
                 }
             }

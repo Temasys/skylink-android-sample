@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
@@ -10,13 +9,16 @@ import org.webrtc.PeerConnection;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+
+
 /**
  * Created by xiangrong on 2/7/15.
  */ // Implementation detail: observe ICE & stream changes and react
 // accordingly.
 class SkylinkPcObserver implements PeerConnection.Observer {
 
-    private static final String TAG = SkylinkPcObserver.class.getSimpleName();
+    private static final String TAG = SkylinkPcObserver.class.getName();
 
     private SkylinkConnection skylinkConnection;
 
@@ -105,7 +107,7 @@ class SkylinkPcObserver implements PeerConnection.Observer {
     @Override
     public void onIceConnectionChange(PeerConnection.IceConnectionState newState) {
         peer.setHealthCheckerIceState(newState);
-        Log.d(TAG, "Peer " + peerId + " : onIceConnectionChange : iceState : " + newState + ".");
+        logD(TAG, "Peer " + peerId + " : onIceConnectionChange : iceState : " + newState + ".");
         switch (newState) {
             case NEW:
                 break;
@@ -129,14 +131,12 @@ class SkylinkPcObserver implements PeerConnection.Observer {
 
     @Override
     public void onIceConnectionReceivingChange(boolean receiving) {
-        Log.d(TAG, "Peer " + peerId + " : IceConnectionReceiving changed to " + receiving);
+        logD(TAG, "Peer " + peerId + " : IceConnectionReceiving changed to " + receiving + ".");
     }
 
     @Override
-    public void onIceGatheringChange(
-            PeerConnection.IceGatheringState newState) {
-        Log.d(TAG, "Peer " + peerId + " : [onIceGatheringChange] New ICE Gathering State is now: "
-                + newState.toString() + ".");
+    public void onIceGatheringChange(PeerConnection.IceGatheringState newState) {
+        logD(TAG, "Peer " + peerId + " : IceGatheringState changed to " + newState.toString() + ".");
     }
 
     @SuppressLint("NewApi")

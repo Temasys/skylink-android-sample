@@ -32,3 +32,18 @@
 
 -keepattributes Exceptions,InnerClasses
 -keepparameternames
+
+# Use:
+# proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+# Instead of:
+# proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+# In order for the following optimization to take effect.
+-assumenosideeffects class android.util.Log {
+# Allow Info, Warn, Error type logs to remain on release.
+# However, no logging will occur unless SkylinkConfig's enableLogs is set to true (Skylink SDK >= 0.9.6).
+#    public static *** e(...);
+#    public static *** w(...);
+#    public static *** i(...);
+    public static *** d(...);
+    public static *** v(...);
+}

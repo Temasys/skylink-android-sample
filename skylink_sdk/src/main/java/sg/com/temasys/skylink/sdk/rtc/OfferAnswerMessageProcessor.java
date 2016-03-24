@@ -10,7 +10,7 @@ import org.json.JSONObject;
  */
 class OfferAnswerMessageProcessor implements MessageProcessor {
 
-    private static final String TAG = OfferAnswerMessageProcessor.class.getSimpleName();
+    private static final String TAG = OfferAnswerMessageProcessor.class.getName();
 
     private SkylinkConnection skylinkConnection;
 

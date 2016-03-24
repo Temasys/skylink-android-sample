@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,7 +104,7 @@ public class UtilsTest {
         try {
             assertTrue("Should be equal", str.equals(Utils.convertInputStreamToString(inputStream)));
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d(TAG, e.getMessage());
         }
     }
 

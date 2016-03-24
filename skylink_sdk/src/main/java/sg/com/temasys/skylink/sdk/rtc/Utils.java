@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +23,11 @@ import javax.crypto.spec.SecretKeySpec;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
+
+
 class Utils {
 
     private static final String TAG = Utils.class.getName();
@@ -45,10 +49,10 @@ class Utils {
                                                     String secret,
                                                     Date startTime, int duration) {
 
-        Log.d(TAG, "Room name " + roomName);
-        Log.d(TAG, "App Key " + appKey);
-        Log.d(TAG, "startTime " + startTime);
-        Log.d(TAG, "duration " + duration);
+        logD(TAG, "[getSkylinkConnectionString] Room name: " + roomName);
+        logD(TAG, "[getSkylinkConnectionString] App Key: " + appKey);
+        logD(TAG, "[getSkylinkConnectionString] startTime: " + startTime);
+        logD(TAG, "[getSkylinkConnectionString] duration: " + duration);
 
         // Convert the date in to ISO format
         String dateString = Utils.getISOTimeStamp(startTime);
@@ -59,7 +63,12 @@ class Utils {
         try {
             cred = URLEncoder.encode(cred, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR] Unable to encode credentials. Not joining room!";
+            String debug = error + "\nDetails: Could not URLEncode generated credentials."
+                    + "\nException: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+            return null;
         }
 
         return appKey + "/"
@@ -94,7 +103,12 @@ class Utils {
                     .encodeToString(rawHmac, android.util.Base64.DEFAULT);
 
         } catch (Exception e) {
-            Log.e(TAG, "Failed to generate HMAC : " + e.getMessage(), e);
+            String error = "[ERROR] Unable to create credentials. Not joining room!";
+            String debug = error + "\nDetails: Could not compute RFC 2104-compliant HMAC signature."
+                    + "\nException: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+            return null;
         }
         return result.substring(0, result.length() - 1);
     }
@@ -374,15 +388,16 @@ class Utils {
             }
         }
         if (mLineIndex == -1) {
-            Log.w(TAG, "No " + mediaDescription + " line, so can't prefer " + codec);
+            logD(TAG, "[preferCodec] No " + mediaDescription + " line, so can't prefer " +
+                    codec + ".");
             return sdpDescription;
         }
         if (codecRtpMap == null) {
-            Log.w(TAG, "No rtpmap for " + codec + ", so can't prefer " + codec);
+            logD(TAG, "[preferCodec] No rtpmap for " + codec + ", so can't prefer " + codec + ".");
             return sdpDescription;
         }
-        Log.d(TAG, "Found " + codec + " rtpmap " + codecRtpMap + ", prefer at " +
-                lines[mLineIndex]);
+        logD(TAG, "[preferCodec] Found " + codec + " rtpmap " + codecRtpMap + ", prefer at line: " +
+                lines[mLineIndex] + ".");
         String[] origMLineParts = lines[mLineIndex].split(" ");
         StringBuilder newMLine = new StringBuilder();
         int origPartIndex = 0;
@@ -397,7 +412,7 @@ class Utils {
             }
         }
         lines[mLineIndex] = newMLine.toString();
-        Log.d(TAG, "Change media description: " + lines[mLineIndex]);
+        logD(TAG, "[preferCodec] Change media description at line: " + lines[mLineIndex] + ".");
         StringBuilder newSdpDescription = new StringBuilder();
         for (String line : lines) {
             newSdpDescription.append(line).append("\r\n");
@@ -415,7 +430,11 @@ class Utils {
     public static String modifyStereoAudio(String sdpDescription, SkylinkConfig skylinkConfig) {
 
         if (skylinkConfig.getPreferredAudioCodec() != SkylinkConfig.AudioCodec.OPUS) {
-            Log.d(TAG, "Cannot add stereo configuration due to preferred audio codec is not opus");
+            String warn = "[WARN] Unable to enable stereo audio.";
+            String debug = warn + "\nDetails: Cannot add stereo configuration as preferred " +
+                    "audio codec is not opus";
+            logW(TAG, warn);
+            logD(TAG, debug);
             return sdpDescription;
         }
 
@@ -430,14 +449,14 @@ class Utils {
                 if (skylinkConfig.isStereoAudio() && !lines[i].contains("stereo=1")) {
                     // If the user requires stereo but if its not on SDP, add it to the end
                     lines[i] += ";stereo=1";
-                    Log.d(TAG, "Added stereo to the sdp");
+                    logD(TAG, "[modifyStereoAudio] Added stereo to the sdp.");
                     sdpModified = true;
                 } else if (!skylinkConfig.isStereoAudio() && lines[i].contains("stereo=1")) {
                     // If the user does not require stereo but if its on SDP, replace it
                     lines[i] = lines[i].replace("stereo=1;", "");
                     // Include this if stereo is at the end
                     lines[i] = lines[i].replace("stereo=1", "");
-                    Log.d(TAG, "Removed stereo from the sdp");
+                    logD(TAG, "[modifyStereoAudio] Removed stereo from the sdp.");
                     sdpModified = true;
                 }
                 break;

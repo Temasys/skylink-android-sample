@@ -203,7 +203,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_FAST_MSG);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_FAST_MSG);
             }
 
             @Override
@@ -238,7 +238,7 @@ public class ProtocolHelperTest {
                     @Override
                     public void onWarning(int errorCode, String message) {
                         assertEquals(message, expectedInfo);
-                        assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_LOCKED);
+                        assertEquals(errorCode, Errors.REDIRECT_REASON_LOCKED);
                     }
 
                     @Override
@@ -273,7 +273,7 @@ public class ProtocolHelperTest {
                     @Override
                     public void onWarning(int errorCode, String message) {
                         assertEquals(message, expectedInfo);
-                        assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_FULL);
+                        assertEquals(errorCode, Errors.REDIRECT_REASON_ROOM_FULL);
                     }
 
                     @Override
@@ -309,7 +309,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_DUPLICATED_LOGIN);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_DUPLICATED_LOGIN);
             }
 
             @Override
@@ -343,7 +343,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_SERVER_ERROR);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_SERVER_ERROR);
             }
 
 
@@ -379,7 +379,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_VERIFICATION);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_VERIFICATION);
             }
 
             @Override
@@ -419,7 +419,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_EXPIRED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_EXPIRED);
             }
 
             @Override
@@ -459,7 +459,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_CLOSED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_ROOM_CLOSED);
             }
 
 
@@ -500,7 +500,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_TO_CLOSED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_ROOM_TO_CLOSED);
             }
 
             @Override
@@ -534,7 +534,7 @@ public class ProtocolHelperTest {
             @Override
             public void onWarning(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_SEAT_QUOTA);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_SEAT_QUOTA);
             }
 
             @Override
@@ -573,7 +573,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_FAST_MSG);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_FAST_MSG);
             }
 
             @Override
@@ -608,7 +608,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_LOCKED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_LOCKED);
             }
 
             @Override
@@ -647,7 +647,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_FULL);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_ROOM_FULL);
             }
 
             @Override
@@ -682,7 +682,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_DUPLICATED_LOGIN);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_DUPLICATED_LOGIN);
             }
 
             @Override
@@ -717,7 +717,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_SERVER_ERROR);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_SERVER_ERROR);
             }
 
             @Override
@@ -751,7 +751,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_VERIFICATION);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_VERIFICATION);
             }
 
             @Override
@@ -785,7 +785,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_EXPIRED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_EXPIRED);
             }
 
             @Override
@@ -820,7 +820,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_CLOSED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_ROOM_CLOSED);
             }
 
             @Override
@@ -853,7 +853,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_ROOM_TO_CLOSED);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_ROOM_TO_CLOSED);
             }
 
             @Override
@@ -887,7 +887,7 @@ public class ProtocolHelperTest {
             @Override
             public void onDisconnect(int errorCode, String message) {
                 assertEquals(message, expectedInfo);
-                assertEquals(errorCode, ErrorCodes.REDIRECT_REASON_SEAT_QUOTA);
+                assertEquals(errorCode, Errors.REDIRECT_REASON_SEAT_QUOTA);
             }
 
             @Override

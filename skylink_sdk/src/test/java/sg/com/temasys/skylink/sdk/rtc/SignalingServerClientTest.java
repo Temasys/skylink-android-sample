@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +17,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+
 
 /**
  * Tests related to SignalingServerClient
@@ -64,26 +65,19 @@ public class SignalingServerClientTest {
                 new RoomParameterListener() {
                     @Override
                     public void onRoomParameterSuccessful(RoomParameters params) {
-                        Log.d(TAG, "onRoomParameterSuccessful called.");
+                        logD(TAG, "onRoomParameterSuccessful called.");
                         assertNotNull("Parameters should not be null", params);
                         mSignalingServer = params.getIpSigserver();
                         mSignalingPort = params.getPortSigserver();
                         String log = "Signaling Server IP: " + mSignalingServer +
                                 "\nSignaling Server Port: " + mSignalingPort;
-                        Log.d(TAG, log);
-                        countDownLatch.countDown();
-                    }
-
-                    @Override
-                    public void onRoomParameterError(int message) {
-                        Log.d(TAG, "onSignalingParametersReceivedError");
-                        fail("Should receive signaling parameters successfully");
+                        logD(TAG, log);
                         countDownLatch.countDown();
                     }
 
                     @Override
                     public void onRoomParameterError(String message) {
-                        Log.d(TAG, "onSignalingParametersReceivedError");
+                        logD(TAG, "onSignalingParametersReceivedError");
                         fail("Should receive signaling parameters successfully");
                         countDownLatch.countDown();
                     }
@@ -93,21 +87,21 @@ public class SignalingServerClientTest {
         countDownLatch.await();
 
         // Test if able to connect Signaling Server and start onOpen call.
-        Log.d(TAG, "testOnConnect");
+        logD(TAG, "testOnConnect");
         final CountDownLatch countDownLatch2 = new CountDownLatch(1);
 
         final SignalingServerClient signalingServerClient =
                 new SignalingServerClient(new SignalingServerClientListener() {
                     @Override
                     public void onOpen() {
-                        Log.d(TAG, "onOpen");
+                        logD(TAG, "onOpen");
                         countDownLatch2.countDown();
                     }
 
                     @Override
                     public void onMessage(String data) {
                         String strErr = "onOpen not called but onMessage called with:\n" + data;
-                        Log.e(TAG, strErr);
+                        logE(TAG, strErr);
                         fail(strErr);
                         countDownLatch2.countDown();
                     }
@@ -115,7 +109,7 @@ public class SignalingServerClientTest {
                     @Override
                     public void onDisconnect() {
                         String strErr = "onOpen not called but onDisconnect called.";
-                        Log.e(TAG, strErr);
+                        logE(TAG, strErr);
                         fail(strErr);
                         countDownLatch2.countDown();
                     }
@@ -123,7 +117,7 @@ public class SignalingServerClientTest {
                     @Override
                     public void onClose() {
                         String strErr = "onOpen not called but onClose called.";
-                        Log.e(TAG, strErr);
+                        logE(TAG, strErr);
                         fail(strErr);
                         countDownLatch2.countDown();
                     }
@@ -132,7 +126,7 @@ public class SignalingServerClientTest {
                     public void onError(int code, String description) {
                         String strErr = "onOpen not called but onErrorAppServer called with:\n" +
                                 "Code " + code + ", " + description + ".";
-                        Log.e(TAG, strErr);
+                        logE(TAG, strErr);
                         fail(strErr);
                         countDownLatch2.countDown();
                     }

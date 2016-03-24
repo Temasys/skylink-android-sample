@@ -1,8 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
-import org.json.JSONException;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
@@ -11,6 +8,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
 
 class HealthChecker {
 
@@ -78,7 +79,13 @@ class HealthChecker {
                                 startRestartTimer();
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, e.getMessage(), e);
+                            String warn = "[WARN:" + Errors.HANDSHAKE_RESTART_TIMER_FAILED +
+                                    "] Connection with Peer " + remotePeerId +
+                                    " might face some difficulties in completion";
+                            String debug = warn + "\nHANDSHAKE_RESTART_TIMER_FAILED " +
+                                    "Exception:\n" + e.getMessage();
+                            logW(TAG, warn);
+                            logD(TAG, debug);
                         }
                     }
                 }, waitMs, TimeUnit.MILLISECONDS);
@@ -92,7 +99,12 @@ class HealthChecker {
     private boolean tryRestart() {
         // Stop trying to restart after certain number of attempts.
         if (restartNumber >= MAX_RESTART_ATTEMPTS) {
-            Log.e(TAG, "Stop trying to restarting as already tried " + restartNumber + " times.");
+            String error = "[ERROR:" + Errors.PC_MAX_RESTART_ATTEMPTS_REACHED + "]" +
+                    " Unable to connect to Peer " + remotePeerId + ".";
+            String debug = error + "\nStop trying to restart as already tried " + restartNumber +
+                    " times.";
+            logE(TAG, error);
+            logD(TAG, debug);
             return false;
         }
         switch (iceState) {
@@ -140,14 +152,10 @@ class HealthChecker {
      * Send the restart call
      */
     private void sendRestart() {
-        try {
-            Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : IceConnectionState : " + iceState +
-                    " - Restarting (" + restartNumber + ").");
-            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
-                    localMediaStream, myConfig);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        logD(TAG, "Peer " + remotePeerId + " : IceConnectionState : " + iceState +
+                " - Restarting (" + restartNumber + ").");
+        ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
+                localMediaStream, myConfig);
     }
 
     /**
@@ -188,15 +196,15 @@ class HealthChecker {
                 boolean enableIceTrickle = peerInfo.isEnableIceTrickle();
                 if (!enableIceTrickle) {
                     iceRole = ICE_ROLE_TRICKLE_OFF;
-                    Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : has NOT enabled ICE trickle.");
+                    logD(TAG, "Peer " + remotePeerId + " : has NOT enabled ICE trickle.");
                 } else {
-                    Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : has enabled ICE trickle.");
+                    logD(TAG, "Peer " + remotePeerId + " : has enabled ICE trickle.");
                 }
             }
 
         }
         // Set waitMs based on iceRole
         setWaitMs();
-        Log.d(TAG, "[HealthChecker] Peer " + remotePeerId + " : iceRole set to " + iceRole + ".");
+        logD(TAG, "Peer " + remotePeerId + " : iceRole set to " + iceRole + ".");
     }
 }

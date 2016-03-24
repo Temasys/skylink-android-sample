@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.IceCandidate;
@@ -13,6 +11,12 @@ import java.util.Set;
 import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logI;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
+
 
 /**
  * Handles Protocol related logic
@@ -52,17 +56,29 @@ class ProtocolHelper {
                                    LifeCycleListener lifeCycleListener) throws JSONException {
 
         int errorCode = ProtocolHelper.getRedirectCode(reason);
+        String errorString = Errors.getErrorString(errorCode);
+        if (errorString != null) {
+            errorString = " " + errorString;
+        } else {
+            errorString = "";
+        }
 
         boolean shouldDisconnect = false;
 
+        // Send to user the error code and String (if any)
         if ("warning".equals(action)) {
-            // Send back the info received and the derived error code
-            lifeCycleListener.onWarning(errorCode, info);
-            Log.d(TAG, "processRedirect: onWarning " + errorCode);
+            String warn = "[WARN:" + errorCode + "]" + errorString;
+            String debug = warn + "\nDetails: " + info;
+            lifeCycleListener.onWarning(errorCode, warn);
+            logW(TAG, warn);
+            logD(TAG, debug);
         } else if ("reject".equals(action)) {
-            // Send back the info received and the derived error code
-            lifeCycleListener.onDisconnect(errorCode, info);
-            Log.d(TAG, "processRedirect: onDisconnect " + errorCode);
+            String error = "[ERROR:" + errorCode + "] We are being disconnected from the room."
+                    + errorString;
+            String debug = error + "\nDetails: " + info;
+            logE(TAG, error);
+            logD(TAG, debug);
+            lifeCycleListener.onDisconnect(errorCode, error);
             shouldDisconnect = true;
         }
 
@@ -86,7 +102,8 @@ class ProtocolHelper {
         // Only post updates if received lock status is not the same
         if (lockStatus != currentRoomLockStatus) {
             lifeCycleListener.onLockRoomStatusChange(peerId, lockStatus);
-            Log.d(TAG, "processRoomLockStatus: onLockRoomStatusChange " + lockStatus);
+            logI(TAG, "Room Lock Status has just been changed by Peer " + peerId +
+                    " to: " + lockStatus + "!");
         }
         return lockStatus;
     }
@@ -98,14 +115,21 @@ class ProtocolHelper {
      * @param lockStatus
      * @throws JSONException
      */
-    static void sendRoomLockStatus(SkylinkConnectionService skylinkConnectionService, boolean lockStatus) throws JSONException {
+    static void sendRoomLockStatus(SkylinkConnectionService skylinkConnectionService, boolean lockStatus) {
         JSONObject dict = new JSONObject();
-        dict.put("rid", skylinkConnectionService.getRoomId());
-        dict.put("mid", skylinkConnectionService.getSid());
-        dict.put("lock", lockStatus);
-        dict.put("type", "roomLockEvent");
+        try {
+            dict.put("rid", skylinkConnectionService.getRoomId());
+            dict.put("mid", skylinkConnectionService.getSid());
+            dict.put("lock", lockStatus);
+            dict.put("type", "roomLockEvent");
+        } catch (JSONException e) {
+            String error = "[ERROR] Unable to lock room!";
+            String debug = error + "\nException: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+        }
         skylinkConnectionService.sendMessage(dict);
-        Log.d(TAG, "sendRoomLockStatus: sendMessage " + lockStatus);
+        logI(TAG, "Sending to Server new lock status: " + lockStatus + ".");
     }
 
     /**
@@ -115,13 +139,14 @@ class ProtocolHelper {
      * @param skylinkConnection
      * @param localMediaStream
      * @param myConfig
-     * @return
+     * @return True if restart initiation is successful (still pending outcome of handshake), false
+     * otherwise.
      * @throws JSONException
      */
     static boolean sendRestart(final String remotePeerId,
                                final SkylinkConnection skylinkConnection,
                                MediaStream localMediaStream,
-                               SkylinkConfig myConfig) throws JSONException {
+                               SkylinkConfig myConfig) {
 
         if (skylinkConnection != null) {
 
@@ -143,10 +168,17 @@ class ProtocolHelper {
             Peer peer = skylinkConnection.getSkylinkPeerService().createPeer(
                     remotePeerId, HealthChecker.ICE_ROLE_ANSWERER, userInfoHack, peerInfoHack);
 
+            // We have reached the limit of max no. of Peers.
+            if (peer == null) {
+                logD(TAG, "[sendRestart] Unable to perform \"restart\" as we were unable to create a new Peer " +
+                        "due to Peer number limit.");
+                return false;
+            }
+
             // Add our local media stream to this PC, or not.
             if ((myConfig.hasAudioSend() || myConfig.hasVideoSend())) {
                 peer.getPc().addStream(localMediaStream);
-                Log.d(TAG, "Added localMedia Stream");
+                logD(TAG, "[sendRestart] Added localMedia Stream");
             }
 
             if (peer.getPc() != null) {
@@ -155,6 +187,7 @@ class ProtocolHelper {
             }
             return true;
         }
+        logD(TAG, "[sendRestart] Unable to perform \"restart\" as SkylinkConnection is not initiated.");
         return false;
     }
 
@@ -206,23 +239,33 @@ class ProtocolHelper {
      */
     static void sendEnter(String remotePeerId,
                           SkylinkConnection skylinkConnection,
-                          SkylinkConnectionService skylinkConnectionService) throws JSONException {
+                          SkylinkConnectionService skylinkConnectionService) throws SkylinkException {
 
-        skylinkConnection.logMessage("*** SendEnter");
+        logD(TAG, "*** SendEnter");
         JSONObject enterObject = new JSONObject();
-        enterObject.put("type", "enter");
-        enterObject.put("mid", skylinkConnectionService.getSid());
-        enterObject.put("rid", skylinkConnectionService.getRoomId());
-        enterObject.put("receiveOnly", false);
-        enterObject.put("agent", "Android");
-        enterObject.put("version", BuildConfig.VERSION_NAME);
-        // TODO XR: Can remove after JS client update to compatible restart protocol.
-        if (remotePeerId != null) {
-            enterObject.put("target", remotePeerId);
-        }
         UserInfo userInfo = new UserInfo(skylinkConnection.getSkylinkConfig(),
                 skylinkConnection.getSkylinkPeerService().getUserData(null));
-        UserInfo.setUserInfo(enterObject, userInfo);
+        try {
+            enterObject.put("type", "enter");
+            enterObject.put("mid", skylinkConnectionService.getSid());
+            enterObject.put("rid", skylinkConnectionService.getRoomId());
+            enterObject.put("receiveOnly", false);
+            enterObject.put("agent", "Android");
+            enterObject.put("version", BuildConfig.VERSION_NAME);
+            // TODO XR: Can remove after JS client update to compatible restart protocol.
+            if (remotePeerId != null) {
+                enterObject.put("target", remotePeerId);
+            }
+            UserInfo.setUserInfo(enterObject, userInfo);
+        } catch (JSONException e) {
+            String error = "[ERROR:" + Errors.SIG_MSG_UNABLE_TO_CREATE_ENTER_JSON +
+                    "] Unable to connect with Peer(s) in the room!";
+            String debug = error + "\nSIG_MSG_UNABLE_TO_CREATE_ENTER_JSON Exception:\n" +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+            throw new SkylinkException(debug);
+        }
         skylinkConnectionService.sendMessage(enterObject);
     }
 
@@ -237,7 +280,7 @@ class ProtocolHelper {
      */
     static boolean sendWelcome(String remotePeerId,
                                SkylinkConnection skylinkConnection,
-                               boolean isRestart) throws JSONException {
+                               boolean isRestart) {
 
         SkylinkConnectionService skylinkConnectionService =
                 skylinkConnection.getSkylinkConnectionService();
@@ -251,24 +294,41 @@ class ProtocolHelper {
 
         if (skylinkConnection != null) {
 
-            Log.d(TAG, "[SDK] onMessage - Sending '" + typeStr + "'.");
+            logD(TAG, "[SDK] onMessage - Sending '" + typeStr + "'.");
 
             JSONObject welcomeObject = new JSONObject();
-            welcomeObject.put("type", typeStr);
-            welcomeObject.put("weight", peer.getWeight());
-            welcomeObject.put("mid", skylinkConnectionService.getSid());
-            welcomeObject.put("target", remotePeerId);
-            welcomeObject.put("rid", skylinkConnectionService.getRoomId());
-            welcomeObject.put("agent", "Android");
-            welcomeObject.put("version", BuildConfig.VERSION_NAME);
-            welcomeObject.put("receiveOnly", false);
-            welcomeObject.put("enableIceTrickle", true);
-            welcomeObject.put("enableDataChannel",
-                    (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
-                            || myConfig.hasDataTransfer()));
+            try {
+                welcomeObject.put("type", typeStr);
+                welcomeObject.put("weight", peer.getWeight());
+                welcomeObject.put("mid", skylinkConnectionService.getSid());
+                welcomeObject.put("target", remotePeerId);
+                welcomeObject.put("rid", skylinkConnectionService.getRoomId());
+                welcomeObject.put("agent", "Android");
+                welcomeObject.put("version", BuildConfig.VERSION_NAME);
+                welcomeObject.put("receiveOnly", false);
+                welcomeObject.put("enableIceTrickle", true);
+                welcomeObject.put("enableDataChannel",
+                        (myConfig.hasPeerMessaging() || myConfig.hasFileTransfer()
+                                || myConfig.hasDataTransfer()));
+            } catch (JSONException e) {
+                String error = "[ERROR] Unable to welcome Peer " + remotePeerId + "!";
+                String debug = error + "\nUnable to create welcome JSON. Exception:\n" +
+                        e.getMessage();
+                logE(TAG, error);
+                logD(TAG, debug);
+            }
             UserInfo userInfo = new UserInfo(myConfig, skylinkConnection.getSkylinkPeerService()
                     .getUserData(null));
-            UserInfo.setUserInfo(welcomeObject, userInfo);
+            try {
+                UserInfo.setUserInfo(welcomeObject, userInfo);
+            } catch (JSONException e) {
+                String error = "[ERROR:" + Errors.HANDSHAKE_UNABLE_TO_SET_USERINFO_IN_WELCOME +
+                        "] Unable to welcome Peer " + remotePeerId + "!";
+                String debug = error + "\nHANDSHAKE_UNABLE_TO_SET_USERINFO_IN_WELCOME " +
+                        "\nException: " + e.getMessage();
+                logE(TAG, error);
+                logD(TAG, debug);
+            }
             skylinkConnectionService.sendMessage(welcomeObject);
 
             return true;
@@ -284,8 +344,8 @@ class ProtocolHelper {
      */
     static void sendJoinRoom(SkylinkConnectionService skylinkConnectionService) {
 
+        JSONObject msgJoinRoom = new JSONObject();
         try {
-            JSONObject msgJoinRoom = new JSONObject();
             msgJoinRoom.put("type", "joinRoom");
             msgJoinRoom.put("rid",
                     skylinkConnectionService.getRoomId());
@@ -305,11 +365,16 @@ class ProtocolHelper {
                     skylinkConnectionService.getLen());
             msgJoinRoom.put("start",
                     skylinkConnectionService.getStart());
-            skylinkConnectionService.sendMessage(msgJoinRoom);
-            Log.d(TAG, "[SDK] Join Room msg: Sending...");
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR:" + Errors.HANDSHAKE_UNABLE_TO_CREATE_JOINROOM_JSON +
+                    "] Unable to initiate connection to room!";
+            String debug = error + " Exception: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+            return;
         }
+        skylinkConnectionService.sendMessage(msgJoinRoom);
+        logD(TAG, "[SDK] Join Room msg: Sending...");
     }
 
     /**
@@ -331,11 +396,14 @@ class ProtocolHelper {
             json.put("mid", skylinkConnectionService.getSid());
             json.put("rid", skylinkConnectionService.getRoomId());
             json.put("target", peerId);
-            skylinkConnectionService.sendMessage(json);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String warn = "[ERROR:" + Errors.HANDSHAKE_UNABLE_TO_CREATE_CANDIDATE_JSON + "]";
+            String debug = warn + " Exception: " + e.getMessage();
+            logW(TAG, warn);
+            logD(TAG, debug);
+            return;
         }
-
+        skylinkConnectionService.sendMessage(json);
     }
 
     /**
@@ -357,34 +425,52 @@ class ProtocolHelper {
             json.put("rid", skylinkConnectionService.getRoomId());
             skylinkConnectionService.sendMessage(json);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR:" + Errors.HANDSHAKE_UNABLE_TO_CREATE_SDP_JSON +
+                    "] Unable to generate information required to connect with Peer " + peerId + "!";
+            String debug = error + "\nDetails: Unable to form SDP JSON. Exception:\n" +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
+        skylinkConnectionService.sendMessage(json);
     }
 
     static void sendMuteAudio(boolean isMuted, SkylinkConnectionService skylinkConnectionService) {
-        JSONObject dict = new JSONObject();
+        JSONObject json = new JSONObject();
         try {
-            dict.put("type", "muteAudioEvent");
-            dict.put("mid", skylinkConnectionService.getSid());
-            dict.put("rid", skylinkConnectionService.getRoomId());
-            dict.put("muted", new Boolean(isMuted));
-            skylinkConnectionService.sendMessage(dict);
+            json.put("type", "muteAudioEvent");
+            json.put("mid", skylinkConnectionService.getSid());
+            json.put("rid", skylinkConnectionService.getRoomId());
+            json.put("muted", new Boolean(isMuted));
+            skylinkConnectionService.sendMessage(json);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR:" + Errors.HANDSHAKE_UNABLE_TO_CREATE_MUTE_AUDIO_JSON +
+                    "] Unable to inform Peer(s) that we toggled Audio mute status!";
+            String debug = error + " Reason: Unable to form mute audio JSON. Exception:\n" +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
+        skylinkConnectionService.sendMessage(json);
     }
 
     static void sendMuteVideo(boolean isMuted, SkylinkConnectionService skylinkConnectionService) {
-        JSONObject dict = new JSONObject();
+        JSONObject json = new JSONObject();
         try {
-            dict.put("type", "muteVideoEvent");
-            dict.put("mid", skylinkConnectionService.getSid());
-            dict.put("rid", skylinkConnectionService.getRoomId());
-            dict.put("muted", new Boolean(isMuted));
-            skylinkConnectionService.sendMessage(dict);
+            json.put("type", "muteVideoEvent");
+            json.put("mid", skylinkConnectionService.getSid());
+            json.put("rid", skylinkConnectionService.getRoomId());
+            json.put("muted", new Boolean(isMuted));
+            skylinkConnectionService.sendMessage(json);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR:" + Errors.HANDSHAKE_UNABLE_TO_CREATE_MUTE_VIDEO_JSON +
+                    "] Unable to inform Peer(s) that we toggled video mute status!";
+            String debug = error + " Reason: Unable to form mute video JSON. Exception:\n" +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
+        skylinkConnectionService.sendMessage(json);
     }
 
     static void sendPingMessage(SkylinkConnection skylinkConnection,
@@ -402,37 +488,37 @@ class ProtocolHelper {
         int redirectCode;
         switch (reason) {
             case FAST_MSG:
-                redirectCode = ErrorCodes.REDIRECT_REASON_FAST_MSG;
+                redirectCode = Errors.REDIRECT_REASON_FAST_MSG;
                 break;
             case LOCKED:
-                redirectCode = ErrorCodes.REDIRECT_REASON_LOCKED;
+                redirectCode = Errors.REDIRECT_REASON_LOCKED;
                 break;
             case ROOM_FULL:
-                redirectCode = ErrorCodes.REDIRECT_REASON_ROOM_FULL;
+                redirectCode = Errors.REDIRECT_REASON_ROOM_FULL;
                 break;
             case DUPLICATED_LOGIN:
-                redirectCode = ErrorCodes.REDIRECT_REASON_DUPLICATED_LOGIN;
+                redirectCode = Errors.REDIRECT_REASON_DUPLICATED_LOGIN;
                 break;
             case SERVER_ERROR:
-                redirectCode = ErrorCodes.REDIRECT_REASON_SERVER_ERROR;
+                redirectCode = Errors.REDIRECT_REASON_SERVER_ERROR;
                 break;
             case VERIFICATION:
-                redirectCode = ErrorCodes.REDIRECT_REASON_VERIFICATION;
+                redirectCode = Errors.REDIRECT_REASON_VERIFICATION;
                 break;
             case EXPIRED:
-                redirectCode = ErrorCodes.REDIRECT_REASON_EXPIRED;
+                redirectCode = Errors.REDIRECT_REASON_EXPIRED;
                 break;
             case ROOM_CLOSE:
-                redirectCode = ErrorCodes.REDIRECT_REASON_ROOM_CLOSED;
+                redirectCode = Errors.REDIRECT_REASON_ROOM_CLOSED;
                 break;
             case TO_CLOSE:
-                redirectCode = ErrorCodes.REDIRECT_REASON_ROOM_TO_CLOSED;
+                redirectCode = Errors.REDIRECT_REASON_ROOM_TO_CLOSED;
                 break;
             case SEAT_QUOTA:
-                redirectCode = ErrorCodes.REDIRECT_REASON_SEAT_QUOTA;
+                redirectCode = Errors.REDIRECT_REASON_SEAT_QUOTA;
                 break;
             default:
-                redirectCode = ErrorCodes.REDIRECT_REASON_UNKNOWN;
+                redirectCode = Errors.REDIRECT_REASON_UNKNOWN;
                 break;
         }
 

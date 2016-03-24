@@ -1,10 +1,11 @@
 package sg.com.temasys.skylink.sdk.config;
 
-import android.util.Log;
-
 import java.io.Serializable;
 import java.util.Map;
 
+import sg.com.temasys.skylink.sdk.BuildConfig;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
 
 /**
  * Configuration class used to configure the parameters of real time communication.
@@ -17,30 +18,37 @@ public class SkylinkConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static int MAX_PEERS = 4;
+
     public static int MAX_VIDEO_HEIGHT = 480;
     public static int MAX_VIDEO_WIDTH = 640;
     public static int MAX_VIDEO_FPS = 30;
 
-    private int videoHeight = MAX_VIDEO_HEIGHT;
-    private int videoWidth = MAX_VIDEO_WIDTH;
-    private int videoFps = MAX_VIDEO_FPS;
-
-    /**
-     * Config to set if local front camera video view should be mirrored.
-     */
-    private boolean mirrorLocalView;
-    private boolean stereoAudio = true;
     private boolean audioSend;
     private boolean videoSend;
     private boolean audioReceive;
     private boolean videoReceive;
-    private boolean peerMessaging;
-    private boolean fileTransfer;
     private boolean dataTransfer;
-    private int timeout = 60;
+    /**
+     * This allows external logs (info, warn, error) to be logged if true.
+     * By default it takes the value of DEBUG in BuildConfig, so it is true for debug builds,
+     * false for release builds.
+     * However, it can be set by SDK users.
+     */
+    private boolean enableLogs = BuildConfig.DEBUG;
+    private boolean fileTransfer;
     private int maxPeers = MAX_PEERS;
-    private Map<String, Object> advancedOptions;
+    /**
+     * Config to set if local front camera video view should be mirrored.
+     */
+    private boolean mirrorLocalView;
+    private boolean peerMessaging;
     private AudioCodec preferredAudioCodec = AudioCodec.OPUS;
+    private boolean stereoAudio = true;
+    private int videoHeight = MAX_VIDEO_HEIGHT;
+    private int videoWidth = MAX_VIDEO_WIDTH;
+    private int videoFps = MAX_VIDEO_FPS;
+    private int timeout = 60;
+    private Map<String, Object> advancedOptions;
 
     /**
      * Audio codec to be used
@@ -135,8 +143,9 @@ public class SkylinkConfig implements Serializable {
                 this.videoSend = true;
                 break;
             default:
-                Log.e(TAG, "Unable to set " + audioVideoConfig +
-                        " as the send Audio and Video config.");
+                String error = "[ERROR] Send Audio and Video config not set.\n" +
+                        "Due to unknown Audio Video type: \"" + audioVideoConfig + "\".";
+                logE(TAG, error);
         }
     }
 
@@ -164,8 +173,9 @@ public class SkylinkConfig implements Serializable {
                 this.videoReceive = true;
                 break;
             default:
-                Log.e(TAG, "Unable to set " + audioVideoConfig +
-                        " as the receive Audio and Video config.");
+                String error = "[ERROR] Receive Audio and Video config not set.\n" +
+                        "Due to unknown Audio Video type: \"" + audioVideoConfig + "\".";
+                logE(TAG, error);
         }
     }
 
@@ -199,6 +209,26 @@ public class SkylinkConfig implements Serializable {
      */
     public void setHasFileTransfer(boolean fileTransfer) {
         this.fileTransfer = fileTransfer;
+    }
+
+    /**
+     * Checks if logging is enabled for SDK.
+     *
+     * @return
+     */
+    public boolean isEnableLogs() {
+        return enableLogs;
+    }
+
+    /**
+     * Sets if logging should be enabled for SDK.
+     * By default, logging is disabled for released SDK.
+     * Enabling logs might be useful for debugging.
+     *
+     * @param enableLogs True/false to enable/disable logs.
+     */
+    public void setEnableLogs(boolean enableLogs) {
+        this.enableLogs = enableLogs;
     }
 
     /**

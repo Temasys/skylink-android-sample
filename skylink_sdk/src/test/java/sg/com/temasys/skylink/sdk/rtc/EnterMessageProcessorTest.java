@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class EnterMessageProcessorTest {
 
-    private static final String TAG = EnterMessageProcessorTest.class.getSimpleName();
+    private static final String TAG = EnterMessageProcessorTest.class.getName();
     private EnterMessageProcessor enterMessageProcessor;
 
     // Test values

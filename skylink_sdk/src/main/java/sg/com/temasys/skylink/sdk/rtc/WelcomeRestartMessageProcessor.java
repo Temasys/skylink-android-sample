@@ -1,9 +1,10 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+
 
 /**
  * Purpose of this message processor is to handle enter message types Created by xiangrong on
@@ -11,7 +12,7 @@ import org.json.JSONObject;
  */
 class WelcomeRestartMessageProcessor implements MessageProcessor {
 
-    private static final String TAG = WelcomeRestartMessageProcessor.class.getSimpleName();
+    private static final String TAG = WelcomeRestartMessageProcessor.class.getName();
 
     private SkylinkConnection skylinkConnection;
 
@@ -44,7 +45,7 @@ class WelcomeRestartMessageProcessor implements MessageProcessor {
         } else {
             // If not, set it to a default value.
             // TODO XR: Remove after JS client update to compatible restart protocol.
-            Log.d(TAG, "[WelcomeRestartMessageProcessor] Peer " + peerId +
+            logD(TAG, "[WelcomeRestartMessageProcessor] Peer " + peerId +
                     " is non-Android or has no receiveOnly." +
                     " Setting to false by default.");
         }
@@ -57,7 +58,7 @@ class WelcomeRestartMessageProcessor implements MessageProcessor {
         } else {
             // Work around for JS and/or other clients that do not yet implement this flag.
             peerInfo.setEnableIceTrickle(true);
-            Log.d(TAG, "[WelcomeRestartMessageProcessor] Peer " + peerId +
+            logD(TAG, "[WelcomeRestartMessageProcessor] Peer " + peerId +
                     " is non-Android or has no enableIceTrickle." +
                     " Setting to true by default.");
         }
@@ -67,8 +68,8 @@ class WelcomeRestartMessageProcessor implements MessageProcessor {
         } else {
             // Work around for JS and/or other clients that do not yet implement this flag.
             peerInfo.setEnableDataChannel(true);
-            Log.d(TAG, "[WelcomeRestartMessageProcessor] Peer " + peerId +
-                    " is non-Android or has no enableIceTrickle." +
+            logD(TAG, "[WelcomeRestartMessageProcessor] Peer " + peerId +
+                    " is non-Android or has no enableDataChannel." +
                     " Setting to true by default.");
         }
 

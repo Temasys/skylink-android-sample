@@ -4,15 +4,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import sg.com.temasys.skylink.sdk.BuildConfig;
 import sg.com.temasys.skylink.sdk.adapter.DataTransferAdapter;
 import sg.com.temasys.skylink.sdk.adapter.FileTransferAdapter;
 import sg.com.temasys.skylink.sdk.adapter.LifeCycleAdapter;
@@ -27,6 +24,12 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.MessagesListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logI;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logV;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
+
 /**
  * Main class to connect to the skylink infrastructure.
  *
@@ -40,7 +43,7 @@ public class SkylinkConnection {
      */
     public static final int DEFAULT_DURATION = 24;
 
-    private static final String TAG = SkylinkConnection.class.getSimpleName();
+    private static final String TAG = SkylinkConnection.class.getName();
     private static SkylinkConnection instance;
     private PcShared pcShared;
     private String appKey;
@@ -124,12 +127,22 @@ public class SkylinkConnection {
      */
     public void init(String appKey,
                      SkylinkConfig config, Context context) {
-        logMessage("SkylinkConnection::config=>" + config);
+        // Log SDK version.
+        String info = "Skylink SDK for Android is at version: " + BuildConfig.VERSION_NAME + ".";
+        logI(TAG, info);
+
+        this.appKey = appKey;
+        logD(TAG, "[SkylinkConnection.init] appKey: " + appKey);
 
         this.skylinkConfig = config;
+        logD(TAG, "[SkylinkConnection.init] Config:\n" + config);
 
-        logMessage("SkylinkConnection::appKey=>" + appKey);
-        this.appKey = appKey;
+        // Log SDK logging levels enabled.
+        logV(TAG, "Log level enabled: Verbose | isEnableLogs: " + skylinkConfig.isEnableLogs());
+        logD(TAG, "Log level enabled: Debug   | isEnableLogs: " + skylinkConfig.isEnableLogs());
+        logI(TAG, "Log level enabled: Info    | isEnableLogs: " + skylinkConfig.isEnableLogs());
+        logW(TAG, "Log level enabled: Warn    | isEnableLogs: " + skylinkConfig.isEnableLogs());
+        logE(TAG, "Log level enabled: Error   | isEnableLogs: " + skylinkConfig.isEnableLogs());
 
         // Initialise Skylink Services
         pcShared = new PcShared(context);
@@ -182,14 +195,19 @@ public class SkylinkConnection {
         CurrentTimeService currentTimeService = new CurrentTimeService(new CurrentTimeServiceListener() {
             @Override
             public void onCurrentTimeFetched(Date date) {
-                Log.d(TAG, "onCurrentTimeFetched" + date);
+                String info = "Got time from a server, " +
+                        "connecting to room using server's time: " + date.toString() + ".";
+                logI(TAG, info);
                 connectToRoomWithDate(date);
             }
 
             @Override
             public void onCurrentTimeFetchedFailed() {
-                Log.d(TAG, "onCurrentTimeFetchedFailed, using device time");
-                connectToRoomWithDate(new Date());
+                Date date = new Date();
+                String warn = "[WARN] Failed to get time from a server, " +
+                        "connecting to room using device's time: " + date.toString() + "!";
+                logW(TAG, warn);
+                connectToRoomWithDate(date);
             }
 
             /**
@@ -223,7 +241,7 @@ public class SkylinkConnection {
         // Set our UserData
         skylinkPeerService.setUserData(null, userData);
 
-        logMessage("SkylinkConnection::connectingRoom userData=>" + userData);
+        logD(TAG, "[SkylinkConnection.connectToRoom] userData:\n" + userData);
 
         if (skylinkConnectionService.isAlreadyConnected()) {
             return false;
@@ -249,13 +267,7 @@ public class SkylinkConnection {
             this.dataTransferListener = new DataTransferAdapter();
         }
 
-        try {
-            this.skylinkConnectionService.connectToRoom(skylinkConnectionString);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        this.skylinkConnectionService.connectToRoom(skylinkConnectionString);
 
         // Start local media
         skylinkMediaService.startLocalMedia(lockDisconnectMediaLocal);
@@ -267,12 +279,8 @@ public class SkylinkConnection {
      */
     public void lockRoom() {
         if (!roomLocked) {
-            try {
-                ProtocolHelper.sendRoomLockStatus(this.skylinkConnectionService, true);
-                roomLocked = true;
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
+            ProtocolHelper.sendRoomLockStatus(this.skylinkConnectionService, true);
+            roomLocked = true;
         }
     }
 
@@ -281,12 +289,8 @@ public class SkylinkConnection {
      */
     public void unlockRoom() {
         if (roomLocked) {
-            try {
-                ProtocolHelper.sendRoomLockStatus(this.skylinkConnectionService, false);
-                roomLocked = false;
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
+            ProtocolHelper.sendRoomLockStatus(this.skylinkConnectionService, false);
+            roomLocked = false;
         }
     }
 
@@ -352,7 +356,9 @@ public class SkylinkConnection {
                                                 return;
                                             }
 
-                                            logMessage("Inside SkylinkConnection.disconnectFromRoom");
+                                            String debug = "[SkylinkConnection.disconnectFromRoom] "
+                                                    + "Starting method after passing locks and checks.";
+                                            logD(TAG, debug);
 
                                             // Dispose and remove all Peers
                                             skylinkPeerService.removeAllPeers(ProtocolHelper
@@ -374,7 +380,7 @@ public class SkylinkConnection {
 
                                             if (this.lifeCycleListener != null) {
                                                 this.lifeCycleListener.onDisconnect(
-                                                        ErrorCodes.DISCONNECT_FROM_ROOM,
+                                                        Errors.DISCONNECT_FROM_ROOM,
                                                         "User disconnected from the room");
                                             }
                                         }
@@ -387,7 +393,9 @@ public class SkylinkConnection {
             }
         }
 
-        Log.d(TAG, "Completed disconnection");
+        String debug = "[SkylinkConnection.disconnectFromRoom] "
+                + "Completed disconnection and method.";
+        logD(TAG, debug);
     }
 
     /**
@@ -536,8 +544,9 @@ public class SkylinkConnection {
                     String sendStatus =
                             dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
                     if (!"".equals(sendStatus)) {
-                        logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
-                                + sendStatus);
+                        String error = "[sendFileTransferPermissionRequest] Unable to send " +
+                                "request to share file: " + fileName + ". SendStatus: " + sendStatus;
+                        logE(TAG, error);
                         throw new SkylinkException(sendStatus);
                     }
                 } else {
@@ -558,9 +567,9 @@ public class SkylinkConnection {
                             String sendStatus =
                                     dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
                             if (!"".equals(sendStatus)) {
-                                logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
-                                        + sendStatus);
-                                throw new SkylinkException(sendStatus);
+                                String error = "Unable to send file share request to Peer " + tid +
+                                        "!" + "\nReason: " + sendStatus + "\nHence not sharing file.";
+                                throw new SkylinkException(error);
                             }
                         }
                     }
@@ -583,9 +592,9 @@ public class SkylinkConnection {
                     String sendStatus =
                             dataChannelManager.sendFileTransferRequest(tid, fileName, filePath);
                     if (!"".equals(sendStatus)) {
-                        logMessage("[sendFileTransferPermissionRequest] Unable to send file: "
-                                + sendStatus);
-                        throw new SkylinkException(sendStatus);
+                        String error = "Unable to send file share request to Peer " + tid +
+                                "!" + "\nReason: " + sendStatus + "\nHence not sharing file.";
+                        throw new SkylinkException(error);
                     }
                 }
             }
@@ -865,9 +874,9 @@ public class SkylinkConnection {
     }
 
     // Internal methods
-    void logMessage(String message) {
-        Log.d(TAG, message);
-    }
+    /*void logD(String tag, String message) {
+        logD(TAG, message);
+    }*/
 
     // Getters and Setters
 

@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class PingMessageProcessorTest {
 
-    private static final String TAG = PingMessageProcessorTest.class.getSimpleName();
+    private static final String TAG = PingMessageProcessorTest.class.getName();
 
     private static final String target = "1234";
     private static final String socketId = "uniqueSocketId";

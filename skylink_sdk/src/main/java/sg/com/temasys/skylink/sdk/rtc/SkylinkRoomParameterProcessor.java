@@ -1,10 +1,10 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
 
 /**
  * Service class that will extra room parameters from a Skylink App server response string.
@@ -45,64 +45,86 @@ class SkylinkRoomParameterProcessor implements RoomParameterProcessor {
             roomJson = new JSONObject(serverResponse);
 
             if (roomJson == null) {
-                roomParameterListener.onRoomParameterError(ErrorCodes.UNEXPECTED_ERROR_ROOM_PARAMETERS);
+                String error = "[ERROR:" + Errors.CONNECT_IS_EMPTY_ROOM_PARAMS +
+                        "] Unable to connect to room!";
+                String debug = error + "\nDetails: Room params from App Server is null!" +
+                        "\nAborting connect to room...";
+                logE(TAG, error);
+                logD(TAG, debug);
+                roomParameterListener.onRoomParameterError(error);
+                return;
             }
 
             if (roomJson.has(ERROR) && !roomJson.getBoolean(SUCCESS)) {
-                roomParameterListener.onRoomParameterError(roomJson.getString(INFO));
+                String error = "[ERROR:" + Errors.CONNECT_IS_ERROR_IN_ROOM_PARAMS +
+                        "] Unable to connect to room!";
+                String debug = error + "\nDetails: Room params from App Server has error!\n" +
+                        "Server Info: " + roomJson.getString(INFO) +
+                        "\nAborting connect to room...";
+                logE(TAG, error);
+                logD(TAG, debug);
+                roomParameterListener.onRoomParameterError(error);
+                return;
             }
 
             parameters.setAppOwner(roomJson.getString(APP_OWNER));
-            Log.d(TAG, "apiOwner->" + parameters.getAppOwner());
+            logD(TAG, "[processRoomParameters] apiOwner: " + parameters.getAppOwner() + ".");
 
             parameters.setCid(roomJson.getString(CID));
-            Log.d(TAG, "cid->" + parameters.getCid());
+            logD(TAG, "[processRoomParameters] cid: " + parameters.getCid() + ".");
 
             parameters.setDisplayName(roomJson.getString(DISPLAY_NAME));
-            Log.d(TAG, "displayName->" + parameters.getDisplayName());
+            logD(TAG, "[processRoomParameters] displayName: " + parameters.getDisplayName() + ".");
 
             parameters.setLen(roomJson.getString(LEN));
-            Log.d(TAG, "len->" + parameters.getLen());
+            logD(TAG, "[processRoomParameters] len: " + parameters.getLen() + ".");
 
             parameters.setRoomCred(roomJson.getString(ROOM_CRED));
-            Log.d(TAG, "roomCred->" + parameters.getRoomCred());
+            logD(TAG, "[processRoomParameters] roomCred: " + parameters.getRoomCred() + ".");
 
             parameters.setRoomId(roomJson.getString(ROOM_KEY));
-            Log.d(TAG, "room_key->" + parameters.getRoomId());
+            logD(TAG, "[processRoomParameters] room_key: " + parameters.getRoomId() + ".");
 
             parameters.setStart(roomJson.getString(ROOM_START));
-            Log.d(TAG, "start->" + parameters.getStart());
+            logD(TAG, "[processRoomParameters] start: " + parameters.getStart() + ".");
 
             parameters.setTimeStamp(roomJson.getString(ROOM_TIME_STAMP));
-            Log.d(TAG, "timeStamp->" + parameters.getTimeStamp());
+            logD(TAG, "[processRoomParameters] timeStamp: " + parameters.getTimeStamp() + ".");
 
             parameters.setUserCred(roomJson.getString(USER_CRED));
-            Log.d(TAG, "userCred->" + parameters.getUserCred());
+            logD(TAG, "[processRoomParameters] userCred: " + parameters.getUserCred() + ".");
 
             parameters.setUserId(roomJson.getString(USERNAME));
-            Log.d(TAG, "username->" + parameters.getUserId());
+            logD(TAG, "[processRoomParameters] username: " + parameters.getUserId() + ".");
 
             String ipSignalingServer = roomJson.getString(IP_SIGSERVER);
-            Log.d(TAG, "ipSigserver->" + ipSignalingServer);
+            logD(TAG, "[processRoomParameters] ipSigserver: " + ipSignalingServer + ".");
             parameters.setIpSigserver(ipSignalingServer);
 
             int portSignalingServer = roomJson.getInt(PORT_SIGSERVER);
-            Log.d(TAG, "portSigserver->" + portSignalingServer);
-
+            logD(TAG, "[processRoomParameters] portSigserver: " + portSignalingServer + ".");
             parameters.setPortSigserver(portSignalingServer);
 
             if (ipSignalingServer == null || portSignalingServer <= 0) {
-                Log.d(TAG, "Invalid signaling server ip and port. Returning ...");
-                roomParameterListener.onRoomParameterError
-                        ("Invalid signaling server ip and port. Returning ...");
+                String error = "[ERROR:" + Errors.CONNECT_IS_SIG_SERVER_IP_WRONG_IN_ROOM_PARAMS +
+                        "] Unable to connect to room!";
+                String debug = error + "\nDetails: Signaling server IP or port has invalid values" +
+                        " in Room params! Aborting connect to room...";
+                logE(TAG, error);
+                logD(TAG, debug);
+                roomParameterListener.onRoomParameterError(error);
             }
 
             parameters.setProtocol(roomJson.getString(PROTOCOL));
-            Log.d(TAG, "protocol->" + parameters.getProtocol());
+            logD(TAG, "[processRoomParameters] protocol: " + parameters.getProtocol() + ".");
         } catch (JSONException e) {
-            String strErr = e.getMessage();
-            Log.e(TAG, strErr, e);
-            roomParameterListener.onRoomParameterError(strErr);
+            String error = "[ERROR:" + Errors.CONNECT_UNABLE_TO_READ_ROOM_PARAMS_JSON +
+                    "] Unable to connect to room!";
+            String debug = error + "\nDetails: Error reading room params from App Server.\n" +
+                    "Exception: " + e.getMessage() + "\nAborting connect to room...";
+            logE(TAG, error);
+            logD(TAG, debug);
+            roomParameterListener.onRoomParameterError(error);
             return;
         }
 

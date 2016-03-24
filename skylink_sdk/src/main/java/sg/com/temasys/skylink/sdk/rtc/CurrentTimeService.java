@@ -1,9 +1,10 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.util.Date;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
 
 /**
  * Retrieves date time information from a NTP server
@@ -29,7 +30,7 @@ class CurrentTimeService extends AsyncTask<Void, Integer, Long> {
         if (sntpClient.requestTime(NTP_SERVER, TIME_OUT)) {
             // Time request is successful
             currentGmtTime = sntpClient.getNtpTime();
-            Log.d(TAG, "Fetched time " + currentGmtTime);
+            logD(TAG, "Fetched time: " + currentGmtTime);
         }
 
         return currentGmtTime;

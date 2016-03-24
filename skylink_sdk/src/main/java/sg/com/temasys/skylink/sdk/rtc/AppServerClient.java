@@ -28,7 +28,6 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONException;
 
@@ -36,6 +35,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logW;
 
 /**
  * Connects to an App server and process the response from the App server.
@@ -61,15 +64,14 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
      * @throws IOException
      * @throws JSONException
      */
-    public void connectToRoom(String url) throws IOException, JSONException {
+    public void connectToRoom(String url) {
         // Obtain parameters required to connect to room.
         // (new RoomParameterService(this)).execute(url);
         (new AsyncTask<String, Void, Void>() {
             @Override
             protected Void doInBackground(String... urls) {
                 String url = urls[0];
-//                RoomParameters roomParameters = new RoomParameters();
-                Log.d(TAG, "getParametersForRoomUrl " + url);
+                logD(TAG, "Connecting to App Server with: " + url);
 
                 InputStream inputStream = null;
                 String result = "";
@@ -78,7 +80,7 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
 
                     URL urlFromString = new URL(url);
 
-                    HttpURLConnection urlConnection = (HttpURLConnection)urlFromString.openConnection();
+                    HttpURLConnection urlConnection = (HttpURLConnection) urlFromString.openConnection();
                     urlConnection.setRequestMethod("GET");
                     urlConnection.connect();
 
@@ -91,19 +93,35 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
                         // Create RoomParameter with a RoomParameterProcessor
                         roomParameterProcessor.processRoomParameters(result);
                     } else {
-                        String error = "Error obtaining Room Parameters: " +
+                        String error = "[ERROR:" + Errors.CONNECT_NO_RESPONSE_APP_SERVER + "] " +
+                                "Unable to get response from the Server!";
+                        String debug = error + "\nCould not obtain Room Parameters: " +
                                 "App Server did not return a response!";
                         appServerClientListener.onErrorAppServer(error);
+                        logE(TAG, error);
+                        logD(TAG, debug);
                     }
 
                 } catch (Exception e) {
-                    Log.e(TAG, e.getLocalizedMessage(), e);
+                    // Trigger onConnect callback with connect failure & an exception error message.
+                    String error = "[ERROR:" + Errors.CONNECT_UNABLE_APP_SERVER + "] " +
+                            "Unable to connect to Server!";
+                    String debug = error + "\nException: " +
+                            e.getMessage();
+                    appServerClientListener.onErrorAppServer(error);
+                    logE(TAG, error);
+                    logD(TAG, debug);
                 } finally {
                     if (inputStream != null) {
                         try {
                             inputStream.close();
                         } catch (IOException e) {
-                            Log.e(TAG, e.getLocalizedMessage(), e);
+                            String warn = "[WARN:" + Errors.CONNECT_UNABLE_CLOSE_STREAM_APP_SERVER +
+                                    "] There are some minor connectivity issue with the Server.";
+                            String debug = warn + "\nUnable to close InputStream from App Server."
+                                    + "\nException: " + e.getMessage();
+                            logW(TAG, warn);
+                            logD(TAG, debug);
                         }
                     }
                 }
@@ -119,16 +137,11 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
     @Override
     public void onRoomParameterSuccessful(final RoomParameters params) {
         if (params != null) {
-            Log.d(TAG, "onRoomParameterSuccessful ipSigserver" + params.getIpSigserver());
-            Log.d(TAG, "onRoomParameterSuccessful portSigserver" + params.getPortSigserver());
+            logD(TAG, "onRoomParameterSuccessful ipSigserver: " + params.getIpSigserver() +
+                    " portSigserver: " + params.getPortSigserver());
             // Inform that Room parameters have been obtained.
             appServerClientListener.onObtainedRoomParameters(params);
         }
-    }
-
-    @Override
-    public void onRoomParameterError(final int error) {
-        appServerClientListener.onErrorAppServer(error);
     }
 
     @Override
@@ -139,8 +152,6 @@ class AppServerClient /*extends AsyncTask<String, Void, Void>*/ implements RoomP
 }
 
 interface AppServerClientListener {
-    public void onErrorAppServer(int message);
-
     public void onErrorAppServer(String message);
 
     public void onObtainedRoomParameters(RoomParameters params);

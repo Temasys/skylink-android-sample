@@ -1,11 +1,13 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+
 
 /**
  * Created by xiangrong on 5/5/15.
@@ -67,8 +69,14 @@ public class UserInfo {
 
                 audioMuted = jsonObject.getJSONObject("mediaStatus").getBoolean("audioMuted");
                 videoMuted = jsonObject.getJSONObject("mediaStatus").getBoolean("videoMuted");
+
             } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
+                String error = "[ERROR:" + Errors.USERINFO_UNABLE_TO_CREATE_FROM_JSON + "]";
+                String debug = error + " Unable to create UserInfo from JSON:\n" +
+                        jsonObject.toString() + "\nException: " + e.getMessage();
+                logE(TAG, error);
+                logD(TAG, debug);
+                return;
             }
         }
 
@@ -76,7 +84,12 @@ public class UserInfo {
             try {
                 userData = jsonObject.get("userData");
             } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
+                String error = "[ERROR:" + Errors.USERINFO_UNABLE_TO_CREATE_FROM_JSON + "]";
+                String debug = error + " Unable to create UserInfo from JSON due to error getting" +
+                        " userData from jsonObject:\n" + jsonObject.toString() +
+                        "\nException: " + e.getMessage();
+                logE(TAG, error);
+                logD(TAG, debug);
             }
         }
     }
@@ -165,9 +178,13 @@ public class UserInfo {
             dictUserInfo.put("userData", userData == null ? "" : userData);
 
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR:" + Errors.USERINFO_UNABLE_TO_GET_JSON + "]";
+            String debug = error + " Unable to get JSON from UserInfo:\n" + this.toString() +
+                    "\nException: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+            return null;
         }
-
         return dictUserInfo;
     }
 

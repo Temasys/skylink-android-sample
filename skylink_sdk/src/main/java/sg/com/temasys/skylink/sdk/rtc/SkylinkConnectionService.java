@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.PeerConnection;
@@ -11,12 +9,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+
 /**
  * Created by xiangrong on 20/5/15.
  */
 class SkylinkConnectionService implements AppServerClientListener, SignalingMessageListener {
     private static final String TAG = SkylinkConnectionService.class.getName();
     public static final String APP_SERVER = "http://api.temasys.com.sg/api/";
+    public static final String APP_SERVER_STAGING = "http://staging-api.temasys.com.sg/api/";
 
     /**
      * List of Connection state types
@@ -37,27 +39,6 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         this.appServerClient = new AppServerClient(this, new SkylinkRoomParameterProcessor());
         this.signalingMessageProcessingService = new SignalingMessageProcessingService(
                 skylinkConnection, this, new MessageProcessorFactory(), this);
-    }
-
-    /**
-     * AppServerClientListener implementation When error occurs while getting room parameters.
-     */
-    @Override
-    public void onErrorAppServer(final int message) {
-        skylinkConnection.runOnUiThread(new Runnable() {
-            public void run() {
-                // Prevent thread from executing with disconnect concurrently.
-                synchronized (skylinkConnection.getLockDisconnect()) {
-                    // If user has indicated intention to disconnect,
-                    // We should no longer process messages from signalling server.
-                    if (isDisconnected()) {
-                        return;
-                    }
-                    skylinkConnection.getLifeCycleListener()
-                            .onConnect(false, "Obtained ErrorCode: " + message + ".");
-                }
-            }
-        });
     }
 
     /**
@@ -152,14 +133,15 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
      * @throws IOException
      * @throws JSONException
      */
-    public void connectToRoom(String skylinkConnectionString) throws IOException, JSONException {
+    public void connectToRoom(String skylinkConnectionString) {
         // Record user intention for connection to room state
         connectionState = ConnectionState.CONNECTING;
         String url = APP_SERVER + skylinkConnectionString;
+        // url = APP_SERVER_STAGING + skylinkConnectionString;
         // Append json query
         String jsonURL = url + "&t=json";
 
-        Log.d(TAG, "SkylinkConnectionService::connectToRoom url=>" + jsonURL);
+        logD(TAG, "[SkylinkConnectionService.connectToRoom] url:\n" + jsonURL);
         this.appServerClient.connectToRoom(jsonURL);
     }
 
@@ -189,7 +171,10 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
             }
             sendMessage(dict);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR] Unable to send Server message! Message:\n" + message.toString();
+            String debug = error + "\nException: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
     }
 
@@ -213,7 +198,11 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
             dict.put("userData", userData);
             sendMessage(dict);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR] Unable to send user data!";
+            String debug = error + "Details: Could not form updateUserEvent JSON. Exception:\n" +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
     }
 
@@ -265,23 +254,29 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
         }
         synchronized (skylinkConnection.getLockDisconnect()) {
             try {
-                Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + ".");
+                String debug = "[rejoinRestart] Peer " + remotePeerId + " ";
                 Peer peer = getSkylinkPeerService().getPeer(remotePeerId);
                 PeerInfo peerInfo = peer.getPeerInfo();
                 if (peerInfo != null && peerInfo.getAgent().equals("Android")) {
                     // If it is Android, send restart.
-                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is Android.");
+                    debug += "is Android.";
                     ProtocolHelper.sendRestart(remotePeerId, skylinkConnection,
                             getSkylinkMediaService().getLocalMediaStream(), skylinkConnection
                                     .getSkylinkConfig());
                 } else {
                     // If web or others, send directed enter
                     // TODO XR: Remove after JS client update to compatible restart protocol.
-                    Log.d(TAG, "[rejoinRestart] Peer " + remotePeerId + " is non-Android or has no PeerInfo.");
+                    debug += "is non-Android or has no PeerInfo.";
                     ProtocolHelper.sendEnter(remotePeerId, skylinkConnection, this);
                 }
-            } catch (JSONException e) {
-                Log.d(TAG, e.getMessage(), e);
+                logD(TAG, debug);
+            } catch (SkylinkException e) {
+                String error = "[ERROR:" + Errors.CONNECT_UNABLE_RESTART_ON_REJOIN +
+                        "] Unable to connect to Peer(s) on rejoining after disconnect!";
+                String debug = error + "\nCONNECT_UNABLE_RESTART_ON_REJOIN Exception:\n" +
+                        e.getMessage();
+                logE(TAG, error);
+                logD(TAG, debug);
             }
         }
     }
@@ -291,13 +286,8 @@ class SkylinkConnectionService implements AppServerClientListener, SignalingMess
             return;
         }
         synchronized (skylinkConnection.getLockDisconnect()) {
-            try {
-                ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, getSkylinkMediaService()
-                                .getLocalMediaStream(),
-                        skylinkConnection.getSkylinkConfig());
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
+            ProtocolHelper.sendRestart(remotePeerId, skylinkConnection, getSkylinkMediaService()
+                    .getLocalMediaStream(), skylinkConnection.getSkylinkConfig());
         }
     }
 

@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
+import android.util.Log;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +25,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class PeerPoolTest implements PeerPoolClient {
 
+    private static final String TAG = PeerPoolTest.class.getName();
     private static final int MAX_PEER_COUNT = 10;
     private static final String PEER_ID = "PeerId_";
     private PeerPool peerPool;
@@ -136,9 +139,9 @@ public class PeerPoolTest implements PeerPoolClient {
                 try {
                     barrierReady.await();
                 } catch (BrokenBarrierException e) {
-                    e.printStackTrace();
+                    Log.d(TAG, e.getMessage());
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.d(TAG, e.getMessage());
                 }
 
                 if (addPeers) {
@@ -150,9 +153,9 @@ public class PeerPoolTest implements PeerPoolClient {
                 try {
                     barrierDone.await();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.d(TAG, e.getMessage());
                 } catch (BrokenBarrierException e) {
-                    e.printStackTrace();
+                    Log.d(TAG, e.getMessage());
                 }
             }
         });

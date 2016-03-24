@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +7,10 @@ import org.json.JSONObject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+
 
 class SignalingServerMessageSender {
 
@@ -21,24 +23,28 @@ class SignalingServerMessageSender {
     private String rid;
     private long msLastSent = 0;
     private long msNewMsg = 0;
-    private SignalingServerClient socketTester;
+    private SignalingServerClient signalingServerClient;
     private JSONObject msgNew;
     private JSONArray msgArr = null;
 
-    public SignalingServerMessageSender(String mid, String rid) {
+    public SignalingServerMessageSender(String mid, String rid,
+                                        SignalingServerClient signalingServerClient) {
         this.mid = mid;
         this.rid = rid;
+        this.signalingServerClient = signalingServerClient;
     }
 
-    public void sendMessage(SignalingServerClient socketTester, JSONObject dictMessage) {
-        this.socketTester = socketTester;
-
+    public void sendMessage(JSONObject dictMessage) {
         // Determine sending type
         String type = null;
         try {
             type = dictMessage.getString("type");
         } catch (JSONException e) {
-            e.printStackTrace();
+            String error = "[ERROR:" + Errors.SIG_MSG_OUTGOING_HAS_NO_TYPE + "] Some Server " +
+                    "message could not be sent out!";
+            String debug = error + "\nException: " + e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
         }
         switch (type) {
             // Conditional sending for some message types.
@@ -84,11 +90,7 @@ class SignalingServerMessageSender {
             scheduler.schedule(
                     new Runnable() {
                         public void run() {
-                            try {
-                                sendGroupMessage();
-                            } catch (Exception ex) {
-                                Log.e(TAG, ex.getMessage(), ex);
-                            }
+                            sendGroupMessage();
                         }
                     }, delay, TimeUnit.MILLISECONDS);
         }
@@ -108,7 +110,25 @@ class SignalingServerMessageSender {
             msgGroup.put("mid", mid);
             msgGroup.put("rid", rid);
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String error = "[ERROR:" + Errors.SIG_MSG_UNABLE_TO_CREATE_GROUP_JSON +
+                    "] Some Server message could not be sent!";
+            String msgs = "";
+            int msgArrLen = msgArr.length();
+            for (int i = 0; i < msgArrLen; ++i) {
+                try {
+                    msgs += msgArr.get(i);
+                } catch (JSONException e1) {
+                    msgs += "Unable to print this message due to Exception: " + e1.getMessage() +
+                            "\n";
+                }
+            }
+            String debug = error + "\nMessages not sent:\n" + msgs +
+                    "\nSIG_MSG_UNABLE_TO_CREATE_GROUP_JSON Exception:\n" +
+                    e.getMessage();
+            logE(TAG, error);
+            logD(TAG, debug);
+            // Follow through with a null msg for consistent processing.
+            msgGroup = null;
         }
 
         // Send group message
@@ -119,9 +139,14 @@ class SignalingServerMessageSender {
     // Parameter group is true only if the message is a group message or
     // is of a type eligible to be a group message.
     private void sendSignalingMessage(JSONObject msgSig, boolean group) {
-        socketTester.getSocketIO().send(msgSig.toString());
+        if (msgSig != null) {
+            logD(TAG, "[sendSignalingMessage] " + msgSig.toString());
+            signalingServerClient.getSocketIO().send(msgSig.toString());
+            if (group) {
+                msLastSent = System.currentTimeMillis();
+            }
+        }
         if (group) {
-            msLastSent = System.currentTimeMillis();
             msgArr = null;
         }
     }

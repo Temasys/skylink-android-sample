@@ -1,4 +1,14 @@
-package sg.com.temasys.skylink.sdk.rtc;/*
+package sg.com.temasys.skylink.sdk.rtc;
+
+import android.os.SystemClock;
+
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+
+/*
  * Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +23,6 @@ package sg.com.temasys.skylink.sdk.rtc;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
-import android.os.SystemClock;
-import android.util.Log;
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 
 /**
  * {@hide}
@@ -109,8 +111,8 @@ class SntpClient {
             //             = (transit + skew - transit + skew)/2
             //             = (2 * skew)/2 = skew
             long clockOffset = ((receiveTime - originateTime) + (transmitTime - responseTime)) / 2;
-            // if (false) Log.d(TAG, "round trip: " + roundTripTime + " ms");
-            // if (false) Log.d(TAG, "clock offset: " + clockOffset + " ms");
+            // if (false) logD(TAG, "round trip: " + roundTripTime + " ms");
+            // if (false) logD(TAG, "clock offset: " + clockOffset + " ms");
 
             // save our results - use the times on this side of the network latency
             // (response rather than request time)
@@ -118,7 +120,9 @@ class SntpClient {
             mNtpTimeReference = responseTicks;
             mRoundTripTime = roundTripTime;
         } catch (Exception e) {
-            if (false) Log.d(TAG, "request time failed: " + e);
+            if (false) {
+                logD(TAG, "Failed to get time from server. Exception:\n" + e.getMessage());
+            }
             return false;
         } finally {
             if (socket != null) {

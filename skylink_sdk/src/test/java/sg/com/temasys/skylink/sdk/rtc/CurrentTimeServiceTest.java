@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +13,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
 
 /**
  * Tests related to CurrentTimeService
@@ -40,7 +39,7 @@ public class CurrentTimeServiceTest {
             @Override
             public void onCurrentTimeFetched(Date date) {
                 assertNotNull("Fetched current time", date);
-                Log.d(TAG, "Current time" + date.toString());
+                logD(TAG, "Current time" + date.toString());
                 countDownLatch.countDown();
             }
 

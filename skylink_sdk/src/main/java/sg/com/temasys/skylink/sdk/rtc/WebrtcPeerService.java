@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.PeerConnection;
@@ -9,6 +7,9 @@ import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SessionDescription;
 
 import java.util.List;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+
 
 /**
  * Created by xiangrong on 10/7/15.
@@ -21,7 +22,7 @@ import java.util.List;
  * webrtc APIs that this class will eventually call.
  */
 class WebrtcPeerService implements IWebrtcPeerService {
-    private static String TAG = WebrtcPeerService.class.getSimpleName();
+    private static String TAG = WebrtcPeerService.class.getName();
     private PcShared pcShared;
 
     public WebrtcPeerService(PcShared pcShared) {
@@ -56,7 +57,8 @@ class WebrtcPeerService implements IWebrtcPeerService {
                 skylinkConnection.getSkylinkConnectionService().getIceServers();
         SkylinkPcObserver pcObserver = peer.getPcObserver();
 
-        Log.d(TAG, "Creating a new peer connection ...");
+        logD(TAG, "[addWebrtcP2PComponent] Creating a WebRTC PeerConnection for Peer " +
+                peerId + "...");
 
         pc = peerConnectionCreate(pcShared.getPeerConnectionFactory(),
                 iceServers,
@@ -64,7 +66,8 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
         if (pc != null) {
             peer.setPc(pc);
-            Log.d(TAG, "[createPc] Created new PeerConnection for " + peerId + ".");
+            logD(TAG, "[addWebrtcP2PComponent] Created new WebRTC PeerConnection for Peer " +
+                    peerId + ".");
             return true;
         } else {
             return false;
@@ -88,7 +91,8 @@ class WebrtcPeerService implements IWebrtcPeerService {
 
         // Set the SDP
         peerConnectionSetRemoteSdp(pc, sdpObserver, sdp);
-        Log.d(TAG, "PC - setRemoteDescription. Setting " + sdp.type + " from " + peerId);
+        logD(TAG, "[setRemoteSdp] Set WebRTC RemoteDescription " + sdpType +
+                " in PeerConnection for Peer " + peerId + ".");
     }
 
     // Internal functions

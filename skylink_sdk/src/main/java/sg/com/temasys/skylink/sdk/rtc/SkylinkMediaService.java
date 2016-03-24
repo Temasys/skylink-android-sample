@@ -2,7 +2,6 @@ package sg.com.temasys.skylink.sdk.rtc;
 
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
@@ -20,6 +19,11 @@ import java.util.ArrayList;
 
 import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logE;
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logI;
+
 
 /**
  * Created by xiangrong on 25/5/15.
@@ -75,10 +79,14 @@ class SkylinkMediaService {
                     GLSurfaceView remoteVideoView = null;
                     int numVideoTracks = stream.videoTracks.size();
 
-                    // As long as a VideoTrack exists, we will render it, even if it turns out to be a totally black view.
+                    // As long as a VideoTrack exists, we will render it, even if it turns out to be
+                    // a totally black view.
                     if ((numVideoTracks >= 1)) {
-                        Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " + numVideoTracks +
-                                " video track(s) has been added to PeerConnection.");
+                        String info = numVideoTracks + " video track(s) has been added to Peer " +
+                                peerId + ".";
+                        String debug = "[addMediaStream] " + info + " I.e., to its PeerConnection.";
+                        logI(TAG, info);
+                        logD(TAG, debug);
 
                         remoteVideoView = createVideoView(stream.videoTracks.get(0),
                                 RendererCommon.ScalingType.SCALE_ASPECT_FILL,
@@ -93,8 +101,11 @@ class SkylinkMediaService {
                         // OR
                         // This is a no audio and no video stream
                         // still send a null videoView to alert user stream is received.
-                        Log.d(TAG, "[addMediaStream] Peer " + peerId + ": " +
-                                "NO video track has been added to PeerConnection.");
+                        String info = "NO video track has been added to Peer " +
+                                peerId + ".";
+                        String debug = "[addMediaStream] " + info + " I.e., to its PeerConnection.";
+                        logI(TAG, info);
+                        logD(TAG, debug);
                         if (!SkylinkPeerService.isPeerIdMCU(peerId))
                             skylinkConnection.getMediaListener()
                                     .onRemotePeerMediaReceive(peerId, null);
@@ -184,7 +195,7 @@ class SkylinkMediaService {
         if (localVideoSource != null) {
             // Stop the video source
             localVideoSource.stop();
-            Log.d(TAG, "Stopped local Video Source");
+            logD(TAG, "[removeLocalMedia] Stopped local Video Source");
         }
 
         localVideoSource = null;
@@ -245,7 +256,7 @@ class SkylinkMediaService {
 
             if (getLocalMediaStream() == null) {
 
-                Log.d(TAG, "[SDK] Local video source: Creating...");
+                logD(TAG, "[SkylinkMediaService.startLocalMedia] Local video source: Creating...");
                 lms = pcShared.getPeerConnectionFactory()
                         .createLocalMediaStream("ARDAMS");
                 setLocalMediaStream(lms);
@@ -290,9 +301,10 @@ class SkylinkMediaService {
                                 );
                             }
 
-                            Log.d(TAG, "[SDK] Local video source: Created.");
+                            logI(TAG, "Created local video source.");
+                            logD(TAG, "[SkylinkMediaService.startLocalMedia] Local video source: Created.");
                             skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
-                            Log.d(TAG, "[SDK] Local video source: Sent to App.");
+                            logD(TAG, "[SkylinkMediaService.startLocalMedia] Local video source: Sent to App.");
                         }
                     }
                 });
@@ -303,7 +315,7 @@ class SkylinkMediaService {
                 if (connectionState == SkylinkConnectionService.ConnectionState.DISCONNECTING)
                     return;
                 if (skylinkConnection.getSkylinkConfig().hasAudioSend()) {
-                    Log.d(TAG, "[SDK] Local audio source: Creating...");
+                    logD(TAG, "[SkylinkMediaService.startLocalMedia] Local audio source: Creating...");
                     localAudioSource = pcShared.getPeerConnectionFactory()
                             .createAudioSource(new MediaConstraints());
                     localAudioTrack = pcShared.getPeerConnectionFactory()
@@ -312,7 +324,8 @@ class SkylinkMediaService {
                     setLocalAudioSource(localAudioSource);
                     setLocalAudioTrack(localAudioTrack);
                     lms.addTrack(localAudioTrack);
-                    Log.d(TAG, "[SDK] Local audio source: Created.");
+                    logI(TAG, "Created local audio source.");
+                    logD(TAG, "[SkylinkMediaService.startLocalMedia] Local audio source: Created.");
                 }
                 // }
             }
@@ -408,37 +421,41 @@ class SkylinkMediaService {
     boolean switchCameraAndRender(final LifeCycleListener lifeCycleListener) {
         // Switch camera
         boolean success = false;
-        String strLog = "";
+        String info = "";
         // Try to switch camera
-        strLog = switchCamera();
-        if (strLog == null) {
+        info = switchCamera();
+        if (info == null) {
             success = true;
         }
 
         // Log about success or failure in switching camera.
         if (success) {
-            strLog = "Switched camera.";
-            Log.d(TAG, strLog);
             cameraUsingFront = !cameraUsingFront;
-            // Change videoView if config sets front camera to be mirrored
+            info = "Switched camera. Using front camera = " + cameraUsingFront + ".";
+            logI(TAG, info);
+            // Create videoView and send to App.
             if (skylinkConnection.getSkylinkConfig().isMirrorLocalView()) {
+                // Mirrors the videoView if required.
                 final GLSurfaceView localVideoView = createVideoView(getLocalVideoTrack(),
                         RendererCommon.ScalingType.SCALE_ASPECT_FILL,
                         null
                 );
-                Log.d(TAG, "[switchCamera] New local video view and renderer created.");
+                logD(TAG, "[switchCamera] New local video view and renderer created.");
                 skylinkConnection.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         skylinkConnection.getMediaListener().onLocalMediaCapture(localVideoView);
                     }
                 });
-                Log.d(TAG, "[switchCamera] New local video view sent to App.");
+                logD(TAG, "[switchCamera] New local video view sent to App.");
             }
         } else {
             // Switch is pending or error while trying to switch.
-            lifeCycleListener.onWarning(ErrorCodes.VIDEO_SWITCH_CAMERA_ERROR, strLog);
-            Log.e(TAG, strLog);
+            String error = "[ERROR:" + Errors.VIDEO_SWITCH_CAMERA_ERROR + "] ";
+            String debug = error + info;
+            lifeCycleListener.onWarning(Errors.VIDEO_SWITCH_CAMERA_ERROR, error);
+            logE(TAG, error);
+            logD(TAG, debug);
         }
         return success;
     }
@@ -454,12 +471,13 @@ class SkylinkMediaService {
         // Try to switch camera
         if (numberOfCameras < 2 || getLocalVideoCapturer() == null) {
             // No video is sent or only one camera is available,
-            strLog = "Failed to switch camera. Number of cameras: " + numberOfCameras + ".";
+            strLog = "Failed to switch camera as we have less than 2 cameras.\n" +
+                    "Number of cameras on device: " + numberOfCameras + ".";
         } else {
             success = getLocalVideoCapturer().switchCamera(null);
             if (!success) {
                 strLog = "Encountered error when switching camera, even though we have at least 2" +
-                        " cameras (Number of cameras: " + numberOfCameras + ".";
+                        " cameras. Number of cameras on device: " + numberOfCameras + ".";
             }
         }
         return strLog;
@@ -476,12 +494,12 @@ class SkylinkMediaService {
         // Check if there is a camera on device and disable video call if not.
         numberOfCameras = CameraEnumerationAndroid.getDeviceCount();
         if (numberOfCameras == 0) {
-            Log.w(TAG, "No camera on device. Video call will not be possible.");
+            logE(TAG, "There is no camera on device. Video call will not be possible!");
             return null;
         }
 
         String frontCameraDeviceName = CameraEnumerationAndroid.getNameOfFrontFacingDevice();
-        Log.d(TAG, "Opening camera: " + frontCameraDeviceName);
+        logD(TAG, "[getVideoCapturer] Opening front camera: " + frontCameraDeviceName);
 
         return VideoCapturerAndroid.create(frontCameraDeviceName, null);
     }
@@ -529,7 +547,8 @@ class SkylinkMediaService {
                         } else {
                             pid = "Peer " + pid;
                         }
-                        Log.d(TAG, "First Frame rendered for " + pid + ".");
+                        logD(TAG, "[SkylinkMediaService.onFirstFrameRendered] First Frame rendered for "
+                                + pid + ".");
                     }
                 }
             });

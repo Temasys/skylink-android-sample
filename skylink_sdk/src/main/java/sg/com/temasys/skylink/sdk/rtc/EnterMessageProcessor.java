@@ -1,16 +1,16 @@
 package sg.com.temasys.skylink.sdk.rtc;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkLog.logD;
 
 /**
  * Purpose of this message processor is to handle enter message types
  */
 class EnterMessageProcessor implements MessageProcessor {
 
-    private static final String TAG = EnterMessageProcessor.class.getSimpleName();
+    private static final String TAG = EnterMessageProcessor.class.getName();
 
     private SkylinkConnection skylinkConnection;
 
@@ -43,7 +43,7 @@ class EnterMessageProcessor implements MessageProcessor {
         } else {
             // If web or others, let receiveOnly be false
             // TODO XR: Remove after JS client update to compatible restart protocol.
-            Log.d(TAG, "[EnterMessageProcessor] Peer " + peerId + " is non-Android or has no receiveOnly.");
+            logD(TAG, "Peer " + peerId + " is non-Android or has no receiveOnly.");
         }
         // SM0.1.0 - Browser version for web, SDK version for others.
         peerInfo.setVersion(jsonObject.getString("version"));

@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class InRoomMessageProcessorTest {
 
-    private static final String TAG = InRoomMessageProcessorTest.class.getSimpleName();
+    private static final String TAG = InRoomMessageProcessorTest.class.getName();
     public static final String SOCKET_ID = "1234";
     public static final String STUN = "stun:";
     public static final String TURN = "turn:";
