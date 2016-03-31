@@ -9,5 +9,5 @@
 /build
 /adtSample/src/main/gen
 /adtSample/src/main/bin
-
-.idea/*
+sampleapp/.idea
+local.properties

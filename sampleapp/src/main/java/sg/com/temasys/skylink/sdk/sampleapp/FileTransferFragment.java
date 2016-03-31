@@ -242,7 +242,9 @@ public class FileTransferFragment extends MultiPartyFragment
             String toast = "Sending file to " + peer + ".";
             Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
         } catch (SkylinkException e) {
-            Log.e(TAG, e.getMessage(), e);
+            String exMsg = e.getMessage();
+            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_LONG).show();
+            Log.e(TAG, exMsg, e);
         }
     }
 
@@ -486,7 +488,11 @@ public class FileTransferFragment extends MultiPartyFragment
             fileNameDownloaded = fileName;
         }
         //Send false to reject file transfer
-        skylinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
+        try {
+            skylinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
+        } catch (SkylinkException e) {
+            Toast.makeText(parentActivity, e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -504,7 +510,7 @@ public class FileTransferFragment extends MultiPartyFragment
     public void onFileTransferDrop(String remotePeerId, String fileName, String message,
                                    boolean isExplicit) {
         Toast.makeText(parentActivity, "The file transfer was dropped.\nReason : " + message,
-                Toast.LENGTH_SHORT).show();
+                Toast.LENGTH_LONG).show();
     }
 
     @Override

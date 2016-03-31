@@ -157,9 +157,13 @@ public class DataTransferFragment extends MultiPartyFragment implements
                                 skylinkConnection.sendData(remotePeerId, dataPrivate);
                             }
                         } catch (SkylinkException e) {
-                            Log.e(TAG, e.getMessage(), e);
+                            String exMsg = e.getMessage();
+                            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_LONG).show();
+                            Log.e(TAG, exMsg, e);
                         } catch (UnsupportedOperationException e) {
-                            Log.e(TAG, e.getMessage(), e);
+                            String exMsg = e.getMessage();
+                            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, exMsg, e);
                         }
 
                     }
