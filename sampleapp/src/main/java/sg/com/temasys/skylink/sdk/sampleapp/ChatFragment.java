@@ -459,9 +459,9 @@ public class ChatFragment extends MultiPartyFragment
         } else {
             chatPrefix = "[GRP]" + chatPrefix;
         }
-        //add message to listview and update ui
+        // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = skylinkConnection.getUserData(remotePeerId).toString();
+            String remotePeerName = Utils.getUserNick(skylinkConnection, remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
             listViewRefresh();
         }
@@ -478,7 +478,7 @@ public class ChatFragment extends MultiPartyFragment
         }
         //add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = skylinkConnection.getUserData(remotePeerId).toString();
+            String remotePeerName = Utils.getUserNick(skylinkConnection, remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
             listViewRefresh();
         }

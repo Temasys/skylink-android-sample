@@ -196,7 +196,7 @@ public class MultiPartyFragment extends Fragment {
         // Populate peerList
         for (int i = 0; i < peerIdList.length; ++i) {
             String peerId = peerIdList[i];
-            String nick = skylinkConnection.getUserData(peerId).toString();
+            String nick = Utils.getUserNick(skylinkConnection, peerId);
             Pair<String, String> peer = new Pair<>(peerId, nick);
             peerList.add(peer);
         }
