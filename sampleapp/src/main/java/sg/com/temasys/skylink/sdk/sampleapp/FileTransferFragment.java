@@ -49,8 +49,6 @@ public class FileTransferFragment extends MultiPartyFragment
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     // Constants for configuration change
-    private static final String BUNDLE_IS_CONNECTED = "isConnected";
-    private static final String BUNDLE_IS_CONNECT_ATTEMPTED = "isConnectAttempted";
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
     private static SkylinkConnection skylinkConnection;
     private TextView tvRoomDetails;
@@ -62,16 +60,6 @@ public class FileTransferFragment extends MultiPartyFragment
     private String fileNamePrivate = "FileTransferPrivate.png";
     private String fileNameGroup = "FireTransferGroup.png";
     private String fileNameDownloaded = "downloadFile.png";
-    private boolean connected;
-    // Flag for having taken action to connect.
-    // True if action taken to connect and outcome is:
-    // - not yet known.
-    // - successful.
-    // False if:
-    // - no action taken to connect.
-    // - Connection was unsuccessful or failed.
-    // - action taken to disconnect.
-    private boolean connectAttempted;
     private boolean peerJoined;
     private boolean orientationChange;
 
@@ -110,11 +98,10 @@ public class FileTransferFragment extends MultiPartyFragment
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
-            connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
-            connectAttempted = savedInstanceState.getBoolean(BUNDLE_IS_CONNECT_ATTEMPTED);
-            if (connected) {
-                // Set listeners to receive callbacks when events are triggered
-                setListeners();
+            // Set listeners to receive callbacks when events are triggered
+            setListeners();
+
+            if (isConnected()) {
                 // Set states
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
@@ -127,33 +114,17 @@ public class FileTransferFragment extends MultiPartyFragment
         } else {
             // [MultiParty]
             // Just set room details
-            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
 
+        // Copy files raw/R.raw.icon and raw/R.raw.icon_group to the device's file system
+        createExternalStoragePrivatePicture();
 
-        if (!connectAttempted) {
-            // Copy files raw/R.raw.icon and raw/R.raw.icon_group to the device's file system
-            createExternalStoragePrivatePicture();
-
-            skylinkConnection = null;
-            // Initialize the skylink connection
-            initializeSkylinkConnection();
-
-            // Obtaining the Skylink connection string done locally
-            // In a production environment the connection string should be given
-            // by an entity external to the App, such as an App server that holds the Skylink App
-            // secret
-            // In order to avoid keeping the App secret within the application
-            String skylinkConnectionString = Utils.
-                    getSkylinkConnectionString(ROOM_NAME,
-                            appKey,
-                            appSecret, new Date(),
-                            SkylinkConnection
-                                    .DEFAULT_DURATION);
-
-            skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
-            connectAttempted = true;
+        // Try to connect to room if not yet connected.
+        if (!isConnected()) {
+            connectToRoom(appKey, appSecret);
         }
+
 
         // Set file to send based on selected Peer.
         peerRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -268,8 +239,6 @@ public class FileTransferFragment extends MultiPartyFragment
         // Note that orientation change is happening.
         orientationChange = true;
         // Save states for fragment restart
-        outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
-        outState.putBoolean(BUNDLE_IS_CONNECT_ATTEMPTED, connectAttempted);
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
         outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList());
@@ -280,16 +249,27 @@ public class FileTransferFragment extends MultiPartyFragment
         super.onDetach();
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
-        // I.e. already connected and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && connected) {
+        // I.e. already isConnected() and not changing orientation.
+        if (!orientationChange && skylinkConnection != null && isConnected()) {
             skylinkConnection.disconnectFromRoom();
-            connectAttempted = false;
         }
     }
 
     /***
      * Skylink Helper methods
      */
+
+    /**
+     * Check if we are currently connected to the room.
+     *
+     * @return True if we are connected and false otherwise.
+     */
+    private boolean isConnected() {
+        if (skylinkConnection != null) {
+            return skylinkConnection.isConnected();
+        }
+        return false;
+    }
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
@@ -307,25 +287,50 @@ public class FileTransferFragment extends MultiPartyFragment
         return config;
     }
 
-    private void initializeSkylinkConnection() {
-        if (skylinkConnection == null) {
-            skylinkConnection = SkylinkConnection.getInstance();
-            //the app_key and app_secret is obtained from the temasys developer console.
-            skylinkConnection.init(getString(R.string.app_key),
-                    getSkylinkConfig(), parentActivity.getApplicationContext());
+    private void connectToRoom(String appKey, String appSecret) {
+        // Initialize the skylink connection
+        initializeSkylinkConnection();
 
-            //set listeners to receive callbacks when events are triggered
-            setListeners();
-        }
+        // Obtaining the Skylink connection string done locally
+        // In a production environment the connection string should be given
+        // by an entity external to the App, such as an App server that holds the Skylink App
+        // secret
+        // In order to avoid keeping the App secret within the application
+        String skylinkConnectionString = Utils.
+                getSkylinkConnectionString(ROOM_NAME,
+                        appKey,
+                        appSecret, new Date(),
+                        SkylinkConnection
+                                .DEFAULT_DURATION);
+
+        skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
+    }
+
+    private void initializeSkylinkConnection() {
+        skylinkConnection = SkylinkConnection.getInstance();
+        //the app_key and app_secret is obtained from the temasys developer console.
+        skylinkConnection.init(getString(R.string.app_key),
+                getSkylinkConfig(), parentActivity.getApplicationContext());
+
+        //set listeners to receive callbacks when events are triggered
+        setListeners();
     }
 
     /**
-     * Set listeners to receive callbacks when events are triggered
+     * Set listeners to receive callbacks when events are triggered.
+     * SkylinkConnection instance must not be null or listeners cannot be set.
+     *
+     * @return false if listeners could not be set.
      */
-    private void setListeners() {
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setRemotePeerListener(this);
-        skylinkConnection.setFileTransferListener(this);
+    private boolean setListeners() {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setFileTransferListener(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /***
@@ -393,12 +398,16 @@ public class FileTransferFragment extends MultiPartyFragment
         }
     }
 
+    /***
+     * UI helper methods
+     */
+
     /**
-     * Change certain UI elements once connected to room or when Peer(s) join or leave.
+     * Change certain UI elements once isConnected() to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
         // [MultiParty]
-        Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         fillPeerRadioBtn();
     }
 
@@ -430,11 +439,9 @@ public class FileTransferFragment extends MultiPartyFragment
         //Update textview if connection is successful
         if (isSuccess) {
             // [MultiParty]
-            // Set the appropriate UI if already connected.
-            connected = true;
+            // Set the appropriate UI if already isConnected().
             onConnectUIChange();
         } else {
-            connectAttempted = false;
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -454,8 +461,6 @@ public class FileTransferFragment extends MultiPartyFragment
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        skylinkConnection = null;
-        connected = false;
         // [MultiParty]
         // Reset peerList
         peerList.clear();
@@ -558,7 +563,7 @@ public class FileTransferFragment extends MultiPartyFragment
         if (getPeerNum() == 1) {
             peerJoined = true;
             // Update textview to show room status
-            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME,
+            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
                     MY_USER_NAME);
         }
     }
@@ -602,7 +607,7 @@ public class FileTransferFragment extends MultiPartyFragment
         if (peerList.size() == 0) {
             peerJoined = false;
             // Update textview to show room status
-            Utils.setRoomDetailsMulti(connected, peerJoined, tvRoomDetails, ROOM_NAME,
+            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
                     MY_USER_NAME);
         }
     }

@@ -72,7 +72,6 @@ public class AudioCallFragment extends Fragment
                 remotePeerName = savedInstanceState.getString(BUNDLE_PEER_NAME, null);
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
-                initializeAudioRouter();
             }
         }
 
@@ -85,9 +84,6 @@ public class AudioCallFragment extends Fragment
 
                 // Initialize the skylink connection
                 initializeSkylinkConnection();
-
-                // Initialize the audio router
-                initializeAudioRouter();
 
                 // Obtaining the Skylink connection string done locally
                 // In a production environment the connection string should be given
@@ -104,8 +100,8 @@ public class AudioCallFragment extends Fragment
                 skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
                 connected = true;
 
-                // Use the Audio router to switch between headphone and headset
-                audioRouter.startAudioRouting(parentActivity.getApplicationContext());
+                // Initialize and use the Audio router to switch between headphone and headset
+                AudioRouter.startAudioRouting(parentActivity);
 
                 onConnectUIChange();
 
@@ -153,9 +149,7 @@ public class AudioCallFragment extends Fragment
         if (!orientationChange && skylinkConnection != null && connected) {
             skylinkConnection.disconnectFromRoom();
             connected = false;
-            if (audioRouter != null && parentActivity != null) {
-                audioRouter.stopAudioRouting(parentActivity.getApplicationContext());
-            }
+            AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
         }
     }
 
@@ -180,17 +174,6 @@ public class AudioCallFragment extends Fragment
         return config;
     }
 
-    private void initializeAudioRouter() {
-        if (audioRouter == null) {
-            audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) parentActivity.
-                    getSystemService(
-                            android.content
-                                    .Context
-                                    .AUDIO_SERVICE)));
-        }
-    }
-
     private void initializeSkylinkConnection() {
         if (skylinkConnection == null) {
             skylinkConnection = SkylinkConnection.getInstance();
@@ -203,13 +186,22 @@ public class AudioCallFragment extends Fragment
     }
 
     /**
-     * Set listeners to receive callbacks when events are triggered
+     * Set listeners to receive callbacks when events are triggered.
+     * SkylinkConnection instance must not be null or listeners cannot be set.
+     *
+     * @return false if listeners could not be set.
      */
-    private void setListeners() {
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+    private boolean setListeners() {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            return true;
+        } else {
+            return false;
+        }
     }
+
 
     /***
      * UI helper methods

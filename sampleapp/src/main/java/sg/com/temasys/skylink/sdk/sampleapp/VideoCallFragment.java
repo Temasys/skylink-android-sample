@@ -29,6 +29,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
 /**
@@ -44,23 +45,27 @@ public class VideoCallFragment extends Fragment
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
     private static final String ARG_SECTION_NUMBER = "section_number";
     // Constants for configuration change
-    private static final String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_CONNECTING = "connecting";
     private static final String BUNDLE_PEER_ID = "peerId";
     private static final String BUNDLE_AUDIO_MUTED = "audioMuted";
     private static final String BUNDLE_VIDEO_MUTED = "videoMuted";
+
     private static GLSurfaceView videoViewSelf;
     private static GLSurfaceView videoViewRemote;
     private static SkylinkConnection skylinkConnection;
     private LinearLayout linearLayout;
     private Button toggleAudioButton;
     private Button toggleVideoButton;
+    private Button toggleCameraButton;
+    private Button disconnectButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
+    private String connectionStatus;
+    private boolean connecting = false;
     private String roomName;
     private String peerId;
     private boolean audioMuted;
     private boolean videoMuted;
-    private boolean connected;
     private boolean orientationChange;
     private Activity parentActivity;
     private AudioRouter audioRouter;
@@ -76,12 +81,14 @@ public class VideoCallFragment extends Fragment
 
         toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
         toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
+        toggleCameraButton = (Button) rootView.findViewById(R.id.toggle_camera);
+        disconnectButton = (Button) rootView.findViewById(R.id.disconnect);
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
-            connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
+            connecting = savedInstanceState.getBoolean(BUNDLE_CONNECTING);
             // Set the appropriate UI if already connected.
-            if (connected) {
+            if (isConnected()) {
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
                 peerId = savedInstanceState.getString(BUNDLE_PEER_ID, null);
@@ -89,9 +96,15 @@ public class VideoCallFragment extends Fragment
                 videoMuted = savedInstanceState.getBoolean(BUNDLE_VIDEO_MUTED);
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
-                initializeAudioRouter();
                 addSelfView(videoViewSelf);
                 addRemoteView(peerId, videoViewRemote);
+            } else if (connecting) {
+                // Set listeners to receive callbacks when events are triggered
+                setListeners();
+                onConnectingUIChange();
+                addSelfView(videoViewSelf);
+            } else {
+                onDisconnectUIChange();
             }
         }
 
@@ -102,48 +115,8 @@ public class VideoCallFragment extends Fragment
         btnEnterRoom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                roomName = etRoomName.getText().toString();
-                String toast = "";
-                // If roomName is not set through the UI, get the default roomName from Constants
-                if (roomName.isEmpty()) {
-                    roomName = ROOM_NAME;
-                    etRoomName.setText(roomName);
-                    toast = "No room name provided, entering default video room \"" + roomName
-                            + "\".";
-                } else {
-                    toast = "Entering video room \"" + roomName + "\".";
-                }
-                Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
-
-                btnEnterRoom.setVisibility(View.GONE);
-                etRoomName.setEnabled(false);
-
-                String appKey = getString(R.string.app_key);
-                String appSecret = getString(R.string.app_secret);
-
-                // Initialize the skylink connection
-                initializeSkylinkConnection();
-
-                // Initialize the audio router
-                initializeAudioRouter();
-
-                // Obtaining the Skylink connection string done locally
-                // In a production environment the connection string should be given
-                // by an entity external to the App, such as an App server that holds the Skylink
-                // App secret
-                // In order to avoid keeping the App secret within the application
-                String skylinkConnectionString = Utils.
-                        getSkylinkConnectionString(roomName,
-                                appKey,
-                                appSecret, new Date(),
-                                SkylinkConnection
-                                        .DEFAULT_DURATION);
-
-                skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
-                connected = true;
-
-                // Use the Audio router to switch between headphone and headset
-                audioRouter.startAudioRouting(parentActivity.getApplicationContext());
+                connectToRoom();
+                onConnectingUIChange();
             }
         });
 
@@ -171,6 +144,33 @@ public class VideoCallFragment extends Fragment
             }
         });
 
+        toggleCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String toast = "Toggled camera ";
+                try {
+                    boolean restarted = skylinkConnection.toggleCamera();
+                    if (restarted) {
+                        toast += "to restarted!";
+                    } else {
+                        toast += "to stopped!";
+                    }
+                } catch (SkylinkException e) {
+                    toast += "but failed as " + e.getMessage();
+                }
+                Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(parentActivity, "Clicked Disconnect!", Toast.LENGTH_SHORT).show();
+                disconnectFromRoom();
+                onDisconnectUIChange();
+            }
+        });
+
         return rootView;
     }
 
@@ -195,7 +195,7 @@ public class VideoCallFragment extends Fragment
         // Note that orientation change is happening.
         orientationChange = true;
         // Save states for fragment restart
-        outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
+        outState.putBoolean(BUNDLE_CONNECTING, connecting);
         outState.putString(BUNDLE_PEER_ID, peerId);
         outState.putBoolean(BUNDLE_AUDIO_MUTED, audioMuted);
         outState.putBoolean(BUNDLE_VIDEO_MUTED, videoMuted);
@@ -204,23 +204,88 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onDetach() {
         super.onDetach();
-        // Remove all views from layouts.
-        Utils.removeViewFromParent(videoViewSelf);
-        Utils.removeViewFromParent(videoViewRemote);
-        // Close the room connection when this sample app is finished, so the streams can be closed.
-        // I.e. already connected and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && connected) {
-            skylinkConnection.disconnectFromRoom();
-            connected = false;
-            if (audioRouter != null && parentActivity != null) {
-                audioRouter.stopAudioRouting(parentActivity.getApplicationContext());
-            }
-        }
+        disconnectFromRoom();
     }
 
     /***
-     * Helper methods
+     * Skylink Helper methods
      */
+
+    /**
+     * Check if we are currently connected to the room.
+     *
+     * @return True if we are connected and false otherwise.
+     */
+    private boolean isConnected() {
+        if (skylinkConnection != null) {
+            return skylinkConnection.isConnected();
+        }
+        return false;
+    }
+
+    /**
+     * Get room name from text field (or use default if not entered),
+     * and connect to that room.
+     * Initializes SkylinkConnection if not initialized.
+     */
+    private void connectToRoom() {
+        roomName = etRoomName.getText().toString();
+        String toast = "";
+        // If roomName is not set through the UI, get the default roomName from Constants
+        if (roomName.isEmpty()) {
+            roomName = ROOM_NAME;
+            etRoomName.setText(roomName);
+            toast = "No room name provided, entering default video room \"" + roomName
+                    + "\".";
+        } else {
+            toast = "Entering video room \"" + roomName + "\".";
+        }
+        Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
+
+        String appKey = getString(R.string.app_key);
+        String appSecret = getString(R.string.app_secret);
+
+        // Initialize the skylink connection
+        initializeSkylinkConnection();
+
+        // Obtaining the Skylink connection string done locally
+        // In a production environment the connection string should be given
+        // by an entity external to the App, such as an App server that holds the Skylink
+        // App secret
+        // In order to avoid keeping the App secret within the application
+        String skylinkConnectionString = Utils.
+                getSkylinkConnectionString(roomName,
+                        appKey,
+                        appSecret, new Date(),
+                        SkylinkConnection
+                                .DEFAULT_DURATION);
+
+        boolean connectFailed;
+        connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
+        if (connectFailed) {
+            Toast.makeText(parentActivity, "Unable to connect to room!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        connecting = true;
+
+        // Initialize and use the Audio router to switch between headphone and headset
+        AudioRouter.startAudioRouting(parentActivity);
+    }
+
+    /**
+     * Disconnect from room.
+     */
+    private void disconnectFromRoom() {
+        // Close the room connection when this sample app is finished, so the streams can be closed.
+        // I.e. already connecting/connected and not changing orientation.
+        if (!orientationChange && skylinkConnection != null && isConnected()) {
+            if (skylinkConnection.disconnectFromRoom()) {
+                connecting = false;
+            }
+            AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
+        }
+    }
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
@@ -241,35 +306,30 @@ public class VideoCallFragment extends Fragment
         return config;
     }
 
-    private void initializeAudioRouter() {
-        if (audioRouter == null) {
-            audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) parentActivity.
-                    getSystemService(
-                            android.content
-                                    .Context
-                                    .AUDIO_SERVICE)));
-        }
-    }
-
     private void initializeSkylinkConnection() {
-        if (skylinkConnection == null) {
-            skylinkConnection = SkylinkConnection.getInstance();
-            //the app_key and app_secret is obtained from the temasys developer console.
-            skylinkConnection.init(getString(R.string.app_key),
-                    getSkylinkConfig(), this.parentActivity.getApplicationContext());
-            // Set listeners to receive callbacks when events are triggered
-            setListeners();
-        }
+        skylinkConnection = SkylinkConnection.getInstance();
+        //the app_key and app_secret is obtained from the temasys developer console.
+        skylinkConnection.init(getString(R.string.app_key),
+                getSkylinkConfig(), this.parentActivity.getApplicationContext());
+        // Set listeners to receive callbacks when events are triggered
+        setListeners();
     }
 
     /**
-     * Set listeners to receive callbacks when events are triggered
+     * Set listeners to receive callbacks when events are triggered.
+     * SkylinkConnection instance must not be null or listeners cannot be set.
+     *
+     * @return false if listeners could not be set.
      */
-    private void setListeners() {
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+    private boolean setListeners() {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /***
@@ -284,6 +344,39 @@ public class VideoCallFragment extends Fragment
         etRoomName.setEnabled(false);
         toggleAudioButton.setVisibility(View.VISIBLE);
         toggleVideoButton.setVisibility(View.VISIBLE);
+        toggleCameraButton.setVisibility(View.VISIBLE);
+        disconnectButton.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Change certain UI elements when trying to connect to room.
+     */
+    private void onConnectingUIChange() {
+        btnEnterRoom.setVisibility(View.GONE);
+        etRoomName.setEnabled(false);
+        toggleAudioButton.setVisibility(View.GONE);
+        toggleVideoButton.setVisibility(View.GONE);
+        toggleCameraButton.setVisibility(View.GONE);
+        disconnectButton.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Change certain UI elements when disconnecting from room.
+     */
+    private void onDisconnectUIChange() {
+        View self = linearLayout.findViewWithTag("self");
+        linearLayout.removeView(self);
+
+        View peer = linearLayout.findViewWithTag("peer");
+        linearLayout.removeView(peer);
+        videoViewRemote = null;
+
+        btnEnterRoom.setVisibility(View.VISIBLE);
+        etRoomName.setEnabled(true);
+        toggleAudioButton.setVisibility(View.GONE);
+        toggleVideoButton.setVisibility(View.GONE);
+        toggleCameraButton.setVisibility(View.GONE);
+        disconnectButton.setVisibility(View.GONE);
     }
 
     /**
@@ -346,10 +439,11 @@ public class VideoCallFragment extends Fragment
 
         // Resize self view
         View self = linearLayout.findViewWithTag("self");
-
-        self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
-        linearLayout.removeView(self);
-        linearLayout.addView(self);
+        if (self != null) {
+            self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
+            linearLayout.removeView(self);
+            linearLayout.addView(self);
+        }
 
         // Remove previous peer video if it exists
         View viewToRemove = linearLayout.findViewWithTag("peer");
@@ -424,11 +518,12 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onConnect(boolean isSuccess, String message) {
         if (isSuccess) {
+            connecting = false;
             onConnectUIChange();
             Toast.makeText(parentActivity, "Connected to room " + roomName + " as " + MY_USER_NAME,
                     Toast.LENGTH_SHORT).show();
         } else {
-            connected = false;
+            connecting = false;
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -437,7 +532,8 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        skylinkConnection = null;
+        onDisconnectUIChange();
+        connecting = false;
         String log = message;
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "

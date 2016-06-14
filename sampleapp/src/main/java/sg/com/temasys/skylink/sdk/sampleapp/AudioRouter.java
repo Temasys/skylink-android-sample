@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,9 +17,9 @@ public class AudioRouter {
     private static AudioRouter instance = null;
 
     private final String TAG = AudioRouter.class.getName();
-    private final BroadcastReceiver headsetBroadcastReceiver;
+    private static BroadcastReceiver headsetBroadcastReceiver;
 
-    private AudioManager audioManager;
+    private static AudioManager audioManager;
 
     private AudioRouter() {
         headsetBroadcastReceiver = new BroadcastReceiver() {
@@ -65,11 +66,12 @@ public class AudioRouter {
     }
 
     /**
-     * Start routing audio to headset if plugged, else to the speaker phone
-     *
-     * @param context
+     * Initialize AudioRouter and
+     * start routing audio to headset if plugged, else to the speaker phone
      */
-    public void startAudioRouting(Context context) {
+    public static void startAudioRouting(Activity parentActivity) {
+        initializeAudioRouter(parentActivity);
+        Context context = parentActivity.getApplicationContext();
         context.registerReceiver(headsetBroadcastReceiver,
                 new IntentFilter(Intent.ACTION_HEADSET_PLUG));
         setAudioPath();
@@ -78,15 +80,18 @@ public class AudioRouter {
     /**
      * Stop routing audio
      */
-    public void stopAudioRouting(Context context) {
-        context.unregisterReceiver(headsetBroadcastReceiver);
+    public static void stopAudioRouting(Context context) {
+        if (instance != null && context != null) {
+            context.unregisterReceiver(headsetBroadcastReceiver);
+            instance = null;
+        }
     }
 
     /**
      * Set the audio path according to whether earphone is connected. Use ear piece if earphone is
      * connected. Use speakerphone if no earphone is connected.
      */
-    private void setAudioPath() {
+    private static void setAudioPath() {
         if (audioManager == null) {
             throw new RuntimeException(
                     "Attempt to set audio path before setting AudioManager");
@@ -96,6 +101,14 @@ public class AudioRouter {
             audioManager.setSpeakerphoneOn(false);
         } else {
             audioManager.setSpeakerphoneOn(true);
+        }
+    }
+
+    static void initializeAudioRouter(Activity parentActivity) {
+        if (instance == null) {
+            getInstance();
+            instance.init(((AudioManager) parentActivity.
+                    getSystemService(Context.AUDIO_SERVICE)));
         }
     }
 }

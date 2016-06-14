@@ -31,6 +31,7 @@ class Utils {
     /**
      * Returns the userData of a Peer as a String.
      * If there is no userData, returns the empty string, "".
+     *
      * @param skylinkConnection
      * @param peerId            The PeerId for which to search. Use null for self (local Peer).
      * @return
@@ -38,7 +39,7 @@ class Utils {
     public static String getUserDataString(SkylinkConnection skylinkConnection, String peerId) {
         Object userDataObject = skylinkConnection.getUserData(peerId);
         String userDataString = "";
-        if(userDataObject != null) {
+        if (userDataObject != null) {
             userDataString = userDataObject.toString();
         }
         return userDataString;
@@ -47,13 +48,14 @@ class Utils {
     /**
      * Returns the nickname of a Peer as the userData as a string.
      * If there is no userData, return the PeerId.
+     *
      * @param skylinkConnection
      * @param peerId
      * @return
      */
     public static String getUserNick(SkylinkConnection skylinkConnection, String peerId) {
         String nick = getUserDataString(skylinkConnection, peerId);
-        if("".equals(nick)) {
+        if ("".equals(nick)) {
             nick = peerId;
         }
         return nick;

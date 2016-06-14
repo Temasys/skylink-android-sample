@@ -41,7 +41,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     // Constants for configuration change
-    private static final String BUNDLE_IS_CONNECTED = "isConnected";
+    private static final String BUNDLE_IS_CONNECTED = "isConnected()";
 
     private static GLSurfaceView videoViewSelf;
     /**
@@ -53,10 +53,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      */
     private static SkylinkConnection skylinkConnection;
     private FrameLayout[] videoViewLayouts;
-    private boolean connected;
     private boolean orientationChange;
     private Activity parentActivity;
-    private AudioRouter audioRouter;
     private Context applicationContext;
 
     @Override
@@ -75,49 +73,56 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         String appKey = getString(R.string.app_key);
         String appSecret = getString(R.string.app_secret);
 
-        // Initialize the audio router
-        initializeAudioRouter();
-
         // Check if it was an orientation change
         if (savedInstanceState != null) {
-            connected = savedInstanceState.getBoolean(BUNDLE_IS_CONNECTED);
-            // Set the appropriate UI if already connected.
-            if (connected) {
-                // Set listeners to receive callbacks when events are triggered
-                setListeners();
-                // Add all existing VideoViews to UI
-                addViews();
-            }
-        }
-
-        if (!connected) {
+            // Set again the listeners to receive callbacks when events are triggered
+            setListeners();
+        } else {
             videoViewRemoteMap = new ConcurrentHashMap<String, GLSurfaceView>();
-            skylinkConnection = null;
-            // Initialize the skylink connection
-            initializeSkylinkConnection();
-
-            // Obtaining the Skylink connection string locally.
-            // In a production environment the connection string should be given
-            // by an entity external to the App,
-            // such as an App server that holds the Skylink App secret.
-            // This is to avoid keeping the App secret within the application
-            String skylinkConnectionString = Utils.
-                    getSkylinkConnectionString(ROOM_NAME,
-                            appKey,
-                            appSecret, new Date(),
-                            SkylinkConnection
-                                    .DEFAULT_DURATION);
-
-            // The skylinkConnectionString should not be logged in production,
-            // as it contains potentially sensitive information like the Skylink App key.
-            skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
-            connected = true;
-
-            // Use the Audio router to switch between headphone and headset
-            audioRouter.startAudioRouting(applicationContext);
         }
+
+        // Try to connect to room if not yet connected.
+        if (!isConnected()) {
+            connectToRoom(appKey, appSecret);
+        }
+
+        // Set the appropriate UI.
+        // Add all existing VideoViews to UI
+        addViews();
 
         return rootView;
+    }
+
+    private void connectToRoom(String appKey, String appSecret) {
+        // Initialize the skylink connection
+        initializeSkylinkConnection();
+
+        // Obtaining the Skylink connection string locally.
+        // In a production environment the connection string should be given
+        // by an entity external to the App,
+        // such as an App server that holds the Skylink App secret.
+        // This is to avoid keeping the App secret within the application
+        String skylinkConnectionString = Utils.
+                getSkylinkConnectionString(ROOM_NAME,
+                        appKey,
+                        appSecret, new Date(),
+                        SkylinkConnection
+                                .DEFAULT_DURATION);
+
+        // The skylinkConnectionString should not be logged in production,
+        // as it contains potentially sensitive information like the Skylink App key.
+
+        boolean connectFailed;
+        connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
+        if (connectFailed) {
+            String error = "Unable to connect to Room! Rotate device to try again later.";
+            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+            Log.e(TAG, error);
+            return;
+        }
+
+        // Initialize and use the Audio router to switch between headphone and headset
+        AudioRouter.startAudioRouting(parentActivity);
     }
 
     @Override
@@ -170,8 +175,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         super.onSaveInstanceState(outState);
         // Note that orientation change is happening.
         orientationChange = true;
-        // Save states for fragment restart
-        outState.putBoolean(BUNDLE_IS_CONNECTED, connected);
     }
 
     @Override
@@ -180,19 +183,28 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         // Remove all views from layouts.
         emptyLayout();
         // Close the room connection when this sample app is finished, so the streams can be closed.
-        // I.e. already connected and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && connected) {
+        // I.e. already isConnected() and not changing orientation.
+        if (!orientationChange && skylinkConnection != null && isConnected()) {
             skylinkConnection.disconnectFromRoom();
-            connected = false;
-            if (audioRouter != null && applicationContext != null) {
-                audioRouter.stopAudioRouting(applicationContext);
-            }
+            AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
         }
     }
 
     /***
      * Helper methods
      */
+
+    /**
+     * Check if we are currently connected to the room.
+     *
+     * @return True if we are connected and false otherwise.
+     */
+    private boolean isConnected() {
+        if (skylinkConnection != null) {
+            return skylinkConnection.isConnected();
+        }
+        return false;
+    }
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
@@ -214,35 +226,32 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         return config;
     }
 
-    private void initializeAudioRouter() {
-        if (audioRouter == null) {
-            audioRouter = AudioRouter.getInstance();
-            audioRouter.init(((AudioManager) applicationContext.
-                    getSystemService(
-                            android.content
-                                    .Context
-                                    .AUDIO_SERVICE)));
-        }
-    }
-
     private void initializeSkylinkConnection() {
-        if (skylinkConnection == null) {
-            skylinkConnection = SkylinkConnection.getInstance();
-            //the app_key and app_secret is obtained from the temasys developer console.
-            skylinkConnection.init(getString(R.string.app_key),
-                    getSkylinkConfig(), this.applicationContext);
-            // Set listeners to receive callbacks when events are triggered
-            setListeners();
-        }
+//        if (skylinkConnection == null) {
+        skylinkConnection = SkylinkConnection.getInstance();
+        //the app_key and app_secret is obtained from the temasys developer console.
+        skylinkConnection.init(getString(R.string.app_key),
+                getSkylinkConfig(), this.applicationContext);
+        // Set listeners to receive callbacks when events are triggered
+        setListeners();
+//        }
     }
 
     /**
-     * Set listeners to receive callbacks when events are triggered
+     * Set listeners to receive callbacks when events are triggered.
+     * SkylinkConnection instance must not be null or listeners cannot be set.
+     *
+     * @return false if listeners could not be set.
      */
-    private void setListeners() {
-        skylinkConnection.setLifeCycleListener(this);
-        skylinkConnection.setMediaListener(this);
-        skylinkConnection.setRemotePeerListener(this);
+    private boolean setListeners() {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /***
@@ -266,6 +275,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 skylinkConnection.switchCamera();
+                Toast.makeText(parentActivity, "Switched camera.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -350,7 +360,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                     String.format(getString(R.string.data_transfer_waiting),
                             ROOM_NAME), Toast.LENGTH_LONG).show();
         } else {
-            connected = false;
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
@@ -359,7 +368,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        skylinkConnection = null;
         String log = message;
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log = "[onDisconnect] We have successfully disconnected from the room. Server message: "

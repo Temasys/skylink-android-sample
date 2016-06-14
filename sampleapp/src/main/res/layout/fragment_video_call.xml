@@ -49,6 +49,24 @@
             android:visibility="gone"
             />
 
+        <Button
+            android:id="@+id/toggle_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/toggle_camera"
+            android:visibility="gone"
+            />
+
+        <Button
+            android:id="@+id/disconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/disconnect"
+            android:visibility="gone"
+            />
+
     </LinearLayout>
 
 
