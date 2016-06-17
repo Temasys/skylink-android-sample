@@ -365,10 +365,14 @@ public class VideoCallFragment extends Fragment
      */
     private void onDisconnectUIChange() {
         View self = linearLayout.findViewWithTag("self");
-        linearLayout.removeView(self);
+        if (self != null) {
+            linearLayout.removeView(self);
+        }
 
         View peer = linearLayout.findViewWithTag("peer");
-        linearLayout.removeView(peer);
+        if (peer != null) {
+            linearLayout.removeView(peer);
+        }
         videoViewRemote = null;
 
         btnEnterRoom.setVisibility(View.VISIBLE);
@@ -645,8 +649,10 @@ public class VideoCallFragment extends Fragment
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-            videoViewSelf.setLayoutParams(params);
-            addSelfView(videoViewSelf);
+            if (videoViewSelf != null) {
+                videoViewSelf.setLayoutParams(params);
+                addSelfView(videoViewSelf);
+            }
         }
     }
 

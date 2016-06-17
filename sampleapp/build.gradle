@@ -19,7 +19,7 @@ sonarRunner {
     sonarProperties {
         property "sonar.projectKey", "AND-Sample"
         property "sonar.projectName", "Skylink Android SDK - Sample App"
-        property "sonar.projectVersion", "0.9.5"
+        property "sonar.projectVersion", "0.9.6"
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
@@ -41,17 +41,14 @@ android {
         minSdkVersion 17
         targetSdkVersion 23
         versionCode 1
-        versionName "0.9.5"
-        signingConfig signingConfigs.release
+        versionName "0.9.6"
     }
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
         }
         }
-    productFlavors {
 
     }
 }
@@ -61,7 +58,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:+'
     compile(group: 'sg.com.temasys.skylink.sdk',
             name: 'skylink_sdk',
-            version: '0.9.5-RELEASE',
+                version: '0.9.6-RELEASE',
             ext: 'aar') {
         transitive = true
     }

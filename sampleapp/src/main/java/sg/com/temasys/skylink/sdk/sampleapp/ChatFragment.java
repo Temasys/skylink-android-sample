@@ -131,14 +131,17 @@ public class ChatFragment extends MultiPartyFragment
             @Override
             public void onClick(View v) {
                 // [MultiParty]
+                boolean isPrivate = true;
                 String remotePeerId = getPeerIdSelectedWithWarning();
                 // Do not allow button actions if there are no Peers in the room.
                 if ("".equals(remotePeerId)) {
                     return;
+                } else if (remotePeerId == null) {
+                    isPrivate = false;
                 }
 
                 //Add chat message to the listview
-                String message = addSelfMessageToListView(true, false);
+                String message = addSelfMessageToListView(isPrivate, false);
 
                 // Sends message using the signalling server
                 // Pass null for remotePeerId to send message to all users in the room
@@ -151,14 +154,17 @@ public class ChatFragment extends MultiPartyFragment
             @Override
             public void onClick(View v) {
                 // [MultiParty]
+                boolean isPrivate = true;
                 String remotePeerId = getPeerIdSelectedWithWarning();
                 // Do not allow button actions if there are no Peers in the room.
                 if ("".equals(remotePeerId)) {
                     return;
+                } else if (remotePeerId == null) {
+                    isPrivate = false;
                 }
 
                 //Add chat message to the listview
-                String message = addSelfMessageToListView(true, true);
+                String message = addSelfMessageToListView(isPrivate, true);
 
                 try {
                     // Sends message using a DataChannel.
