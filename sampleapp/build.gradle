@@ -43,24 +43,20 @@ android {
         versionCode 1
         versionName "0.9.6"
     }
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-        }
 
+    // Run lint checks but don't abort build
+    lintOptions {
+        abortOnError false
     }
-}
 
-dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:+'
-    compile(group: 'sg.com.temasys.skylink.sdk',
-            name: 'skylink_sdk',
+    dependencies {
+        compile fileTree(include: ['*.jar'], dir: 'libs')
+        compile 'com.android.support:appcompat-v7:+'
+        compile(group: 'sg.com.temasys.skylink.sdk',
+                name: 'skylink_sdk',
                 version: '0.9.6-RELEASE',
-            ext: 'aar') {
-        transitive = true
-    }
+                ext: 'aar') {
+            transitive = true
+        }
     }
 }

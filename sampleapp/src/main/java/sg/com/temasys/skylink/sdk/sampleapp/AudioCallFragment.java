@@ -18,7 +18,7 @@ import com.temasys.skylink.sampleapp.R;
 
 import java.util.Date;
 
-import sg.com.temasys.skylink.sdk.config.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
