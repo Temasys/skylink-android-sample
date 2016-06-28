@@ -445,6 +445,7 @@ public class FileTransferFragment extends MultiPartyFragment
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
+            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
     }
 

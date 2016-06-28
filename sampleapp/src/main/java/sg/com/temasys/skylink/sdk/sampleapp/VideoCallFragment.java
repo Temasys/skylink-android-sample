@@ -531,6 +531,7 @@ public class VideoCallFragment extends Fragment
             Log.d(TAG, "Skylink failed to connect!");
             Toast.makeText(parentActivity, "Skylink failed to connect!\nReason : "
                     + message, Toast.LENGTH_SHORT).show();
+            onDisconnectUIChange();
         }
     }
 
