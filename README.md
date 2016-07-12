@@ -1,9 +1,8 @@
 # Skylink Android Sample
 
-How to run the sample project 
+## How to run the sample project 
 
-Step-by-step guide for Android Studio
---------------------------------------
+### Step-by-step guide for Android Studio
 
 1. Clone this repository
 2. Import the project into Android Studio using File -> Open and selecting the project
@@ -12,13 +11,19 @@ Step-by-step guide for Android Studio
 5. Run the sampleapp module
 
 
-Feedback
---------
-Please do not hesitate to reach get in touch with us if you encounter any issue or if you have any feedback or suggestions on how we could improve Skylink
-You can raise tickets on our [support portal](http://support.temasys.com.sg/) or on github
+## Subscribe
+
+Subscribe to release notes for Skylink! Check it out at:
+http://support.temasys.com.sg/support/solutions/articles/12000012359-how-can-i-subscribe-to-release-notes-for-skylink-
 
 
-Copyright and License
-----------------------
+## Feedback
+
+Please do not hesitate to reach get in touch with us if you encounter any issue or if you have any feedback or suggestions on how we could improve Skylink.
+You can raise tickets on our [support portal](http://support.temasys.com.sg/) or on github.
+
+
+## Copyright and License
+
 Copyright 2015 Temasys Communications Pte Ltd under [APACHE 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) license
 
