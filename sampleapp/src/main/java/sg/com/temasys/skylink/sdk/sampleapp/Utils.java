@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -144,8 +146,24 @@ class Utils {
             Log.e(TAG, e.getMessage(), e);
         }
 
+        // Encode roomName so that it is url safe.
+        String roomNameEncoded = null;
+        URI uri = null;
+        try {
+            uri = new URI("http", "host", "/" + roomName + "/", null);
+        } catch (URISyntaxException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        String uriStr = uri.toString();
+
+        /* Parse roomNameEncoded from:
+        http://host/<roomNameEncoded>/
+        */
+        roomNameEncoded = uriStr.substring("http://host/".length(), uriStr.length() - 1);
+
         return appKey + "/"
-                + roomName + "/" + dateString + "/" + duration + "?cred="
+                + roomNameEncoded + "/" + dateString + "/" + duration + "?cred="
                 + cred;
     }
 
