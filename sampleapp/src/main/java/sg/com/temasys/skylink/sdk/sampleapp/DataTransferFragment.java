@@ -384,7 +384,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
     }
 
     @Override
-    public void onReceiveLog(String message) {
+    public void onReceiveLog(int infoCode, String message) {
         Log.d(TAG, "onReceiveLog " + message);
     }
 

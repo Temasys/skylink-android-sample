@@ -402,7 +402,7 @@ public class ChatFragment extends MultiPartyFragment
     }
 
     @Override
-    public void onReceiveLog(String message) {
+    public void onReceiveLog(int infoCode, String message) {
         Log.d(TAG, "On receive log: " + message);
     }
 

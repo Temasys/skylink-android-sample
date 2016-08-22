@@ -297,6 +297,10 @@ public class VideoCallFragment extends Fragment
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
         config.setTimeout(Constants.TIME_OUT);
+
+        // To limit audio and/or video bandwidth:
+        // config.setMaxAudioBitrate(20);
+        // config.setMaxVideoBitrate(256);
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
@@ -555,7 +559,7 @@ public class VideoCallFragment extends Fragment
     }
 
     @Override
-    public void onReceiveLog(String message) {
+    public void onReceiveLog(int infoCode, String message) {
         Log.d(TAG, message + " on receive log");
     }
 

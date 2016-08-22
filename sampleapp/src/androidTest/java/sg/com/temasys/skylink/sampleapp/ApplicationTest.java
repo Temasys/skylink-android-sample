@@ -1,4 +1,4 @@
-package com.temasys.skylink.sampleapp;
+package sg.com.temasys.skylink.sampleapp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
