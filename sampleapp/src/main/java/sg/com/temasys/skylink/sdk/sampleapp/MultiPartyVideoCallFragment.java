@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.media.AudioManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -14,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
+import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Date;
 import java.util.Map;
@@ -26,6 +25,11 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
+
+import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NO;
+import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NON_FRONT;
 
 /**
  * Created by janidu on 3/3/15.
@@ -43,17 +47,22 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     // Constants for configuration change
     private static final String BUNDLE_IS_CONNECTED = "isConnected()";
 
-    private static GLSurfaceView videoViewSelf;
+    private static SurfaceViewRenderer videoViewSelf;
     /**
      * List of remote VideoViews
      */
-    private static Map<String, GLSurfaceView> videoViewRemoteMap;
+    private static Map<String, SurfaceViewRenderer> videoViewRemoteMap;
     /**
      * List of Framelayouts for VideoViews
      */
     private static SkylinkConnection skylinkConnection;
+    // Indicates if camera should be toggled after returning to app.
+    // Generally, it should match whether it was toggled when moving away from app.
+    // For e.g., if camera was already off, then it would not be toggled when moving away from app,
+    // So toggleCamera would be set to false at onPause(), and at onCreateView,
+    // it would not be toggled.
+    private static boolean toggleCamera;
     private FrameLayout[] videoViewLayouts;
-    private boolean orientationChange;
     private Activity parentActivity;
     private Context applicationContext;
 
@@ -75,10 +84,22 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            // Toggle camera back to previous state if required.
+            if (toggleCamera) {
+                try {
+                    skylinkConnection.toggleCamera();
+                    toggleCamera = false;
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            }
+
             // Set again the listeners to receive callbacks when events are triggered
             setListeners();
         } else {
-            videoViewRemoteMap = new ConcurrentHashMap<String, GLSurfaceView>();
+            videoViewRemoteMap = new ConcurrentHashMap<String, SurfaceViewRenderer>();
+            // Set toggleCamera back to default state.
+            toggleCamera = false;
         }
 
         // Try to connect to room if not yet connected.
@@ -137,12 +158,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        // Manage the lifecycle of the surface view
-        if (this.videoViewRemoteMap != null && !this.videoViewRemoteMap.isEmpty()) {
-            for (GLSurfaceView peerSurfaceView : this.videoViewRemoteMap.values()) {
-                if (peerSurfaceView != null) {
-                    peerSurfaceView.onResume();
-                }
+        if (videoViewSelf == null) {
+            return;
+        }
+        // Toggle camera back to previous state if required.
+        if (toggleCamera) {
+            try {
+                skylinkConnection.toggleCamera();
+                toggleCamera = false;
+            } catch (SkylinkException e) {
+                Log.e(TAG, e.getMessage());
             }
         }
     }
@@ -150,12 +175,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onPause() {
         super.onPause();
-        // Manage the lifecycle of the surface view
-        if (this.videoViewRemoteMap != null && !this.videoViewRemoteMap.isEmpty()) {
-            for (GLSurfaceView peerSurfaceView : this.videoViewRemoteMap.values()) {
-                if (peerSurfaceView != null) {
-                    peerSurfaceView.onPause();
-                }
+        // Stop local video source only if not changing orientation
+        if (!parentActivity.isChangingConfigurations()) {
+            // Stop local video source if it's on.
+            try {
+                // Record if need to toggleCamera when resuming.
+                toggleCamera = skylinkConnection.toggleCamera(false);
+            } catch (SkylinkException e) {
+                Log.e(TAG, e.getMessage());
             }
         }
     }
@@ -173,8 +200,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Note that orientation change is happening.
-        orientationChange = true;
     }
 
     @Override
@@ -184,7 +209,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         emptyLayout();
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && isConnected()) {
+        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
+                && isConnected()) {
             skylinkConnection.disconnectFromRoom();
             AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
         }
@@ -258,7 +284,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      * UI helper methods
      */
 
-    private void addSelfView(GLSurfaceView videoView) {
+    private void addSelfView(SurfaceViewRenderer videoView) {
         if (videoView == null) {
             return;
         }
@@ -269,13 +295,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         // Remove self view if its already added
         videoViewLayouts[0].removeAllViews();
         videoViewLayouts[0].addView(videoView);
-        // videoViewRemoteMap.put(KEY_SELF, videoView);
+
         // Allow self view to switch between different cameras (if any) when tapped.
         videoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 skylinkConnection.switchCamera();
-                Toast.makeText(parentActivity, "Switched camera.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -286,7 +311,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      * @param remotePeerId
      * @param videoView
      */
-    private void addRemoteView(String remotePeerId, GLSurfaceView videoView) {
+    private void addRemoteView(String remotePeerId, SurfaceViewRenderer videoView) {
         if (videoView == null) {
             return;
         }
@@ -314,9 +339,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         addSelfView(videoViewSelf);
 
         // Add remote VideoView(s)
-        for (Map.Entry<String, GLSurfaceView> entry : videoViewRemoteMap.entrySet()) {
+        for (Map.Entry<String, SurfaceViewRenderer> entry : videoViewRemoteMap.entrySet()) {
             String peerId = entry.getKey();
-            GLSurfaceView videoView = entry.getValue();
+            SurfaceViewRenderer videoView = entry.getValue();
             addRemoteView(peerId, videoView);
         }
     }
@@ -325,8 +350,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      * Remove all videoViews from layouts.
      */
     private void emptyLayout() {
-        for (Map.Entry<String, GLSurfaceView> entry : videoViewRemoteMap.entrySet()) {
-            GLSurfaceView videoView = entry.getValue();
+        for (Map.Entry<String, SurfaceViewRenderer> entry : videoViewRemoteMap.entrySet()) {
+            SurfaceViewRenderer videoView = entry.getValue();
             Utils.removeViewFromParent(videoView);
         }
     }
@@ -338,7 +363,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      */
     private void removePeerView(String remotePeerId) {
         if (videoViewRemoteMap != null && videoViewRemoteMap.containsKey(remotePeerId)) {
-            GLSurfaceView viewToRemove = videoViewRemoteMap.get(remotePeerId);
+            SurfaceViewRenderer viewToRemove = videoViewRemoteMap.get(remotePeerId);
             // Remove Peer view from layout.
             for (FrameLayout peerFrameLayout : videoViewLayouts) {
                 peerFrameLayout.removeView(viewToRemove);
@@ -384,7 +409,18 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-
+        switch (infoCode) {
+            case CAM_SWITCH_FRONT:
+            case CAM_SWITCH_NON_FRONT:
+                Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
+                break;
+            case CAM_SWITCH_NO:
+                Toast.makeText(parentActivity, message, Toast.LENGTH_LONG).show();
+                break;
+            default:
+                Log.d(TAG, "Received SDK log: " + message);
+                break;
+        }
     }
 
     @Override
@@ -398,7 +434,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      */
 
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView) {
+    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
+        if (videoView == null) {
+            return;
+        }
         videoViewSelf = videoView;
         addSelfView(videoView);
     }
@@ -414,7 +453,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
+    public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
         addRemoteView(remotePeerId, videoView);
     }
 

@@ -11,9 +11,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.BuildConfig;
-import com.temasys.skylink.sampleapp.R;
-
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {

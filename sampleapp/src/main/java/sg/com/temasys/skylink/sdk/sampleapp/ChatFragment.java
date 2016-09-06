@@ -17,8 +17,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,7 +56,6 @@ public class ChatFragment extends MultiPartyFragment
     private BaseAdapter adapter;
 
     private boolean peerJoined;
-    private boolean orientationChange;
 
 
     @Override
@@ -195,8 +192,6 @@ public class ChatFragment extends MultiPartyFragment
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Note that orientation change is happening.
-        orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
@@ -212,7 +207,8 @@ public class ChatFragment extends MultiPartyFragment
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already connected and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && isConnected()) {
+        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
+                && isConnected()) {
             skylinkConnection.disconnectFromRoom();
         }
     }

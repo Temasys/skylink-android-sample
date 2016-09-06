@@ -7,7 +7,6 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.app.Activity;
 import android.graphics.Point;
 import android.media.AudioManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -19,7 +18,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
+import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Date;
 
@@ -31,6 +30,10 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+
+import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NO;
+import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NON_FRONT;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -50,9 +53,16 @@ public class VideoCallFragment extends Fragment
     private static final String BUNDLE_AUDIO_MUTED = "audioMuted";
     private static final String BUNDLE_VIDEO_MUTED = "videoMuted";
 
-    private static GLSurfaceView videoViewSelf;
-    private static GLSurfaceView videoViewRemote;
+    private static SurfaceViewRenderer videoViewSelf;
+    private static SurfaceViewRenderer videoViewRemote;
     private static SkylinkConnection skylinkConnection;
+    // Indicates if camera should be toggled after returning to app.
+    // Generally, it should match whether it was toggled when moving away from app.
+    // For e.g., if camera was already off, then it would not be toggled when moving away from app,
+    // So toggleCamera would be set to false at onPause(), and at onCreateView,
+    // it would not be toggled.
+    private static boolean toggleCamera;
+
     private LinearLayout linearLayout;
     private Button toggleAudioButton;
     private Button toggleVideoButton;
@@ -66,7 +76,6 @@ public class VideoCallFragment extends Fragment
     private String peerId;
     private boolean audioMuted;
     private boolean videoMuted;
-    private boolean orientationChange;
     private Activity parentActivity;
     private AudioRouter audioRouter;
 
@@ -86,6 +95,16 @@ public class VideoCallFragment extends Fragment
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            // Toggle camera back to previous state if required.
+            if (toggleCamera) {
+                try {
+                    skylinkConnection.toggleCamera();
+                    toggleCamera = false;
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            }
+
             connecting = savedInstanceState.getBoolean(BUNDLE_CONNECTING);
             // Set the appropriate UI if already connected.
             if (isConnected()) {
@@ -106,6 +125,9 @@ public class VideoCallFragment extends Fragment
             } else {
                 onDisconnectUIChange();
             }
+        } else {
+            // Set toggleCamera back to default state.
+            toggleCamera = false;
         }
 
         // Set UI elements
@@ -149,8 +171,8 @@ public class VideoCallFragment extends Fragment
             public void onClick(View v) {
                 String toast = "Toggled camera ";
                 try {
-                    boolean restarted = skylinkConnection.toggleCamera();
-                    if (restarted) {
+                    skylinkConnection.toggleCamera();
+                    if (skylinkConnection.isCameraOn()) {
                         toast += "to restarted!";
                     } else {
                         toast += "to stopped!";
@@ -190,10 +212,40 @@ public class VideoCallFragment extends Fragment
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (videoViewSelf == null) {
+            return;
+        }
+        // Toggle camera back to previous state if required.
+        if (toggleCamera) {
+            try {
+                skylinkConnection.toggleCamera();
+                toggleCamera = false;
+            } catch (SkylinkException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Stop local video source only if not changing orientation
+        if (!parentActivity.isChangingConfigurations()) {
+            // Stop local video source if it's on.
+            try {
+                // Record if need to toggleCamera when resuming.
+                toggleCamera = skylinkConnection.toggleCamera(false);
+            } catch (SkylinkException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Note that orientation change is happening.
-        orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_CONNECTING, connecting);
         outState.putString(BUNDLE_PEER_ID, peerId);
@@ -279,7 +331,8 @@ public class VideoCallFragment extends Fragment
     private void disconnectFromRoom() {
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already connecting/connected and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && isConnected()) {
+        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
+                && isConnected()) {
             if (skylinkConnection.disconnectFromRoom()) {
                 connecting = false;
             }
@@ -392,7 +445,7 @@ public class VideoCallFragment extends Fragment
      *
      * @param videoView
      */
-    private void addSelfView(GLSurfaceView videoView) {
+    private void addSelfView(SurfaceViewRenderer videoView) {
         if (videoView != null) {
             // If previous self video exists,
             // Set new video to size of previous self video
@@ -440,7 +493,7 @@ public class VideoCallFragment extends Fragment
      * @param remotePeerId
      * @param videoView
      */
-    private void addRemoteView(String remotePeerId, GLSurfaceView videoView) {
+    private void addRemoteView(String remotePeerId, SurfaceViewRenderer videoView) {
         if (videoView == null) {
             return;
         }
@@ -560,7 +613,16 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Log.d(TAG, message + " on receive log");
+        switch (infoCode) {
+            case CAM_SWITCH_FRONT:
+            case CAM_SWITCH_NON_FRONT:
+            case CAM_SWITCH_NO:
+                Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Log.d(TAG, "Received SDK log: " + message);
+                break;
+        }
     }
 
     @Override
@@ -581,7 +643,10 @@ public class VideoCallFragment extends Fragment
      * @param videoView
      */
     @Override
-    public void onLocalMediaCapture(GLSurfaceView videoView) {
+    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
+        if (videoView == null) {
+            return;
+        }
         videoViewSelf = videoView;
         addSelfView(videoView);
     }
@@ -597,7 +662,7 @@ public class VideoCallFragment extends Fragment
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, GLSurfaceView videoView) {
+    public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
         videoViewRemote = videoView;
         addRemoteView(remotePeerId, videoView);
     }

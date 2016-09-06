@@ -13,8 +13,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -47,7 +45,6 @@ public class DataTransferFragment extends MultiPartyFragment implements
     private Button btnSendDataRoom;
     private Button btnSendDataPeer;
     private boolean peerJoined;
-    private boolean orientationChange;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle
@@ -193,8 +190,6 @@ public class DataTransferFragment extends MultiPartyFragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Note that orientation change is happening.
-        orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
@@ -207,7 +202,8 @@ public class DataTransferFragment extends MultiPartyFragment implements
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && isConnected()) {
+        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
+                && isConnected()) {
             skylinkConnection.disconnectFromRoom();
             dataPrivate = null;
             dataGroup = null;

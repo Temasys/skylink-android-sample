@@ -35,8 +35,8 @@ android {
     buildToolsVersion "23"
     defaultConfig {
         applicationId "sg.com.temasys.skylink.sampleapp"
-        minSdkVersion 17
-        targetSdkVersion 23
+        minSdkVersion 16
+        targetSdkVersion 21
         versionCode 1
         versionName "0.9.6"
     }

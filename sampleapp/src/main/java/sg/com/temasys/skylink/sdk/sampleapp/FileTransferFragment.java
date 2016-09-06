@@ -18,8 +18,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -61,7 +59,6 @@ public class FileTransferFragment extends MultiPartyFragment
     private String fileNameGroup = "FireTransferGroup.png";
     private String fileNameDownloaded = "downloadFile.png";
     private boolean peerJoined;
-    private boolean orientationChange;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -236,8 +233,6 @@ public class FileTransferFragment extends MultiPartyFragment
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Note that orientation change is happening.
-        orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
@@ -250,7 +245,8 @@ public class FileTransferFragment extends MultiPartyFragment
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && isConnected()) {
+        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
+                && isConnected()) {
             skylinkConnection.disconnectFromRoom();
         }
     }

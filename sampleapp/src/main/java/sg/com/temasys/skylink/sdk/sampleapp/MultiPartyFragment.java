@@ -8,8 +8,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
-
 import java.util.ArrayList;
 import java.util.ListIterator;
 

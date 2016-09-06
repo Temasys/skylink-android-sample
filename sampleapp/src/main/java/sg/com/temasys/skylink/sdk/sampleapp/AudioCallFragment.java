@@ -3,7 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.app.Activity;
 import android.graphics.Point;
 import android.media.AudioManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -14,7 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.temasys.skylink.sampleapp.R;
+import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Date;
 
@@ -46,7 +45,6 @@ public class AudioCallFragment extends Fragment
     private String remotePeerId;
     private String remotePeerName;
     private boolean peerJoined;
-    private boolean orientationChange;
     private Activity parentActivity;
 
     @Override
@@ -107,8 +105,6 @@ public class AudioCallFragment extends Fragment
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Note that orientation change is happening.
-        orientationChange = true;
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         outState.putString(BUNDLE_PEER_ID, remotePeerId);
@@ -124,7 +120,8 @@ public class AudioCallFragment extends Fragment
     private void disconnectFromRoom() {
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!orientationChange && skylinkConnection != null && isConnected()) {
+        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
+                && isConnected()) {
             skylinkConnection.disconnectFromRoom();
             AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
         }
@@ -298,7 +295,7 @@ public class AudioCallFragment extends Fragment
     }
 
     @Override
-    public void onLocalMediaCapture(GLSurfaceView glSurfaceView) {
+    public void onLocalMediaCapture(SurfaceViewRenderer surfaceView) {
         Log.d(TAG, "onLocalMediaCapture");
     }
 
@@ -323,7 +320,7 @@ public class AudioCallFragment extends Fragment
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String s, GLSurfaceView glSurfaceView) {
+    public void onRemotePeerMediaReceive(String s, SurfaceViewRenderer surfaceView) {
         Log.d(TAG, "onRemotePeerMediaReceive");
     }
 

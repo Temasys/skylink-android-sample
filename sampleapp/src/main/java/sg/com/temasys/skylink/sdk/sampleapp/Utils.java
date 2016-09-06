@@ -1,10 +1,11 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.opengl.GLSurfaceView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import org.webrtc.SurfaceViewRenderer;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -217,7 +218,7 @@ class Utils {
      *
      * @param videoView
      */
-    public static void removeViewFromParent(GLSurfaceView videoView) {
+    public static void removeViewFromParent(SurfaceViewRenderer videoView) {
         if (videoView != null) {
             Object viewParent = videoView.getParent();
             if (viewParent != null) {
