@@ -16,8 +16,6 @@ import android.widget.Toast;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
@@ -38,20 +36,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         MediaListener, RemotePeerListener,
         LifeCycleListener {
 
-    public static final String KEY_SELF = "self";
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
     private static final String ROOM_NAME = Constants.ROOM_NAME_MULTI;
     private static final String MY_USER_NAME = "videoCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
 
-    // Constants for configuration change
-    private static final String BUNDLE_IS_CONNECTED = "isConnected()";
-
-    private static SurfaceViewRenderer videoViewSelf;
-    /**
-     * List of remote VideoViews
-     */
-    private static Map<String, SurfaceViewRenderer> videoViewRemoteMap;
     /**
      * List of Framelayouts for VideoViews
      */
@@ -97,7 +86,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             // Set again the listeners to receive callbacks when events are triggered
             setListeners();
         } else {
-            videoViewRemoteMap = new ConcurrentHashMap<String, SurfaceViewRenderer>();
             // Set toggleCamera back to default state.
             toggleCamera = false;
         }
@@ -150,7 +138,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         // Allow volume to be controlled using volume keys
         parentActivity.setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
@@ -158,7 +145,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        if (videoViewSelf == null) {
+        if (getVideoView(null) == null) {
             return;
         }
         // Toggle camera back to previous state if required.
@@ -234,14 +221,19 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
-        // AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY,
-        // AUDIO_AND_VIDEO;
+        // AudioVideo config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
         config.setTimeout(Constants.TIME_OUT);
+
+        // To limit audio and/or video bandwidth:
+        // config.setMaxAudioBitrate(20);
+        // config.setMaxVideoBitrate(256);
+
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
@@ -253,14 +245,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     private void initializeSkylinkConnection() {
-//        if (skylinkConnection == null) {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skylinkConnection.init(getString(R.string.app_key),
                 getSkylinkConfig(), this.applicationContext);
         // Set listeners to receive callbacks when events are triggered
         setListeners();
-//        }
     }
 
     /**
@@ -278,6 +268,52 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         } else {
             return false;
         }
+    }
+
+    /**
+     * Get the number of remote Peers connected to us.
+     *
+     * @return
+     */
+    private int getNumPeers() {
+        String[] peerIdList = skylinkConnection.getPeerIdList();
+        if (peerIdList == null) {
+            return 0;
+        }
+        // The first Peer is the local Peer.
+        return peerIdList.length - 1;
+    }
+
+    /**
+     * Get peerId of a Peer using SkylinkConnection API.
+     *
+     * @param index 0 for self Peer, 1 onwards for remote Peer(s).
+     * @return Desired peerId or null if not available.
+     */
+    private String getPeerId(int index) {
+        if (skylinkConnection == null) {
+            return null;
+        }
+        String[] peerIdList = skylinkConnection.getPeerIdList();
+        // Ensure index does not exceed max index on peerIdList.
+        if (index <= peerIdList.length - 1) {
+            return peerIdList[index];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Video View of a given Peer using SkylinkConnection API.
+     *
+     * @param peerId null for self Peer.
+     * @return Desired Video View or null if not present.
+     */
+    private SurfaceViewRenderer getVideoView(String peerId) {
+        if (skylinkConnection == null) {
+            return null;
+        }
+        return skylinkConnection.getVideoView(peerId);
     }
 
     /***
@@ -309,9 +345,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      * Add or update remote Peer's VideoView into the app.
      *
      * @param remotePeerId
-     * @param videoView
      */
-    private void addRemoteView(String remotePeerId, SurfaceViewRenderer videoView) {
+    private void addRemoteView(String remotePeerId) {
+        SurfaceViewRenderer videoView = getVideoView(remotePeerId);
         if (videoView == null) {
             return;
         }
@@ -325,7 +361,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         for (FrameLayout peerFrameLayout : videoViewLayouts) {
             if (peerFrameLayout.getChildCount() == 0) {
                 peerFrameLayout.addView(videoView);
-                videoViewRemoteMap.put(remotePeerId, videoView);
                 break;
             }
         }
@@ -336,13 +371,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      */
     private void addViews() {
         // Add self VideoView
-        addSelfView(videoViewSelf);
+        addSelfView(getVideoView(null));
 
         // Add remote VideoView(s)
-        for (Map.Entry<String, SurfaceViewRenderer> entry : videoViewRemoteMap.entrySet()) {
-            String peerId = entry.getKey();
-            SurfaceViewRenderer videoView = entry.getValue();
-            addRemoteView(peerId, videoView);
+        int maxIndex = getNumPeers();
+        for (int i = 0; i < maxIndex; i++) {
+            // Iterate over the remote Peers only (first Peer is self Peer)
+            addRemoteView(getPeerId(i + 1));
         }
     }
 
@@ -350,26 +385,23 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      * Remove all videoViews from layouts.
      */
     private void emptyLayout() {
-        for (Map.Entry<String, SurfaceViewRenderer> entry : videoViewRemoteMap.entrySet()) {
-            SurfaceViewRenderer videoView = entry.getValue();
-            Utils.removeViewFromParent(videoView);
+        int maxIndex = getNumPeers();
+        for (int i = 0; i < maxIndex; i++) {
+            // Iterate over the remote Peers only (first Peer is self Peer)
+            Utils.removeViewFromParent(getVideoView(getPeerId(i + 1)));
         }
     }
 
     /**
-     * Remove any existing VideoView of a remote Peer and remove remote Peer from record.
+     * Remove any existing VideoView of a remote Peer.
      *
      * @param remotePeerId
      */
     private void removePeerView(String remotePeerId) {
-        if (videoViewRemoteMap != null && videoViewRemoteMap.containsKey(remotePeerId)) {
-            SurfaceViewRenderer viewToRemove = videoViewRemoteMap.get(remotePeerId);
-            // Remove Peer view from layout.
-            for (FrameLayout peerFrameLayout : videoViewLayouts) {
-                peerFrameLayout.removeView(viewToRemove);
-            }
-            // Remove Peer from record.
-            videoViewRemoteMap.remove(remotePeerId);
+        SurfaceViewRenderer viewToRemove = getVideoView(remotePeerId);
+        // Remove Peer view from layout.
+        for (FrameLayout peerFrameLayout : videoViewLayouts) {
+            peerFrameLayout.removeView(viewToRemove);
         }
     }
 
@@ -438,7 +470,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (videoView == null) {
             return;
         }
-        videoViewSelf = videoView;
         addSelfView(videoView);
     }
 
@@ -454,7 +485,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
-        addRemoteView(remotePeerId, videoView);
+        addRemoteView(remotePeerId);
     }
 
     @Override

@@ -49,12 +49,9 @@ public class VideoCallFragment extends Fragment
     private static final String ARG_SECTION_NUMBER = "section_number";
     // Constants for configuration change
     private static final String BUNDLE_CONNECTING = "connecting";
-    private static final String BUNDLE_PEER_ID = "peerId";
     private static final String BUNDLE_AUDIO_MUTED = "audioMuted";
     private static final String BUNDLE_VIDEO_MUTED = "videoMuted";
 
-    private static SurfaceViewRenderer videoViewSelf;
-    private static SurfaceViewRenderer videoViewRemote;
     private static SkylinkConnection skylinkConnection;
     // Indicates if camera should be toggled after returning to app.
     // Generally, it should match whether it was toggled when moving away from app.
@@ -70,14 +67,11 @@ public class VideoCallFragment extends Fragment
     private Button disconnectButton;
     private Button btnEnterRoom;
     private EditText etRoomName;
-    private String connectionStatus;
     private boolean connecting = false;
     private String roomName;
-    private String peerId;
     private boolean audioMuted;
     private boolean videoMuted;
     private Activity parentActivity;
-    private AudioRouter audioRouter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -110,18 +104,17 @@ public class VideoCallFragment extends Fragment
             if (isConnected()) {
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
-                peerId = savedInstanceState.getString(BUNDLE_PEER_ID, null);
                 audioMuted = savedInstanceState.getBoolean(BUNDLE_AUDIO_MUTED);
                 videoMuted = savedInstanceState.getBoolean(BUNDLE_VIDEO_MUTED);
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
-                addSelfView(videoViewSelf);
-                addRemoteView(peerId, videoViewRemote);
+                addSelfView(getVideoView(null));
+                addRemoteView();
             } else if (connecting) {
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
                 onConnectingUIChange();
-                addSelfView(videoViewSelf);
+                addSelfView(getVideoView(null));
             } else {
                 onDisconnectUIChange();
             }
@@ -214,7 +207,7 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        if (videoViewSelf == null) {
+        if (getVideoView(null) == null) {
             return;
         }
         // Toggle camera back to previous state if required.
@@ -248,7 +241,6 @@ public class VideoCallFragment extends Fragment
         super.onSaveInstanceState(outState);
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_CONNECTING, connecting);
-        outState.putString(BUNDLE_PEER_ID, peerId);
         outState.putBoolean(BUNDLE_AUDIO_MUTED, audioMuted);
         outState.putBoolean(BUNDLE_VIDEO_MUTED, videoMuted);
     }
@@ -342,8 +334,8 @@ public class VideoCallFragment extends Fragment
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
-        //AudioVideo config options can be NO_AUDIO_NO_VIDEO, AUDIO_ONLY, VIDEO_ONLY,
-        // AUDIO_AND_VIDEO;
+        // AudioVideo config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         config.setHasPeerMessaging(true);
@@ -354,6 +346,7 @@ public class VideoCallFragment extends Fragment
         // To limit audio and/or video bandwidth:
         // config.setMaxAudioBitrate(20);
         // config.setMaxVideoBitrate(256);
+
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
@@ -387,6 +380,38 @@ public class VideoCallFragment extends Fragment
         } else {
             return false;
         }
+    }
+
+    /**
+     * Get peerId of a Peer using SkylinkConnection API.
+     *
+     * @param index 0 for self Peer, 1 onwards for remote Peer(s).
+     * @return Desired peerId or null if not available.
+     */
+    private String getPeerId(int index) {
+        if (skylinkConnection == null) {
+            return null;
+        }
+        String[] peerIdList = skylinkConnection.getPeerIdList();
+        // Ensure index does not exceed max index on peerIdList.
+        if (index <= peerIdList.length - 1) {
+            return peerIdList[index];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Video View of a given Peer using SkylinkConnection API.
+     *
+     * @param peerId null for self Peer.
+     * @return Desired Video View or null if not present.
+     */
+    private SurfaceViewRenderer getVideoView(String peerId) {
+        if (skylinkConnection == null) {
+            return null;
+        }
+        return skylinkConnection.getVideoView(peerId);
     }
 
     /***
@@ -430,7 +455,6 @@ public class VideoCallFragment extends Fragment
         if (peer != null) {
             linearLayout.removeView(peer);
         }
-        videoViewRemote = null;
 
         btnEnterRoom.setVisibility(View.VISIBLE);
         etRoomName.setEnabled(true);
@@ -489,11 +513,16 @@ public class VideoCallFragment extends Fragment
 
     /**
      * Add or update remote Peer's VideoView into the app.
-     *
-     * @param remotePeerId
-     * @param videoView
      */
-    private void addRemoteView(String remotePeerId, SurfaceViewRenderer videoView) {
+    private void addRemoteView() {
+        SurfaceViewRenderer videoView;
+        String remotePeerId = getPeerId(1);
+        // Proceed only if the first (& only) remote Peer has joined.
+        if (remotePeerId == null) {
+            return;
+        } else {
+            videoView = getVideoView(remotePeerId);
+        }
         if (videoView == null) {
             return;
         }
@@ -518,8 +547,6 @@ public class VideoCallFragment extends Fragment
         Utils.removeViewFromParent(videoView);
         // Add view to parent
         linearLayout.addView(videoView);
-
-        this.peerId = remotePeerId;
     }
 
     /**
@@ -647,8 +674,7 @@ public class VideoCallFragment extends Fragment
         if (videoView == null) {
             return;
         }
-        videoViewSelf = videoView;
-        addSelfView(videoView);
+        addSelfView(getVideoView(null));
     }
 
     @Override
@@ -663,8 +689,7 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
-        videoViewRemote = videoView;
-        addRemoteView(remotePeerId, videoView);
+        addRemoteView();
     }
 
     @Override
@@ -709,19 +734,18 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message) {
         Toast.makeText(parentActivity, "Your peer has left the room", Toast.LENGTH_SHORT).show();
-        if (remotePeerId != null && remotePeerId.equals(this.peerId)) {
-            this.peerId = null;
+        if (remotePeerId != null && remotePeerId.equals(getPeerId(1))) {
             View peerView = linearLayout.findViewWithTag("peer");
             linearLayout.removeView(peerView);
-            videoViewRemote = null;
 
             // Resize self view to better make use of screen.
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-            if (videoViewSelf != null) {
-                videoViewSelf.setLayoutParams(params);
-                addSelfView(videoViewSelf);
+            SurfaceViewRenderer videoView = getVideoView(null);
+            if (videoView != null) {
+                videoView.setLayoutParams(params);
+                addSelfView(videoView);
             }
         }
     }
