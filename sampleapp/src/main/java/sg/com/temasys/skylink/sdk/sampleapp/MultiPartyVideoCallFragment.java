@@ -73,13 +73,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+
             // Toggle camera back to previous state if required.
             if (toggleCamera) {
-                try {
-                    skylinkConnection.toggleCamera();
-                    toggleCamera = false;
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage());
+                if (getVideoView(null) != null) {
+                    try {
+                        skylinkConnection.toggleCamera();
+                        toggleCamera = false;
+                    } catch (SkylinkException e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             }
 
@@ -145,16 +148,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        if (getVideoView(null) == null) {
-            return;
-        }
+
         // Toggle camera back to previous state if required.
         if (toggleCamera) {
-            try {
-                skylinkConnection.toggleCamera();
-                toggleCamera = false;
-            } catch (SkylinkException e) {
-                Log.e(TAG, e.getMessage());
+            if (getVideoView(null) != null) {
+                try {
+                    skylinkConnection.toggleCamera();
+                    toggleCamera = false;
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage());
+                }
             }
         }
     }
@@ -162,14 +165,17 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onPause() {
         super.onPause();
+
         // Stop local video source only if not changing orientation
         if (!parentActivity.isChangingConfigurations()) {
-            // Stop local video source if it's on.
-            try {
-                // Record if need to toggleCamera when resuming.
-                toggleCamera = skylinkConnection.toggleCamera(false);
-            } catch (SkylinkException e) {
-                Log.e(TAG, e.getMessage());
+            if (getVideoView(null) != null) {
+                // Stop local video source if it's on.
+                try {
+                    // Record if need to toggleCamera when resuming.
+                    toggleCamera = skylinkConnection.toggleCamera(false);
+                } catch (SkylinkException e) {
+                    Log.e(TAG, e.getMessage());
+                }
             }
         }
     }
