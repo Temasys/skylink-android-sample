@@ -31,9 +31,9 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
-import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NO;
-import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NON_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -633,12 +633,16 @@ public class VideoCallFragment extends Fragment
     public void onDisconnect(int errorCode, String message) {
         onDisconnectUIChange();
         connecting = false;
-        String log = message;
+        String log = "";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
-            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
-                    + message;
+            log += "We have successfully disconnected from the room.";
+        } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
+            log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
-        Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
+        log += " Server message: " + message;
+
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        log = "[onDisconnect] " + log;
         Log.d(TAG, log);
     }
 

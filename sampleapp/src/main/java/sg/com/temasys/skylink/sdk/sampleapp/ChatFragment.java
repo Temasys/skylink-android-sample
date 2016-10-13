@@ -388,12 +388,16 @@ public class ChatFragment extends MultiPartyFragment
         // Reset chat collection
         chatMessageCollection.clear();
 
-        String log = message;
+        String log = "";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
-            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
-                    + message;
+            log += "We have successfully disconnected from the room.";
+        } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
+            log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
+        log += " Server message: " + message;
+
         Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        log = "[onDisconnect] " + log;
         Log.d(TAG, log);
     }
 

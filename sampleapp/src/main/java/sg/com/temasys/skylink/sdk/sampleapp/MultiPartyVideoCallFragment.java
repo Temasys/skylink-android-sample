@@ -25,9 +25,9 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 
-import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NO;
-import static sg.com.temasys.skylink.sdk.rtc.InfoCode.CAM_SWITCH_NON_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
 
 /**
  * Created by janidu on 3/3/15.
@@ -431,12 +431,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        String log = message;
+        String log = "";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
-            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
-                    + message;
+            log += "We have successfully disconnected from the room.";
+        } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
+            log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
-        Toast.makeText(applicationContext, log, Toast.LENGTH_LONG).show();
+        log += " Server message: " + message;
+
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        log = "[onDisconnect] " + log;
         Log.d(TAG, log);
     }
 

@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/ll_video_call"
+<LinearLayout android:id="@+id/ll_video_call"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    >
+    android:orientation="horizontal">
 
     <LinearLayout
         android:id="@+id/ll_self_video"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <EditText
             android:id="@+id/et_room_name"
@@ -21,7 +18,7 @@
             android:layout_gravity="center_vertical"
             android:hint="@string/enter_room_name"
             android:text=""
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Button
             android:id="@+id/btn_enter_room"
@@ -29,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginBottom="5dp"
-            android:text="@string/enter_room"/>
+            android:text="@string/enter_room" />
 
 
         <Button
@@ -38,8 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/mute_audio"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/toggle_video"
@@ -47,8 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/mute_video"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/toggle_camera"
@@ -56,8 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/toggle_camera"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/disconnect"
@@ -65,8 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/disconnect"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
     </LinearLayout>
 

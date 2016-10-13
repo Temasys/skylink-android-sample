@@ -274,12 +274,16 @@ public class AudioCallFragment extends Fragment
     public void onDisconnect(int errorCode, String message) {
         onDisconnectUIChange();
 
-        String log = message;
+        String log = "";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
-            log = "[onDisconnect] We have successfully disconnected from the room. Server message: "
-                    + message;
+            log += "We have successfully disconnected from the room.";
+        } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
+            log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
-        Toast.makeText(parentActivity, "[onDisconnect] " + log, Toast.LENGTH_LONG).show();
+        log += " Server message: " + message;
+
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        log = "[onDisconnect] " + log;
         Log.d(TAG, log);
     }
 
