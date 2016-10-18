@@ -192,7 +192,7 @@ class Utils {
 
             // Base64-encode the hmac
             result = Base64
-                    .encodeToString(rawHmac, android.util.Base64.DEFAULT);
+                    .encodeToString(rawHmac, Base64.DEFAULT);
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to generate HMAC : " + e.getMessage(), e);

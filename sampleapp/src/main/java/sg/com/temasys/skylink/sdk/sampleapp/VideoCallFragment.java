@@ -357,6 +357,12 @@ public class VideoCallFragment extends Fragment
         // config.setMaxAudioBitrate(20);
         // config.setMaxVideoBitrate(256);
 
+        // To set the start up camera to back instead of front (default):
+        // config.setDefaultCameraBack();
+        // To set resolutions:
+        // config.setVideoHeight(720);
+        // config.setVideoWidth(1280);
+
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
