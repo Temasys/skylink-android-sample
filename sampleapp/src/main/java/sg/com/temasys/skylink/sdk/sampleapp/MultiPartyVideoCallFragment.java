@@ -1,16 +1,23 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -19,6 +26,7 @@ import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.RecordingListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -34,7 +42,7 @@ import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
  */
 public class MultiPartyVideoCallFragment extends Fragment implements
         MediaListener, RemotePeerListener,
-        LifeCycleListener {
+        LifeCycleListener, RecordingListener {
 
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
     private static final String ROOM_NAME = Constants.ROOM_NAME_MULTI;
@@ -67,6 +75,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         FrameLayout peer3Layout = (FrameLayout) rootView.findViewById(R.id.peer_3);
 
         videoViewLayouts = new FrameLayout[]{selfLayout, peer1Layout, peer2Layout, peer3Layout};
+
+        // Set each remote Peer FrameLayout to be able to provide recording option.
+        for (FrameLayout peerFrameLayout : videoViewLayouts) {
+            if (peerFrameLayout != selfLayout) {
+                peerFrameLayout.setOnClickListener(getRecordingAlertDialog());
+            }
+        }
+
 
         String appKey = getString(R.string.app_key);
         String appSecret = getString(R.string.app_secret);
@@ -104,6 +120,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         return rootView;
     }
+
 
     private void connectToRoom(String appKey, String appSecret) {
         // Initialize the skylink connection
@@ -270,6 +287,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setMediaListener(this);
             skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setRecordingListener(this);
             return true;
         } else {
             return false;
@@ -322,6 +340,57 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         return skylinkConnection.getVideoView(peerId);
     }
 
+    /**
+     * Generates an OnClickListener that onClick:
+     * Build and show an AlertDialog that allows user to select Recording options:
+     * - Start Recording
+     * - Stop Recording
+     *
+     * @return OnClickListener that
+     */
+    private OnClickListener getRecordingAlertDialog() {
+
+        // Create DialogInterface onClickListener for Start Recording.
+        final DialogInterface.OnClickListener startRecordingOnClickListener =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String log = "[SRS][SA] startRecording=" +
+                                skylinkConnection.startRecording() + ", isRecording=" +
+                                skylinkConnection.isRecording() + ".";
+                        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, log);
+                    }
+                };
+
+        // Create DialogInterface onClickListener for Stop Recording.
+        final DialogInterface.OnClickListener stopRecordingOnClickListener =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String log = "[SRS][SA] stopRecording=" +
+                                skylinkConnection.stopRecording() + ", isRecording=" +
+                                skylinkConnection.isRecording() + ".";
+                        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, log);
+                    }
+                };
+
+        // Create and return onClickListener.
+        return new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder videoLinkDialogBuilder = new AlertDialog.Builder(getContext());
+                videoLinkDialogBuilder.setTitle("Recording Options");
+                videoLinkDialogBuilder
+                        .setPositiveButton("Start Recording", startRecordingOnClickListener);
+                videoLinkDialogBuilder
+                        .setNegativeButton("Stop Recording", stopRecordingOnClickListener);
+                videoLinkDialogBuilder.show();
+            }
+        };
+    }
+
     /***
      * UI helper methods
      */
@@ -339,7 +408,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         videoViewLayouts[0].addView(videoView);
 
         // Allow self view to switch between different cameras (if any) when tapped.
-        videoView.setOnClickListener(new View.OnClickListener() {
+        videoView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 skylinkConnection.switchCamera();
@@ -538,6 +607,60 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onOpenDataConnection(String remotePeerId) {
         Log.d(TAG, "onOpenDataConnection for Peer " + remotePeerId + ".");
+    }
+
+    /**
+     * Recording Listener Callbacks - triggered during Recording events.
+     */
+
+    @Override
+    public void onRecordingStart(String recordingId) {
+        String log = "[SRS][SA] Recording Started! isRecording=" +
+                skylinkConnection.isRecording() + ".";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
+    }
+
+    @Override
+    public void onRecordingStop(String recordingId) {
+        String log = "[SRS][SA] Recording Stopped! isRecording=" +
+                skylinkConnection.isRecording() + ".";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        Log.d(TAG, log);
+    }
+
+    @Override
+    public void onRecordingVideoLink(String recordingId, String peerId, String videoLink) {
+        String peer = " Mixin";
+        if (peerId != null) {
+            peer = " Peer " + peerId + "'s";
+        }
+        String msg = "Recording:" + recordingId + peer + " video link:\n" + videoLink;
+
+        // Create a clickable video link.
+        final SpannableString videoLinkClickable = new SpannableString(msg);
+        Linkify.addLinks(videoLinkClickable, Linkify.WEB_URLS);
+
+        // Create TextView for video link.
+        final TextView msgTxtView = new TextView(getContext());
+        msgTxtView.setText(videoLinkClickable);
+        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // Create AlertDialog to present video link.
+        AlertDialog.Builder videoLinkDialogBuilder = new AlertDialog.Builder(getContext());
+        videoLinkDialogBuilder.setTitle("Recording: " + recordingId + " Video link");
+        videoLinkDialogBuilder.setView(msgTxtView);
+        videoLinkDialogBuilder.setPositiveButton("OK", null);
+        videoLinkDialogBuilder.show();
+        Log.d(TAG, "[SRS][SA] " + msg);
+    }
+
+    @Override
+    public void onRecordingError(String recordingId, int errorCode, String description) {
+        String error = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
+                "! Error: " + description;
+        Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+        Log.e(TAG, error);
     }
 
 }
