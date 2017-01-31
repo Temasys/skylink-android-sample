@@ -11,8 +11,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
-
 /**
  * Created by xiangrong on 16/2/16.
  */
@@ -185,16 +183,15 @@ public class MultiPartyFragment extends Fragment {
     /**
      * Populate peerList from a list of PeerIds of remote Peers, using info from SkylinkConnection.
      *
-     * @param peerIdList        String Array of PeerIds of remote Peer(s) in the room.
-     * @param skylinkConnection SkylinkConnection instance serving this Sample.
+     * @param peerIdList String Array of PeerIds of remote Peer(s) in the room.
      */
-    void popPeerList(String[] peerIdList, SkylinkConnection skylinkConnection) {
+    void popPeerList(String[] peerIdList) {
         // Clear peerList
         peerList.clear();
         // Populate peerList
         for (int i = 0; i < peerIdList.length; ++i) {
             String peerId = peerIdList[i];
-            String nick = Utils.getUserNick(skylinkConnection, peerId);
+            String nick = Utils.getNick(peerId);
             Pair<String, String> peer = new Pair<>(peerId, nick);
             peerList.add(peer);
         }

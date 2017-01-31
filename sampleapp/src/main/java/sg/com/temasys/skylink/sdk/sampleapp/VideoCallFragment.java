@@ -34,6 +34,7 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -710,30 +711,49 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
         addRemoteView();
+        String log = "Received new ";
+        if (videoView != null) {
+            log += "Video ";
+        } else {
+            log += "Audio ";
+        }
+        log += "from Peer " + Utils.getPeerIdNick(remotePeerId) + ".\r\n";
+
+        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
+                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
     }
 
     @Override
     public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        String message = null;
-        if (isMuted) {
-            message = "Your peer muted their audio";
-        } else {
-            message = "Your peer unmuted their audio";
-        }
+        String log = "Peer " + Utils.getPeerIdNick(remotePeerId) +
+                " Audio mute status via:\r\nCallback: " + isMuted + ".";
 
-        Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
+        // It is also possible to get the mute status via the UserInfo.
+        UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
+        if(userInfo != null) {
+            log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
+        }
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
     }
 
     @Override
-    public void onRemotePeerVideoToggle(String peerId, boolean isMuted) {
-        String message = null;
-        if (isMuted) {
-            message = "Your peer muted video";
-        } else {
-            message = "Your peer unmuted their video";
-        }
+    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
+        String log = "Peer " + Utils.getPeerIdNick(remotePeerId) +
+                " Video mute status via:\r\nCallback: " + isMuted + ".";
 
-        Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
+        // It is also possible to get the mute status via the UserInfo.
+        UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
+        if(userInfo != null) {
+            log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
+        }
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
     }
 
     /**
@@ -743,16 +763,13 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        Toast.makeText(parentActivity, "Your peer has just connected", Toast.LENGTH_SHORT).show();
-        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
-        Log.d(TAG, "isAudioStereo " + remotePeerUserInfo.isAudioStereo());
-        Log.d(TAG, "video height " + remotePeerUserInfo.getVideoHeight());
-        Log.d(TAG, "video width " + remotePeerUserInfo.getVideoHeight());
-        Log.d(TAG, "video frameRate " + remotePeerUserInfo.getVideoFps());
+        String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
     }
 
     @Override
-    public void onRemotePeerLeave(String remotePeerId, String message) {
+    public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
         Toast.makeText(parentActivity, "Your peer has left the room", Toast.LENGTH_SHORT).show();
         if (remotePeerId != null && remotePeerId.equals(getPeerId(1))) {
             View peerView = linearLayout.findViewWithTag("peer");
@@ -768,6 +785,33 @@ public class VideoCallFragment extends Fragment
                 addSelfView(videoView);
             }
         }
+        int numRemotePeers = getNumRemotePeers();
+        String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
+                message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
+    }
+
+    @Override
+    public void onRemotePeerConnectionRefreshed(String remotePeerId, Object userData, boolean hasDataChannel, boolean wasIceRestarted) {
+        String peer = "Skylink Media Relay server";
+        if (remotePeerId != null) {
+            peer = "Peer " + Utils.getPeerIdNick(remotePeerId);
+        }
+        String log = "Your connection with " + peer + " has just been refreshed";
+        if (wasIceRestarted) {
+            log += ", with ICE restarted.";
+        } else {
+            log += ".\r\n";
+        }
+
+        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
+                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
     }
 
     @Override

@@ -38,4 +38,10 @@
 
     <string name="warn_no_peer_message">There is no peer in the room to send a message to.</string>
     <string name="warn_no_sel_message">You have not selected a Peer to send a message to.</string>
+    <string name="restart_all_ice">Restart all (ICE)</string>
+    <string name="restart_ice">Restart (ICE)</string>
+    <string name="restart_all">Restart all</string>
+    <string name="restart">Restart</string>
+    <string name="recording_stop">Recording stop</string>
+    <string name="recording_start">Recording start</string>
 </resources>

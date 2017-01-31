@@ -20,6 +20,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 
 class Utils {
 
@@ -35,12 +36,11 @@ class Utils {
      * Returns the userData of a Peer as a String.
      * If there is no userData, returns the empty string, "".
      *
-     * @param skylinkConnection
-     * @param peerId            The PeerId for which to search. Use null for self (local Peer).
+     * @param peerId The PeerId for which to search. Use null for self (local Peer).
      * @return
      */
-    public static String getUserDataString(SkylinkConnection skylinkConnection, String peerId) {
-        Object userDataObject = skylinkConnection.getUserData(peerId);
+    public static String getUserDataString(String peerId) {
+        Object userDataObject = SkylinkConnection.getInstance().getUserData(peerId);
         String userDataString = "";
         if (userDataObject != null) {
             userDataString = userDataObject.toString();
@@ -49,15 +49,62 @@ class Utils {
     }
 
     /**
-     * Returns the nickname of a Peer as the userData as a string.
-     * If there is no userData, return the PeerId.
+     * Returns the userData of a Peer as a String.
+     * If there is no userData, returns the empty string, "".
      *
-     * @param skylinkConnection
+     * @param userInfo The Peer's UserInfo for which to search. Use null for self (local Peer).
+     * @return
+     */
+    public static String getUserDataString(UserInfo userInfo) {
+        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        if(userInfo == null) {
+            userInfo = skylinkConnection.getUserInfo(null);
+        }
+        if(userInfo == null) {
+            return "";
+        }
+
+        Object userDataObject = userInfo.getUserData();
+        String userDataString = "";
+        if (userDataObject != null) {
+            userDataString = userDataObject.toString();
+        }
+        return userDataString;
+    }
+
+    /**
+     * Returns the PeerId followed by userData in brackets of a Peer.
+     * This is often useful for displaying a Peer's identity in UI or logs.
+     *
      * @param peerId
      * @return
      */
-    public static String getUserNick(SkylinkConnection skylinkConnection, String peerId) {
-        String nick = getUserDataString(skylinkConnection, peerId);
+    public static String getPeerIdNick(String peerId) {
+        return peerId + "(" + getUserDataString(peerId) + ")";
+    }
+
+    /**
+     * Returns the PeerId followed by userData in brackets of a Peer.
+     * This is often useful for displaying a Peer's identity in UI or logs.
+     *
+     *
+     * @param peerId
+     * @param userInfo
+     * @return
+     */
+    public static String getPeerIdNick(String peerId, UserInfo userInfo) {
+        return peerId + "(" + getUserDataString(userInfo) + ")";
+    }
+
+    /**
+     * Returns the nickname of a Peer as the userData as a string.
+     * If there is no userData, return the PeerId.
+     *
+     * @param peerId
+     * @return
+     */
+    public static String getNick(String peerId) {
+        String nick = getUserDataString(peerId);
         if ("".equals(nick)) {
             nick = peerId;
         }
@@ -230,4 +277,32 @@ class Utils {
         }
     }
 
+    /**
+     * Get the number of remote Peers connected to us.
+     *
+     * @return
+     */
+    public static int getNumRemotePeers() {
+        int totalInRoom = getTotalInRoom();
+        if ( totalInRoom == 0) {
+            return 0;
+        }
+        // The first Peer is the local Peer.
+        return totalInRoom - 1;
+    }
+
+    /**
+     * Get total number of Peers in room, including self Peer.
+     *
+     * @return
+     */
+    public static int getTotalInRoom() {
+        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        String[] peerIdList = skylinkConnection.getPeerIdList();
+        if (peerIdList == null) {
+            return 0;
+        }
+        // Size of array is number of Peers in room.
+        return peerIdList.length;
+    }
 }

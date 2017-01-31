@@ -33,6 +33,9 @@ import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
+import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -103,8 +106,8 @@ public class FileTransferFragment extends MultiPartyFragment
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
                 // Populate peerList
-                popPeerList(savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST),
-                        skylinkConnection);
+                popPeerList(savedInstanceState.getStringArray(BUNDLE_PEER_ID_LIST)
+                );
                 // Set the appropriate UI if already connected.
                 onConnectUIChange();
             }
@@ -550,8 +553,6 @@ public class FileTransferFragment extends MultiPartyFragment
      */
 
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId + " has joined the room",
-                Toast.LENGTH_SHORT).show();
         // [MultiParty]
         //When remote peer joins room, keep track of user and update UI.
         // If Peer has no userData, use an empty string for nick.
@@ -567,6 +568,47 @@ public class FileTransferFragment extends MultiPartyFragment
             Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
                     MY_USER_NAME);
         }
+        String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
+    }
+
+    @Override
+    public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
+        // [MultiParty]
+        // Remove the Peer.
+        removePeerRadioBtn(remotePeerId);
+
+        //Set room status if there are no more peers.
+        if (peerList.size() == 0) {
+            peerJoined = false;
+            // Update textview to show room status
+            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
+                    MY_USER_NAME);
+        }
+
+        int numRemotePeers = getNumRemotePeers();
+        String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
+                message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
+    }
+
+    @Override
+    public void onRemotePeerConnectionRefreshed(String remotePeerId, Object userData, boolean hasDataChannel, boolean wasIceRestarted) {
+        String peer = "Skylink Media Relay server";
+        if (remotePeerId != null) {
+            peer = "Peer " + Utils.getPeerIdNick(remotePeerId);
+        }
+        String log = "Your connection with " + peer + " has just been refreshed";
+        if (wasIceRestarted) {
+            log += ", with ICE restarted.";
+        } else {
+            log += ".\r\n";
+        }
+
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, log);
     }
 
     @Override
@@ -594,23 +636,6 @@ public class FileTransferFragment extends MultiPartyFragment
     private String getDownloadedFilePath() {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         return path.getAbsolutePath() + File.separator + fileNameDownloaded;
-    }
-
-
-    public void onRemotePeerLeave(String remotePeerId, String message) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId + " has left the room",
-                Toast.LENGTH_SHORT).show();
-        // [MultiParty]
-        // Remove the Peer.
-        removePeerRadioBtn(remotePeerId);
-
-        //Set room status if there are no more peers.
-        if (peerList.size() == 0) {
-            peerJoined = false;
-            // Update textview to show room status
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
-                    MY_USER_NAME);
-        }
     }
 
 }
