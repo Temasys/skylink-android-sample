@@ -9,6 +9,7 @@
     <string name="title_section4"> File Transfer </string>
     <string name="title_section5"> Data Transfer </string>
     <string name="title_section6"> Multi-Party Video Call </string>
+    <string name="action_configuration"> Configuration </string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_build_info">Build information</string>
@@ -44,4 +45,5 @@
     <string name="restart">Restart</string>
     <string name="recording_stop">Recording stop</string>
     <string name="recording_start">Recording start</string>
+
 </resources>

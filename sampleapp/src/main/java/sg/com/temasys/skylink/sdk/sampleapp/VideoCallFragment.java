@@ -30,6 +30,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
@@ -41,8 +43,10 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
  */
 public class VideoCallFragment extends Fragment
         implements LifeCycleListener, MediaListener, RemotePeerListener {
-    public static final String ROOM_NAME = Constants.ROOM_NAME_VIDEO;
-    public static final String MY_USER_NAME = "videoCallUser";
+
+    private String ROOM_NAME;
+    private String MY_USER_NAME;
+
     //set height width for self-video when in call
     public static final int WIDTH = 350;
     public static final int HEIGHT = 350;
@@ -77,12 +81,14 @@ public class VideoCallFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Initialize views
+        ROOM_NAME = Config.ROOM_NAME_VIDEO;
+        MY_USER_NAME = Config.USER_NAME_VIDEO;
+
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
         linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
-
+        etRoomName.setText(ROOM_NAME.toString());
         toggleAudioButton = (Button) rootView.findViewById(R.id.toggle_audio);
         toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
         toggleCameraButton = (Button) rootView.findViewById(R.id.toggle_camera);
@@ -202,6 +208,7 @@ public class VideoCallFragment extends Fragment
         super.onCreate(savedInstanceState);
         // Allow volume to be controlled using volume keys
         parentActivity.setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+
     }
 
     @Override
@@ -285,6 +292,7 @@ public class VideoCallFragment extends Fragment
      */
     private void connectToRoom() {
         roomName = etRoomName.getText().toString();
+
         String toast = "";
         // If roomName is not set through the UI, get the default roomName from Constants
         if (roomName.isEmpty()) {
@@ -297,9 +305,6 @@ public class VideoCallFragment extends Fragment
         }
         Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
 
-        String appKey = getString(R.string.app_key);
-        String appSecret = getString(R.string.app_secret);
-
         // Initialize the skylink connection
         initializeSkylinkConnection();
 
@@ -308,12 +313,8 @@ public class VideoCallFragment extends Fragment
         // by an entity external to the App, such as an App server that holds the Skylink
         // App secret
         // In order to avoid keeping the App secret within the application
-        String skylinkConnectionString = Utils.
-                getSkylinkConnectionString(roomName,
-                        appKey,
-                        appSecret, new Date(),
-                        SkylinkConnection
-                                .DEFAULT_DURATION);
+        String skylinkConnectionString = Utils.getSkylinkConnectionString(
+                roomName, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         boolean connectFailed;
         connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
@@ -352,8 +353,6 @@ public class VideoCallFragment extends Fragment
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
-        config.setTimeout(Constants.TIME_OUT);
-
         // To limit audio and/or video bandwidth:
         // config.setMaxAudioBitrate(20);
         // config.setMaxVideoBitrate(256);
@@ -363,6 +362,8 @@ public class VideoCallFragment extends Fragment
         // To set resolutions:
         // config.setVideoHeight(720);
         // config.setVideoWidth(1280);
+
+        config.setTimeout(ConfigFragment.TIME_OUT);
 
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
@@ -376,7 +377,7 @@ public class VideoCallFragment extends Fragment
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
+        skylinkConnection.init(Config.getAppKey(),
                 getSkylinkConfig(), this.parentActivity.getApplicationContext());
         // Set listeners to receive callbacks when events are triggered
         setListeners();
@@ -735,7 +736,7 @@ public class VideoCallFragment extends Fragment
 
         // It is also possible to get the mute status via the UserInfo.
         UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
-        if(userInfo != null) {
+        if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
         }
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
@@ -749,7 +750,7 @@ public class VideoCallFragment extends Fragment
 
         // It is also possible to get the mute status via the UserInfo.
         UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
-        if(userInfo != null) {
+        if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
         }
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();

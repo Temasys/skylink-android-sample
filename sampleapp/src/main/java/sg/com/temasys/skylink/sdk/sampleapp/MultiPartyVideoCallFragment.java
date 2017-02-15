@@ -35,6 +35,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
@@ -49,9 +51,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         MediaListener, RemotePeerListener,
         LifeCycleListener, RecordingListener {
 
+    public String ROOM_NAME;
+    public String MY_USER_NAME;
+
+
+    public static final String KEY_SELF = "self";
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
-    private static final String ROOM_NAME = Constants.ROOM_NAME_MULTI;
-    private static final String MY_USER_NAME = "videoCallUser";
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     /**
@@ -74,6 +79,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        ROOM_NAME = Config.ROOM_NAME_PARTY;
+        MY_USER_NAME = Config.USER_NAME_PARTY;
 
         View rootView = inflater.inflate(R.layout.fragment_video_multiparty, container, false);
 
@@ -103,10 +111,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             }
         }
 
-
-        String appKey = getString(R.string.app_key);
-        String appSecret = getString(R.string.app_secret);
-
         // Check if it was an orientation change
         if (savedInstanceState != null) {
 
@@ -131,7 +135,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         // Try to connect to room if not yet connected.
         if (!isConnected()) {
-            connectToRoom(appKey, appSecret);
+            connectToRoom();
         }
 
         // Set the appropriate UI.
@@ -142,7 +146,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
 
-    private void connectToRoom(String appKey, String appSecret) {
+    private void connectToRoom() {
         // Initialize the skylink connection
         initializeSkylinkConnection();
 
@@ -151,12 +155,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         // by an entity external to the App,
         // such as an App server that holds the Skylink App secret.
         // This is to avoid keeping the App secret within the application
-        String skylinkConnectionString = Utils.
-                getSkylinkConnectionString(ROOM_NAME,
-                        appKey,
-                        appSecret, new Date(),
-                        SkylinkConnection
-                                .DEFAULT_DURATION);
+
+        String skylinkConnectionString = Utils.getSkylinkConnectionString(
+                ROOM_NAME, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         // The skylinkConnectionString should not be logged in production,
         // as it contains potentially sensitive information like the Skylink App key.
@@ -271,12 +272,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
-        config.setTimeout(Constants.TIME_OUT);
-
         // To limit audio and/or video bandwidth:
         // config.setMaxAudioBitrate(20);
         // config.setMaxVideoBitrate(256);
-
+        config.setTimeout(ConfigFragment.TIME_OUT);
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
@@ -290,7 +289,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
+        skylinkConnection.init(Config.getAppKey(),
                 getSkylinkConfig(), this.applicationContext);
         // Set listeners to receive callbacks when events are triggered
         setListeners();

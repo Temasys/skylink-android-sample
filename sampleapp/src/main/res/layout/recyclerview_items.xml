@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                    android:id="@+id/list_card_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    app:cardElevation="2dp"
+                                    card_view:cardBackgroundColor="#fff"
+                                    card_view:cardCornerRadius="1dp"
+                                    card_view:cardUseCompatPadding="true"
+                                    card_view:contentPadding="5dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:id="@+id/relativeLayout">
+
+        <RadioGroup
+            android:id="@+id/rgDefault"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </RadioGroup>
+
+        <ImageView
+            android:id="@+id/deleteImage"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="false"
+            android:layout_marginEnd="20dp"
+            android:layout_marginRight="20dp"
+            app:srcCompat="@android:drawable/ic_menu_delete"
+            android:layout_alignBottom="@+id/descTextview"/>
+
+        <TextView
+            android:id="@+id/descTextview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/subTextview"
+            android:layout_marginLeft="35dp"
+            android:text="Description"
+            android:textSize="12dp"/>
+
+        <ImageView
+            android:id="@+id/editImage"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="20dp"
+            app:srcCompat="@android:drawable/ic_menu_edit"
+            android:layout_above="@+id/deleteImage"
+            android:layout_alignRight="@+id/deleteImage"
+            android:layout_alignBottom="@+id/subTextview"/>
+
+        <TextView
+            android:id="@+id/subTextview"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textSize="13dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/descTextview"
+            android:layout_width="wrap_content"/>
+
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

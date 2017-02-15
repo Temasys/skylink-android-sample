@@ -29,6 +29,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
@@ -39,8 +41,9 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 public class ChatFragment extends MultiPartyFragment
         implements LifeCycleListener, RemotePeerListener, MessagesListener {
 
-    public static final String ROOM_NAME = Constants.ROOM_NAME_CHAT;
-    public static final String MY_USER_NAME = "chatRoomUser";
+    private String ROOM_NAME;
+    private String MY_USER_NAME;
+
     private static final String TAG = ChatFragment.class.getCanonicalName();
     private static final String ARG_SECTION_NUMBER = "section_number";
 
@@ -65,7 +68,9 @@ public class ChatFragment extends MultiPartyFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        //initialize views
+        ROOM_NAME = Config.ROOM_NAME_CHAT;
+        MY_USER_NAME = Config.USER_NAME_CHAT;
+
         View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
         listViewChats = (ListView) rootView.findViewById(R.id.lv_messages);
 
@@ -80,9 +85,6 @@ public class ChatFragment extends MultiPartyFragment
         btnSendServerMessage = (Button) rootView.findViewById(R.id.btn_send_server_message);
         btnSendP2PMessage = (Button) rootView.findViewById(R.id.btn_send_p2p_message);
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
-
-        String appKey = getString(R.string.app_key);
-        String appSecret = getString(R.string.app_secret);
 
         if (chatMessageCollection == null) {
             chatMessageCollection = new ArrayList();
@@ -117,13 +119,14 @@ public class ChatFragment extends MultiPartyFragment
             }
         } else {
             // [MultiParty]
+
             // Just set room details
             Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
         }
 
         // Try to connect to room if not yet connected.
         if (!isConnected()) {
-            connectToRoom(appKey, appSecret);
+            connectToRoom();
         }
 
         /** Defining a click event listener for the button "Send Server Message" */
@@ -182,6 +185,8 @@ public class ChatFragment extends MultiPartyFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("Set1", Config.ROOM_NAME_CHAT);
+
     }
 
     @Override
@@ -240,7 +245,7 @@ public class ChatFragment extends MultiPartyFragment
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(Constants.TIME_OUT);
+        config.setTimeout(ConfigFragment.TIME_OUT);
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
@@ -248,7 +253,7 @@ public class ChatFragment extends MultiPartyFragment
         return config;
     }
 
-    private void connectToRoom(String appKey, String appSecret) {
+    private void connectToRoom() {
         // Initialize the skylink connection
         initializeSkylinkConnection();
 
@@ -257,11 +262,8 @@ public class ChatFragment extends MultiPartyFragment
         // by an entity external to the App, such as an App server that holds the Skylink App
         // secret
         // In order to avoid keeping the App secret within the application
-        String skylinkConnectionString = Utils.
-                getSkylinkConnectionString(ROOM_NAME,
-                        appKey,
-                        appSecret, new Date(),
-                        SkylinkConnection.DEFAULT_DURATION);
+        String skylinkConnectionString = Utils.getSkylinkConnectionString(
+                ROOM_NAME, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
     }
@@ -269,7 +271,7 @@ public class ChatFragment extends MultiPartyFragment
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(getString(R.string.app_key),
+        skylinkConnection.init(Config.getAppKey(),
                 getSkylinkConfig(), parentActivity.getApplicationContext());
 
         //set listeners to receive callbacks when events are triggered

@@ -1,0 +1,119 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/currentKeyPlace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#d2d0d0"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/titleSelectedKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Current selected Key"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                tools:textColor="?attr/colorPrimary"
+                android:textIsSelectable="true"/>
+
+            <TextView
+                android:id="@+id/currentKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/titleSelectedKey"
+                android:text=""
+                android:textSize="16dp"
+                tools:textColor="?attr/colorPrimary"
+                android:textIsSelectable="true"/>
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/currentKey"
+                android:text=""
+                android:textSize="12dp"
+                tools:textColor="?attr/colorPrimary"/>
+
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:scrollbarAlwaysDrawVerticalTrack="true">
+
+            <LinearLayout
+                android:id="@+id/availableKeysPlace"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#d2d0d0"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/titleAvailableKeys"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Available Keys"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                    tools:textColor="?attr/colorPrimary"/>
+
+                <RadioGroup
+                    android:id="@+id/radio_grp_manage_smr"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/titleAvailableKeys"
+                    android:orientation="horizontal"
+                    >
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_manage_no_smr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="No smr"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_btn_manage_smr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="smr"/>
+
+                </RadioGroup>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rvKeyList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/radio_grp_manage_smr"
+                    android:layout_marginTop="10dp"
+                    android:scrollbars="vertical"/>
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fbtn_create_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginRight="10dp"
+                    android:clickable="true"
+                    app:fabSize="normal"
+                    app:srcCompat="@android:drawable/ic_input_add"/>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</FrameLayout>

@@ -24,6 +24,8 @@ import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
@@ -33,8 +35,11 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
  */
 public class AudioCallFragment extends Fragment
         implements LifeCycleListener, MediaListener, RemotePeerListener {
-    public static final String ROOM_NAME = Constants.ROOM_NAME_AUDIO;
-    public static final String MY_USER_NAME = "audioCallUser";
+    // Inflate the layout for this fragment
+
+    private String ROOM_NAME;
+    private String MY_USER_NAME;
+
     private static final String TAG = AudioCallFragment.class.getCanonicalName();
     private static final String ARG_SECTION_NUMBER = "section_number";
 
@@ -53,8 +58,11 @@ public class AudioCallFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
 
+        ROOM_NAME = Config.ROOM_NAME_AUDIO;
+        MY_USER_NAME = Config.USER_NAME_AUDIO;
+
+        View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
         btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
 
@@ -77,13 +85,8 @@ public class AudioCallFragment extends Fragment
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                String appKey = getString(R.string.app_key);
-                String appSecret = getString(R.string.app_secret);
-                connectToRoom(appKey, appSecret);
-
+                connectToRoom();
                 onConnectUIChange();
-
             }
         });
         return rootView;
@@ -146,7 +149,7 @@ public class AudioCallFragment extends Fragment
         return false;
     }
 
-    private void connectToRoom(String appKey, String appSecret) {
+    private void connectToRoom() {
         // Initialize the skylink connection
         initializeSkylinkConnection();
 
@@ -155,12 +158,8 @@ public class AudioCallFragment extends Fragment
         // by an entity external to the App, such as an App server that holds the Skylink
         // App secret
         // In order to avoid keeping the App secret within the application
-        String skylinkConnectionString = Utils.
-                getSkylinkConnectionString(ROOM_NAME,
-                        appKey,
-                        appSecret, new Date(),
-                        SkylinkConnection
-                                .DEFAULT_DURATION);
+        String skylinkConnectionString = Utils.getSkylinkConnectionString(
+                ROOM_NAME, new Date(), SkylinkConnection.DEFAULT_DURATION);
 
         boolean connectFailed;
         connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
@@ -183,7 +182,7 @@ public class AudioCallFragment extends Fragment
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-        config.setTimeout(Constants.TIME_OUT);
+        config.setTimeout(ConfigFragment.TIME_OUT);
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
@@ -196,7 +195,7 @@ public class AudioCallFragment extends Fragment
 
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
-        skylinkConnection.init(getString(R.string.app_key), getSkylinkConfig(),
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(),
                 this.parentActivity.getApplicationContext());
 
         // Set listeners to receive callbacks when events are triggered
@@ -339,7 +338,7 @@ public class AudioCallFragment extends Fragment
 
         // It is also possible to get the mute status via the UserInfo.
         UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
-        if(userInfo != null) {
+        if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
         }
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
@@ -353,7 +352,7 @@ public class AudioCallFragment extends Fragment
 
         // It is also possible to get the mute status via the UserInfo.
         UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
-        if(userInfo != null) {
+        if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
         }
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();

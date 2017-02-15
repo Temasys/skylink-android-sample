@@ -11,6 +11,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
+
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -29,6 +32,7 @@ public class MainActivity extends ActionBarActivity
     private static final int CASE_FRAGMENT_FILE_TRANSFER = 3;
     private static final int CASE_FRAGMENT_DATA_TRANSFER = 4;
     private static final int CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL = 5;
+    private static final int CASE_FRAGMENT_CONFIG = 6;
     private static final String TAG = MainActivity.class.getName();
 
     /**
@@ -52,6 +56,10 @@ public class MainActivity extends ActionBarActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        // Load selected App key details
+        Config.loadSelectedAppKey(this);
+        Config.loadRoomUserNames(this);
     }
 
     @Override
@@ -127,6 +135,14 @@ public class MainActivity extends ActionBarActivity
             Log.d(TAG, versionInfo);
             Toast.makeText(this, versionInfo, Toast.LENGTH_LONG).show();
             return true;
+        } else if (id == R.id.action_configuration) {
+            // update the main content by replacing fragments
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            ConfigFragment fragment = new ConfigFragment();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .commit();
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -158,6 +174,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL:
                 fragmentToLaunch = new MultiPartyVideoCallFragment();
+                break;
+            case CASE_FRAGMENT_CONFIG:
+                fragmentToLaunch = new ConfigFragment();
                 break;
             default:
                 break;

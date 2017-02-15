@@ -5,6 +5,9 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.io.UnsupportedEncodingException;
@@ -13,7 +16,9 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.crypto.Mac;
@@ -21,8 +26,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.KeyInfo;
 
-class Utils {
+public class Utils {
 
     public static final String TIME_ZONE_UTC = "UTC";
     public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
@@ -57,10 +64,10 @@ class Utils {
      */
     public static String getUserDataString(UserInfo userInfo) {
         SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
-        if(userInfo == null) {
+        if (userInfo == null) {
             userInfo = skylinkConnection.getUserInfo(null);
         }
-        if(userInfo == null) {
+        if (userInfo == null) {
             return "";
         }
 
@@ -86,7 +93,6 @@ class Utils {
     /**
      * Returns the PeerId followed by userData in brackets of a Peer.
      * This is often useful for displaying a Peer's identity in UI or logs.
-     *
      *
      * @param peerId
      * @param userInfo
@@ -166,17 +172,14 @@ class Utils {
 
     /**
      * Returns the SkylinkConnectionString
+     * Required inputs are: App key, App secret, Room name, Room start time, and Room duration.
      *
      * @param roomName  Name of the room
-     * @param appKey    App Key
-     * @param secret    App secret
      * @param startTime Room Start Time
      * @param duration  Duration of the room in Hours
      * @return
      */
-    public static String getSkylinkConnectionString(String roomName, String appKey,
-                                                    String secret,
-                                                    Date startTime, int duration) {
+    public static String getSkylinkConnectionString(String roomName, Date startTime, int duration) {
 
         Log.d(TAG, "Room name " + roomName);
         Log.d(TAG, "startTime " + startTime);
@@ -187,7 +190,7 @@ class Utils {
 
         // Compute RFC 2104-compliant HMAC signature
         String cred = calculateRFC2104HMAC(roomName + "_" + duration + "_"
-                + dateString, secret);
+                + dateString, Config.getAppKeySecret());
         try {
             cred = URLEncoder.encode(cred, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -210,7 +213,7 @@ class Utils {
         */
         roomNameEncoded = uriStr.substring("http://host/".length(), uriStr.length() - 1);
 
-        return appKey + "/"
+        return Config.getAppKey() + "/"
                 + roomNameEncoded + "/" + dateString + "/" + duration + "?cred="
                 + cred;
     }
@@ -284,7 +287,7 @@ class Utils {
      */
     public static int getNumRemotePeers() {
         int totalInRoom = getTotalInRoom();
-        if ( totalInRoom == 0) {
+        if (totalInRoom == 0) {
             return 0;
         }
         // The first Peer is the local Peer.
@@ -304,5 +307,89 @@ class Utils {
         }
         // Size of array is number of Peers in room.
         return peerIdList.length;
+    }
+
+    /**
+     * Return a new JSONArray like the one provided,
+     * except less the element at the specified position.
+     * JSONArray.remove is not available for API levels before 19.
+     *
+     * @param arrayOld
+     * @param position
+     * @return
+     */
+    public static JSONArray jsonArrayRemove(JSONArray arrayOld, int position) {
+        JSONArray arrayNew = new JSONArray();
+        Log.e("Position", String.valueOf(position));
+        try {
+            int len = arrayOld.length();
+            if (arrayOld != null) {
+                for (int i = 0; i < len; i++) {
+                    if (i != position) {
+                        JSONObject joOld = arrayOld.getJSONObject(i);
+                        JSONObject joNew = new KeyInfo(joOld).getJson();
+                        arrayNew.put(joNew);
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String log = "[jsonArrayRemove] Array old:\r\n" + arrayOld + ".\r\n" +
+                "[jsonArrayRemove] Array new:\r\n" + arrayNew + ".";
+        Log.d(TAG, log);
+        return arrayNew;
+    }
+
+    public static List<KeyInfo> convertJSONArrayToKeyInfoList(JSONArray ja) {
+        List keyInfoList = new ArrayList<>();
+        for (int i = 0; i < ja.length(); i++) {
+            try {
+                JSONObject jo = ja.getJSONObject(i);
+                KeyInfo ki = new KeyInfo(jo);
+                keyInfoList.add(ki);
+            } catch (JSONException e) {
+                Log.e(TAG, "[convertJSONArrayToKeyInfoList] Error: " + e.getMessage() + ".");
+            }
+        }
+        return keyInfoList;
+    }
+
+    /**
+     * Checks if an App Key exists in a JSONArray of KeyInfo JSONObject.
+     *
+     * @param key
+     * @param keyList
+     * @return The position (array index) of the App Key if it exists,
+     * or else a negative nubmer if it does not.
+     */
+    public static int getKeyPosition(String key, JSONArray keyList) {
+        if (key == null) {
+            return -1;
+        }
+
+        for (int i = 0; i < keyList.length(); ++i) {
+            JSONObject keyInfoJson = null;
+            try {
+                keyInfoJson = keyList.getJSONObject(i);
+            } catch (JSONException e) {
+                Log.e(TAG, "[getKeyPosition] Error: " + e.getMessage() + ".");
+                continue;
+            }
+            if (keyInfoJson != null) {
+                if (key.equals(KeyInfo.getKey(keyInfoJson))) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static boolean checkAppKeyAndSecret(String key, String secret) {
+        boolean correct = false;
+        if (key.length() == 36 && secret.length() == 13) {
+            correct = true;
+        }
+        return correct;
     }
 }
