@@ -353,15 +353,26 @@ public class VideoCallFragment extends Fragment
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
-        // To limit audio and/or video bandwidth:
-        // config.setMaxAudioBitrate(20);
-        // config.setMaxVideoBitrate(256);
-
-        // To set the start up camera to back instead of front (default):
-        // config.setDefaultCameraBack();
-        // To set resolutions:
-        // config.setVideoHeight(720);
-        // config.setVideoWidth(1280);
+/*
+        // To limit audio/video/data bandwidth:
+        config.setMaxAudioBitrate(20);  // Default is not limited.
+        config.setMaxVideoBitrate(256); // Default is 512 kbps.
+        config.setMaxDataBitrate(30);   // Default is not limited.
+*/
+/*
+        // To NOT limit audio/video/data bandwidth:
+        // Audio and Data by default are already not limited.
+        config.setMaxVideoBitrate(-1); // Default is 512 kbps.
+*/
+/*
+        // To set the start up camera to back:
+        config.setDefaultCameraBack(); // Default is front camera.
+*/
+/*
+        // To set local video resolution (only use those supported by camera):
+        config.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR); // Default is 480 (VGA).
+        config.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
+*/
 
         config.setTimeout(ConfigFragment.TIME_OUT);
 
@@ -370,7 +381,7 @@ public class VideoCallFragment extends Fragment
         // config.setEnableLogs(true);
 
         // Allow only 1 remote Peer to join.
-        config.setMaxPeers(1);
+        config.setMaxPeers(1); // Default is 4 remote Peers.
         return config;
     }
 

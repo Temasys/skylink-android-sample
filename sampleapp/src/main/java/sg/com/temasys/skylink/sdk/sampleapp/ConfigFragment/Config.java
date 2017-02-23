@@ -52,19 +52,19 @@ public class Config {
 
     // Config values for room names.
     public static String ROOM_NAME_AUDIO = ROOM_NAME_AUDIO_DEFAULT;
-    public static String ROOM_NAME_CHAT = USER_NAME_CHAT_DEFAULT;
-    public static String ROOM_NAME_DATA = USER_NAME_DATA_DEFAULT;
-    public static String ROOM_NAME_FILE = USER_NAME_FILE_DEFAULT;
-    public static String ROOM_NAME_PARTY = USER_NAME_PARTY_DEFAULT;
-    public static String ROOM_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
+    public static String ROOM_NAME_CHAT = ROOM_NAME_CHAT_DEFAULT;
+    public static String ROOM_NAME_DATA = ROOM_NAME_DATA_DEFAULT;
+    public static String ROOM_NAME_FILE = ROOM_NAME_FILE_DEFAULT;
+    public static String ROOM_NAME_PARTY = ROOM_NAME_PARTY_DEFAULT;
+    public static String ROOM_NAME_VIDEO = ROOM_NAME_VIDEO_DEFAULT;
 
     // Config values for user names.
-    public static String USER_NAME_AUDIO = ROOM_NAME_AUDIO_DEFAULT;
-    public static String USER_NAME_CHAT = ROOM_NAME_CHAT_DEFAULT;
-    public static String USER_NAME_DATA = ROOM_NAME_DATA_DEFAULT;
-    public static String USER_NAME_FILE = ROOM_NAME_FILE_DEFAULT;
-    public static String USER_NAME_PARTY = ROOM_NAME_PARTY_DEFAULT;
-    public static String USER_NAME_VIDEO = ROOM_NAME_VIDEO_DEFAULT;
+    public static String USER_NAME_AUDIO = USER_NAME_AUDIO_DEFAULT;
+    public static String USER_NAME_CHAT = USER_NAME_CHAT_DEFAULT;
+    public static String USER_NAME_DATA = USER_NAME_DATA_DEFAULT;
+    public static String USER_NAME_FILE = USER_NAME_FILE_DEFAULT;
+    public static String USER_NAME_PARTY = USER_NAME_PARTY_DEFAULT;
+    public static String USER_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
 
     private Config() {
     }

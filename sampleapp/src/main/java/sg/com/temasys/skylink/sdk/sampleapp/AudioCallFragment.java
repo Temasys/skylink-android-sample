@@ -178,17 +178,24 @@ public class AudioCallFragment extends Fragment
 
     private SkylinkConfig getSkylinkConfig() {
         SkylinkConfig config = new SkylinkConfig();
+        // AudioVideo config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
+/*
+        // To limit audio bandwidth:
+        config.setMaxAudioBitrate(20);  // Default is not limited.
+*/
+
         config.setTimeout(ConfigFragment.TIME_OUT);
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
         // config.setEnableLogs(true);
 
         // Allow only 1 remote Peer to join.
-        config.setMaxPeers(1);
+        config.setMaxPeers(1); // Default is 4 remote Peers.
 
         return config;
     }

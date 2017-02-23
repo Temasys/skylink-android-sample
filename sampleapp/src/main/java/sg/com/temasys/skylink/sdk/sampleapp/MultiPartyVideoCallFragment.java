@@ -272,9 +272,18 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
-        // To limit audio and/or video bandwidth:
-        // config.setMaxAudioBitrate(20);
-        // config.setMaxVideoBitrate(256);
+/*
+        // To limit audio/video/data bandwidth:
+        config.setMaxAudioBitrate(20);  // Default is not limited.
+        config.setMaxVideoBitrate(256); // Default is 512 kbps.
+        config.setMaxDataBitrate(30);   // Default is not limited.
+*/
+/*
+        // To NOT limit audio/video/data bandwidth:
+        // Audio and Data by default are already not limited.
+        config.setMaxVideoBitrate(-1); // Default is 512 kbps.
+*/
+
         config.setTimeout(ConfigFragment.TIME_OUT);
         // To enable logs from Skylink SDK (e.g. during debugging),
         // Uncomment the following. Do not enable logs for production apps!
