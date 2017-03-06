@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -36,12 +37,9 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getPeerIdNick;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
 
 /**
@@ -101,7 +99,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                     @Override
                     public void onClick(View v) {
                         if (skylinkConnection != null) {
+                            String name = getRoomPeerIdNick(
+                                    getPeerIdNick(skylinkConnection.getPeerId()),
+                                    ROOM_NAME);
                             skylinkConnection.switchCamera();
+                            Toast.makeText(parentActivity,
+                                    name,
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
                 });
@@ -272,26 +276,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
-/*
-        // To limit audio/video/data bandwidth:
-        config.setMaxAudioBitrate(20);  // Default is not limited.
-        config.setMaxVideoBitrate(256); // Default is 512 kbps.
-        config.setMaxDataBitrate(30);   // Default is not limited.
-*/
-/*
-        // To NOT limit audio/video/data bandwidth:
-        // Audio and Data by default are already not limited.
-        config.setMaxVideoBitrate(-1); // Default is 512 kbps.
-*/
-
-        config.setTimeout(ConfigFragment.TIME_OUT);
-        // To enable logs from Skylink SDK (e.g. during debugging),
-        // Uncomment the following. Do not enable logs for production apps!
-        // config.setEnableLogs(true);
 
         // Allow only 3 remote Peers to join, due to current UI design.
         config.setMaxPeers(3);
 
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(config);
         return config;
     }
 
@@ -627,11 +617,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                             }
                         };
                 // Add room name to title
-                String title = "[" + ROOM_NAME + "]";
-                // Add PeerId to title if a Peer occupies clicked location.
-                if (peerId != null) {
-                    title += " " + Utils.getPeerIdNick(peerId);
-                }
+                String title = getRoomPeerIdNick(peerId, ROOM_NAME);
 
                 PopupMenu popupMenu = new PopupMenu(getContext(), v);
                 popupMenu.setOnMenuItemClickListener(clickListener);
@@ -652,6 +638,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 popupMenu.show();
             }
         };
+    }
+
+    @NonNull
+    public String getRoomPeerIdNick(String peerId, String roomName) {
+        String title = "[" + roomName + "]";
+        // Add PeerId to title if a Peer occupies clicked location.
+        if (peerId != null) {
+            title += " " + Utils.getPeerIdNick(peerId);
+        }
+        return title;
     }
 
     /***
@@ -695,23 +691,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        switch (infoCode) {
-            case CAM_SWITCH_FRONT:
-            case CAM_SWITCH_NON_FRONT:
-                Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
-                break;
-            case CAM_SWITCH_NO:
-                Toast.makeText(parentActivity, message, Toast.LENGTH_LONG).show();
-                break;
-            default:
-                Log.d(TAG, "Received SDK log: " + message);
-                break;
-        }
+        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
     }
 
     @Override
     public void onWarning(int errorCode, String message) {
-
+        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     /**

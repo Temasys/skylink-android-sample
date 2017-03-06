@@ -35,7 +35,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
@@ -280,16 +279,9 @@ public class FileTransferFragment extends MultiPartyFragment
         config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         config.setHasFileTransfer(true);
-/*
-        // To limit data bandwidth:
-        config.setMaxDataBitrate(30);   // Default is not limited.
-*/
 
-        config.setTimeout(ConfigFragment.TIME_OUT);
-        // To enable logs from Skylink SDK (e.g. during debugging),
-        // Uncomment the following. Do not enable logs for production apps!
-        // config.setEnableLogs(true);
-
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(config);
         return config;
     }
 
@@ -459,7 +451,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
     @Override
     public void onWarning(int errorCode, String message) {
-        Log.d(TAG, message + "Warning: " + message);
+        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     @Override
@@ -484,7 +476,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Log.d(TAG, "On receive log: " + message);
+        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
     }
 
     /**

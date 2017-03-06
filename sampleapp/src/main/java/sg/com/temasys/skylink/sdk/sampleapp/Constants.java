@@ -2,7 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 public final class Constants {
     public static final int DURATION = 20000;
-    public static final int TIME_OUT = 60;
+    public static final int TIME_OUT = 30;
 
     public static final String ROOM_NAME_AUDIO_DEFAULT = "audioRoom";
     public static final String ROOM_NAME_CHAT_DEFAULT = "chatRoom";

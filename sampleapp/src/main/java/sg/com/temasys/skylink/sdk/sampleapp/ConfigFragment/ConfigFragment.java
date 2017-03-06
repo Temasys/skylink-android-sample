@@ -22,8 +22,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 public class ConfigFragment extends Fragment {
 
-    public static final int TIME_OUT = 60;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

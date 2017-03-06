@@ -1,22 +1,27 @@
-apply plugin: 'com.android.application'
-apply plugin: "sonar-runner"
-
 buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1"
     }
 }
 
+plugins {
+    id "org.sonarqube" version "2.2"
+}
+apply plugin: 'com.android.application'
 
-sonarRunner {
-    sonarProperties {
+sonarqube {
+    properties {
         property "sonar.projectKey", "AND-Sample"
         property "sonar.projectName", "Skylink Android SDK - Sample App"
-        property "sonar.projectVersion", "0.9.7"
+        property "sonar.projectVersion", "0.9.8"
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
@@ -32,13 +37,13 @@ repositories {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "sg.com.temasys.skylink.sampleapp"
         minSdkVersion 16
         targetSdkVersion 21
         versionCode 1
-        versionName "0.9.7"
+        versionName "0.9.8"
     }
 
     // Run lint checks but don't abort build
@@ -48,14 +53,14 @@ android {
 
     dependencies {
         compile fileTree(include: ['*.jar'], dir: 'libs')
-        compile(group: 'sg.com.temasys.skylink.sdk',
         compile 'com.android.support:appcompat-v7:'
         compile 'com.android.support:support-v4:23.4.0'
         compile 'com.android.support:design:24.1.0'
         compile 'com.android.support:cardview-v7:23.2.1'
         compile 'com.android.support:recyclerview-v7:23.0.'
+        compile(group: 'sg.com.temasys.skylink.sdk',
                 name: 'skylink_sdk',
-                version: '0.9.7-RELEASE',
+                version: '0.9.8-RELEASE',
                 ext: 'aar') {
             transitive = true
         }

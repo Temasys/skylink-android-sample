@@ -25,7 +25,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
@@ -184,19 +183,12 @@ public class AudioCallFragment extends Fragment
         config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
-/*
-        // To limit audio bandwidth:
-        config.setMaxAudioBitrate(20);  // Default is not limited.
-*/
-
-        config.setTimeout(ConfigFragment.TIME_OUT);
-        // To enable logs from Skylink SDK (e.g. during debugging),
-        // Uncomment the following. Do not enable logs for production apps!
-        // config.setEnableLogs(true);
 
         // Allow only 1 remote Peer to join.
         config.setMaxPeers(1); // Default is 4 remote Peers.
 
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(config);
         return config;
     }
 
@@ -276,7 +268,7 @@ public class AudioCallFragment extends Fragment
 
     @Override
     public void onWarning(int errorCode, String message) {
-        Log.d(TAG, message + "warning");
+        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     @Override
@@ -298,7 +290,7 @@ public class AudioCallFragment extends Fragment
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Log.d(TAG, message + "onReceiveLog");
+        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
     }
 
     @Override

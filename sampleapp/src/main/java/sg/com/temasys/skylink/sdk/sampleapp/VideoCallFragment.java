@@ -31,11 +31,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 
 /**
@@ -353,35 +349,12 @@ public class VideoCallFragment extends Fragment
         config.setHasPeerMessaging(true);
         config.setHasFileTransfer(true);
         config.setMirrorLocalView(true);
-/*
-        // To limit audio/video/data bandwidth:
-        config.setMaxAudioBitrate(20);  // Default is not limited.
-        config.setMaxVideoBitrate(256); // Default is 512 kbps.
-        config.setMaxDataBitrate(30);   // Default is not limited.
-*/
-/*
-        // To NOT limit audio/video/data bandwidth:
-        // Audio and Data by default are already not limited.
-        config.setMaxVideoBitrate(-1); // Default is 512 kbps.
-*/
-/*
-        // To set the start up camera to back:
-        config.setDefaultCameraBack(); // Default is front camera.
-*/
-/*
-        // To set local video resolution (only use those supported by camera):
-        config.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR); // Default is 480 (VGA).
-        config.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
-*/
-
-        config.setTimeout(ConfigFragment.TIME_OUT);
-
-        // To enable logs from Skylink SDK (e.g. during debugging),
-        // Uncomment the following. Do not enable logs for production apps!
-        // config.setEnableLogs(true);
 
         // Allow only 1 remote Peer to join.
         config.setMaxPeers(1); // Default is 4 remote Peers.
+
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(config);
         return config;
     }
 
@@ -673,23 +646,12 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        switch (infoCode) {
-            case CAM_SWITCH_FRONT:
-            case CAM_SWITCH_NON_FRONT:
-            case CAM_SWITCH_NO:
-                Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
-                break;
-            default:
-                Log.d(TAG, "Received SDK log: " + message);
-                break;
-        }
+        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
     }
 
     @Override
     public void onWarning(int errorCode, String message) {
-        Log.d(TAG, message + "warning");
-        Toast.makeText(parentActivity, "Warning is errorCode" + errorCode, Toast.LENGTH_SHORT)
-                .show();
+        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     /**

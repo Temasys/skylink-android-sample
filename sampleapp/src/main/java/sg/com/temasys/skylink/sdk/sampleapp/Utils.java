@@ -1,9 +1,11 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.app.Activity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,10 +26,16 @@ import java.util.TimeZone;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import sg.com.temasys.skylink.sdk.rtc.Errors;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.KeyInfo;
+
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
+import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
 
 public class Utils {
 
@@ -87,7 +95,8 @@ public class Utils {
      * @return
      */
     public static String getPeerIdNick(String peerId) {
-        return peerId + "(" + getUserDataString(peerId) + ")";
+        final String peerIdNick = peerId + "(" + getUserDataString(peerId) + ")";
+        return peerIdNick;
     }
 
     /**
@@ -391,5 +400,79 @@ public class Utils {
             correct = true;
         }
         return correct;
+    }
+
+    /**
+     * This is a convenience method to set some common SkylinkConfig options.
+     *
+     * @param skylinkConfig
+     */
+    public static SkylinkConfig skylinkConfigCommonOptions(SkylinkConfig skylinkConfig) {
+/*
+        // To limit audio/video/data bandwidth:
+        skylinkConfig.setMaxAudioBitrate(20);  // Default is not limited.
+        skylinkConfig.setMaxVideoBitrate(256); // Default is 512 kbps.
+        skylinkConfig.setMaxDataBitrate(30);   // Default is not limited.
+*/
+/*
+        // To NOT limit audio/video/data bandwidth:
+        // Audio and Data by default are already not limited.
+        skylinkConfig.setMaxVideoBitrate(-1); // Default is 512 kbps.
+*/
+/*
+        // To set the start up camera to back:
+        skylinkConfig.setDefaultCameraBack(); // Default is front camera.
+*/
+/*
+        // To set local video resolution (only use those supported by camera):
+        skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR); // Default is 480 (VGA).
+        skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
+*/
+/*
+        // To enable logs from Skylink SDK (e.g. during debugging),
+        // Uncomment the following. Do not enable logs for production apps!
+        skylinkConfig.setEnableLogs(true);
+*/
+        skylinkConfig.setTimeout(Constants.TIME_OUT);
+
+        skylinkConfig.getAdvancedOptions().put(SkylinkConfig.OFF_ANS_VIA_USER_DATA, new Object());
+
+        return skylinkConfig;
+    }
+
+    /**
+     * Log and Toast some info provided by SkylinkConnection.
+     *
+     * @param infoCode
+     * @param message
+     * @param parentActivity
+     * @param logTag
+     */
+    public static void handleSkylinkReceiveLog(int infoCode, String message, Activity parentActivity, String logTag) {
+        switch (infoCode) {
+            case CAM_SWITCH_FRONT:
+            case CAM_SWITCH_NON_FRONT:
+            case CAM_SWITCH_NO:
+                Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+        Log.d(logTag, "Received SDK log: " + message);
+    }
+
+    /**
+     * Log and Toast warning provided by SkylinkConnection.
+     *
+     * @param errorCode
+     * @param message
+     * @param parentActivity
+     * @param logTag
+     */
+    public static void handleSkylinkWarning(int errorCode, String message, Activity parentActivity, String logTag) {
+        String log = "Skylink Error:" + errorCode + " (" + Errors.getErrorString(errorCode)
+                + ")\r\n" + message;
+        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+        Log.w(logTag, log);
     }
 }
