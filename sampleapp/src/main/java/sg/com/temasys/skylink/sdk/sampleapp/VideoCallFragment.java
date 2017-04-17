@@ -5,6 +5,8 @@ package sg.com.temasys.skylink.sdk.sampleapp;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -487,11 +490,30 @@ public class VideoCallFragment extends Fragment
 
             // Tag new video as self and add onClickListener.
             videoView.setTag("self");
-            // Allow self view to switch between different cameras (if any) when tapped.
+            // Show room and self info, plus give option to
+            // switch self view between different cameras (if any).
             videoView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    skylinkConnection.switchCamera();
+                    if (skylinkConnection != null) {
+                        String name = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME,
+                                skylinkConnection.getPeerId());
+                        TextView selfTV = new TextView(getContext());
+                        selfTV.setText(name);
+                        selfTV.setTextIsSelectable(true);
+                        AlertDialog.Builder selfDialogBuilder =
+                                new AlertDialog.Builder(getContext());
+                        selfDialogBuilder.setView(selfTV);
+                        selfDialogBuilder.setPositiveButton("OK", null);
+                        selfDialogBuilder.setNegativeButton("Switch Camera",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        skylinkConnection.switchCamera();
+                                    }
+                                });
+                        selfDialogBuilder.show();
+                    }
                 }
             });
 
@@ -612,8 +634,10 @@ public class VideoCallFragment extends Fragment
         if (isSuccessful) {
             connecting = false;
             onConnectUIChange();
-            Toast.makeText(parentActivity, "Connected to room " + roomName + " as " + MY_USER_NAME,
-                    Toast.LENGTH_SHORT).show();
+            String log = "Connected to room " + roomName + " (" + skylinkConnection.getRoomId() +
+                    ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
+            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+            Log.d(TAG, log);
         } else {
             connecting = false;
             String error = "Skylink failed to connect!\nReason : " + message;
@@ -747,19 +771,17 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
         Toast.makeText(parentActivity, "Your peer has left the room", Toast.LENGTH_SHORT).show();
-        if (remotePeerId != null && remotePeerId.equals(getPeerId(1))) {
-            View peerView = linearLayout.findViewWithTag("peer");
-            linearLayout.removeView(peerView);
+        View peerView = linearLayout.findViewWithTag("peer");
+        linearLayout.removeView(peerView);
 
-            // Resize self view to better make use of screen.
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-            SurfaceViewRenderer videoView = getVideoView(null);
-            if (videoView != null) {
-                videoView.setLayoutParams(params);
-                addSelfView(videoView);
-            }
+        // Resize self view to better make use of screen.
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        SurfaceViewRenderer videoView = getVideoView(null);
+        if (videoView != null) {
+            videoView.setLayoutParams(params);
+            addSelfView(videoView);
         }
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SampleApp-0.9.8</string>
+    <string name="app_name">SampleApp-0.9.8.1</string>
     <string name="label_all_peers">All Peer(s)</string>
     <string name="title_section1"> Audio Call </string>
     <string name="title_section2"> Video Call </string>
@@ -22,7 +22,6 @@
     <string name="data_transfer_received_expected">Received data %s bytes</string>
     <string name="data_transfer_received_unexpected">Warning! Received %s bytes not from the Skylink Android sample app!</string>
     <string name="peer_count">Peer count is %d</string>
-    <string name="data_transfer_waiting">Connected to Room %s, waiting for Peers</string>
 
     <string name="mute_audio">Mute Audio</string>
     <string name="muted_audio">Muted Audio</string>

@@ -3,10 +3,10 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -39,7 +39,6 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getPeerIdNick;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
 
 /**
@@ -94,18 +93,29 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         for (int peerIndex = 0; peerIndex < videoViewLayouts.length; ++peerIndex) {
             FrameLayout frameLayout = videoViewLayouts[peerIndex];
             if (frameLayout == selfLayout) {
-                // Allow self view to switch between different cameras (if any) when tapped.
+                // Show room and self info, plus give option to
+                // switch self view between different cameras (if any).
                 frameLayout.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (skylinkConnection != null) {
-                            String name = getRoomPeerIdNick(
-                                    getPeerIdNick(skylinkConnection.getPeerId()),
-                                    ROOM_NAME);
-                            skylinkConnection.switchCamera();
-                            Toast.makeText(parentActivity,
-                                    name,
-                                    Toast.LENGTH_LONG).show();
+                            String name = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME,
+                                    skylinkConnection.getPeerId());
+                            TextView selfTV = new TextView(getContext());
+                            selfTV.setText(name);
+                            selfTV.setTextIsSelectable(true);
+                            AlertDialog.Builder selfDialogBuilder =
+                                    new AlertDialog.Builder(getContext());
+                            selfDialogBuilder.setView(selfTV);
+                            selfDialogBuilder.setPositiveButton("OK", null);
+                            selfDialogBuilder.setNegativeButton("Switch Camera",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            skylinkConnection.switchCamera();
+                                        }
+                                    });
+                            selfDialogBuilder.show();
                         }
                     }
                 });
@@ -615,7 +625,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                             }
                         };
                 // Add room name to title
-                String title = getRoomPeerIdNick(peerId, ROOM_NAME);
+                String title = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME, peerId);
 
                 PopupMenu popupMenu = new PopupMenu(getContext(), v);
                 popupMenu.setOnMenuItemClickListener(clickListener);
@@ -638,16 +648,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         };
     }
 
-    @NonNull
-    public String getRoomPeerIdNick(String peerId, String roomName) {
-        String title = "[" + roomName + "]";
-        // Add PeerId to title if a Peer occupies clicked location.
-        if (peerId != null) {
-            title += " " + Utils.getPeerIdNick(peerId);
-        }
-        return title;
-    }
-
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
      * lifecycle
@@ -656,9 +656,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
-            Toast.makeText(applicationContext,
-                    String.format(getString(R.string.data_transfer_waiting),
-                            ROOM_NAME), Toast.LENGTH_LONG).show();
+            String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
+                    ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
+            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+            Log.d(TAG, log);
+
             peerList[0] = skylinkConnection.getPeerIdList()[0];
         } else {
             String error = "Skylink failed to connect!\nReason : " + message;

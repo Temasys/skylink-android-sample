@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -90,14 +91,41 @@ public class Utils {
     }
 
     /**
+     * Provide a display name that is the PeerId followed by userData in brackets.
+     * In case PeerId is not available, the defaultName provided will be displayed.
+     *
+     * @param skylinkConnection
+     * @param defaultName       String to return if PeerId is not available.
+     * @param peerId            Use null for self Peer.
+     * @return
+     */
+    public static String getDisplayName(SkylinkConnection skylinkConnection, String defaultName,
+                                        String peerId) {
+        if (skylinkConnection == null) {
+            return defaultName;
+        }
+        return getPeerIdNick(peerId);
+    }
+
+    /**
      * Returns the PeerId followed by userData in brackets of a Peer.
      * This is often useful for displaying a Peer's identity in UI or logs.
      *
-     * @param peerId
+     * @param peerId Use null or peerId for self Peer.
      * @return
      */
     public static String getPeerIdNick(String peerId) {
-        final String peerIdNick = peerId + "(" + getUserDataString(peerId) + ")";
+        String peerIdShow = peerId;
+        if (peerId == null) {
+            SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+            if (skylinkConnection != null) {
+                peerIdShow = skylinkConnection.getPeerId();
+            }
+            if (peerIdShow == null) {
+                peerIdShow = "Self";
+            }
+        }
+        final String peerIdNick = peerIdShow + " (" + getUserDataString(peerId) + ")";
         return peerIdNick;
     }
 
@@ -110,7 +138,7 @@ public class Utils {
      * @return
      */
     public static String getPeerIdNick(String peerId, UserInfo userInfo) {
-        return peerId + "(" + getUserDataString(userInfo) + ")";
+        return peerId + " (" + getUserDataString(userInfo) + ")";
     }
 
     /**
@@ -126,6 +154,39 @@ public class Utils {
             nick = peerId;
         }
         return nick;
+    }
+
+    /**
+     * Returns a string that contains roomName, roomId, peerId, and peer nick.
+     *
+     * @param skylinkConnection
+     * @param roomName
+     * @param peerId
+     * @return
+     */
+    @NonNull
+    public static String getRoomPeerIdNick(SkylinkConnection skylinkConnection, String roomName,
+                                           String peerId) {
+        String title = "Room: " + getRoomRoomId(skylinkConnection, roomName);
+        // Add PeerId to title if a Peer occupies clicked location.
+        title += "\r\n" + Utils.getPeerIdNick(peerId);
+        return title;
+    }
+
+    /**
+     * Gets the roomName, followed with roomId in brackets.
+     *
+     * @param skylinkConnection
+     * @param roomName
+     * @return
+     */
+    @NonNull
+    public static String getRoomRoomId(SkylinkConnection skylinkConnection, String roomName) {
+        String roomId = "";
+        if (skylinkConnection != null) {
+            roomId = skylinkConnection.getRoomId();
+        }
+        return roomName + " (" + roomId + ")";
     }
 
     /**
@@ -458,8 +519,6 @@ public class Utils {
 */
         skylinkConfig.setTimeout(Constants.TIME_OUT);
 
-        skylinkConfig.getAdvancedOptions().put(SkylinkConfig.OFF_ANS_VIA_USER_DATA, new Object());
-
         return skylinkConfig;
     }
 
@@ -493,7 +552,7 @@ public class Utils {
      * @param logTag
      */
     public static void handleSkylinkWarning(int errorCode, String message, Activity parentActivity, String logTag) {
-        String log = "Skylink Error:" + errorCode + " (" + Errors.getErrorString(errorCode)
+        String log = "Skylink Error: " + errorCode + " (" + Errors.getErrorString(errorCode)
                 + ")\r\n" + message;
         Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
         Log.w(logTag, log);

@@ -30,6 +30,7 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
 
 public class DataTransferFragment extends MultiPartyFragment implements
         RemotePeerListener, DataTransferListener,
@@ -97,7 +98,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         } else {
             // [MultiParty]
             // Just set room details
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+            setRoomDetails();
         }
 
         // Show info about data sizes that can be transferred.
@@ -335,8 +336,17 @@ public class DataTransferFragment extends MultiPartyFragment implements
      */
     private void onConnectUIChange() {
         // [MultiParty]
-        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+        setRoomDetails();
         fillPeerRadioBtn();
+    }
+
+    /**
+     * Set the room details on UI.
+     */
+    void setRoomDetails() {
+        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails,
+                getRoomRoomId(skylinkConnection, ROOM_NAME),
+                Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
     }
 
     /***
@@ -348,6 +358,10 @@ public class DataTransferFragment extends MultiPartyFragment implements
     public void onConnect(boolean isSuccessful, String message) {
         //Update textview if connection is successful
         if (isSuccessful) {
+            String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
+                    ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
+            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+            Log.d(TAG, log);
             // [MultiParty]
             // Set the appropriate UI if already isConnected().
             onConnectUIChange();
@@ -355,7 +369,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
             String error = "Skylink failed to connect!\nReason : " + message;
             Log.d(TAG, error);
             Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+            setRoomDetails();
         }
     }
 
@@ -414,8 +428,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         if (getPeerNum() == 1) {
             peerJoined = true;
             // Update textview to show room status
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
-                    MY_USER_NAME);
+            setRoomDetails();
         }
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
@@ -432,8 +445,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         if (peerList.size() == 0) {
             peerJoined = false;
             // Update textview to show room status
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
-                    MY_USER_NAME);
+            setRoomDetails();
         }
 
         int numRemotePeers = getNumRemotePeers();

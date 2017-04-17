@@ -27,6 +27,7 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
 
 /**
  * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
@@ -230,8 +231,9 @@ public class AudioCallFragment extends Fragment
      */
     private void onConnectUIChange() {
         btnAudioCall.setEnabled(false);
-        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
-                MY_USER_NAME);
+        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName,
+                getRoomRoomId(skylinkConnection, ROOM_NAME),
+                Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
     }
 
     /**
@@ -239,8 +241,9 @@ public class AudioCallFragment extends Fragment
      */
     private void onDisconnectUIChange() {
         btnAudioCall.setEnabled(true);
-        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
-                MY_USER_NAME);
+        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName,
+                getRoomRoomId(skylinkConnection, ROOM_NAME),
+                Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
     }
 
     /***
@@ -257,9 +260,13 @@ public class AudioCallFragment extends Fragment
     @Override
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
-            Log.d(TAG, "Skylink Connected");
-            Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
-                    MY_USER_NAME);
+            String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
+                    ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
+            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+            Log.d(TAG, log);
+            Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName,
+                    getRoomRoomId(skylinkConnection, ROOM_NAME),
+                    Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
         } else {
             String error = "Skylink failed to connect!\nReason : " + message;
             Log.d(TAG, error);
@@ -368,8 +375,9 @@ public class AudioCallFragment extends Fragment
         if (userData instanceof String) {
             remotePeerName = (String) userData;
         }
-        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
-                MY_USER_NAME);
+        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName,
+                getRoomRoomId(skylinkConnection, ROOM_NAME),
+                Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
 
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
@@ -383,8 +391,9 @@ public class AudioCallFragment extends Fragment
         this.remotePeerId = null;
         remotePeerName = null;
         //update textview to show room status
-        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName, ROOM_NAME,
-                MY_USER_NAME);
+        Utils.setRoomDetails(isConnected(), peerJoined, tvRoomDetails, remotePeerName,
+                getRoomRoomId(skylinkConnection, ROOM_NAME),
+                Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
 
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +

@@ -32,6 +32,8 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getPeerIdNick;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
 
 /**
  * This class is used to demonstrate the Chat between two clients in WebRTC Created by
@@ -90,7 +92,7 @@ public class ChatFragment extends MultiPartyFragment
         }
 
         /** Defining the ArrayAdapter to set items to ListView */
-        adapter = new ArrayAdapter<String>(parentActivity, android.R.layout.simple_list_item_1,
+        adapter = new ArrayAdapter<String>(parentActivity, R.layout.list_item,
                 chatMessageCollection);
         /** Setting the adapter to the ListView */
         listViewChats.setAdapter(adapter);
@@ -120,7 +122,7 @@ public class ChatFragment extends MultiPartyFragment
             // [MultiParty]
 
             // Just set room details
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+            setRoomDetails();
         }
 
         // Try to connect to room if not yet connected.
@@ -302,6 +304,25 @@ public class ChatFragment extends MultiPartyFragment
      */
 
     /**
+     * Change certain UI elements once connected to room or when Peer(s) join or leave.
+     */
+    private void onConnectUIChange() {
+        listViewRefresh();
+        // [MultiParty]
+        setRoomDetails();
+        fillPeerRadioBtn();
+    }
+
+    /**
+     * Set the room details on UI.
+     */
+    void setRoomDetails() {
+        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails,
+                getRoomRoomId(skylinkConnection, ROOM_NAME),
+                Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
+    }
+
+    /**
      * Retrieves self message written in edit text and adds it to the chatlistview.
      * Will refresh listView.
      *
@@ -334,16 +355,6 @@ public class ChatFragment extends MultiPartyFragment
         }
     }
 
-    /**
-     * Change certain UI elements once connected to room or when Peer(s) join or leave.
-     */
-    private void onConnectUIChange() {
-        listViewRefresh();
-        // [MultiParty]
-        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
-        fillPeerRadioBtn();
-    }
-
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
      * lifecycle
@@ -360,6 +371,10 @@ public class ChatFragment extends MultiPartyFragment
     public void onConnect(boolean isSuccessful, String message) {
         //update textview if connection is successful
         if (isSuccessful) {
+            String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
+                    ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
+            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
+            Log.d(TAG, log);
             // [MultiParty]
             // Set the appropriate UI if already connected.
             onConnectUIChange();
@@ -367,7 +382,7 @@ public class ChatFragment extends MultiPartyFragment
             String error = "Skylink failed to connect!\nReason : " + message;
             Log.d(TAG, error);
             Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+            setRoomDetails();
         }
     }
 
@@ -387,7 +402,7 @@ public class ChatFragment extends MultiPartyFragment
         // [MultiParty]
         // Reset peerList
         peerList.clear();
-        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME, MY_USER_NAME);
+        setRoomDetails();
         // Reset chat collection
         chatMessageCollection.clear();
 
@@ -428,10 +443,9 @@ public class ChatFragment extends MultiPartyFragment
         if (getPeerNum() == 1) {
             peerJoined = true;
             // Update textview to show room status
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
-                    MY_USER_NAME);
+            setRoomDetails();
         }
-        String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
+        String log = "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
         Log.d(TAG, log);
     }
@@ -446,12 +460,11 @@ public class ChatFragment extends MultiPartyFragment
         if (peerList.size() == 0) {
             peerJoined = false;
             // Update textview to show room status
-            Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails, ROOM_NAME,
-                    MY_USER_NAME);
+            setRoomDetails();
         }
 
         int numRemotePeers = getNumRemotePeers();
-        String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
+        String log = "Your Peer " + getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
         Log.d(TAG, log);
@@ -461,7 +474,7 @@ public class ChatFragment extends MultiPartyFragment
     public void onRemotePeerConnectionRefreshed(String remotePeerId, Object userData, boolean hasDataChannel, boolean wasIceRestarted) {
         String peer = "Skylink Media Relay server";
         if (remotePeerId != null) {
-            peer = "Peer " + Utils.getPeerIdNick(remotePeerId);
+            peer = "Peer " + getPeerIdNick(remotePeerId);
         }
         String log = "Your connection with " + peer + " has just been refreshed";
         if (wasIceRestarted) {
@@ -500,7 +513,7 @@ public class ChatFragment extends MultiPartyFragment
         }
         // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = Utils.getPeerIdNick(remotePeerId);
+            String remotePeerName = getPeerIdNick(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
             listViewRefresh();
         }
@@ -517,7 +530,7 @@ public class ChatFragment extends MultiPartyFragment
         }
         //add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = Utils.getPeerIdNick(remotePeerId);
+            String remotePeerName = getPeerIdNick(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
             listViewRefresh();
         }
