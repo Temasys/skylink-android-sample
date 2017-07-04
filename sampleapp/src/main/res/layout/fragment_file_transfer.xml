@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout android:id="@+id/ll_file_transfer"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tv_room_details"
@@ -13,21 +13,22 @@
         android:layout_alignParentTop="true"
         android:text=""
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textIsSelectable="true"/>
+        android:textIsSelectable="true" />
 
 
     <ImageView
         android:id="@+id/iv_file_preview"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_gravity="center_horizontal" />
 
     <EditText
         android:id="@+id/et_file_path"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:editable="false"
-        android:hint="Path of file to transfer"/>
+        android:focusableInTouchMode="false"
+        android:hint="Path of file to transfer" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -43,35 +44,35 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/label_all_peers"
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
             <RadioButton
                 android:id="@+id/radio_btn_peer1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
             <RadioButton
                 android:id="@+id/radio_btn_peer2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
             <RadioButton
                 android:id="@+id/radio_btn_peer3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
             <RadioButton
                 android:id="@+id/radio_btn_peer4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
         </RadioGroup>
     </HorizontalScrollView>
@@ -87,14 +88,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Send File"/>
+            android:text="Send File" />
 
         <Button
             android:id="@+id/btn_send_file_grp"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Send File [Group]"/>
+            android:text="Send File [Group]" />
     </LinearLayout>
 
     <ScrollView
@@ -113,7 +114,7 @@
                 android:layout_marginTop="10dp"
                 android:text=""
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textIsSelectable="true"/>
+                android:textIsSelectable="true" />
         </HorizontalScrollView>
     </ScrollView>
 </LinearLayout>

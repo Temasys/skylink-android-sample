@@ -27,6 +27,7 @@ import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -41,7 +42,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
  */
 public class VideoCallFragment extends Fragment
-        implements LifeCycleListener, MediaListener, RemotePeerListener {
+        implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener {
 
     private String ROOM_NAME;
     private String MY_USER_NAME;
@@ -268,6 +269,13 @@ public class VideoCallFragment extends Fragment
         disconnectFromRoom();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        Utils.onRequestPermissionsResultHandler(
+                requestCode, permissions, grantResults, TAG, skylinkConnection);
+    }
+
     /***
      * Skylink Helper methods
      */
@@ -375,6 +383,7 @@ public class VideoCallFragment extends Fragment
     /**
      * Set listeners to receive callbacks when events are triggered.
      * SkylinkConnection instance must not be null or listeners cannot be set.
+     * Do not set before {@link SkylinkConnection#init} as that will remove all existing Listeners.
      *
      * @return false if listeners could not be set.
      */
@@ -382,6 +391,7 @@ public class VideoCallFragment extends Fragment
         if (skylinkConnection != null) {
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setMediaListener(this);
+            skylinkConnection.setOsListener(this);
             skylinkConnection.setRemotePeerListener(this);
             return true;
         } else {
@@ -754,6 +764,25 @@ public class VideoCallFragment extends Fragment
         }
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
         Log.d(TAG, log);
+    }
+
+    /**
+     * OsListener Callbacks - triggered by Android OS related events.
+     */
+    @Override
+    public void onPermissionRequired(
+            final String[] permissions, final int requestCode, final int infoCode) {
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+    }
+
+    @Override
+    public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionGrantedHandler(permissions, infoCode, TAG);
+    }
+
+    @Override
+    public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionDeniedHandler(infoCode, getContext(), TAG);
     }
 
     /**

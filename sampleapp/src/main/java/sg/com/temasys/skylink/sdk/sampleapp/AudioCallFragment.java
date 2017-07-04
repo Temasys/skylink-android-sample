@@ -19,6 +19,7 @@ import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -34,7 +35,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
  * lavanyasudharsanam on 20/1/15.
  */
 public class AudioCallFragment extends Fragment
-        implements LifeCycleListener, MediaListener, RemotePeerListener {
+        implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener {
     // Inflate the layout for this fragment
 
     private String ROOM_NAME;
@@ -133,6 +134,13 @@ public class AudioCallFragment extends Fragment
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        Utils.onRequestPermissionsResultHandler(
+                requestCode, permissions, grantResults, TAG, skylinkConnection);
+    }
+
     /***
      * Skylink Helper methods
      */
@@ -207,6 +215,7 @@ public class AudioCallFragment extends Fragment
     /**
      * Set listeners to receive callbacks when events are triggered.
      * SkylinkConnection instance must not be null or listeners cannot be set.
+     * Do not set before {@link SkylinkConnection#init} as that will remove all existing Listeners.
      *
      * @return false if listeners could not be set.
      */
@@ -214,6 +223,7 @@ public class AudioCallFragment extends Fragment
         if (skylinkConnection != null) {
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setMediaListener(this);
+            skylinkConnection.setOsListener(this);
             skylinkConnection.setRemotePeerListener(this);
             return true;
         } else {
@@ -247,7 +257,8 @@ public class AudioCallFragment extends Fragment
     }
 
     /***
-     * Lifecycle Listener
+     * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
+     * lifecycle
      */
 
     /**
@@ -308,6 +319,11 @@ public class AudioCallFragment extends Fragment
                 " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Media Listeners Callbacks - triggered when receiving changes to Media Stream from the
+     * remote peer
+     */
+
     @Override
     public void onLocalMediaCapture(SurfaceViewRenderer surfaceView) {
         Log.d(TAG, "onLocalMediaCapture");
@@ -366,6 +382,30 @@ public class AudioCallFragment extends Fragment
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
         Log.d(TAG, log);
     }
+
+    /**
+     * OsListener Callbacks - triggered by Android OS related events.
+     */
+    @Override
+    public void onPermissionRequired(
+            final String[] permissions, final int requestCode, final int infoCode) {
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+    }
+
+    @Override
+    public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionGrantedHandler(permissions, infoCode, TAG);
+    }
+
+    @Override
+    public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionDeniedHandler(infoCode, getContext(), TAG);
+    }
+
+    /**
+     * Remote Peer Listener Callbacks - triggered during events that happen when data or connection
+     * with remote peer changes
+     */
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {

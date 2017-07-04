@@ -1,7 +1,14 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.text.method.LinkMovementMethod;
 import android.util.Base64;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -37,8 +44,12 @@ import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.KeyInfo;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NO;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
+import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_AUDIO_MIC;
+import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_READ;
+import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_WRITE;
+import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_VIDEO_CAM;
+import static sg.com.temasys.skylink.sdk.rtc.Info.getInfoString;
 
 public class Utils {
 
@@ -534,7 +545,6 @@ public class Utils {
         switch (infoCode) {
             case CAM_SWITCH_FRONT:
             case CAM_SWITCH_NON_FRONT:
-            case CAM_SWITCH_NO:
                 Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
                 break;
             default:
@@ -556,5 +566,232 @@ public class Utils {
                 + ")\r\n" + message;
         Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
         Log.w(logTag, log);
+    }
+
+    /**
+     * Handles the Android provided result(s) of requested Android permission(s).
+     * Sends to Skylink SDK for processing.
+     * If the permission requests did not originate from the SDK, the App should process them.
+     *
+     * @param requestCode       As given in Android method.
+     * @param permissions       As given in Android method.
+     * @param grantResults      As given in Android method.
+     * @param tag               Tag string for logging.
+     * @param skylinkConnection The instance of SkylinkConnection being used here.
+     */
+    public static void onRequestPermissionsResultHandler(
+            int requestCode, String[] permissions, int[] grantResults,
+            String tag, SkylinkConnection skylinkConnection) {
+        // Null check.
+        String error = "";
+        if (permissions.length < 1) {
+            error = "[SA][onPermRes] Unable to process empty permissions array!";
+        }
+        if (grantResults.length < 1) {
+            error = "[SA][onPermRes] Unable to process empty grantResults array!";
+        }
+        if (!"".equals(error)) {
+            Log.e(tag, error);
+            return;
+        }
+
+        String permission = permissions[0];
+        int grantResult = grantResults[0];
+        String log = "[SA][onPermRes] Received results for requestCode:" + requestCode +
+                ", Permissions:" + permission + ", with results:" + grantResult + ", that ";
+        // Call SDK processPermissionsResult with the given parameters.
+        boolean wasSkylinkRequest = skylinkConnection
+                .processPermissionsResult(requestCode, permissions, grantResults);
+        if (wasSkylinkRequest) {
+            log += "originates ";
+        } else {
+            log += "does NOT originate ";
+            // If result is false, process the results in the app
+            // (permission request was not from SDK).
+        }
+        log += "from the Skylink SDK.";
+        Log.d(tag, log);
+    }
+
+    /**
+     * Handles the Skylink SDK OsListener callback onPermissionRequired.
+     * If permission required have already been granted,
+     * directly call the SDK's processPermissionsResult with PackageManager.PERMISSION_GRANTED.
+     * If not, ask user for the required permission.
+     * If user had denied required permission before, but did not indicate to never ask again,
+     * provide a dialog to inform user why such permissions are required,
+     * and provide the chance to set the required permissions again.
+     *
+     * @param permissions       As given in OsListener method.
+     * @param requestCode       As given in OsListener method.
+     * @param infoCode          As given in OsListener method.
+     * @param context           Current context.
+     * @param fragment          Current fragment.
+     * @param tag               Tag string for logging.
+     * @param skylinkConnection The instance of SkylinkConnection being used here.
+     */
+    public static void onPermissionRequiredHandler(
+            final String[] permissions, final int requestCode, int infoCode,
+            Context context, final Fragment fragment, final String tag,
+            SkylinkConnection skylinkConnection) {
+        String log = "[SA][onPermReq] SDK requesting permission for " + permissions[0] + ", which ";
+
+        // For permission already granted,
+        // call Sylink SDK processPermissionsResult with PERMISSION_GRANTED as the result.
+        int permissionState = ContextCompat.checkSelfPermission(context, permissions[0]);
+        if (permissionState == PackageManager.PERMISSION_GRANTED) {
+            log += "has already been granted, no need to request again. " +
+                    "infoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
+            int[] grantResults = new int[]{PackageManager.PERMISSION_GRANTED};
+            if (skylinkConnection.processPermissionsResult(requestCode, permissions, grantResults)) {
+                Log.d(tag, log);
+                return;
+            }
+            // If result is false, an error has occurred.
+            log += "\r\n[ERROR] The SDK should but does not recognise the permission requestCode:" +
+                    requestCode + "!";
+            Log.e(tag, log);
+            return;
+        } else {
+            log += "has not been granted. ";
+        }
+
+        // Create explanation based on permission required.
+        String alertText = "";
+        switch (infoCode) {
+            case PERM_AUDIO_MIC:
+                alertText += "Android permission to use the Microphone must be given " +
+                        "in order to send our audio to a remote Peer!";
+                break;
+            case PERM_VIDEO_CAM:
+                alertText += "Android permission to use the Camera must be given " +
+                        "in order to send our video to a remote Peer!";
+                break;
+            case PERM_STORAGE_READ:
+                alertText += "Android permission to read from device storage must be given " +
+                        "in order to send file to a remote Peer!";
+                break;
+            case PERM_STORAGE_WRITE:
+                alertText += "Android permission to write to device storage must be given " +
+                        "in order to receive file from a remote Peer!";
+                break;
+        }
+        log += alertText + "\r\ninfoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
+
+        // Explain rationale for permission request if the user
+        // has denied this Permission before, but did not indicate to never ask again.
+        if (fragment.shouldShowRequestPermissionRationale(permissions[0])) {
+            // If so, create alert to explain reason.
+            // Create AlertDialog to present Permission rationale message.
+            AlertDialog.Builder permissionRationaleDialogBuilder =
+                    new AlertDialog.Builder(context);
+            permissionRationaleDialogBuilder.setTitle("Why this permission is requested...");
+
+            // Create TextView for permission rationale alert.
+            final TextView msgTxtView = new TextView(context);
+            msgTxtView.setText(alertText);
+            msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+            permissionRationaleDialogBuilder.setView(msgTxtView);
+
+            // User denies even after providing rationale.
+            final String finalLogDeny = log +
+                    "\r\nNot requesting Android for Permission after current & previous denial.";
+            permissionRationaleDialogBuilder.setNegativeButton("Cancel",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Log permission denied.
+                            Log.d(tag, finalLogDeny);
+                        }
+                    });
+
+            // User agrees to grant permission after rationale was shown.
+            final String finalLogRequest = log +
+                    "\r\nRequesting Android for Permission after previous denial.";
+            permissionRationaleDialogBuilder.setPositiveButton("Grant Permission",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Request for permission:
+                            Log.d(tag, finalLogRequest);
+                            fragment.requestPermissions(permissions, requestCode);
+                        }
+                    });
+
+            // Show explanation.
+            permissionRationaleDialogBuilder.show();
+            return;
+        }
+
+        // Request for permission for the first time:
+        log += ".\r\nRequesting Android for Permission for the first time.";
+        Log.d(tag, log);
+
+        fragment.requestPermissions(permissions, requestCode);
+    }
+
+    /**
+     * Handles Skylink SDK OsListener callback onPermissionGranted.
+     * Log the permission that had been granted.
+     *
+     * @param permissions As given in OsListener method.
+     * @param infoCode    As given in OsListener method.
+     * @param tag         Tag string for logging.
+     */
+    public static void onPermissionGrantedHandler(String[] permissions, int infoCode, String tag) {
+        String log = "[SA][onPermGrant] Permission has been GRANTED for " + permissions[0] +
+                ", infoCode:" + infoCode + " (" + getInfoString(infoCode) + ").";
+        Log.d(tag, log);
+    }
+
+    /**
+     * @param infoCode As given in OsListener method.
+     * @param context  Current context to show AlertDialog.
+     * @param tag      Tag string for logging.
+     */
+    public static void onPermissionDeniedHandler(int infoCode, Context context, String tag) {
+        // Create alert to inform user about the permission denied and resultant feature disabled.
+        // Log the same.
+        // Check if should explain reason for requesting permission, which happens if the user
+        // has denied this Permission before, but did not indicate to never ask again.
+        String alertText = "";
+        switch (infoCode) {
+            case PERM_AUDIO_MIC:
+                alertText += "Android permission to use the Microphone was denied. " +
+                        "We are now NOT able to send our audio to a remote Peer!";
+                break;
+            case PERM_VIDEO_CAM:
+                alertText += "Android permission to use the Camera was denied. " +
+                        "We are now NOT able to send our video to a remote Peer!";
+                break;
+            case PERM_STORAGE_READ:
+                alertText += "Android permission to read from device storage was denied. " +
+                        "We are now NOT able to send file to a remote Peer!";
+                break;
+            case PERM_STORAGE_WRITE:
+                alertText += "Android permission to write to device storage was denied. " +
+                        "We are now NOT able to receive file from a remote Peer!";
+                break;
+        }
+        alertText += "\r\nTo enable feature, restart this feature and grant the permission(s) " +
+                "required. Alternatively, go to Android's Settings -> \"Apps\", select this App, " +
+                "go to \"Permissions\", grant required permission(s), and restart this feature.";
+
+        // Create AlertDialog to warn user of consequences of permission denied.
+        AlertDialog.Builder permissionDeniedDialogBuilder =
+                new AlertDialog.Builder(context);
+        permissionDeniedDialogBuilder.setTitle("Warning! Feature(s) unavailable " +
+                "due to Permission(s) denied.");
+
+        // Create TextView for permission alert.
+        final TextView msgTxtView = new TextView(context);
+        msgTxtView.setText(alertText);
+        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+        permissionDeniedDialogBuilder.setView(msgTxtView);
+        permissionDeniedDialogBuilder.setPositiveButton("Ok", null);
+
+        alertText = "[SA][onPermDenied] " + alertText;
+        Log.d(tag, alertText);
+        permissionDeniedDialogBuilder.show();
     }
 }

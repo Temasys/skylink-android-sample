@@ -279,6 +279,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
     /**
      * Set listeners to receive callbacks when events are triggered.
      * SkylinkConnection instance must not be null or listeners cannot be set.
+     * Do not set before {@link SkylinkConnection#init} as that will remove all existing Listeners.
      *
      * @return false if listeners could not be set.
      */

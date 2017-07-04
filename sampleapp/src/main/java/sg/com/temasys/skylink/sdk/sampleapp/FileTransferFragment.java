@@ -1,10 +1,13 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -28,6 +31,7 @@ import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -43,7 +47,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
  * Created by lavanyasudharsanam on 20/1/15.
  */
 public class FileTransferFragment extends MultiPartyFragment
-        implements LifeCycleListener, FileTransferListener, RemotePeerListener {
+        implements LifeCycleListener, FileTransferListener, OsListener, RemotePeerListener {
 
     private String ROOM_NAME;
     private String MY_USER_NAME;
@@ -62,7 +66,7 @@ public class FileTransferFragment extends MultiPartyFragment
     private Button sendFilePrivate;
     private Button sendFileGroup;
     private String fileNamePrivate = "FileTransferPrivate.png";
-    private String fileNameGroup = "FireTransferGroup.png";
+    private String fileNameGroup = "FileTransferGroup.png";
     private String fileNameDownloaded = "downloadFile.png";
     private boolean peerJoined;
 
@@ -87,6 +91,65 @@ public class FileTransferFragment extends MultiPartyFragment
         sendFileGroup = (Button) rootView.findViewById(R.id.btn_send_file_grp);
         tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
         etSenderFilePath = (EditText) rootView.findViewById(R.id.et_file_path);
+
+        // Manual selection of file to send is now enabled.
+        // After selecting Peer(s) to send to, click on file path (etSenderFilePath)
+        // and enter desired file path.
+        etSenderFilePath.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create Dialog to change file path.
+                // File path will be validated to be a file before change is accepted.
+                AlertDialog.Builder changePathDialogBuilder =
+                        new AlertDialog.Builder(getContext());
+                changePathDialogBuilder.setTitle("Set the path to the file to be transferred.");
+
+                // Create EditText for file path in Dialog.
+                final EditText filePathEdtTxt = new EditText(getContext());
+                filePathEdtTxt.setText(etSenderFilePath.getText());
+                filePathEdtTxt.setMovementMethod(LinkMovementMethod.getInstance());
+                changePathDialogBuilder.setView(filePathEdtTxt);
+
+                // Create a Positive button but this will be overridden later.
+                changePathDialogBuilder.setPositiveButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Do nothing here as this will be overridden later.
+                            }
+                        });
+
+                // Negative button to cancel setting of file path.
+                changePathDialogBuilder.setNegativeButton("Cancel", null);
+                final AlertDialog changePathDialog = changePathDialogBuilder.create();
+                changePathDialog.show();
+
+                // Override the handler to prevent changePathDialog from auto closing
+                // after clicking button.
+                changePathDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // Close changePathDialog only if file exists at path provided.
+                                final String filePathNew = filePathEdtTxt.getText().toString();
+                                File file = new File(filePathNew);
+                                if (file.isFile()) {
+                                    // Set file to be transferred to this path.
+                                    prepFile(filePathNew);
+                                    changePathDialog.dismiss();
+                                } else {
+                                    // Else changePathDialog stays open.
+                                    String log = "The specified file does not exist!\r\n" +
+                                            "Please make corrections or cancel operation.";
+                                    Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+                                    log = "[SA] File does not exist at newly provided path. " + log;
+                                    Log.e(TAG, log);
+                                }
+                            }
+                        });
+            }
+        });
+
         ivFilePreview = (ImageView) rootView.findViewById(R.id.iv_file_preview);
         tvFileTransferDetails = (TextView) rootView.findViewById(R.id.tv_file_transfer_details);
 
@@ -194,7 +257,7 @@ public class FileTransferFragment extends MultiPartyFragment
         String filePath = etSenderFilePath.getText().toString();
         File file = new File(filePath);
         String fileName;
-        if (file.exists()) {
+        if (file.isFile()) {
             ivFilePreview.setImageURI(Uri.parse(filePath));
             fileName = file.getName();
         } else {
@@ -257,6 +320,13 @@ public class FileTransferFragment extends MultiPartyFragment
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        Utils.onRequestPermissionsResultHandler(
+                requestCode, permissions, grantResults, TAG, skylinkConnection);
+    }
+
     /***
      * Skylink Helper methods
      */
@@ -316,6 +386,7 @@ public class FileTransferFragment extends MultiPartyFragment
     /**
      * Set listeners to receive callbacks when events are triggered.
      * SkylinkConnection instance must not be null or listeners cannot be set.
+     * Do not set before {@link SkylinkConnection#init} as that will remove all existing Listeners.
      *
      * @return false if listeners could not be set.
      */
@@ -323,6 +394,7 @@ public class FileTransferFragment extends MultiPartyFragment
         if (skylinkConnection != null) {
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setOsListener(this);
             skylinkConnection.setFileTransferListener(this);
             return true;
         } else {
@@ -557,6 +629,25 @@ public class FileTransferFragment extends MultiPartyFragment
         Toast.makeText(parentActivity, "Downloading... " + percentage, Toast.LENGTH_SHORT).show();
     }
 
+
+    /**
+     * OsListener Callbacks - triggered by Android OS related events.
+     */
+    @Override
+    public void onPermissionRequired(
+            final String[] permissions, final int requestCode, final int infoCode) {
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+    }
+
+    @Override
+    public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionGrantedHandler(permissions, infoCode, TAG);
+    }
+
+    @Override
+    public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionDeniedHandler(infoCode, getContext(), TAG);
+    }
 
     /**
      * Remote Peer Listener Callbacks - triggered during events that happen when data or connection

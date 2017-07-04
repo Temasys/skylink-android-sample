@@ -29,6 +29,7 @@ import java.util.Date;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
+import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RecordingListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
@@ -45,8 +46,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
  * Created by janidu on 3/3/15.
  */
 public class MultiPartyVideoCallFragment extends Fragment implements
-        MediaListener, RemotePeerListener,
-        LifeCycleListener, RecordingListener {
+        LifeCycleListener, OsListener, MediaListener, RemotePeerListener, RecordingListener {
 
     public String ROOM_NAME;
     public String MY_USER_NAME;
@@ -259,8 +259,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        Utils.onRequestPermissionsResultHandler(
+                requestCode, permissions, grantResults, TAG, skylinkConnection);
+    }
+
+
     /***
-     * Helper methods
+     * Skylink Helper methods
      */
 
     /**
@@ -290,6 +298,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(config);
+        config.getAdvancedOptions().put("SdkAdvancedOption)!", new Boolean(true));
         return config;
     }
 
@@ -305,6 +314,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     /**
      * Set listeners to receive callbacks when events are triggered.
      * SkylinkConnection instance must not be null or listeners cannot be set.
+     * Do not set before {@link SkylinkConnection#init} as that will remove all existing Listeners.
      *
      * @return false if listeners could not be set.
      */
@@ -312,8 +322,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (skylinkConnection != null) {
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setMediaListener(this);
-            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setOsListener(this);
             skylinkConnection.setRecordingListener(this);
+            skylinkConnection.setRemotePeerListener(this);
             return true;
         } else {
             return false;
@@ -768,6 +779,25 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         }
         Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
         Log.d(TAG, log);
+    }
+
+    /**
+     * OsListener Callbacks - triggered by Android OS related events.
+     */
+    @Override
+    public void onPermissionRequired(
+            final String[] permissions, final int requestCode, final int infoCode) {
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+    }
+
+    @Override
+    public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionGrantedHandler(permissions, infoCode, TAG);
+    }
+
+    @Override
+    public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
+        Utils.onPermissionDeniedHandler(infoCode, getContext(), TAG);
     }
 
     /**
