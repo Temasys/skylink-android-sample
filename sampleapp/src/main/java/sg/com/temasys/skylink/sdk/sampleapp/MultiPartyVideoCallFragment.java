@@ -26,13 +26,18 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RecordingListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
+import sg.com.temasys.skylink.sdk.listener.StatsListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
+import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
@@ -46,7 +51,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
  * Created by janidu on 3/3/15.
  */
 public class MultiPartyVideoCallFragment extends Fragment implements
-        LifeCycleListener, OsListener, MediaListener, RemotePeerListener, RecordingListener {
+        LifeCycleListener, OsListener, MediaListener, RemotePeerListener, RecordingListener,
+        StatsListener {
 
     public String ROOM_NAME;
     public String MY_USER_NAME;
@@ -72,6 +78,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private static String[] peerList = new String[4];
     private Activity parentActivity;
     private Context applicationContext;
+
+    // Map with PeerId as key for boolean state
+    // that indicates if currently getting WebRTC stats for Peer.
+    private ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
+            new ConcurrentHashMap<String, Boolean>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -325,6 +336,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             skylinkConnection.setOsListener(this);
             skylinkConnection.setRecordingListener(this);
             skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setStatsListener(this);
             return true;
         } else {
             return false;
@@ -391,9 +403,84 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         return success;
     }
 
-    /***
-     * UI helper methods
+    /**
+     * Toggle WebRTC Stats logging on or off for specific Peer.
+     *
+     * @param peerId
      */
+    private void webrtcStatsToggle(String peerId) {
+        Boolean gettingStats = isGettingWebrtcStats.get(peerId);
+        if (gettingStats == null) {
+            String log = "[SA][wStatsTog] Peer " + peerId +
+                    " does not exist. Will not get WebRTC stats.";
+            Log.e(TAG, log);
+            return;
+        }
+
+        // Toggle the state of getting WebRTC stats to the opposite state.
+        if (gettingStats) {
+            gettingStats = false;
+        } else {
+            gettingStats = true;
+        }
+        isGettingWebrtcStats.put(peerId, gettingStats);
+        getWStatsAll(peerId);
+    }
+
+    /**
+     * Get Transfer speed in kbps of all media streams for specific Peer.
+     *
+     * @param peerId
+     */
+    private void getTransferSpeedAll(String peerId) {
+        // Request to get media transfer speeds.
+        skylinkConnection.getTransferSpeeds(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+    }
+
+    /**
+     * Trigger getWebrtcStats for specific Peer in a loop if current state allows.
+     * To stop loop, set {@link #isGettingWebrtcStats} to false.
+     *
+     * @param peerId
+     */
+    private void getWStatsAll(final String peerId) {
+        Boolean gettingStats = isGettingWebrtcStats.get(peerId);
+        if (gettingStats == null) {
+            String log = "[SA][WStatsAll] Peer " + peerId +
+                    " does not exist. Will not get WebRTC stats.";
+            Log.e(TAG, log);
+            return;
+        }
+
+        if (gettingStats) {
+            // Request to get WebRTC stats.
+            skylinkConnection.getWebrtcStats(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+
+            // Wait for waitMs ms before requesting WebRTC stats again.
+            final int waitMs = 1000;
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(waitMs);
+                    } catch (InterruptedException e) {
+                        String error =
+                                "[SA][WStatsAll] Error while waiting to call for WebRTC stats again: " +
+                                        e.getMessage();
+                        Log.e(TAG, error);
+                    }
+                    getWStatsAll(peerId);
+                }
+            }).start();
+
+        }
+        // skylinkConnection.getWebrtcStats(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+    }
+
+
+    //----------------------------------------------------------------------------------------------
+    // UI helper methods
+    //----------------------------------------------------------------------------------------------
+
 
     /**
      * Remove all videoViews from layouts.
@@ -443,6 +530,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     /**
      * Add a remote Peer into peerList at the first available remote index, and return it's index.
+     * Add to any other Peer maps.
      *
      * @param peerId
      * @return Peer Index added at, or a negative int if Peer could not be added.
@@ -454,6 +542,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         for (int peerIndex = 1; peerIndex < peerList.length; ++peerIndex) {
             if (peerList[peerIndex] == null) {
                 peerList[peerIndex] = peerId;
+                // Add to other Peer maps
+                isGettingWebrtcStats.put(peerId, false);
                 return peerIndex;
             }
         }
@@ -461,7 +551,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     /**
-     * Remove a remote Peer from peerList and any video view from UI.
+     * Remove a remote Peer from peerList, other Peer maps, and any video view from UI.
      *
      * @param peerId
      */
@@ -472,6 +562,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         }
         removePeerView(peerId);
         peerList[index] = null;
+        isGettingWebrtcStats.remove(peerId);
         shiftUpRemotePeers();
     }
 
@@ -607,6 +698,18 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
                                 int id = item.getItemId();
                                 switch (id) {
+                                    case R.id.webrtc_stats:
+                                        if (peerId == null) {
+                                            return false;
+                                        }
+                                        webrtcStatsToggle(peerId);
+                                        return true;
+                                    case R.id.transfer_speed:
+                                        if (peerId == null) {
+                                            return false;
+                                        }
+                                        getTransferSpeedAll(peerId);
+                                        return true;
                                     case R.id.recording_start:
                                         return startRecording();
                                     case R.id.recording_stop:
@@ -643,6 +746,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
                 popupMenu.getMenu().add(title);
                 // Populate actions of Popup Menu.
+                if (peerId != null) {
+                    String statsStr = getString(R.string.webrtc_stats);
+                    if (isGettingWebrtcStats.get(peerId)) {
+                        statsStr += " (ON)";
+                    } else {
+                        statsStr += " (OFF)";
+                    }
+                    popupMenu.getMenu().add(0, R.id.webrtc_stats, 0, statsStr);
+                    popupMenu.getMenu().add(0, R.id.transfer_speed, 0, R.string.transfer_speed);
+                }
                 popupMenu.getMenu().add(0, R.id.recording_start, 0, R.string.recording_start);
                 popupMenu.getMenu().add(0, R.id.recording_stop, 0, R.string.recording_stop);
                 if (peerId != null) {
@@ -653,7 +766,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                     popupMenu.getMenu().add(0, R.id.restart_ice, 0, R.string.restart_ice);
                 }
                 popupMenu.getMenu().add(0, R.id.restart_all_ice, 0, R.string.restart_all_ice);
-
                 popupMenu.show();
             }
         };
@@ -916,4 +1028,30 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         Log.e(TAG, error);
     }
 
+    /**
+     * Stats Listener Callbacks - triggered during statistics measuring events.
+     */
+
+    @Override
+    public void onWebrtcStatsReceived(final String peerId, int mediaDirection, int mediaType, HashMap<String, String> stats) {
+        // Log the WebRTC stats.
+        StringBuilder log =
+                new StringBuilder("[SA][WStatsRecv] Received for Peer " + peerId + ":\r\n");
+        for (Map.Entry<String, String> entry : stats.entrySet()) {
+            log.append(entry.getKey()).append(": ").append(entry.getValue()).append(".\r\n");
+        }
+        Log.d(TAG, log.toString());
+    }
+
+    @Override
+    public void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed) {
+        String direction = "Send";
+        if (Info.MEDIA_DIRECTION_RECV == mediaDirection) {
+            direction = "Recv";
+        }
+        // Log the transfer speeds.
+        String log = "[SA][TransSpeed] Transfer speed for Peer " + peerId + ": " +
+                Info.getInfoString(mediaType) + " " + direction + " = " + transferSpeed + " kbps";
+        Log.d(TAG, log);
+    }
 }

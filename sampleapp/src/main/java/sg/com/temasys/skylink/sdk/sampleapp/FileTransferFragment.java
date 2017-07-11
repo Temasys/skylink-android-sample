@@ -467,9 +467,9 @@ public class FileTransferFragment extends MultiPartyFragment
         }
     }
 
-    /***
-     * UI helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // UI helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Change certain UI elements once isConnected() to room or when Peer(s) join or leave.

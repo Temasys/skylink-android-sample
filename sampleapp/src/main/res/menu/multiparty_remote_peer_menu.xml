@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/webrtc_stats"
+        android:title="@string/webrtc_stats"/>
+    <item
+        android:id="@+id/transfer_speed"
+        android:title="@string/transfer_speed"/>
+    <item
         android:id="@+id/recording_start"
-        android:title="@string/recording_start" />
+        android:title="@string/recording_start"/>
     <item
         android:id="@+id/recording_stop"
-        android:title="@string/recording_stop" />
+        android:title="@string/recording_stop"/>
     <item
         android:id="@+id/restart"
-        android:title="@string/restart" />
+        android:title="@string/restart"/>
     <item
         android:id="@+id/restart_all"
-        android:title="@string/restart_all" />
+        android:title="@string/restart_all"/>
     <item
         android:id="@+id/restart_ice"
-        android:title="@string/restart_ice" />
+        android:title="@string/restart_ice"/>
     <item
         android:id="@+id/restart_all_ice"
-        android:title="@string/restart_all_ice" />
+        android:title="@string/restart_all_ice"/>
 </menu>

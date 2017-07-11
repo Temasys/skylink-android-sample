@@ -296,13 +296,9 @@ public class ChatFragment extends MultiPartyFragment
         }
     }
 
-    /***
-     * Helper methods
-     */
-
-    /***
-     * UI helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // UI helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Change certain UI elements once connected to room or when Peer(s) join or leave.

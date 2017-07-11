@@ -431,9 +431,9 @@ public class VideoCallFragment extends Fragment
         return skylinkConnection.getVideoView(peerId);
     }
 
-    /***
-     * UI helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // UI helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Change certain UI elements once connected to room or when Peer(s) join or leave.
