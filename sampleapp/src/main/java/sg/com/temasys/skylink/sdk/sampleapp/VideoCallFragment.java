@@ -37,6 +37,8 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -96,6 +98,8 @@ public class VideoCallFragment extends Fragment
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            // Resume previous permission request, if any.
+            permQResume(getContext(), this, skylinkConnection);
 
             // Toggle camera back to previous state if required.
             if (toggleCamera) {
@@ -129,6 +133,9 @@ public class VideoCallFragment extends Fragment
                 onDisconnectUIChange();
             }
         } else {
+            // This is the start of this sample, reset permission request states.
+            permQReset();
+
             // Set toggleCamera back to default state.
             toggleCamera = false;
         }
@@ -772,7 +779,7 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, getContext(), this, skylinkConnection);
     }
 
     @Override

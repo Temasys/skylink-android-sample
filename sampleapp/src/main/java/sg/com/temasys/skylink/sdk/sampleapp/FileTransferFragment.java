@@ -42,6 +42,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -126,6 +128,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
                 // Override the handler to prevent changePathDialog from auto closing
                 // after clicking button.
+                // Note: Has to be after show() is called.
                 changePathDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
                         new View.OnClickListener() {
                             @Override
@@ -164,6 +167,9 @@ public class FileTransferFragment extends MultiPartyFragment
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            // Resume previous permission request, if any.
+            permQResume(getContext(), this, skylinkConnection);
+
             // Set listeners to receive callbacks when events are triggered
             setListeners();
 
@@ -178,6 +184,9 @@ public class FileTransferFragment extends MultiPartyFragment
                 onConnectUIChange();
             }
         } else {
+            // This is the start of this sample, reset permission request states.
+            permQReset();
+
             // [MultiParty]
             // Just set room details
             setRoomDetails();
@@ -636,7 +645,7 @@ public class FileTransferFragment extends MultiPartyFragment
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, getContext(), this, skylinkConnection);
     }
 
     @Override

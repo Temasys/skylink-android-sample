@@ -29,6 +29,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
 
 /**
  * This class is used to demonstrate the AudioCall between two clients in WebRTC Created by
@@ -69,6 +71,9 @@ public class AudioCallFragment extends Fragment
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            // Resume previous permission request, if any.
+            permQResume(getContext(), this, skylinkConnection);
+
             // Set the appropriate UI if already isConnected().
             if (isConnected()) {
                 // Set listeners to receive callbacks when events are triggered
@@ -81,6 +86,9 @@ public class AudioCallFragment extends Fragment
             } else {
                 onDisconnectUIChange();
             }
+        } else {
+            // This is the start of this sample, reset permission request states.
+            permQReset();
         }
 
         btnAudioCall.setOnClickListener(new View.OnClickListener() {
@@ -389,7 +397,7 @@ public class AudioCallFragment extends Fragment
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, getContext(), this, skylinkConnection);
     }
 
     @Override

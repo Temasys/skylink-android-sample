@@ -28,8 +28,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Deque;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -57,6 +59,18 @@ public class Utils {
     public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
     private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+    // Queue of Permission requesting objects.
+    private static Deque<PermRequester> permQ = new ArrayDeque<>();
+    /**
+     * Captures state of whether an Android Runtime permission is currently being processed.
+     * Processing is complete when onRequestPermissionsResult is called, or if
+     */
+    private static Boolean permProcessing = new Boolean(false);
+    /**
+     * The currently processing Permission request.
+     * Used for resuming after device rotation.
+     */
+    private static PermRequester permRequester = null;
 
     private Utils() {
     }
@@ -541,7 +555,8 @@ public class Utils {
      * @param parentActivity
      * @param logTag
      */
-    public static void handleSkylinkReceiveLog(int infoCode, String message, Activity parentActivity, String logTag) {
+    public static void handleSkylinkReceiveLog(int infoCode, String message,
+                                               Activity parentActivity, String logTag) {
         switch (infoCode) {
             case CAM_SWITCH_FRONT:
             case CAM_SWITCH_NON_FRONT:
@@ -561,7 +576,8 @@ public class Utils {
      * @param parentActivity
      * @param logTag
      */
-    public static void handleSkylinkWarning(int errorCode, String message, Activity parentActivity, String logTag) {
+    public static void handleSkylinkWarning(int errorCode, String message, Activity parentActivity,
+                                            String logTag) {
         String log = "Skylink Error: " + errorCode + " (" + Errors.getErrorString(errorCode)
                 + ")\r\n" + message;
         Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
@@ -582,6 +598,10 @@ public class Utils {
     public static void onRequestPermissionsResultHandler(
             int requestCode, String[] permissions, int[] grantResults,
             String tag, SkylinkConnection skylinkConnection) {
+
+        // Trigger for next permission to be processed.
+        permQTaskCompleted();
+
         // Null check.
         String error = "";
         if (permissions.length < 1) {
@@ -625,109 +645,22 @@ public class Utils {
      * @param permissions       As given in OsListener method.
      * @param requestCode       As given in OsListener method.
      * @param infoCode          As given in OsListener method.
+     * @param tag               Tag string for logging.
      * @param context           Current context.
      * @param fragment          Current fragment.
-     * @param tag               Tag string for logging.
      * @param skylinkConnection The instance of SkylinkConnection being used here.
      */
     public static void onPermissionRequiredHandler(
-            final String[] permissions, final int requestCode, int infoCode,
-            Context context, final Fragment fragment, final String tag,
-            SkylinkConnection skylinkConnection) {
-        String log = "[SA][onPermReq] SDK requesting permission for " + permissions[0] + ", which ";
+            final String[] permissions, final int requestCode, final int infoCode,
+            final String tag, final Context context, final Fragment fragment,
+            final SkylinkConnection skylinkConnection) {
 
-        // For permission already granted,
-        // call Sylink SDK processPermissionsResult with PERMISSION_GRANTED as the result.
-        int permissionState = ContextCompat.checkSelfPermission(context, permissions[0]);
-        if (permissionState == PackageManager.PERMISSION_GRANTED) {
-            log += "has already been granted, no need to request again. " +
-                    "infoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
-            int[] grantResults = new int[]{PackageManager.PERMISSION_GRANTED};
-            if (skylinkConnection.processPermissionsResult(requestCode, permissions, grantResults)) {
-                Log.d(tag, log);
-                return;
-            }
-            // If result is false, an error has occurred.
-            log += "\r\n[ERROR] The SDK should but does not recognise the permission requestCode:" +
-                    requestCode + "!";
-            Log.e(tag, log);
-            return;
-        } else {
-            log += "has not been granted. ";
-        }
+        // Create a new PermRequester to represent this request.
+        PermRequester permRequester = new Utils.PermRequester(permissions, requestCode, infoCode,
+                tag, context, fragment, skylinkConnection);
 
-        // Create explanation based on permission required.
-        String alertText = "";
-        switch (infoCode) {
-            case PERM_AUDIO_MIC:
-                alertText += "Android permission to use the Microphone must be given " +
-                        "in order to send our audio to a remote Peer!";
-                break;
-            case PERM_VIDEO_CAM:
-                alertText += "Android permission to use the Camera must be given " +
-                        "in order to send our video to a remote Peer!";
-                break;
-            case PERM_STORAGE_READ:
-                alertText += "Android permission to read from device storage must be given " +
-                        "in order to send file to a remote Peer!";
-                break;
-            case PERM_STORAGE_WRITE:
-                alertText += "Android permission to write to device storage must be given " +
-                        "in order to receive file from a remote Peer!";
-                break;
-        }
-        log += alertText + "\r\ninfoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
-
-        // Explain rationale for permission request if the user
-        // has denied this Permission before, but did not indicate to never ask again.
-        if (fragment.shouldShowRequestPermissionRationale(permissions[0])) {
-            // If so, create alert to explain reason.
-            // Create AlertDialog to present Permission rationale message.
-            AlertDialog.Builder permissionRationaleDialogBuilder =
-                    new AlertDialog.Builder(context);
-            permissionRationaleDialogBuilder.setTitle("Why this permission is requested...");
-
-            // Create TextView for permission rationale alert.
-            final TextView msgTxtView = new TextView(context);
-            msgTxtView.setText(alertText);
-            msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
-            permissionRationaleDialogBuilder.setView(msgTxtView);
-
-            // User denies even after providing rationale.
-            final String finalLogDeny = log +
-                    "\r\nNot requesting Android for Permission after current & previous denial.";
-            permissionRationaleDialogBuilder.setNegativeButton("Cancel",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Log permission denied.
-                            Log.d(tag, finalLogDeny);
-                        }
-                    });
-
-            // User agrees to grant permission after rationale was shown.
-            final String finalLogRequest = log +
-                    "\r\nRequesting Android for Permission after previous denial.";
-            permissionRationaleDialogBuilder.setPositiveButton("Grant Permission",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Request for permission:
-                            Log.d(tag, finalLogRequest);
-                            fragment.requestPermissions(permissions, requestCode);
-                        }
-                    });
-
-            // Show explanation.
-            permissionRationaleDialogBuilder.show();
-            return;
-        }
-
-        // Request for permission for the first time:
-        log += ".\r\nRequesting Android for Permission for the first time.";
-        Log.d(tag, log);
-
-        fragment.requestPermissions(permissions, requestCode);
+        // Add PermRequester to Queue.
+        permQOfferLast(permRequester);
     }
 
     /**
@@ -794,4 +727,364 @@ public class Utils {
         Log.d(tag, alertText);
         permissionDeniedDialogBuilder.show();
     }
+
+    /**
+     * Stores parameters required for making permission request
+     * and have methods to perform permission request.
+     */
+    public static class PermRequester {
+
+        String[] permissions;
+        int requestCode;
+        int infoCode;
+        String tag;
+        // Static elements that are common to all PermRequester
+        static Context context;
+        static Fragment fragment;
+        static SkylinkConnection skylinkConnection;
+
+        public PermRequester(String[] permissions, int requestCode, int infoCode, String tag,
+                             Context context, Fragment fragment,
+                             SkylinkConnection skylinkConnection) {
+            this.permissions = permissions;
+            this.requestCode = requestCode;
+            this.infoCode = infoCode;
+            this.tag = tag;
+            PermRequester.context = context;
+            PermRequester.fragment = fragment;
+            PermRequester.skylinkConnection = skylinkConnection;
+        }
+
+        /**
+         * Sets new Permission request parameters specific to caller.
+         * This could happen when a new calling fragment wishes to execute a previously requested
+         * Permission, for e.g. after a screen rotation where a new fragment continues the
+         * permission request of the previous fragment.
+         *
+         * @param context
+         * @param fragment
+         * @param skylinkConnection
+         */
+        static void setNewCallerInfo(Context context, Fragment fragment,
+                                     SkylinkConnection skylinkConnection) {
+            PermRequester.context = context;
+            PermRequester.fragment = fragment;
+            PermRequester.skylinkConnection = skylinkConnection;
+        }
+
+        /**
+         * Do the actual work of processing onPermissionRequired using class members as parameters.
+         */
+        void processOnPermReq() {
+            processOnPermReq(permissions, requestCode, infoCode, tag,
+                    context, fragment, skylinkConnection);
+        }
+
+        /**
+         * Do the actual work of processing onPermissionRequired using supplied parameters.
+         *
+         * @param permissions
+         * @param requestCode
+         * @param infoCode
+         * @param tag
+         * @param context
+         * @param fragment
+         * @param skylinkConnection
+         * @return
+         */
+        void processOnPermReq(final String[] permissions, final int requestCode,
+                              final int infoCode, final String tag,
+                              final Context context, final Fragment fragment,
+                              final SkylinkConnection skylinkConnection) {
+            String log = "[SA][PR][procPermReq] SDK requesting permission for " + permissions[0] +
+                    ", which ";
+
+            // For permission already granted,
+            // call Sylink SDK processPermissionsResult with PERMISSION_GRANTED as the result.
+            int permissionState = ContextCompat.checkSelfPermission(context, permissions[0]);
+            if (permissionState == PackageManager.PERMISSION_GRANTED) {
+
+                log += "has already been granted, no need to request again. " +
+                        "infoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
+
+                int[] grantResults = new int[]{PackageManager.PERMISSION_GRANTED};
+                if (!skylinkConnection.processPermissionsResult(requestCode, permissions,
+                        grantResults)) {
+                    // If result is false, an error has occurred.
+                    log += "\r\n[ERROR] The SDK should but does not recognise permission requestCode: "
+                            + " " + requestCode + "!";
+                    Log.e(tag, log);
+                } else {
+                    Log.d(tag, log);
+                }
+
+                // Trigger for next permission to be processed.
+                permQTaskCompleted();
+                return;
+
+            } else {
+                log += "has not been granted. ";
+            }
+
+            // Create explanation based on permission required.
+            String alertText = "";
+            switch (infoCode) {
+                case PERM_AUDIO_MIC:
+                    alertText += "Android permission to use the Microphone must be given " +
+                            "in order to send our audio to a remote Peer!";
+                    break;
+                case PERM_VIDEO_CAM:
+                    alertText += "Android permission to use the Camera must be given " +
+                            "in order to send our video to a remote Peer!";
+                    break;
+                case PERM_STORAGE_READ:
+                    alertText += "Android permission to read from device storage must be given " +
+                            "in order to send file to a remote Peer!";
+                    break;
+                case PERM_STORAGE_WRITE:
+                    alertText += "Android permission to write to device storage must be given " +
+                            "in order to receive file from a remote Peer!";
+                    break;
+            }
+            log += alertText + "\r\ninfoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
+
+            // Explain rationale for permission request if the user
+            // has denied this Permission before, but did not indicate to never ask again.
+            if (fragment.shouldShowRequestPermissionRationale(permissions[0])) {
+
+                // Create AlertDialog to present Permission rationale message.
+                AlertDialog.Builder permissionRationaleDialogBuilder =
+                        new AlertDialog.Builder(context);
+                permissionRationaleDialogBuilder.setTitle("Why this permission is requested...");
+
+                // Create TextView for permission rationale alert.
+                final TextView msgTxtView = new TextView(context);
+                msgTxtView.setText(alertText);
+                msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+                permissionRationaleDialogBuilder.setView(msgTxtView);
+
+                // Indicates if permission request had been made (regardless of request outcome).
+                final boolean[] requestMade = {false};
+
+                // User denies permission even after providing rationale.
+                final String finalLogDeny = log + "\r\n" +
+                        "Not requesting Android for Permission after current & previous denial.";
+                permissionRationaleDialogBuilder.setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                requestMade[0] = true;
+                                String logDeny = finalLogDeny;
+
+                                // Call Sylink SDK processPermissionsResult with
+                                // PERMISSION_DENIED as the result.
+                                int[] grantResults = new int[]{PackageManager.PERMISSION_DENIED};
+                                if (!skylinkConnection.processPermissionsResult(requestCode, permissions,
+                                        grantResults)) {
+                                    // If result is false, an error has occurred.
+                                    logDeny += "\r\n[ERROR] The SDK should but does not recognise "
+                                            + "permission requestCode: " + requestCode + "!";
+                                    Log.e(tag, logDeny);
+                                } else {
+                                    // Log permission denied.
+                                    Log.d(tag, logDeny);
+                                }
+
+                                // Trigger for next permission to be processed.
+                                permQTaskCompleted();
+                            }
+                        });
+
+                // User agrees to grant permission after rationale was shown.
+                final String finalLogRequest = log +
+                        "\r\nRequesting Android for Permission after previous denial.";
+                permissionRationaleDialogBuilder.setPositiveButton("Grant Permission",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                requestMade[0] = true;
+                                // Request for permission:
+                                Log.d(tag, finalLogRequest);
+                                fragment.requestPermissions(permissions, requestCode);
+                            }
+                        });
+
+                // Set this permission in Q again if it was canceled without being requested.
+                final String finalLogCancel = log + "\r\npermissionRationaleDialog canceled ";
+                permissionRationaleDialogBuilder.setOnCancelListener(
+                        new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                // If request had not been made, add permission Runnable again to
+                                // Head of Queue, to be processed again.
+                                if (!requestMade[0]) {
+                                    String logCancel = finalLogCancel + "without having made "
+                                            + "request! Will make request again.";
+                                    Log.d(tag, logCancel);
+                                    PermRequester permRequester =
+                                            new PermRequester(permissions, requestCode, infoCode,
+                                                    tag, context, fragment, skylinkConnection);
+                                    permQOfferFirst(permRequester);
+                                    return;
+                                }
+
+                                // Otherwise, it was from elsewhere where
+                                // the permission request was already made.
+                                String logCancel = finalLogCancel + "after having made request, "
+                                        + "hence will not make request again.";
+                                Log.d(tag, logCancel);
+                            }
+                        });
+
+                // Show explanation.
+                permissionRationaleDialogBuilder.show();
+                return;
+            }
+
+            // Request for permission for the first time:
+            log += ".\r\nRequesting Android for Permission for the first time.";
+            Log.d(tag, log);
+
+            fragment.requestPermissions(permissions, requestCode);
+            return;
+        }
+    }
+
+    /**
+     * Adds new permission request to the head of the queue.
+     * This is for repeating a particular request immediately.
+     * Synchronised with permProcessing.
+     *
+     * @param permRequester
+     */
+    public static void permQOfferFirst(PermRequester permRequester) {
+        synchronized (permProcessing) {
+            permQ.offerFirst(permRequester);
+
+            // Try to process permRun immediately.
+            permProcessing = false;
+            Utils.permRequester = null;
+
+            String log = "[SA][permQOfferFirst] Added permission request to head of permQ. " +
+                    "Set permProcessing to false and try to process queue immediately.";
+            Log.d(TAG, log);
+            permQPoll();
+        }
+    }
+
+    /**
+     * Adds new permission requests to the tail of the queue.
+     * This is for normal adding of new permission requests to the queue.
+     * Synchronised with permProcessing.
+     *
+     * @param permRequester
+     */
+    public static void permQOfferLast(PermRequester permRequester) {
+        synchronized (permProcessing) {
+            permQ.offerLast(permRequester);
+            String log = "[SA][permQOfferLast] Added permission request to tail of permQ. " +
+                    "Triggered for queue processing.";
+            Log.d(TAG, log);
+            permQPoll();
+        }
+    }
+
+    /**
+     * Process the element at the head of the queue if not already currently processing.
+     * Synchronised with permProcessing.
+     *
+     * @return True if a new permission request is triggered to process, false otherwise.
+     */
+    public static boolean permQPoll() {
+        synchronized (permProcessing) {
+            String log = "[SA][permQPoll] ";
+            if (permProcessing) {
+                log += "Tried to process permQ but not starting new attempt as " +
+                        "it is currently being processed.";
+                Log.d(TAG, log);
+                return false;
+            }
+
+            // Try to process next permission request since Q is not currently being processed.
+            PermRequester permRequesterNext = permQ.poll();
+            // Do not process if there are no more element in the queue.
+            if (permRequesterNext == null) {
+                log += "Tried to process permQ but not starting new attempt as " +
+                        "there are no more permissions waiting to be processed.";
+                Log.d(TAG, log);
+                return false;
+            }
+
+            // Set states and process permission request.
+            permProcessing = true;
+            permRequester = permRequesterNext;
+            log += "Processing next permission request in permQ. Permission states updated.";
+            Log.d(TAG, log);
+            permRequesterNext.processOnPermReq();
+            return true;
+        }
+    }
+
+    /**
+     * Reset permQ tasks and states, typically at the start of a sample fragment.
+     * This is required when for e.g.:
+     * Restarting a sample after disruption by "Screen Overlay detected" permission setting error.
+     * Synchronised with permProcessing.
+     */
+    public static void permQReset() {
+        synchronized (permProcessing) {
+
+            permProcessing = false;
+            permRequester = null;
+            permQ = new ArrayDeque<>();
+
+            String log = "[SA][permQReset] Reset all permQ related tasks and states! " +
+                    "permQ is now empty.";
+            Log.d(TAG, log);
+        }
+    }
+
+    /**
+     * Resume previously running permQ task (if any) after rotation.
+     * Previous caller related parameters will be replaced by current caller.
+     * Synchronised with permProcessing.
+     *
+     * @param context
+     * @param fragment
+     * @param skylinkConnection
+     */
+    public static void permQResume(Context context, Fragment fragment,
+                                   SkylinkConnection skylinkConnection) {
+        synchronized (permProcessing) {
+            if (permRequester == null) {
+                return;
+            }
+
+            String log = "[SA][permQResume] Resuming permission request that was disrupted!";
+            Log.d(TAG, log);
+
+            // Set new caller for all PermRequesters, including those in Q.
+            PermRequester.setNewCallerInfo(context, fragment, skylinkConnection);
+            permQOfferFirst(permRequester);
+        }
+    }
+
+    /**
+     * Call on completion of a permQ task.
+     * Will trigger permQ to process next task.
+     * Synchronised with permProcessing.
+     */
+    public static void permQTaskCompleted() {
+        synchronized (permProcessing) {
+            // Set state to not processing.
+            permProcessing = false;
+            permRequester = null;
+
+            String log = "[SA][permQTaskCom] Completed permission request. " +
+                    "Set permProcessing to false and try to process next task in queue.";
+            Log.d(TAG, log);
+            permQPoll();
+        }
+    }
+
 }

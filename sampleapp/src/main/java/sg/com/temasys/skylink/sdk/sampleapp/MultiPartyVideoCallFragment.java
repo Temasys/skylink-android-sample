@@ -46,6 +46,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
 
 /**
  * Created by janidu on 3/3/15.
@@ -81,7 +83,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     // Map with PeerId as key for boolean state
     // that indicates if currently getting WebRTC stats for Peer.
-    private ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
+    private static ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
             new ConcurrentHashMap<String, Boolean>();
 
     @Override
@@ -138,6 +140,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            // Resume previous permission request, if any.
+            permQResume(getContext(), this, skylinkConnection);
 
             // Toggle camera back to previous state if required.
             if (toggleCamera) {
@@ -154,6 +158,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             // Set again the listeners to receive callbacks when events are triggered
             setListeners();
         } else {
+            // This is the start of this sample, reset permission request states.
+            permQReset();
+
             // Set toggleCamera back to default state.
             toggleCamera = false;
         }
@@ -748,7 +755,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 // Populate actions of Popup Menu.
                 if (peerId != null) {
                     String statsStr = getString(R.string.webrtc_stats);
-                    if (isGettingWebrtcStats.get(peerId)) {
+                    final Boolean gettingStats = isGettingWebrtcStats.get(peerId);
+                    if ((gettingStats != null) && gettingStats) {
                         statsStr += " (ON)";
                     } else {
                         statsStr += " (OFF)";
@@ -899,7 +907,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, getContext(), this, TAG, skylinkConnection);
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, getContext(), this, skylinkConnection);
     }
 
     @Override
