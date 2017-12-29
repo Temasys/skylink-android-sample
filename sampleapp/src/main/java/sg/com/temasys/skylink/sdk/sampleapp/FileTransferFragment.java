@@ -61,6 +61,7 @@ public class FileTransferFragment extends MultiPartyFragment
     // Constants for configuration change
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
     private static SkylinkConnection skylinkConnection;
+    private static SkylinkConfig skylinkConfig;
     private TextView tvRoomDetails;
     private EditText etSenderFilePath;
     private TextView tvFileTransferDetails;
@@ -336,9 +337,9 @@ public class FileTransferFragment extends MultiPartyFragment
                 requestCode, permissions, grantResults, TAG, skylinkConnection);
     }
 
-    /***
-     * Skylink Helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // Skylink helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Check if we are currently connected to the room.
@@ -353,16 +354,20 @@ public class FileTransferFragment extends MultiPartyFragment
     }
 
     private SkylinkConfig getSkylinkConfig() {
-        SkylinkConfig config = new SkylinkConfig();
+        if (skylinkConfig != null) {
+            return skylinkConfig;
+        }
+
+        skylinkConfig = new SkylinkConfig();
         // AudioVideo config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        config.setHasFileTransfer(true);
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        skylinkConfig.setHasFileTransfer(true);
 
         // Set some common configs.
-        Utils.skylinkConfigCommonOptions(config);
-        return config;
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
     }
 
     private void connectToRoom() {
@@ -411,9 +416,9 @@ public class FileTransferFragment extends MultiPartyFragment
         }
     }
 
-    /***
-     * Helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // UI helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Creates a dummy file from the apk's asset folder to the device's filepath so that there is a

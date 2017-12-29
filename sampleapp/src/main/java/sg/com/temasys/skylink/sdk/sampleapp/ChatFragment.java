@@ -54,6 +54,7 @@ public class ChatFragment extends MultiPartyFragment
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
 
     private static SkylinkConnection skylinkConnection;
+    private static SkylinkConfig skylinkConfig;
     private static List<String> chatMessageCollection;
 
     private Button btnSendServerMessage;
@@ -222,9 +223,9 @@ public class ChatFragment extends MultiPartyFragment
         }
     }
 
-    /***
-     * Skylink Helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // Skylink helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Check if we are currently connected to the room.
@@ -239,16 +240,20 @@ public class ChatFragment extends MultiPartyFragment
     }
 
     private SkylinkConfig getSkylinkConfig() {
-        SkylinkConfig config = new SkylinkConfig();
+        if (skylinkConfig != null) {
+            return skylinkConfig;
+        }
+
+        skylinkConfig = new SkylinkConfig();
         // AudioVideo config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        config.setHasPeerMessaging(true);
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        skylinkConfig.setHasPeerMessaging(true);
 
         // Set some common configs.
-        Utils.skylinkConfigCommonOptions(config);
-        return config;
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
     }
 
     private void connectToRoom() {

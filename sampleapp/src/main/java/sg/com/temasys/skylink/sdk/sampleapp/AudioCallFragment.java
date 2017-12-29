@@ -22,6 +22,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
@@ -51,6 +52,7 @@ public class AudioCallFragment extends Fragment
     private static final String BUNDLE_PEER_ID = "peerId";
     private static final String BUNDLE_PEER_NAME = "remotePeerName";
     private static SkylinkConnection skylinkConnection;
+    private static SkylinkConfig skylinkConfig;
     private TextView tvRoomDetails;
     private Button btnAudioCall;
     private String remotePeerId;
@@ -149,9 +151,9 @@ public class AudioCallFragment extends Fragment
                 requestCode, permissions, grantResults, TAG, skylinkConnection);
     }
 
-    /***
-     * Skylink Helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // Skylink helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Check if we are currently connected to the room.
@@ -195,20 +197,24 @@ public class AudioCallFragment extends Fragment
     }
 
     private SkylinkConfig getSkylinkConfig() {
-        SkylinkConfig config = new SkylinkConfig();
+        if (skylinkConfig != null) {
+            return skylinkConfig;
+        }
+
+        skylinkConfig = new SkylinkConfig();
         // AudioVideo config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        config.setHasPeerMessaging(true);
-        config.setHasFileTransfer(true);
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+        skylinkConfig.setHasPeerMessaging(true);
+        skylinkConfig.setHasFileTransfer(true);
 
         // Allow only 1 remote Peer to join.
-        config.setMaxPeers(1); // Default is 4 remote Peers.
+        skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
 
         // Set some common configs.
-        Utils.skylinkConfigCommonOptions(config);
-        return config;
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
     }
 
     private void initializeSkylinkConnection() {
@@ -338,13 +344,23 @@ public class AudioCallFragment extends Fragment
     }
 
     @Override
+    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+        // Will not be called in Audio only client.
+    }
+
+    @Override
+    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        // Will not be called in Audio only client.
+    }
+
+    @Override
+    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        // Will not be called in Audio only client.
+    }
+
+    @Override
     public void onVideoSizeChange(String peerId, Point size) {
-        String peer = "Peer " + peerId;
-        // If peerId is null, this call is for our local video.
-        if (peerId == null) {
-            peer = "We've";
-        }
-        Log.d(TAG, peer + " got video size changed to: " + size.toString() + ".");
+        // Will not be called in Audio only client.
     }
 
     @Override

@@ -9,7 +9,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Point;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,12 +34,15 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.listener.OsListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
@@ -49,17 +56,44 @@ public class VideoCallFragment extends Fragment
     private String ROOM_NAME;
     private String MY_USER_NAME;
 
-    //set height width for self-video when in call
-    public static final int WIDTH = 350;
-    public static final int HEIGHT = 350;
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
     private static final String ARG_SECTION_NUMBER = "section_number";
+
+    // Video resolution from camera input.
+    public static int widthInput = -1;
+    public static int heightInput = -1;
+    public static int fpsInput = -1; // Frame rate in frames per second (fps).
+
+    // Video resolution from camera sent out to Peer.
+    public static int widthSent = -1;
+    public static int heightSent = -1;
+    public static int fpsSent = -1; // Frame rate in frames per second (fps).
+
+    // Video resolution received from Peer.
+    public static int widthRecv = -1;
+    public static int heightRecv = -1;
+    public static int fpsRecv = -1; // Frame rate in frames per second (fps).
+
+    // The current VideoDevice.
+    private static SkylinkConfig.VideoDevice currentVideoDevice = null;
+    // The current camera name.
+    private static String currentCameraName = null;
+    // The array of SkylinkCaptureFormats support by the current camera.
+    private static SkylinkCaptureFormat[] captureFormats;
+    // The selected SkylinkCaptureFormat on UI,
+    // not necessarily the currently used SkylinkCaptureFormat.
+    private static SkylinkCaptureFormat captureFormatSel = null;
+    // The last selected frame rate (fps) on UI,
+    // not necessarily the currently used frame rate.
+    private static int fpsSel = -1;
+
     // Constants for configuration change
     private static final String BUNDLE_CONNECTING = "connecting";
     private static final String BUNDLE_AUDIO_MUTED = "audioMuted";
     private static final String BUNDLE_VIDEO_MUTED = "videoMuted";
 
     private static SkylinkConnection skylinkConnection;
+    private static SkylinkConfig skylinkConfig;
     // Indicates if camera should be toggled after returning to app.
     // Generally, it should match whether it was toggled when moving away from app.
     // For e.g., if camera was already off, then it would not be toggled when moving away from app,
@@ -67,18 +101,37 @@ public class VideoCallFragment extends Fragment
     // it would not be toggled.
     private static boolean toggleCamera;
 
-    private LinearLayout linearLayout;
-    private Button toggleAudioButton;
-    private Button toggleVideoButton;
-    private Button toggleCameraButton;
-    private Button disconnectButton;
-    private Button btnEnterRoom;
-    private EditText etRoomName;
     private boolean connecting = false;
     private String roomName;
     private boolean audioMuted;
     private boolean videoMuted;
+
     private Activity parentActivity;
+    private View rootView;
+
+    // UI Controls
+    private LinearLayout linearLayout;
+    // Room
+    private Button disconnectButton;
+    private Button btnEnterRoom;
+    private EditText etRoomName;
+    // Media
+    private Button toggleAudioButton;
+    private Button toggleVideoButton;
+    private Button toggleCameraButton;
+    // Media - Resolution
+    private TextView tvInput;
+    private TextView tvResInput;
+    private TextView tvSent;
+    private TextView tvResSent;
+    private TextView tvRecv;
+    private TextView tvResRecv;
+    private SeekBar seekBarResDim;
+    private SeekBar seekBarResFps;
+    private TextView tvResDim;
+    private TextView tvResFps;
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim;
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResFps;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -86,7 +139,7 @@ public class VideoCallFragment extends Fragment
         ROOM_NAME = Config.ROOM_NAME_VIDEO;
         MY_USER_NAME = Config.USER_NAME_VIDEO;
 
-        View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
+        rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
         linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
         btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
         etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
@@ -95,6 +148,8 @@ public class VideoCallFragment extends Fragment
         toggleVideoButton = (Button) rootView.findViewById(R.id.toggle_video);
         toggleCameraButton = (Button) rootView.findViewById(R.id.toggle_camera);
         disconnectButton = (Button) rootView.findViewById(R.id.disconnect);
+        // Video resolution UI.
+        setUiResControls();
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
@@ -138,6 +193,8 @@ public class VideoCallFragment extends Fragment
 
             // Set toggleCamera back to default state.
             toggleCamera = false;
+
+            onDisconnectUIChange();
         }
 
         // Set UI elements
@@ -182,8 +239,7 @@ public class VideoCallFragment extends Fragment
                 String toast = "Toggled camera ";
                 if (getVideoView(null) != null) {
                     try {
-                        skylinkConnection.toggleCamera();
-                        if (skylinkConnection.isCameraOn()) {
+                        if (skylinkConnection.toggleCamera()) {
                             toast += "to restarted!";
                         } else {
                             toast += "to stopped!";
@@ -199,6 +255,7 @@ public class VideoCallFragment extends Fragment
         });
 
         disconnectButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
             @Override
             public void onClick(View v) {
                 Toast.makeText(parentActivity, "Clicked Disconnect!", Toast.LENGTH_SHORT).show();
@@ -243,6 +300,7 @@ public class VideoCallFragment extends Fragment
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onPause() {
         super.onPause();
@@ -270,6 +328,7 @@ public class VideoCallFragment extends Fragment
         outState.putBoolean(BUNDLE_VIDEO_MUTED, videoMuted);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onDetach() {
         super.onDetach();
@@ -283,9 +342,9 @@ public class VideoCallFragment extends Fragment
                 requestCode, permissions, grantResults, TAG, skylinkConnection);
     }
 
-    /***
-     * Skylink Helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // Skylink helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Check if we are currently connected to the room.
@@ -309,7 +368,7 @@ public class VideoCallFragment extends Fragment
 
         String toast = "";
         // If roomName is not set through the UI, get the default roomName from Constants
-        if (roomName.isEmpty()) {
+        if (roomName == null || "".equals(roomName)) {
             roomName = ROOM_NAME;
             etRoomName.setText(roomName);
             toast = "No room name provided, entering default video room \"" + roomName
@@ -348,6 +407,7 @@ public class VideoCallFragment extends Fragment
     /**
      * Disconnect from room.
      */
+    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     private void disconnectFromRoom() {
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already connecting/connected and not changing orientation.
@@ -360,31 +420,47 @@ public class VideoCallFragment extends Fragment
         }
     }
 
-    private SkylinkConfig getSkylinkConfig() {
-        SkylinkConfig config = new SkylinkConfig();
-        // AudioVideo config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        config.setHasPeerMessaging(true);
-        config.setHasFileTransfer(true);
-        config.setMirrorLocalView(true);
+    /**
+     * Set the range of supported SkylinkCaptureFormats.
+     *
+     * @return A string representing the current CaptureFormat and supported CaptureFormats, if any.
+     */
+    private String setCaptureFormats() {
+        String strFormat = "No CaptureFormat currently registered.";
+        String strFormats = "No CaptureFormats currently registered.";
 
-        // Allow only 1 remote Peer to join.
-        config.setMaxPeers(1); // Default is 4 remote Peers.
+        // Record current range of supported SkylinkCaptureFormats.
+        if (skylinkConnection != null) {
+            captureFormats = skylinkConnection.getCaptureFormats(null);
+        }
+        if (isCaptureFormatsValid(captureFormats)) {
+            strFormats = captureFormatsToString(captureFormats);
+        }
 
-        // Set some common configs.
-        Utils.skylinkConfigCommonOptions(config);
-        return config;
+        // Get the current CaptureFormat, if there is one.
+        SkylinkCaptureFormat captureFormat = skylinkConnection.getCaptureFormat();
+        if (captureFormat != null) {
+            strFormat = captureFormat.toString();
+        }
+
+        String captureFormatString = "Current capture format: " + strFormat + ".\r\n" +
+                "Supported capture formats: " + strFormats + ".";
+        return captureFormatString;
     }
 
-    private void initializeSkylinkConnection() {
-        skylinkConnection = SkylinkConnection.getInstance();
-        //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(),
-                getSkylinkConfig(), this.parentActivity.getApplicationContext());
-        // Set listeners to receive callbacks when events are triggered
-        setListeners();
+    @NonNull
+    /**
+     * Return a description of each CaptureFormat in the Array of CaptureFormats provided.
+     */
+    private String captureFormatsToString(SkylinkCaptureFormat[] captureFormats) {
+        if (!isCaptureFormatsValid(captureFormats)) {
+            return null;
+        }
+        String formats = "";
+        for (SkylinkCaptureFormat supportedFormat : captureFormats) {
+            formats += "\r\n" + supportedFormat.toString();
+        }
+        return formats;
     }
 
     /**
@@ -417,12 +493,147 @@ public class VideoCallFragment extends Fragment
             return null;
         }
         String[] peerIdList = skylinkConnection.getPeerIdList();
-        // Ensure index does not exceed max index on peerIdList.
-        if (index <= peerIdList.length - 1) {
-            return peerIdList[index];
-        } else {
+        // Ensure index does not exceed range of possible indices on peerIdList.
+        if (index > peerIdList.length - 1 || index < 0) {
             return null;
         }
+        return peerIdList[index];
+    }
+
+    private SkylinkConfig getSkylinkConfig() {
+        if (skylinkConfig != null) {
+            return skylinkConfig;
+        }
+
+        skylinkConfig = new SkylinkConfig();
+        // AudioVideo config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setHasPeerMessaging(true);
+        skylinkConfig.setHasFileTransfer(true);
+        skylinkConfig.setMirrorLocalView(true);
+
+        // Allow only 1 remote Peer to join.
+        skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
+
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
+    }
+
+    private void initializeSkylinkConnection() {
+        skylinkConnection = SkylinkConnection.getInstance();
+        //the app_key and app_secret is obtained from the temasys developer console.
+        skylinkConnection.init(Config.getAppKey(),
+                getSkylinkConfig(), this.parentActivity.getApplicationContext());
+        // Set listeners to receive callbacks when events are triggered
+        setListeners();
+    }
+
+    /**
+     * Call Skylink APIs to get all Video resolutions available, including:
+     * Input, sent and received.
+     */
+    private void getVideoResolutions() {
+        skylinkConnection.getInputVideoResolution();
+        String remotePeerId = getPeerId(1);
+        if (remotePeerId != null) {
+            skylinkConnection.getSentVideoResolution(remotePeerId);
+            skylinkConnection.getReceivedVideoResolution(remotePeerId);
+        }
+    }
+
+    /**
+     * Record the current local input video width, height, fps and SkylinkCaptureFormat.
+     * Get the range of {@link SkylinkCaptureFormat} supported by the current camera,
+     * and write them to {@link #captureFormats} if the camera has changed.
+     * If the current VideoDevice is not a camera, this will set captureFormats to null.
+     *
+     * @param width
+     * @param height
+     * @param fps
+     * @param captureFormat
+     */
+    private void noteInputVideoResolutions(int width, int height, int fps,
+                                           SkylinkCaptureFormat captureFormat) {
+        setUiResTvStats(width, height, fps, tvResInput);
+        this.widthInput = width;
+        this.heightInput = height;
+        this.fpsInput = fps;
+        currentVideoDevice = skylinkConnection.getCurrentVideoDevice();
+        String previousCameraName = currentCameraName;
+        currentCameraName = skylinkConnection.getCurrentCameraName();
+
+        String captureFormatString = "Current capture formats have not changed.";
+
+        // Check if a new camera in now active.
+        boolean newCamera = false;
+        if (currentCameraName != null) {
+            if (!currentCameraName.equals(previousCameraName)) {
+                newCamera = true;
+            }
+        } else if (previousCameraName != null) {
+            if (!previousCameraName.equals(currentCameraName)) {
+                newCamera = true;
+            }
+        }
+
+        // Update the UI for setting new video resolution if a new camera has been obtained.
+        if (newCamera) {
+            // Set the range of supported SkylinkCaptureFormats.
+            captureFormatString = setCaptureFormats();
+            // Try to continue to with last selected Fps if possible.
+            int fpsNew = getFpsForNewCaptureFormat(fpsSel, captureFormat);
+
+            if (captureFormat != null) {
+                // Set new selected CaptureFormat and frame rate.
+                captureFormatSel = captureFormat;
+                fpsSel = fpsNew;
+            }
+
+            // Set UI values.
+            setUiResDim(width, height, captureFormats);
+            setUiResFps(fpsNew, captureFormat);
+        }
+
+        String log = "The current local video by VideoDevice " + currentVideoDevice +
+                ", with camera name \"" + currentCameraName +
+                "\", has width, height, fps: " + width + ", " + height + ", " + fps +
+                ".\r\n" + captureFormatString;
+        Log.d(TAG, log);
+    }
+
+    /**
+     * Call Skylink API to set local input video resolution's width, height and frame rate.
+     * Do not call Skylink API if values are invalid, or
+     * the same as current local video's values.
+     *
+     * @param format The {@link SkylinkCaptureFormat} with the width and height to set.
+     * @param fps    Frame rate to set in frames per second
+     * @return True if new resolution set, false otherwise.
+     */
+    private boolean setInputVideoResolutions(SkylinkCaptureFormat format, int fps) {
+        if (skylinkConnection == null) {
+            return false;
+        }
+        int width = format.getWidth();
+        int height = format.getHeight();
+        if (width < 0 || height < 0 || fps < 0) {
+            return false;
+        }
+
+        // Set new selected CaptureFormat and frame rate.
+        captureFormatSel = format;
+        fpsSel = fps;
+
+        // If already at new resolution, no need to call Skylink API.
+        if (widthInput == width && heightInput == height && fpsInput == fps) {
+            return true;
+        }
+
+        skylinkConnection.setInputVideoResolution(width, height, fps);
+        return true;
     }
 
     /**
@@ -446,24 +657,26 @@ public class VideoCallFragment extends Fragment
      * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
-        btnEnterRoom.setVisibility(View.GONE);
+        btnEnterRoom.setVisibility(GONE);
         etRoomName.setEnabled(false);
-        toggleAudioButton.setVisibility(View.VISIBLE);
-        toggleVideoButton.setVisibility(View.VISIBLE);
-        toggleCameraButton.setVisibility(View.VISIBLE);
-        disconnectButton.setVisibility(View.VISIBLE);
+        toggleAudioButton.setVisibility(VISIBLE);
+        toggleVideoButton.setVisibility(VISIBLE);
+        toggleCameraButton.setVisibility(VISIBLE);
+        disconnectButton.setVisibility(VISIBLE);
+        setUiResControlsVisibility(VISIBLE);
     }
 
     /**
      * Change certain UI elements when trying to connect to room.
      */
     private void onConnectingUIChange() {
-        btnEnterRoom.setVisibility(View.GONE);
+        btnEnterRoom.setVisibility(GONE);
         etRoomName.setEnabled(false);
-        toggleAudioButton.setVisibility(View.GONE);
-        toggleVideoButton.setVisibility(View.GONE);
-        toggleCameraButton.setVisibility(View.GONE);
-        disconnectButton.setVisibility(View.VISIBLE);
+        toggleAudioButton.setVisibility(GONE);
+        toggleVideoButton.setVisibility(GONE);
+        toggleCameraButton.setVisibility(GONE);
+        disconnectButton.setVisibility(VISIBLE);
+        setUiResControlsVisibility(VISIBLE);
     }
 
     /**
@@ -480,12 +693,521 @@ public class VideoCallFragment extends Fragment
             linearLayout.removeView(peer);
         }
 
-        btnEnterRoom.setVisibility(View.VISIBLE);
+        btnEnterRoom.setVisibility(VISIBLE);
         etRoomName.setEnabled(true);
-        toggleAudioButton.setVisibility(View.GONE);
-        toggleVideoButton.setVisibility(View.GONE);
-        toggleCameraButton.setVisibility(View.GONE);
-        disconnectButton.setVisibility(View.GONE);
+        toggleAudioButton.setVisibility(GONE);
+        toggleVideoButton.setVisibility(GONE);
+        toggleCameraButton.setVisibility(GONE);
+        disconnectButton.setVisibility(GONE);
+
+        widthInput = -1;
+        heightInput = -1;
+        fpsInput = -1;
+        widthSent = -1;
+        heightSent = -1;
+        fpsSent = -1;
+        widthRecv = -1;
+        heightRecv = -1;
+        fpsRecv = -1;
+        setUiResControlsVisibility(GONE);
+    }
+
+    /**
+     * Checks if given {@link SkylinkCaptureFormat SkylinkCaptureFormat[]} is valid for using.
+     * To be valid, it cannot be null or empty.
+     *
+     * @param captureFormats
+     * @return
+     */
+    private boolean isCaptureFormatsValid(SkylinkCaptureFormat[] captureFormats) {
+        if (captureFormats == null || captureFormats.length == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if given {@link SkylinkCaptureFormat} is valid for using.
+     * To be valid it cannot be null, and the fps range cannot be negative.
+     *
+     * @param format
+     * @return True if valid and false if not.
+     */
+    private boolean isCaptureFormatValid(SkylinkCaptureFormat format) {
+        if (format == null) {
+            return false;
+        }
+
+        // Check fps range based on min and max fps of this CaptureFormat.
+        int range = format.getFpsMax() - format.getFpsMin();
+        if (range < 0 || format.getFpsMin() < 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Get the frame rate (fps) that should be selected, for a given {@link SkylinkCaptureFormat}.
+     * Use the given fps if supported by given CaptureFormat, else use the new max fps.
+     *
+     * @param fps    Frame rate that should be selected if possible.
+     * @param format {@link SkylinkCaptureFormat} that defines the possible frame rate range.
+     * @return The appropriate fps, or a negative number if the given CaptureFormat is invalid.
+     */
+    private int getFpsForNewCaptureFormat(int fps, SkylinkCaptureFormat format) {
+
+        // Check if given CaptureFormat is valid.
+        if (!isCaptureFormatValid(format)) {
+            return -1;
+        }
+
+        int fpsMinNew = format.getFpsMin();
+        int fpsMaxNew = format.getFpsMax();
+
+        // Set new fps UI max value if the current one is out of the new range.
+        if (fps < fpsMinNew || fps > fpsMaxNew) {
+            return fpsMaxNew;
+        }
+        return fps;
+    }
+
+    @NonNull
+    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerDim() {
+        return new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // Set textView to match
+                setUiResTvOnSeekBarProgressDim(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+                SkylinkCaptureFormat format = setUiResTvOnSeekBarProgressDim(seekBar.getProgress());
+                // Check that new CaptureFormat is valid.
+                if (!isCaptureFormatValid(format)) {
+                    return;
+                }
+
+                int width = format.getWidth();
+                int height = format.getHeight();
+                int fpsNew = getFpsForNewCaptureFormat(fpsSel, format);
+
+                // If any of the new Dim or Fps values are not valid,
+                // or setting new resolution was not successful, reset UI to previous values.
+                if (fpsNew < 0 || !setUiResTvDim(width, height) || !setUiResFps(fpsNew, format)
+                        || setInputVideoResolutions(format, fpsNew)) {
+                    setUiResDim(captureFormatSel.getWidth(), captureFormatSel.getHeight(),
+                            captureFormats);
+                    setUiResFps(fpsSel, captureFormatSel);
+                    return;
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerFps() {
+        return new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // Set textView to match
+                setUiResTvOnSeekBarProgressFps(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int fpsNew = setUiResTvOnSeekBarProgressFps(seekBar.getProgress());
+
+                // Check that new fps is valid for selected CaptureFormat.
+                fpsNew = getFpsForNewCaptureFormat(fpsNew, captureFormatSel);
+
+                // If any of new Fps or selected CaptureFormat are not valid,
+                // or setting new resolution was not successful, reset Fps UI to previous values.
+                if (fpsNew < 0 || setInputVideoResolutions(captureFormatSel, fpsNew)) {
+                    setUiResFps(fpsSel, captureFormatSel);
+                    return;
+                }
+            }
+        };
+    }
+
+    /**
+     * Return the index of the given SkylinkCaptureFormat from within the list of
+     * current supported SkylinkCaptureFormat[].
+     *
+     * @param captureFormats
+     * @param width
+     * @param height
+     * @return Negative number if index could not be found, or if captureFormats is invalid.
+     */
+    int getSeekBarIndexDim(SkylinkCaptureFormat[] captureFormats, int width, int height) {
+        if (!isCaptureFormatsValid(captureFormats)) {
+            return -1;
+        }
+
+        int index = -1;
+        SkylinkCaptureFormat format;
+        int length = captureFormats.length;
+        for (int i = 0; i < length; ++i) {
+            format = captureFormats[i];
+            if (width == format.getWidth() && height == format.getHeight()) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    /**
+     * Return the index of the given fps from within the range of current supported fps.
+     *
+     * @param captureFormat
+     * @param fps
+     * @return Negative number if index could not be found, or if captureFormat is invalid.
+     */
+    int getSeekBarIndexFps(SkylinkCaptureFormat captureFormat, int fps) {
+        if (!isCaptureFormatValid(captureFormat)) {
+            return -1;
+        }
+
+        int fpsMin = captureFormat.getFpsMin();
+        // fps must be within captureFormat's fps range.
+        if (fps < fpsMin || fps > captureFormat.getFpsMax()) {
+            return -1;
+        }
+
+        int index = fps - fpsMin;
+        return index;
+    }
+
+    /**
+     * Get {@link SkylinkCaptureFormat} selected by new seekBarResDim progress.
+     * If no valid {@link SkylinkCaptureFormat} can be returned, return null.
+     *
+     * @param progress
+     * @param captureFormats The {@link SkylinkCaptureFormat} array
+     *                       from which to select a {@link SkylinkCaptureFormat}.
+     * @return {@link SkylinkCaptureFormat} indicated by the seekBarResDim progress.
+     */
+    private SkylinkCaptureFormat getSeekBarValueDim(int progress,
+                                                    SkylinkCaptureFormat[] captureFormats) {
+        if (!isCaptureFormatsValid(captureFormats) || progress >= captureFormats.length) {
+            return null;
+        }
+        SkylinkCaptureFormat format = captureFormats[progress];
+        return format;
+    }
+
+    /**
+     * Get the fps indicated by the progress value on the SeekBar.
+     * Return a negative number if no value is available.
+     *
+     * @param progress The SeekBar progress.
+     * @param format   A {@link SkylinkCaptureFormat} that represents fps range to choose from.
+     * @return
+     */
+    private int getSeekBarValueFps(int progress, SkylinkCaptureFormat format) {
+        if (!isCaptureFormatValid(format)) {
+            return -1;
+        }
+        int fpsMin = format.getFpsMin();
+        int fps = fpsMin + progress;
+        // Fps value must be within format's fps range.
+        if (fps < fpsMin || fps > format.getFpsMax()) {
+            return -1;
+        }
+        return fps;
+    }
+
+    /**
+     * Generate a string to display a set of video resolution dimensions (i.e. width and height).
+     *
+     * @param width
+     * @param height
+     * @return
+     */
+    @NonNull
+    private String getResDimStr(int width, int height) {
+        return width + " x " + height;
+    }
+
+    /**
+     * Generate a string to display frame rate in fps.
+     *
+     * @param fps Framerate in frames per seconds.
+     * @return
+     */
+    @NonNull
+    private String getResFpsStr(int fps) {
+        return fps + " fps";
+    }
+
+    /**
+     * Set UI Controls for Resolution related.
+     */
+    private void setUiResControls() {
+        seekBarResDim = (SeekBar) rootView.findViewById(R.id.seekBarDim);
+        seekBarChangeListenerResDim = getSeekBarChangeListenerDim();
+        seekBarResDim.setOnSeekBarChangeListener(seekBarChangeListenerResDim);
+        seekBarResFps = (SeekBar) rootView.findViewById(R.id.seekBarFps);
+        seekBarChangeListenerResFps = getSeekBarChangeListenerFps();
+        seekBarResFps.setOnSeekBarChangeListener(seekBarChangeListenerResFps);
+        tvInput = (TextView) rootView.findViewById(R.id.textViewInput);
+        tvResInput = (TextView) rootView.findViewById(R.id.textViewResInput);
+        tvSent = (TextView) rootView.findViewById(R.id.textViewSent);
+        tvResSent = (TextView) rootView.findViewById(R.id.textViewResSent);
+        tvRecv = (TextView) rootView.findViewById(R.id.textViewRecv);
+        tvResRecv = (TextView) rootView.findViewById(R.id.textViewResRecv);
+        tvResDim = (TextView) rootView.findViewById(R.id.textViewDim);
+        tvResFps = (TextView) rootView.findViewById(R.id.textViewFps);
+
+        // Set empty values.
+        tvInput.setText("Input:");
+        tvSent.setText("Sent:");
+        tvRecv.setText("Recv:");
+        setUiResTvStats(widthInput, heightInput, fpsInput, tvResInput);
+        setUiResTvStats(widthSent, heightSent, fpsSent, tvResSent);
+        setUiResTvStats(widthRecv, heightRecv, fpsRecv, tvResRecv);
+        setUiResDim(widthInput, heightInput, captureFormats);
+        setUiResFps(fpsSel, captureFormatSel);
+        tvResDim.setFocusable(true);
+        tvResDim.setEnabled(true);
+        tvResDim.setClickable(true);
+        tvResDim.setFocusableInTouchMode(true);
+        tvResFps.setFocusable(true);
+        tvResFps.setEnabled(true);
+        tvResFps.setClickable(true);
+        tvResFps.setFocusableInTouchMode(true);
+
+        tvInput.setFreezesText(true);
+        tvResInput.setFreezesText(true);
+        tvSent.setFreezesText(true);
+        tvResSent.setFreezesText(true);
+        tvRecv.setFreezesText(true);
+        tvResRecv.setFreezesText(true);
+        tvResDim.setFreezesText(true);
+        tvResFps.setFreezesText(true);
+    }
+
+    private void setUiResControlsVisibility(int visibility) {
+        // Resolution stats UIs.
+        tvInput.setVisibility(visibility);
+        tvSent.setVisibility(visibility);
+        tvRecv.setVisibility(visibility);
+        tvResInput.setVisibility(visibility);
+        tvResSent.setVisibility(visibility);
+        tvResRecv.setVisibility(visibility);
+
+        // Resolution adjustment UIs.
+        tvResDim.setVisibility(visibility);
+        tvResFps.setVisibility(visibility);
+        seekBarResDim.setVisibility(visibility);
+        seekBarResFps.setVisibility(visibility);
+    }
+
+    /**
+     * Set selected resolution dimensions (i.e. width and height) on the UI based on the
+     * given range of {@link SkylinkCaptureFormat} array.
+     * Both the SeekBar and the TextView would be set, or reset if provided values were not valid.
+     * {@link #captureFormatSel} would also be set, or reset if provided values were not valid.
+     *
+     * @param width          The width to be set.
+     * @param height         The height to be set.
+     * @param captureFormats The {@link SkylinkCaptureFormat} array that provides range of seekbar.
+     * @return True if provided values were valid and false otherwise.
+     */
+    private boolean setUiResDim(int width, int height, SkylinkCaptureFormat[] captureFormats) {
+        boolean valid;
+        int index = -1;
+        // Set the seekbar range.
+        valid = setUiResSeekBarRangeDim(captureFormats);
+        // Get the captureFormat that matches for width and height.
+        if (valid) {
+            index = getSeekBarIndexDim(captureFormats, width, height);
+            if (index < 0) {
+                valid = false;
+            }
+        }
+
+        if (valid) {
+            // Set the SeekBar
+            seekBarResDim.setProgress(index);
+            // Set TextView
+            setUiResTvDim(width, height);
+        } else {
+            // Set the SeekBar
+            seekBarResDim.setMax(0);
+            // Set default string in TextView.
+            setUiResTvDim(-1, -1);
+        }
+        return valid;
+    }
+
+    /**
+     * Set selected resolution frame rate on the UI.
+     * Both the SeekBar and the TextView would be set, or reset if provided values were not valid.
+     * {@link #fpsSel} would be also be set, or reset if provided values were not valid.
+     *
+     * @param fps    The frame rate in fps (frames per second) to be set.
+     * @param format A {@link SkylinkCaptureFormat} that provides the fps range to be set.
+     * @return True if provided values were valid and false otherwise.
+     */
+    private boolean setUiResFps(int fps, SkylinkCaptureFormat format) {
+        boolean valid;
+        int index = -1;
+        // Set the seekbar range.
+        valid = setUiResSeekBarRangeFps(format);
+
+        // Get the fps index in format.
+        if (valid) {
+            index = getSeekBarIndexFps(format, fps);
+            if (index < 0) {
+                valid = false;
+            }
+        }
+
+        if (valid) {
+            // Set the SeekBar
+            seekBarResFps.setProgress(index);
+            // Set TextView
+            setUiResTvFps(fps);
+        } else {
+            // Set the SeekBar
+            seekBarResFps.setMax(0);
+            // Set default string in TextView.
+            setUiResTvFps(-1);
+        }
+        return valid;
+    }
+
+    /**
+     * Once new video resolution dimensions are selected on the Seekbar,
+     * change the selected video resolution dimensions TextView to match.
+     *
+     * @param progress
+     * @return {@link SkylinkCaptureFormat} selected.
+     */
+    private SkylinkCaptureFormat setUiResTvOnSeekBarProgressDim(int progress) {
+        SkylinkCaptureFormat format = getSeekBarValueDim(progress, captureFormats);
+        if (format == null) {
+            return null;
+        }
+
+        // Set textView to match
+        int width = format.getWidth();
+        int height = format.getHeight();
+        setUiResTvDim(width, height);
+        return format;
+    }
+
+    /**
+     * Once a new fps is selected on the Seekbar, change the selected fps TextView to match.
+     *
+     * @param progress
+     * @return Fps selected.
+     */
+    private int setUiResTvOnSeekBarProgressFps(int progress) {
+        int fps = getSeekBarValueFps(progress, captureFormatSel);
+        setUiResTvFps(fps);
+        return fps;
+    }
+
+    /**
+     * Set the ranges of values for seekBarResDim.
+     * Set to zero if range of values invalid.
+     *
+     * @param captureFormats SkylinkCaptureFormat array for setting range of seekBarResDim.
+     * @return True if captureFormats was valid and false otherwise.
+     */
+    private boolean setUiResSeekBarRangeDim(SkylinkCaptureFormat[] captureFormats) {
+        // If there is no valid captureFormats set, set seekBar range to zero.
+        if (!isCaptureFormatsValid(captureFormats)) {
+            seekBarResDim.setMax(0);
+            return false;
+        }
+        // Set dimension range based on size of current CaptureFormat list.
+        seekBarResDim.setMax(captureFormats.length - 1);
+        return true;
+    }
+
+    /**
+     * Set the ranges of values for seekBarResFps.
+     * Set to zero if range of values invalid.
+     *
+     * @return True if captureFormat was valid and false otherwise.
+     */
+    private boolean setUiResSeekBarRangeFps(SkylinkCaptureFormat captureFormat) {
+        // If there is no valid captureFormatSel set, set seekBar range to zero.
+        if (!isCaptureFormatValid(captureFormat)) {
+            seekBarResFps.setMax(0);
+            return false;
+        } else {
+            int range = captureFormat.getFpsMax() - captureFormat.getFpsMin();
+            seekBarResFps.setMax(range);
+            return true;
+        }
+    }
+
+    /**
+     * Set the value of TextView for local input resolution or sent resolution.
+     * If any parameters are invalid, set default text.
+     *
+     * @param textView
+     * @param width
+     * @param height
+     */
+    private void setUiResTvStats(int width, int height, int fps, TextView textView) {
+        if (width <= 0 || height <= 0 || fps < 0) {
+            textView.setText("Width x Height, fps");
+            return;
+        }
+        // Set textView to match
+        String str = getResDimStr(width, height) + ", " + getResFpsStr(fps);
+        textView.setText(str);
+    }
+
+    /**
+     * Set the value of TextView tvResDim.
+     * If inputs are invalid, set default text.
+     *
+     * @param width
+     * @param height
+     * @return True if inputs are valid, false otherwise.
+     */
+    private boolean setUiResTvDim(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            tvResDim.setText("Width x Height");
+            return false;
+        }
+        // Set textView to match
+        tvResDim.setText(getResDimStr(width, height));
+        return true;
+    }
+
+    /**
+     * Set the value of TextView tvResFps in frames per second.
+     * If input is invalid, set default text.
+     *
+     * @param fps Framerate in frames per second.
+     */
+    private void setUiResTvFps(int fps) {
+        if (fps < 0) {
+            tvResFps.setText("Framerate (fps)");
+            return;
+        }
+        // Set textView to match
+        tvResFps.setText(getResFpsStr(fps));
     }
 
     /**
@@ -500,7 +1222,6 @@ public class VideoCallFragment extends Fragment
             // And remove old self video.
             View self = linearLayout.findViewWithTag("self");
             if (self != null) {
-                videoView.setLayoutParams(self.getLayoutParams());
                 // Remove the old self video.
                 linearLayout.removeView(self);
             }
@@ -515,13 +1236,24 @@ public class VideoCallFragment extends Fragment
                     if (skylinkConnection != null) {
                         String name = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME,
                                 skylinkConnection.getPeerId());
+                        name += "\r\nClick outside dialog to return.";
                         TextView selfTV = new TextView(getContext());
                         selfTV.setText(name);
-                        selfTV.setTextIsSelectable(true);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            selfTV.setTextIsSelectable(true);
+                        }
                         AlertDialog.Builder selfDialogBuilder =
                                 new AlertDialog.Builder(getContext());
                         selfDialogBuilder.setView(selfTV);
-                        selfDialogBuilder.setPositiveButton("OK", null);
+                        // Get the available video resolutions.
+                        selfDialogBuilder.setPositiveButton("Video resolutions",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        getVideoResolutions();
+                                    }
+                                });
+                        // Switch camera if possible.
                         selfDialogBuilder.setNegativeButton("Switch Camera",
                                 new DialogInterface.OnClickListener() {
                                     @Override
@@ -545,6 +1277,10 @@ public class VideoCallFragment extends Fragment
             Utils.removeViewFromParent(videoView);
 
             // And new self video.
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 2f);
+            videoView.setLayoutParams(params);
             linearLayout.addView(videoView);
 
             // Return the peer video, if it was there before.
@@ -570,14 +1306,6 @@ public class VideoCallFragment extends Fragment
             return;
         }
 
-        // Resize self view
-        View self = linearLayout.findViewWithTag("self");
-        if (self != null) {
-            self.setLayoutParams(new ViewGroup.LayoutParams(WIDTH, HEIGHT));
-            linearLayout.removeView(self);
-            linearLayout.addView(self);
-        }
-
         // Remove previous peer video if it exists
         View viewToRemove = linearLayout.findViewWithTag("peer");
         if (viewToRemove != null) {
@@ -589,6 +1317,10 @@ public class VideoCallFragment extends Fragment
         // Remove view from previous parent, if any.
         Utils.removeViewFromParent(videoView);
         // Add view to parent
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        videoView.setLayoutParams(params);
         linearLayout.addView(videoView);
     }
 
@@ -716,6 +1448,45 @@ public class VideoCallFragment extends Fragment
     }
 
     @Override
+    public void onInputVideoResolutionObtained(int width, int height, int fps,
+                                               SkylinkCaptureFormat captureFormat) {
+        noteInputVideoResolutions(width, height, fps, captureFormat);
+
+        String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
+                width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        widthRecv = width;
+        heightRecv = height;
+        fpsRecv = fps;
+
+        setUiResTvStats(width, height, fps, tvResRecv);
+
+        String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
+                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        widthSent = width;
+        heightSent = height;
+        fpsSent = fps;
+
+        setUiResTvStats(width, height, fps, tvResSent);
+
+        String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
+                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onVideoSizeChange(String peerId, Point size) {
         String peer = "Peer " + peerId;
         // If peerId is null, this call is for our local video.
@@ -810,15 +1581,6 @@ public class VideoCallFragment extends Fragment
         View peerView = linearLayout.findViewWithTag("peer");
         linearLayout.removeView(peerView);
 
-        // Resize self view to better make use of screen.
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        SurfaceViewRenderer videoView = getVideoView(null);
-        if (videoView != null) {
-            videoView.setLayoutParams(params);
-            addSelfView(videoView);
-        }
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
@@ -857,4 +1619,5 @@ public class VideoCallFragment extends Fragment
     public void onOpenDataConnection(String peerId) {
         Log.d(TAG, "onOpenDataConnection");
     }
+
 }

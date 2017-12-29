@@ -38,6 +38,7 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.listener.StatsListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.Info;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
@@ -68,6 +69,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
      * List of Framelayouts for VideoViews
      */
     private static SkylinkConnection skylinkConnection;
+    private static SkylinkConfig skylinkConfig;
     // Indicates if camera should be toggled after returning to app.
     // Generally, it should match whether it was toggled when moving away from app.
     // For e.g., if camera was already off, then it would not be toggled when moving away from app,
@@ -285,9 +287,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
 
-    /***
-     * Skylink Helper methods
-     */
+    //----------------------------------------------------------------------------------------------
+    // Skylink helper methods
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Check if we are currently connected to the room.
@@ -302,22 +304,25 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     private SkylinkConfig getSkylinkConfig() {
-        SkylinkConfig config = new SkylinkConfig();
+        if (skylinkConfig != null) {
+            return skylinkConfig;
+        }
+
+        skylinkConfig = new SkylinkConfig();
         // AudioVideo config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        config.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        config.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        config.setHasPeerMessaging(true);
-        config.setHasFileTransfer(true);
-        config.setMirrorLocalView(true);
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setHasPeerMessaging(true);
+        skylinkConfig.setHasFileTransfer(true);
+        skylinkConfig.setMirrorLocalView(true);
 
         // Allow only 3 remote Peers to join, due to current UI design.
-        config.setMaxPeers(3);
+        skylinkConfig.setMaxPeers(3);
 
         // Set some common configs.
-        Utils.skylinkConfigCommonOptions(config);
-        config.getAdvancedOptions().put("SdkAdvancedOption)!", new Boolean(true));
-        return config;
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
     }
 
     private void initializeSkylinkConnection() {
@@ -841,6 +846,30 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             return;
         }
         addSelfView(videoView);
+    }
+
+    @Override
+    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+        String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
+                width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
+                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
+                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -530,7 +530,8 @@ public class Utils {
 */
 /*
         // To set the start up camera to back:
-        skylinkConfig.setDefaultCameraBack(); // Default is front camera.
+        skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+        // By default, the default VideoDevice is the front camera.
 */
 /*
         // To set local video resolution (only use those supported by camera):
@@ -565,7 +566,7 @@ public class Utils {
             default:
                 break;
         }
-        Log.d(logTag, "Received SDK log: " + message);
+        Log.d(logTag, "[SA]Received SDK log: " + message);
     }
 
     /**
@@ -578,7 +579,7 @@ public class Utils {
      */
     public static void handleSkylinkWarning(int errorCode, String message, Activity parentActivity,
                                             String logTag) {
-        String log = "Skylink Error: " + errorCode + " (" + Errors.getErrorString(errorCode)
+        String log = "[SA]Skylink Error: " + errorCode + " (" + Errors.getErrorString(errorCode)
                 + ")\r\n" + message;
         Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
         Log.w(logTag, log);
