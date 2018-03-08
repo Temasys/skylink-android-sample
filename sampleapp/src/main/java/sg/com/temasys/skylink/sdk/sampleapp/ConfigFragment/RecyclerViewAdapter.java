@@ -20,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +34,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragm
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.deleteAppKey;
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.setSelectedKeyViews;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.checkAppKeyAndSecret;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 /**
  * Created by phyo.pwint on 29/7/16.
@@ -193,9 +194,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
                 if (validateKeySecret &&
                         !checkAppKeyAndSecret(appKeyNew, appKeySecretNew)) {
-                    Toast.makeText(context,
-                            "Incorrect key, secret and/or you need to choose SMR or not",
-                            Toast.LENGTH_LONG).show();
+                    String log = "Incorrect key, secret and/or you need to choose SMR or not";
+                    toastLogLong(TAG, context, log);
                     return;
                 }
                 String log = "[editKey] App key edit ";
@@ -217,7 +217,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 } else {
                     log += "failed! Discarding edit.";
                 }
-                Toast.makeText(context, log, Toast.LENGTH_SHORT).show();
+                toastLog(TAG, context, log);
                 Log.d(TAG, log);
 
             }

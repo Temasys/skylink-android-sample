@@ -4,8 +4,8 @@ package sg.com.temasys.skylink.sdk.sampleapp;
  * Created by lavanyasudharsanam on 20/1/15.
  */
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -23,7 +23,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.webrtc.SurfaceViewRenderer;
 
@@ -37,15 +36,18 @@ import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static sg.com.temasys.skylink.sdk.sampleapp.MainActivity.ARG_SECTION_NUMBER;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.isConnectingOrConnected;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 /**
  * This class is used to demonstrate the VideoCall between two clients in WebRTC
@@ -57,7 +59,6 @@ public class VideoCallFragment extends Fragment
     private String MY_USER_NAME;
 
     private static final String TAG = VideoCallFragment.class.getCanonicalName();
-    private static final String ARG_SECTION_NUMBER = "section_number";
 
     // Video resolution from camera input.
     public static int widthInput = -1;
@@ -106,7 +107,7 @@ public class VideoCallFragment extends Fragment
     private boolean audioMuted;
     private boolean videoMuted;
 
-    private Activity parentActivity;
+    private Context context;
     private View rootView;
 
     // UI Controls
@@ -136,6 +137,9 @@ public class VideoCallFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        String logTag = "[SA][Video][onCreateView] ";
+        String log = logTag;
+
         ROOM_NAME = Config.ROOM_NAME_VIDEO;
         MY_USER_NAME = Config.USER_NAME_VIDEO;
 
@@ -153,24 +157,22 @@ public class VideoCallFragment extends Fragment
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
+            log += "Restarting ";
             // Resume previous permission request, if any.
-            permQResume(getContext(), this, skylinkConnection);
+            permQResume(context, this, skylinkConnection);
 
             // Toggle camera back to previous state if required.
             if (toggleCamera) {
                 if (getVideoView(null) != null) {
-                    try {
-                        skylinkConnection.toggleCamera();
-                        toggleCamera = false;
-                    } catch (SkylinkException e) {
-                        Log.e(TAG, e.getMessage());
-                    }
+                    skylinkConnection.toggleCamera();
+                    toggleCamera = false;
                 }
             }
 
             connecting = savedInstanceState.getBoolean(BUNDLE_CONNECTING);
             // Set the appropriate UI if already connected.
-            if (isConnected()) {
+            if (isConnectingOrConnected()) {
+                log += "in connected state.";
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
                 audioMuted = savedInstanceState.getBoolean(BUNDLE_AUDIO_MUTED);
@@ -180,14 +182,17 @@ public class VideoCallFragment extends Fragment
                 addSelfView(getVideoView(null));
                 addRemoteView();
             } else if (connecting) {
+                log += "in connecting state.";
                 // Set listeners to receive callbacks when events are triggered
                 setListeners();
                 onConnectingUIChange();
                 addSelfView(getVideoView(null));
             } else {
+                log += "in disconnecting state.";
                 onDisconnectUIChange();
             }
         } else {
+            log += "Starting in disconnected state.";
             // This is the start of this sample, reset permission request states.
             permQReset();
 
@@ -196,6 +201,8 @@ public class VideoCallFragment extends Fragment
 
             onDisconnectUIChange();
         }
+
+        Log.d(TAG, log);
 
         // Set UI elements
         setAudioBtnLabel(false);
@@ -236,21 +243,17 @@ public class VideoCallFragment extends Fragment
         toggleCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String toast = "Toggled camera ";
+                String log = "Toggled camera ";
                 if (getVideoView(null) != null) {
-                    try {
-                        if (skylinkConnection.toggleCamera()) {
-                            toast += "to restarted!";
-                        } else {
-                            toast += "to stopped!";
-                        }
-                    } catch (SkylinkException e) {
-                        toast += "but failed as " + e.getMessage();
+                    if (skylinkConnection.toggleCamera()) {
+                        log += "to restarted!";
+                    } else {
+                        log += "to stopped!";
                     }
                 } else {
-                    toast += "but failed as local video is not available!";
+                    log += "but failed as local video is not available!";
                 }
-                Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
+                toastLog(TAG, context, log);
             }
         });
 
@@ -258,7 +261,8 @@ public class VideoCallFragment extends Fragment
             @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
             @Override
             public void onClick(View v) {
-                Toast.makeText(parentActivity, "Clicked Disconnect!", Toast.LENGTH_SHORT).show();
+                String log = "Clicked Disconnect!";
+                toastLog(TAG, context, log);
                 disconnectFromRoom();
                 onDisconnectUIChange();
             }
@@ -271,16 +275,16 @@ public class VideoCallFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Allow volume to be controlled using volume keys
-        parentActivity.setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        ((MainActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
 
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(ARG_SECTION_NUMBER));
-        parentActivity = getActivity();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        //update actionbar title
+        ((MainActivity) context).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+        this.context = context;
     }
 
     @Override
@@ -290,12 +294,8 @@ public class VideoCallFragment extends Fragment
         // Toggle camera back to previous state if required.
         if (toggleCamera) {
             if (getVideoView(null) != null) {
-                try {
-                    skylinkConnection.toggleCamera();
-                    toggleCamera = false;
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+                skylinkConnection.toggleCamera();
+                toggleCamera = false;
             }
         }
     }
@@ -306,15 +306,11 @@ public class VideoCallFragment extends Fragment
         super.onPause();
 
         // Stop local video source only if not changing orientation
-        if (!parentActivity.isChangingConfigurations()) {
+        if (!((MainActivity) context).isChangingConfigurations()) {
             if (getVideoView(null) != null) {
                 // Stop local video source if it's on.
-                try {
-                    // Record if need to toggleCamera when resuming.
-                    toggleCamera = skylinkConnection.toggleCamera(false);
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+                // Record if need to toggleCamera when resuming.
+                toggleCamera = skylinkConnection.toggleCamera(false);
             }
         }
     }
@@ -347,18 +343,6 @@ public class VideoCallFragment extends Fragment
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Check if we are currently connected to the room.
-     *
-     * @return True if we are connected and false otherwise.
-     */
-    private boolean isConnected() {
-        if (skylinkConnection != null) {
-            return skylinkConnection.isConnected();
-        }
-        return false;
-    }
-
-    /**
      * Get room name from text field (or use default if not entered),
      * and connect to that room.
      * Initializes SkylinkConnection if not initialized.
@@ -366,17 +350,17 @@ public class VideoCallFragment extends Fragment
     private void connectToRoom() {
         roomName = etRoomName.getText().toString();
 
-        String toast = "";
+        String log = "";
         // If roomName is not set through the UI, get the default roomName from Constants
         if (roomName == null || "".equals(roomName)) {
             roomName = ROOM_NAME;
             etRoomName.setText(roomName);
-            toast = "No room name provided, entering default video room \"" + roomName
+            log = "No room name provided, entering default video room \"" + roomName
                     + "\".";
         } else {
-            toast = "Entering video room \"" + roomName + "\".";
+            log = "Entering video room \"" + roomName + "\".";
         }
-        Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
 
         // Initialize the skylink connection
         initializeSkylinkConnection();
@@ -394,14 +378,15 @@ public class VideoCallFragment extends Fragment
         boolean connectFailed;
         connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
         if (connectFailed) {
-            Toast.makeText(parentActivity, "Unable to connect to room!", Toast.LENGTH_SHORT).show();
+            log = "[SA][Video][connectToRoom] Unable to connect to room!";
+            toastLog(TAG, context, log);
             return;
         }
 
         connecting = true;
 
         // Initialize and use the Audio router to switch between headphone and headset
-        AudioRouter.startAudioRouting(parentActivity);
+        AudioRouter.startAudioRouting(context);
     }
 
     /**
@@ -411,12 +396,12 @@ public class VideoCallFragment extends Fragment
     private void disconnectFromRoom() {
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already connecting/connected and not changing orientation.
-        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
-                && isConnected()) {
+        if (!((MainActivity) context).isChangingConfigurations() && skylinkConnection != null
+                && isConnectingOrConnected()) {
             if (skylinkConnection.disconnectFromRoom()) {
                 connecting = false;
             }
-            AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
+            AudioRouter.stopAudioRouting(context);
         }
     }
 
@@ -471,13 +456,21 @@ public class VideoCallFragment extends Fragment
      * @return false if listeners could not be set.
      */
     private boolean setListeners() {
+        String logTag = "[SA][Video][setLtn] ";
+        String log = "";
         if (skylinkConnection != null) {
+            log = logTag + "Setting Listeners...";
+            Log.d(TAG, log);
             skylinkConnection.setLifeCycleListener(this);
             skylinkConnection.setMediaListener(this);
             skylinkConnection.setOsListener(this);
             skylinkConnection.setRemotePeerListener(this);
+            log = logTag + "Done.";
+            Log.d(TAG, log);
             return true;
         } else {
+            log = logTag + "Unable to set Listeners as skylinkConnection is not available!";
+            Log.d(TAG, log);
             return false;
         }
     }
@@ -513,6 +506,7 @@ public class VideoCallFragment extends Fragment
         skylinkConfig.setHasPeerMessaging(true);
         skylinkConfig.setHasFileTransfer(true);
         skylinkConfig.setMirrorLocalView(true);
+        skylinkConfig.setReportVideoResolutionOnChange(true);
 
         // Allow only 1 remote Peer to join.
         skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
@@ -525,8 +519,7 @@ public class VideoCallFragment extends Fragment
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(),
-                getSkylinkConfig(), this.parentActivity.getApplicationContext());
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(), context);
         // Set listeners to receive callbacks when events are triggered
         setListeners();
     }
@@ -1237,13 +1230,13 @@ public class VideoCallFragment extends Fragment
                         String name = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME,
                                 skylinkConnection.getPeerId());
                         name += "\r\nClick outside dialog to return.";
-                        TextView selfTV = new TextView(getContext());
+                        TextView selfTV = new TextView(context);
                         selfTV.setText(name);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                             selfTV.setTextIsSelectable(true);
                         }
                         AlertDialog.Builder selfDialogBuilder =
-                                new AlertDialog.Builder(getContext());
+                                new AlertDialog.Builder(context);
                         selfDialogBuilder.setView(selfTV);
                         // Get the available video resolutions.
                         selfDialogBuilder.setPositiveButton("Video resolutions",
@@ -1287,6 +1280,9 @@ public class VideoCallFragment extends Fragment
             if (peer != null) {
                 linearLayout.addView(peer);
             }
+        } else {
+            String log = "[SA][addSelfView] Not adding self view as videoView is null!";
+            Log.d(TAG, log);
         }
     }
 
@@ -1333,14 +1329,14 @@ public class VideoCallFragment extends Fragment
         if (audioMuted) {
             toggleAudioButton.setText(getString(R.string.enable_audio));
             if (doToast) {
-                Toast.makeText(parentActivity, getString(R.string.muted_audio),
-                        Toast.LENGTH_SHORT).show();
+                String log = getString(R.string.muted_audio);
+                toastLog(TAG, context, log);
             }
         } else {
             toggleAudioButton.setText(getString(R.string.mute_audio));
             if (doToast) {
-                Toast.makeText(parentActivity, getString(R.string.enabled_audio),
-                        Toast.LENGTH_SHORT).show();
+                String log = getString(R.string.enabled_audio);
+                toastLog(TAG, context, log);
             }
         }
     }
@@ -1354,17 +1350,21 @@ public class VideoCallFragment extends Fragment
         if (videoMuted) {
             toggleVideoButton.setText(getString(R.string.enable_video));
             if (doToast) {
-                Toast.makeText(parentActivity, getString(R.string.muted_video),
-                        Toast.LENGTH_SHORT).show();
+                String log = getString(R.string.muted_video);
+                toastLog(TAG, context, log);
             }
         } else {
             toggleVideoButton.setText(getString(R.string.mute_video));
             if (doToast) {
-                Toast.makeText(parentActivity, getString(R.string.enabled_video),
-                        Toast.LENGTH_SHORT).show();
+                String log = getString(R.string.enabled_video);
+                toastLog(TAG, context, log);
             }
         }
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Skylink Listeners
+    //----------------------------------------------------------------------------------------------
 
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
@@ -1383,15 +1383,14 @@ public class VideoCallFragment extends Fragment
         if (isSuccessful) {
             connecting = false;
             onConnectUIChange();
-            String log = "Connected to room " + roomName + " (" + skylinkConnection.getRoomId() +
+            String log = "[SA][Video][onConnect] Connected to room " + roomName + " (" +
+                    skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
-            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-            Log.d(TAG, log);
+            toastLogLong(TAG, context, log);
         } else {
             connecting = false;
-            String error = "Skylink failed to connect!\nReason : " + message;
-            Log.d(TAG, error);
-            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+            String log = "Skylink failed to connect!\nReason : " + message;
+            toastLogLong(TAG, context, log);
             onDisconnectUIChange();
         }
     }
@@ -1400,33 +1399,31 @@ public class VideoCallFragment extends Fragment
     public void onDisconnect(int errorCode, String message) {
         onDisconnectUIChange();
         connecting = false;
-        String log = "";
+        String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log += "We have successfully disconnected from the room.";
         } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
             log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
         log += " Server message: " + message;
-
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        log = "[onDisconnect] " + log;
-        Log.d(TAG, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId +
-                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
+        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
+                + lockStatus + ".";
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
+        Utils.handleSkylinkReceiveLog(infoCode, message, context, TAG);
     }
 
     @Override
     public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     /**
@@ -1441,10 +1438,16 @@ public class VideoCallFragment extends Fragment
      */
     @Override
     public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
+        String log = "[SA][onLocalMediaCapture] ";
         if (videoView == null) {
-            return;
+            log += "VideoView is null!";
+            Log.d(TAG, log);
+            addSelfView(getVideoView(null));
+        } else {
+            log += "Adding VideoView as selfView.";
+            Log.d(TAG, log);
+            addSelfView(videoView);
         }
-        addSelfView(getVideoView(null));
     }
 
     @Override
@@ -1454,8 +1457,7 @@ public class VideoCallFragment extends Fragment
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1468,8 +1470,7 @@ public class VideoCallFragment extends Fragment
 
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1482,8 +1483,7 @@ public class VideoCallFragment extends Fragment
 
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1512,8 +1512,7 @@ public class VideoCallFragment extends Fragment
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1526,8 +1525,7 @@ public class VideoCallFragment extends Fragment
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
         }
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1540,8 +1538,7 @@ public class VideoCallFragment extends Fragment
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
         }
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -1550,7 +1547,8 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, getContext(), this, skylinkConnection);
+        Utils.onPermissionRequiredHandler(
+                permissions, requestCode, infoCode, TAG, context, this, skylinkConnection);
     }
 
     @Override
@@ -1560,7 +1558,7 @@ public class VideoCallFragment extends Fragment
 
     @Override
     public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
-        Utils.onPermissionDeniedHandler(infoCode, getContext(), TAG);
+        Utils.onPermissionDeniedHandler(infoCode, context, TAG);
     }
 
     /**
@@ -1571,21 +1569,18 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
-        Toast.makeText(parentActivity, "Your peer has left the room", Toast.LENGTH_SHORT).show();
         View peerView = linearLayout.findViewWithTag("peer");
         linearLayout.removeView(peerView);
 
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1606,13 +1601,19 @@ public class VideoCallFragment extends Fragment
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        String log = "[SA][onRemotePeerUserDataReceive] Peer " + Utils.getPeerIdNick(remotePeerId) +
+                ":\n" + nick;
+        toastLog(TAG, context, log);
     }
 
     @Override

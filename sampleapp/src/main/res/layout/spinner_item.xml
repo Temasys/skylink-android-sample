@@ -2,12 +2,12 @@
 
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@android:id/text1"
-    style="?android:attr/spinnerDropDownItemStyle"
-    android:maxLines="3"
-    android:layout_width="wrap_content"
-    android:layout_height="?android:attr/listPreferredItemHeight"
-    android:ellipsize="marquee" />
+          android:id="@android:id/text1"
+          style="?android:attr/spinnerDropDownItemStyle"
+          android:maxLines="3"
+          android:layout_width="wrap_content"
+          android:layout_height="?android:attr/listPreferredItemHeight"
+          android:ellipsize="marquee"/>
 
     <!--<View xmlns:android="http://schemas.android.com/apk/res/android"--><!--android:layout_width="fill_parent"--><!--android:layout_height="2dp"--><!--android:background="#d13033"/>-->
 

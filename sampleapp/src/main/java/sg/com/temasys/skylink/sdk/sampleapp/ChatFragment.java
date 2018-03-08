@@ -1,6 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -15,7 +15,6 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,9 +30,13 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.MainActivity.ARG_SECTION_NUMBER;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getPeerIdNick;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.isConnectingOrConnected;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 /**
  * This class is used to demonstrate the Chat between two clients in WebRTC Created by
@@ -46,11 +49,8 @@ public class ChatFragment extends MultiPartyFragment
     private String MY_USER_NAME;
 
     private static final String TAG = ChatFragment.class.getCanonicalName();
-    private static final String ARG_SECTION_NUMBER = "section_number";
 
     // Constants for configuration change
-    private static final String BUNDLE_IS_CONNECTED = "isConnected";
-    private static final String BUNDLE_IS_CONNECT_ATTEMPTED = "isConnectAttempted";
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
 
     private static SkylinkConnection skylinkConnection;
@@ -64,7 +64,6 @@ public class ChatFragment extends MultiPartyFragment
     private BaseAdapter adapter;
 
     private boolean peerJoined;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,7 +92,7 @@ public class ChatFragment extends MultiPartyFragment
         }
 
         /** Defining the ArrayAdapter to set items to ListView */
-        adapter = new ArrayAdapter<String>(parentActivity, R.layout.list_item,
+        adapter = new ArrayAdapter<String>(context, R.layout.list_item,
                 chatMessageCollection);
         /** Setting the adapter to the ListView */
         listViewChats.setAdapter(adapter);
@@ -109,7 +108,7 @@ public class ChatFragment extends MultiPartyFragment
             // Set listeners to receive callbacks when events are triggered
             setListeners();
 
-            if (isConnected()) {
+            if (isConnectingOrConnected()) {
                 // Set states
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
@@ -127,7 +126,7 @@ public class ChatFragment extends MultiPartyFragment
         }
 
         // Try to connect to room if not yet connected.
-        if (!isConnected()) {
+        if (!isConnectingOrConnected()) {
             connectToRoom();
         }
 
@@ -192,11 +191,11 @@ public class ChatFragment extends MultiPartyFragment
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(ARG_SECTION_NUMBER));
-        parentActivity = getActivity();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        //update actionbar title
+        ((MainActivity) context).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+        this.context = context;
     }
 
     @Override
@@ -205,7 +204,8 @@ public class ChatFragment extends MultiPartyFragment
         // Save states for fragment restart
         outState.putBoolean(BUNDLE_IS_PEER_JOINED, peerJoined);
         // [MultiParty]
-        outState.putStringArray(BUNDLE_PEER_ID_LIST, getPeerIdList());
+        String[] peerIdList = getPeerIdList();
+        outState.putStringArray(BUNDLE_PEER_ID_LIST, peerIdList);
     }
 
     @Override
@@ -217,8 +217,8 @@ public class ChatFragment extends MultiPartyFragment
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already connected and not changing orientation.
-        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
-                && isConnected()) {
+        if (!((MainActivity) context).isChangingConfigurations() && skylinkConnection != null
+                && isConnectingOrConnected()) {
             skylinkConnection.disconnectFromRoom();
         }
     }
@@ -226,18 +226,6 @@ public class ChatFragment extends MultiPartyFragment
     //----------------------------------------------------------------------------------------------
     // Skylink helper methods
     //----------------------------------------------------------------------------------------------
-
-    /**
-     * Check if we are currently connected to the room.
-     *
-     * @return True if we are connected and false otherwise.
-     */
-    private boolean isConnected() {
-        if (skylinkConnection != null) {
-            return skylinkConnection.isConnected();
-        }
-        return false;
-    }
 
     private SkylinkConfig getSkylinkConfig() {
         if (skylinkConfig != null) {
@@ -277,7 +265,7 @@ public class ChatFragment extends MultiPartyFragment
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skylinkConnection.init(Config.getAppKey(),
-                getSkylinkConfig(), parentActivity.getApplicationContext());
+                getSkylinkConfig(), context);
 
         //set listeners to receive callbacks when events are triggered
         setListeners();
@@ -319,7 +307,7 @@ public class ChatFragment extends MultiPartyFragment
      * Set the room details on UI.
      */
     void setRoomDetails() {
-        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails,
+        Utils.setRoomDetailsMulti(isConnectingOrConnected(), peerJoined, tvRoomDetails,
                 getRoomRoomId(skylinkConnection, ROOM_NAME),
                 Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
     }
@@ -333,7 +321,7 @@ public class ChatFragment extends MultiPartyFragment
      * @return message that was added to the listview
      */
     private String addSelfMessageToListView(boolean isPrivateMessage, boolean isP2P) {
-        EditText edit = (EditText) parentActivity.findViewById(R.id.chatMessage);
+        EditText edit = (EditText) ((MainActivity) context).findViewById(R.id.chatMessage);
         String prefix = "You : ";
         prefix += isPrivateMessage ? "[PTE]" : "[GRP]";
         prefix += isP2P ? "[P2P] " : "[SIG] ";
@@ -357,6 +345,10 @@ public class ChatFragment extends MultiPartyFragment
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Skylink Listeners
+    //----------------------------------------------------------------------------------------------
+
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
      * lifecycle
@@ -375,28 +367,15 @@ public class ChatFragment extends MultiPartyFragment
         if (isSuccessful) {
             String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
-            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-            Log.d(TAG, log);
+            toastLogLong(TAG, context, log);
             // [MultiParty]
             // Set the appropriate UI if already connected.
             onConnectUIChange();
         } else {
-            String error = "Skylink failed to connect!\nReason : " + message;
-            Log.d(TAG, error);
-            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+            String log = "Skylink failed to connect!\nReason : " + message;
+            toastLogLong(TAG, context, log);
             setRoomDetails();
         }
-    }
-
-    @Override
-    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId +
-                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     @Override
@@ -408,22 +387,31 @@ public class ChatFragment extends MultiPartyFragment
         // Reset chat collection
         chatMessageCollection.clear();
 
-        String log = "";
+        String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log += "We have successfully disconnected from the room.";
         } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
             log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
         log += " Server message: " + message;
+        toastLogLong(TAG, context, log);
+    }
 
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        log = "[onDisconnect] " + log;
-        Log.d(TAG, log);
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
+                + lockStatus + ".";
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
+        Utils.handleSkylinkReceiveLog(infoCode, message, context, TAG);
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     /**
@@ -433,13 +421,16 @@ public class ChatFragment extends MultiPartyFragment
 
     @Override
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
+        String logTag = "[SA][onRemotePeerJoin] ";
         // [MultiParty]
-        //When remote peer joins room, keep track of user and update UI.
+        // When remote peer joins room, keep track of user and update UI.
         // If Peer has no userData, use an empty string for nick.
         String nick = "";
         if (userData != null) {
             nick = userData.toString();
         }
+        String log = logTag + "Peer \"" + getPeerIdNick(remotePeerId) + " connected.";
+        toastLog(TAG, context, log);
         addPeerRadioBtn(remotePeerId, nick);
         //Set room status if it's the only peer in the room.
         if (getPeerNum() == 1) {
@@ -447,9 +438,6 @@ public class ChatFragment extends MultiPartyFragment
             // Update textview to show room status
             setRoomDetails();
         }
-        String log = "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
     }
 
     @Override
@@ -468,8 +456,7 @@ public class ChatFragment extends MultiPartyFragment
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -485,13 +472,19 @@ public class ChatFragment extends MultiPartyFragment
             log += ".\r\n";
         }
 
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Toast.makeText(parentActivity, "Getting user data", Toast.LENGTH_SHORT).show();
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        String log = "[SA][onRemotePeerUserDataReceive] Peer " + Utils.getPeerIdNick(remotePeerId) +
+                ":\n" + nick;
+        toastLog(TAG, context, log);
     }
 
     @Override

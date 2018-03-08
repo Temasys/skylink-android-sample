@@ -1,7 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,10 +39,14 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.MainActivity.ARG_SECTION_NUMBER;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.isConnectingOrConnected;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 /**
  * Created by lavanyasudharsanam on 20/1/15.
@@ -56,7 +59,6 @@ public class FileTransferFragment extends MultiPartyFragment
 
     public static final String EXTERNAL_STORAGE = "ExternalStorage";
     private static final String TAG = FileTransferFragment.class.getCanonicalName();
-    private static final String ARG_SECTION_NUMBER = "section_number";
 
     // Constants for configuration change
     private static final String BUNDLE_IS_PEER_JOINED = "peerJoined";
@@ -143,10 +145,9 @@ public class FileTransferFragment extends MultiPartyFragment
                                     changePathDialog.dismiss();
                                 } else {
                                     // Else changePathDialog stays open.
-                                    String log = "The specified file does not exist!\r\n" +
-                                            "Please make corrections or cancel operation.";
-                                    Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-                                    log = "[SA] File does not exist at newly provided path. " + log;
+                                    String log = "[SA] File does not exist at newly provided path. "
+                                            + "Please make corrections or cancel operation.";
+                                    toastLog(TAG, context, log);
                                     Log.e(TAG, log);
                                 }
                             }
@@ -174,7 +175,7 @@ public class FileTransferFragment extends MultiPartyFragment
             // Set listeners to receive callbacks when events are triggered
             setListeners();
 
-            if (isConnected()) {
+            if (isConnectingOrConnected()) {
                 // Set states
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
@@ -197,7 +198,7 @@ public class FileTransferFragment extends MultiPartyFragment
         createExternalStoragePrivatePicture();
 
         // Try to connect to room if not yet connected.
-        if (!isConnected()) {
+        if (!isConnectingOrConnected()) {
             connectToRoom();
         }
 
@@ -238,9 +239,8 @@ public class FileTransferFragment extends MultiPartyFragment
                 // [MultiParty]
                 // Do not allow button actions if there are no Peers in the room.
                 if (getPeerNum() == 0) {
-                    Toast.makeText(parentActivity,
-                            getString(R.string.warn_no_peer_message),
-                            Toast.LENGTH_SHORT).show();
+                    String log = getString(R.string.warn_no_peer_message);
+                    toastLog(TAG, context, log);
                     return;
                 }
                 // Select All Peers RadioButton if not already selected
@@ -271,27 +271,27 @@ public class FileTransferFragment extends MultiPartyFragment
             ivFilePreview.setImageURI(Uri.parse(filePath));
             fileName = file.getName();
         } else {
-            Toast.makeText(parentActivity, "Please enter a valid filename", Toast.LENGTH_SHORT)
-                    .show();
+            String log = "Please enter a valid filename";
+            toastLog(TAG, context, log);
             return;
         }
 
         // Send request to peer requesting permission for file transfer
         try {
-            skylinkConnection.sendFileTransferPermissionRequest(tid, fileName,
-                    getFileToTransfer(fileName).getAbsolutePath());
+            skylinkConnection.sendFileTransferPermissionRequest(
+                    tid, fileName, file.getAbsolutePath());
             String peer = "";
             if (tid == null) {
                 peer = "all Peers in room";
             } else {
                 peer = "Peer " + tid;
             }
-            String toast = "Sending file to " + peer + ".";
-            Toast.makeText(parentActivity, toast, Toast.LENGTH_SHORT).show();
+            String log = "Sending file to " + peer + ".";
+            toastLog(TAG, context, log);
         } catch (SkylinkException e) {
-            String exMsg = e.getMessage();
-            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_LONG).show();
-            Log.e(TAG, exMsg, e);
+            String log = e.getMessage();
+            toastLogLong(TAG, context, log);
+            Log.e(TAG, log, e);
         }
     }
 
@@ -302,11 +302,11 @@ public class FileTransferFragment extends MultiPartyFragment
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(ARG_SECTION_NUMBER));
-        parentActivity = getActivity();
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        //update actionbar title
+        ((MainActivity) context).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+        this.context = context;
     }
 
     @Override
@@ -324,8 +324,8 @@ public class FileTransferFragment extends MultiPartyFragment
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
-                && isConnected()) {
+        if (!((MainActivity) context).isChangingConfigurations() && skylinkConnection != null
+                && isConnectingOrConnected()) {
             skylinkConnection.disconnectFromRoom();
         }
     }
@@ -340,18 +340,6 @@ public class FileTransferFragment extends MultiPartyFragment
     //----------------------------------------------------------------------------------------------
     // Skylink helper methods
     //----------------------------------------------------------------------------------------------
-
-    /**
-     * Check if we are currently connected to the room.
-     *
-     * @return True if we are connected and false otherwise.
-     */
-    private boolean isConnected() {
-        if (skylinkConnection != null) {
-            return skylinkConnection.isConnected();
-        }
-        return false;
-    }
 
     private SkylinkConfig getSkylinkConfig() {
         if (skylinkConfig != null) {
@@ -390,8 +378,7 @@ public class FileTransferFragment extends MultiPartyFragment
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(),
-                getSkylinkConfig(), parentActivity.getApplicationContext());
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(), context);
 
         //set listeners to receive callbacks when events are triggered
         setListeners();
@@ -466,7 +453,7 @@ public class FileTransferFragment extends MultiPartyFragment
 
             // Tell the media scanner about the new file so that it is
             // immediately available to the user.
-            MediaScannerConnection.scanFile(parentActivity,
+            MediaScannerConnection.scanFile(context,
                     new String[]{fileCopy.toString()}, null,
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
@@ -509,10 +496,14 @@ public class FileTransferFragment extends MultiPartyFragment
      * Set the room details on UI.
      */
     void setRoomDetails() {
-        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails,
+        Utils.setRoomDetailsMulti(isConnectingOrConnected(), peerJoined, tvRoomDetails,
                 getRoomRoomId(skylinkConnection, ROOM_NAME),
                 Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Skylink Listeners
+    //----------------------------------------------------------------------------------------------
 
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
@@ -532,28 +523,15 @@ public class FileTransferFragment extends MultiPartyFragment
         if (isSuccessful) {
             String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
-            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-            Log.d(TAG, log);
+            toastLogLong(TAG, context, log);
             // [MultiParty]
             // Set the appropriate UI if already isConnected().
             onConnectUIChange();
         } else {
-            String error = "Skylink failed to connect!\nReason : " + message;
-            Log.d(TAG, error);
-            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+            String log = "Skylink failed to connect!\nReason : " + message;
+            toastLogLong(TAG, context, log);
             setRoomDetails();
         }
-    }
-
-    @Override
-    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId +
-                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     @Override
@@ -563,22 +541,31 @@ public class FileTransferFragment extends MultiPartyFragment
         peerList.clear();
         // Set the appropriate UI after disconnecting.
         onConnectUIChange();
-        String log = "";
+        String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log += "We have successfully disconnected from the room.";
         } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
             log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
         log += " Server message: " + message;
+        toastLogLong(TAG, context, log);
+    }
 
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        log = "[onDisconnect] " + log;
-        Log.d(TAG, log);
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
+                + lockStatus + ".";
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
+        Utils.handleSkylinkReceiveLog(infoCode, message, context, TAG);
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     /**
@@ -588,7 +575,8 @@ public class FileTransferFragment extends MultiPartyFragment
 
     @Override
     public void onFileTransferPermissionRequest(String peerId, String fileName, boolean isPrivate) {
-        Toast.makeText(parentActivity, "Received a file request", Toast.LENGTH_LONG).show();
+        String log = "Received a file request";
+        toastLogLong(TAG, context, log);
         // Take note of download file name.
         if (!"".equals(fileName)) {
             fileNameDownloaded = fileName;
@@ -597,7 +585,8 @@ public class FileTransferFragment extends MultiPartyFragment
         try {
             skylinkConnection.sendFileTransferPermissionResponse(peerId, getDownloadedFilePath(), true);
         } catch (SkylinkException e) {
-            Toast.makeText(parentActivity, e.getMessage(), Toast.LENGTH_LONG).show();
+            log = e.getMessage();
+            toastLogLong(TAG, context, log);
         }
     }
 
@@ -605,42 +594,44 @@ public class FileTransferFragment extends MultiPartyFragment
     public void onFileTransferPermissionResponse(String peerId, String fileName, boolean
             isPermitted) {
         if (isPermitted) {
-            Toast.makeText(parentActivity, "Sending file", Toast.LENGTH_SHORT).show();
+            String log = "Sending file";
+            toastLog(TAG, context, log);
         } else {
-            Toast.makeText(parentActivity,
-                    "Sorry, the remote peer has not granted permission for file transfer",
-                    Toast.LENGTH_SHORT).show();
+            String log = "Sorry, the remote peer has not granted permission for file transfer";
+            toastLog(TAG, context, log);
         }
     }
 
     public void onFileTransferDrop(String remotePeerId, String fileName, String message,
                                    boolean isExplicit) {
-        Toast.makeText(parentActivity, "The file transfer was dropped.\nReason : " + message,
-                Toast.LENGTH_LONG).show();
+        String log = "The file transfer was dropped.\nReason : " + message;
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onFileSendComplete(String remotePeerId, String fileName) {
-        Toast.makeText(parentActivity, "Your file has been sent", Toast.LENGTH_SHORT).show();
-
+        String log = "Your file has been sent";
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
-        Toast.makeText(parentActivity, "Uploading... " + percentage, Toast.LENGTH_SHORT).show();
+        String log = "Uploading... " + percentage;
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onFileReceiveComplete(String remotePeerId, String fileName) {
-        Toast.makeText(parentActivity, "A file has been received : " + fileName, Toast.LENGTH_SHORT)
-                .show();
+        String log = "A file has been received : " + fileName;
+        toastLog(TAG, context, log);
         tvFileTransferDetails
                 .setText("File Transfer Successful\n\nDestination : " + getDownloadedFilePath());
     }
 
     @Override
     public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
-        Toast.makeText(parentActivity, "Downloading... " + percentage, Toast.LENGTH_SHORT).show();
+        String log = "Downloading... " + percentage;
+        toastLog(TAG, context, log);
     }
 
 
@@ -684,8 +675,7 @@ public class FileTransferFragment extends MultiPartyFragment
             setRoomDetails();
         }
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -704,8 +694,7 @@ public class FileTransferFragment extends MultiPartyFragment
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -721,13 +710,19 @@ public class FileTransferFragment extends MultiPartyFragment
             log += ".\r\n";
         }
 
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Log.d(TAG, "onRemotePeerUserDataReceive " + remotePeerId);
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        String log = "[SA][onRemotePeerUserDataReceive] Peer " + Utils.getPeerIdNick(remotePeerId) +
+                ":\n" + nick;
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -740,7 +735,7 @@ public class FileTransferFragment extends MultiPartyFragment
      * @return File to be transferred from default directory (Pictures directory).
      */
     private File getFileToTransfer(String fileName) {
-        File path = parentActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return new File(path, fileName);
     }
 

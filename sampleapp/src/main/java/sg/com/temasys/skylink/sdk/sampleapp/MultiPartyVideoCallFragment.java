@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.webrtc.SurfaceViewRenderer;
 
@@ -41,14 +39,17 @@ import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.MainActivity.ARG_SECTION_NUMBER;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.isConnectingOrConnected;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQReset;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.permQResume;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 /**
  * Created by janidu on 3/3/15.
@@ -61,9 +62,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public String MY_USER_NAME;
 
 
-    public static final String KEY_SELF = "self";
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
-    private static final String ARG_SECTION_NUMBER = "section_number";
 
     /**
      * List of Framelayouts for VideoViews
@@ -80,8 +79,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     // List that associate FrameLayout position with PeerId.
     // First position is for local Peer.
     private static String[] peerList = new String[4];
-    private Activity parentActivity;
-    private Context applicationContext;
+    private Context context;
 
     // Map with PeerId as key for boolean state
     // that indicates if currently getting WebRTC stats for Peer.
@@ -116,11 +114,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                         if (skylinkConnection != null) {
                             String name = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME,
                                     skylinkConnection.getPeerId());
-                            TextView selfTV = new TextView(getContext());
+                            TextView selfTV = new TextView(context);
                             selfTV.setText(name);
                             selfTV.setTextIsSelectable(true);
                             AlertDialog.Builder selfDialogBuilder =
-                                    new AlertDialog.Builder(getContext());
+                                    new AlertDialog.Builder(context);
                             selfDialogBuilder.setView(selfTV);
                             selfDialogBuilder.setPositiveButton("OK", null);
                             selfDialogBuilder.setNegativeButton("Switch Camera",
@@ -143,17 +141,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         // Check if it was an orientation change
         if (savedInstanceState != null) {
             // Resume previous permission request, if any.
-            permQResume(getContext(), this, skylinkConnection);
+            permQResume(context, this, skylinkConnection);
 
             // Toggle camera back to previous state if required.
             if (toggleCamera) {
                 if (getVideoView(null) != null) {
-                    try {
-                        skylinkConnection.toggleCamera();
-                        toggleCamera = false;
-                    } catch (SkylinkException e) {
-                        Log.e(TAG, e.getMessage());
-                    }
+                    skylinkConnection.toggleCamera();
+                    toggleCamera = false;
                 }
             }
 
@@ -167,8 +161,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             toggleCamera = false;
         }
 
-        // Try to connect to room if not yet connected.
-        if (!isConnected()) {
+        // Try to connect to room if we have not tried connecting.
+        if (!isConnectingOrConnected()) {
             connectToRoom();
         }
 
@@ -197,14 +191,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         boolean connectFailed;
         connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, MY_USER_NAME);
         if (connectFailed) {
-            String error = "Unable to connect to Room! Rotate device to try again later.";
-            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
-            Log.e(TAG, error);
+            String log = "Unable to connect to Room! Rotate device to try again later.";
+            toastLogLong(TAG, context, log);
+            Log.e(TAG, log);
             return;
         }
 
         // Initialize and use the Audio router to switch between headphone and headset
-        AudioRouter.startAudioRouting(parentActivity);
+        AudioRouter.startAudioRouting(context);
     }
 
     @Override
@@ -212,7 +206,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         super.onCreate(savedInstanceState);
 
         // Allow volume to be controlled using volume keys
-        parentActivity.setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        ((MainActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
@@ -222,12 +216,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         // Toggle camera back to previous state if required.
         if (toggleCamera) {
             if (getVideoView(null) != null) {
-                try {
-                    skylinkConnection.toggleCamera();
-                    toggleCamera = false;
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+                skylinkConnection.toggleCamera();
+                toggleCamera = false;
             }
         }
     }
@@ -237,27 +227,21 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         super.onPause();
 
         // Stop local video source only if not changing orientation
-        if (!parentActivity.isChangingConfigurations()) {
+        if (!((MainActivity) context).isChangingConfigurations()) {
             if (getVideoView(null) != null) {
                 // Stop local video source if it's on.
-                try {
-                    // Record if need to toggleCamera when resuming.
-                    toggleCamera = skylinkConnection.toggleCamera(false);
-                } catch (SkylinkException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+                // Record if need to toggleCamera when resuming.
+                toggleCamera = skylinkConnection.toggleCamera(false);
             }
         }
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         //update actionbar title
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(ARG_SECTION_NUMBER));
-        parentActivity = getActivity();
-        applicationContext = parentActivity.getApplicationContext();
+        ((MainActivity) context).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+        this.context = context;
     }
 
     @Override
@@ -272,10 +256,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         emptyLayout();
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
-                && isConnected()) {
+        if (!((MainActivity) context).isChangingConfigurations() && isConnectingOrConnected()) {
             skylinkConnection.disconnectFromRoom();
-            AudioRouter.stopAudioRouting(parentActivity.getApplicationContext());
+            AudioRouter.stopAudioRouting(context);
         }
     }
 
@@ -290,18 +273,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     //----------------------------------------------------------------------------------------------
     // Skylink helper methods
     //----------------------------------------------------------------------------------------------
-
-    /**
-     * Check if we are currently connected to the room.
-     *
-     * @return True if we are connected and false otherwise.
-     */
-    private boolean isConnected() {
-        if (skylinkConnection != null) {
-            return skylinkConnection.isConnected();
-        }
-        return false;
-    }
 
     private SkylinkConfig getSkylinkConfig() {
         if (skylinkConfig != null) {
@@ -328,8 +299,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(),
-                getSkylinkConfig(), this.applicationContext);
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(), context);
         // Set listeners to receive callbacks when events are triggered
         setListeners();
     }
@@ -380,8 +350,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         } else {
             log += ".";
         }
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
 
         // Refresh connections and log errors if any.
         String[] failedPeers = skylinkConnection.refreshConnection(peerId, iceRestart);
@@ -392,8 +361,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             } else {
                 log += "for Peer(s): " + Arrays.toString(failedPeers) + "!";
             }
-            Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, log);
+            toastLog(TAG, context, log);
         }
     }
 
@@ -401,8 +369,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         boolean success = skylinkConnection.startRecording();
         String log = "[SRS][SA] startRecording=" + success +
                 ", isRecording=" + skylinkConnection.isRecording() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
         return success;
     }
 
@@ -410,8 +377,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         boolean success = skylinkConnection.stopRecording();
         String log = "[SRS][SA] stopRecording=" + success +
                 ", isRecording=" + skylinkConnection.isRecording() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
         return success;
     }
 
@@ -485,7 +451,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements
             }).start();
 
         }
-        // skylinkConnection.getWebrtcStats(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
     }
 
 
@@ -753,7 +718,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 // Add room name to title
                 String title = Utils.getRoomPeerIdNick(skylinkConnection, ROOM_NAME, peerId);
 
-                PopupMenu popupMenu = new PopupMenu(getContext(), v);
+                PopupMenu popupMenu = new PopupMenu(context, v);
                 popupMenu.setOnMenuItemClickListener(clickListener);
 
                 popupMenu.getMenu().add(title);
@@ -784,6 +749,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         };
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Skylink Listeners
+    //----------------------------------------------------------------------------------------------
+
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
      * lifecycle
@@ -794,45 +763,42 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (isSuccessful) {
             String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
-            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-            Log.d(TAG, log);
+            toastLogLong(TAG, context, log);
 
             peerList[0] = skylinkConnection.getPeerIdList()[0];
         } else {
-            String error = "Skylink failed to connect!\nReason : " + message;
-            Log.d(TAG, error);
-            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+            String log = "Skylink failed to connect!\nReason : " + message;
+            toastLogLong(TAG, context, log);
         }
     }
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        String log = "";
+        String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log += "We have successfully disconnected from the room.";
         } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
             log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
         log += " Server message: " + message;
-
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        log = "[onDisconnect] " + log;
-        Log.d(TAG, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-
+        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
+                + lockStatus + ".";
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
+        Utils.handleSkylinkReceiveLog(infoCode, message, context, TAG);
     }
 
     @Override
     public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     /**
@@ -852,24 +818,21 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -898,8 +861,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -912,8 +874,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
         }
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -926,8 +887,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
         }
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -936,7 +896,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, getContext(), this, skylinkConnection);
+        Utils.onPermissionRequiredHandler(permissions, requestCode, infoCode, TAG, context, this, skylinkConnection);
     }
 
     @Override
@@ -946,7 +906,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
-        Utils.onPermissionDeniedHandler(infoCode, getContext(), TAG);
+        Utils.onPermissionDeniedHandler(infoCode, context, TAG);
     }
 
     /**
@@ -958,8 +918,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         addRemotePeer(remotePeerId);
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -968,8 +927,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         removeRemotePeer(remotePeerId);
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -991,8 +949,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1002,8 +959,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (userData != null) {
             nick = userData.toString();
         }
-        String log = "onRemotePeerUserDataReceive for Peer " + Utils.getPeerIdNick(remotePeerId) + ":\n" + nick;
-        Log.d(TAG, log);
+        String log = "[SA][onRemotePeerUserDataReceive] Peer " + Utils.getPeerIdNick(remotePeerId) +
+                ":\n" + nick;
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -1019,16 +977,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onRecordingStart(String recordingId) {
         String log = "[SRS][SA] Recording Started! isRecording=" +
                 skylinkConnection.isRecording() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        Log.d(TAG, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onRecordingStop(String recordingId) {
         String log = "[SRS][SA] Recording Stopped! isRecording=" +
                 skylinkConnection.isRecording() + ".";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        Log.d(TAG, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -1044,12 +1000,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         Linkify.addLinks(videoLinkClickable, Linkify.WEB_URLS);
 
         // Create TextView for video link.
-        final TextView msgTxtView = new TextView(getContext());
+        final TextView msgTxtView = new TextView(context);
         msgTxtView.setText(videoLinkClickable);
         msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Create AlertDialog to present video link.
-        AlertDialog.Builder videoLinkDialogBuilder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder videoLinkDialogBuilder = new AlertDialog.Builder(context);
         videoLinkDialogBuilder.setTitle("Recording: " + recordingId + " Video link");
         videoLinkDialogBuilder.setView(msgTxtView);
         videoLinkDialogBuilder.setPositiveButton("OK", null);
@@ -1059,10 +1015,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onRecordingError(String recordingId, int errorCode, String description) {
-        String error = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
+        String log = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
                 "! Error: " + description;
-        Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
-        Log.e(TAG, error);
+        toastLogLong(TAG, context, log);
+        Log.e(TAG, log);
     }
 
     /**

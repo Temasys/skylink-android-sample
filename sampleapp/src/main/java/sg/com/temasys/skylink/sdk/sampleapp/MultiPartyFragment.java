@@ -1,15 +1,17 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.app.Activity;
+import android.content.Context;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
 
 /**
  * Created by xiangrong on 16/2/16.
@@ -17,10 +19,11 @@ import java.util.ListIterator;
 public class MultiPartyFragment extends Fragment {
 
     static final String BUNDLE_PEER_ID_LIST = "peerIdList";
+    private static final String TAG = MultiPartyFragment.class.getName();
 
     // Container for PeerId and nick
     // ArrayList<Pair<String peerId, String nick>> of remote Peer info.
-    protected ArrayList<Pair<String, String>> peerList;
+    protected static ArrayList<Pair<String, String>> peerList;
 
     // RadioGroup and RadioButtons for selection of Peer(s)
     protected RadioGroup peerRadioGroup;
@@ -29,7 +32,7 @@ public class MultiPartyFragment extends Fragment {
     protected RadioButton peer2;
     protected RadioButton peer3;
     protected RadioButton peer4;
-    protected Activity parentActivity;
+    protected Context context;
 
     /***
      * Multi party methods
@@ -42,11 +45,17 @@ public class MultiPartyFragment extends Fragment {
      * @param nick   Nickname of the Peer to add. Empty string if not available.
      */
     void addPeerRadioBtn(String peerId, String nick) {
+        String logTag = "[SA][addPeerRadioBtn] ";
+        String log = logTag + "Adding Peer \"" + peerId + "\"(" + nick + ") to peerList...";
+        Log.d(TAG, log);
+
         // Add Peer to peerList
         Pair<String, String> peer = new Pair<>(peerId, nick);
         peerList.add(peer);
 
         // Add Peer to radio buttons.
+        log = logTag + "Populating RadioButton UI with added Peer.";
+        Log.d(TAG, log);
         fillPeerRadioBtn();
     }
 
@@ -61,12 +70,17 @@ public class MultiPartyFragment extends Fragment {
             return;
         }
         int peerNum = getPeerNum();
+        String logTag = "[SA][fillPeerRadioBtn] ";
+        String log = logTag + "Populating RadioButton UI with " + peerNum + " Peer(s)...";
+        Log.d(TAG, log);
 
         // Ensure All Peers button visibility is correct.
         if (peerNum > 0) {
             peerAll.setVisibility(View.VISIBLE);
         } else {
             peerAll.setVisibility(View.INVISIBLE);
+            log = logTag + "There are no remote Peers, so there will be no RadioButtons.";
+            Log.d(TAG, log);
         }
 
         // Populate each radio button appropriately starting after All Peers button.
@@ -79,6 +93,9 @@ public class MultiPartyFragment extends Fragment {
                 // Clear text and tag
                 rb.setText("");
                 rb.setTag("");
+                log = logTag + "RadioButton " + i + " is invisible as there are only " +
+                        peerNum + " remote Peer(s).";
+                Log.d(TAG, log);
 
             } else {
                 // Make radio button visible
@@ -89,9 +106,11 @@ public class MultiPartyFragment extends Fragment {
                 String nick = peerPair.second;
                 rb.setText(peerId + " (" + nick + ")");
                 rb.setTag(peerId);
+                log = logTag + "RadioButton " + i + " is visible as there are " +
+                        peerNum + " remote Peer(s).";
+                Log.d(TAG, log);
             }
         }
-
     }
 
     /**
@@ -130,7 +149,7 @@ public class MultiPartyFragment extends Fragment {
             return null;
         }
 
-        RadioButton rb = (RadioButton) parentActivity.findViewById(selectedRB);
+        RadioButton rb = (RadioButton) ((MainActivity) context).findViewById(selectedRB);
         String peerId = rb.getTag().toString();
         return peerId;
     }
@@ -147,9 +166,8 @@ public class MultiPartyFragment extends Fragment {
     String getPeerIdSelectedWithWarning() {
         // Do not allow button actions if there are no Peers in the room.
         if (getPeerNum() == 0) {
-            Toast.makeText(parentActivity,
-                    getString(R.string.warn_no_peer_message),
-                    Toast.LENGTH_SHORT).show();
+            String log = getString(R.string.warn_no_peer_message);
+            toastLog(TAG, context, log);
             return "";
         }
 
@@ -157,9 +175,8 @@ public class MultiPartyFragment extends Fragment {
         );
         // Do not allow button actions if no selection was made.
         if ("".equals(remotePeerId)) {
-            Toast.makeText(parentActivity,
-                    getString(R.string.warn_no_sel_message),
-                    Toast.LENGTH_SHORT).show();
+            String log = getString(R.string.warn_no_sel_message);
+            toastLog(TAG, context, log);
             return "";
         }
         return remotePeerId;

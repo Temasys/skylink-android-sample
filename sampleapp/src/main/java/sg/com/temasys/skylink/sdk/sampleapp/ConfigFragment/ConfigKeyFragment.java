@@ -22,7 +22,6 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,6 +35,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.Utils;
 
 import static android.content.Context.MODE_PRIVATE;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.jsonArrayRemove;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 
 /**
@@ -150,9 +151,8 @@ public class ConfigKeyFragment extends Fragment {
                 String description = descText.getText().toString();
                 if (validateKeySecret &&
                         !Utils.checkAppKeyAndSecret(key, secret)) {
-                    Toast.makeText(getContext(),
-                            "Incorrect key, secret and/or you need to choose SMR status!",
-                            Toast.LENGTH_LONG).show();
+                    String log = "Incorrect key, secret and/or you need to choose SMR status!";
+                    toastLogLong(TAG, getContext(), log);
                     return;
                 }
 
@@ -169,11 +169,11 @@ public class ConfigKeyFragment extends Fragment {
                     recyclerViewAdapter = new RecyclerViewAdapter(getContext(), keyInfoList,
                             getActivity(), ConfigKeyFragment.this);
                     recyclerView.setAdapter(recyclerViewAdapter);
-                    Toast.makeText(getContext(), "Key added.", Toast.LENGTH_SHORT).show();
+                    String log = "Key added.";
+                    toastLog(TAG, getContext(), log);
                 } else {
-                    Toast.makeText(getContext(),
-                            "Key could not be added! Default keys cannot be added again.",
-                            Toast.LENGTH_LONG).show();
+                    String log = "Key could not be added! Default keys cannot be added again.";
+                    toastLogLong(TAG, getContext(), log);
                 }
             }
         });

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <ScrollView
         android:id="@+id/scroll_room"
@@ -18,7 +18,7 @@
             android:layout_height="match_parent"
             android:text=""
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textIsSelectable="true" />
+            android:textIsSelectable="true"/>
     </ScrollView>
 
     <ListView
@@ -34,7 +34,7 @@
         android:id="@+id/chatMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter a Message" />
+        android:hint="Enter a Message"/>
 
     <ScrollView
         android:id="@+id/scroll_peers"
@@ -62,35 +62,35 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/label_all_peers"
-                        android:visibility="invisible" />
+                        android:visibility="invisible"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible" />
+                        android:visibility="invisible"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible" />
+                        android:visibility="invisible"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible" />
+                        android:visibility="invisible"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer4"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible" />
+                        android:visibility="invisible"/>
 
                 </RadioGroup>
             </HorizontalScrollView>
@@ -108,14 +108,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Server Msg" />
+            android:text="Server Msg"/>
 
         <Button
             android:id="@+id/btn_send_p2p_message"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="P2P Msg" />
+            android:text="P2P Msg"/>
     </LinearLayout>
 
 </LinearLayout>

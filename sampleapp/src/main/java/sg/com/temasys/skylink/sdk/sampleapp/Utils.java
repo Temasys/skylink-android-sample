@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -59,6 +58,9 @@ public class Utils {
     public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
     private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+
+    private static SkylinkConnection scInstance;
+
     // Queue of Permission requesting objects.
     private static Deque<PermRequester> permQ = new ArrayDeque<>();
     /**
@@ -72,7 +74,45 @@ public class Utils {
      */
     private static PermRequester permRequester = null;
 
+    /**
+     * The last Toast made with {@link #toastLog};
+     */
+    private static Toast toast;
+
     private Utils() {
+    }
+
+    /**
+     * Method to get SkylinkConnection instance without calling
+     * {@link SkylinkConnection#getInstance()} more than once in this class.
+     *
+     * @return
+     */
+    private static SkylinkConnection getScInstance() {
+        if (scInstance == null) {
+            scInstance = SkylinkConnection.getInstance();
+        }
+        return scInstance;
+    }
+
+    /**
+     * Check if we are currently connected or at least in process of connecting, by checking current
+     * {@link sg.com.temasys.skylink.sdk.rtc.SkylinkConnection.SkylinkState}.
+     * If true, we should be in a valid state to {@link SkylinkConnection#disconnectFromRoom}.
+     * If false, we should be in a valid state to {@link SkylinkConnection#connectToRoom}.
+     *
+     * @return True if we are currently connecting or connected,
+     * and False if we are currently disconnecting or disconnected.
+     */
+    public static boolean isConnectingOrConnected() {
+        if (getScInstance() != null) {
+            SkylinkConnection.SkylinkState state = getScInstance().getSkylinkState();
+            if (state == SkylinkConnection.SkylinkState.CONNECTING ||
+                    state == SkylinkConnection.SkylinkState.CONNECTED) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -83,7 +123,7 @@ public class Utils {
      * @return
      */
     public static String getUserDataString(String peerId) {
-        Object userDataObject = SkylinkConnection.getInstance().getUserData(peerId);
+        Object userDataObject = getScInstance().getUserData(peerId);
         String userDataString = "";
         if (userDataObject != null) {
             userDataString = userDataObject.toString();
@@ -99,7 +139,7 @@ public class Utils {
      * @return
      */
     public static String getUserDataString(UserInfo userInfo) {
-        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        SkylinkConnection skylinkConnection = getScInstance();
         if (userInfo == null) {
             userInfo = skylinkConnection.getUserInfo(null);
         }
@@ -142,7 +182,7 @@ public class Utils {
     public static String getPeerIdNick(String peerId) {
         String peerIdShow = peerId;
         if (peerId == null) {
-            SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+            SkylinkConnection skylinkConnection = getScInstance();
             if (skylinkConnection != null) {
                 peerIdShow = skylinkConnection.getPeerId();
             }
@@ -150,7 +190,7 @@ public class Utils {
                 peerIdShow = "Self";
             }
         }
-        final String peerIdNick = peerIdShow + " (" + getUserDataString(peerId) + ")";
+        final String peerIdNick = "\"" + peerIdShow + "\"(" + getUserDataString(peerId) + ")";
         return peerIdNick;
     }
 
@@ -418,7 +458,7 @@ public class Utils {
      * @return
      */
     public static int getTotalInRoom() {
-        SkylinkConnection skylinkConnection = SkylinkConnection.getInstance();
+        SkylinkConnection skylinkConnection = getScInstance();
         String[] peerIdList = skylinkConnection.getPeerIdList();
         if (peerIdList == null) {
             return 0;
@@ -553,20 +593,20 @@ public class Utils {
      *
      * @param infoCode
      * @param message
-     * @param parentActivity
-     * @param logTag
+     * @param context
+     * @param tag
      */
     public static void handleSkylinkReceiveLog(int infoCode, String message,
-                                               Activity parentActivity, String logTag) {
+                                               Context context, String tag) {
+        String log = "[SA][SkylinkLog] " + message;
         switch (infoCode) {
             case CAM_SWITCH_FRONT:
             case CAM_SWITCH_NON_FRONT:
-                Toast.makeText(parentActivity, message, Toast.LENGTH_SHORT).show();
+                toastLog(TAG, context, log);
                 break;
             default:
                 break;
         }
-        Log.d(logTag, "[SA]Received SDK log: " + message);
     }
 
     /**
@@ -574,15 +614,15 @@ public class Utils {
      *
      * @param errorCode
      * @param message
-     * @param parentActivity
-     * @param logTag
+     * @param context
+     * @param tag
      */
-    public static void handleSkylinkWarning(int errorCode, String message, Activity parentActivity,
-                                            String logTag) {
-        String log = "[SA]Skylink Error: " + errorCode + " (" + Errors.getErrorString(errorCode)
-                + ")\r\n" + message;
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        Log.w(logTag, log);
+    public static void handleSkylinkWarning(int errorCode, String message, Context context,
+                                            String tag) {
+        String log = "[SA][SkylinkWarn] Error:" + errorCode + " (" +
+                Errors.getErrorString(errorCode) + ")\r\n" + message;
+        toastLog(tag, context, log);
+        Log.w(tag, log);
     }
 
     /**
@@ -1088,4 +1128,42 @@ public class Utils {
         }
     }
 
+    /**
+     * Will cancel the previous {@link #toastLog} attempt to Toast if still ongoing, and
+     * Toast the given log with the given Toast length.
+     * Will also Log.d the given log.
+     *
+     * @param context
+     * @param log
+     */
+    synchronized public static void toastLog(String tag, Context context, String log, int toastLength) {
+        if (toast != null) {
+            toast.cancel();
+        }
+        toast = Toast.makeText(context, log, toastLength);
+        toast.show();
+        Log.d(TAG, log);
+    }
+
+    /**
+     * Like {@link #toastLog} but with Toast.LENGTH_SHORT.
+     *
+     * @param tag
+     * @param context
+     * @param log
+     */
+    public static void toastLog(String tag, Context context, String log) {
+        toastLog(tag, context, log, Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * Like {@link #toastLog} but with Toast.LENGTH_LONG.
+     *
+     * @param tag
+     * @param context
+     * @param log
+     */
+    public static void toastLogLong(String tag, Context context, String log) {
+        toastLog(tag, context, log, Toast.LENGTH_LONG);
+    }
 }

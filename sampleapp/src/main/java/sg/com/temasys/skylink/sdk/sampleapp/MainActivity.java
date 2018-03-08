@@ -6,13 +6,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 
 public class MainActivity extends ActionBarActivity
@@ -129,11 +129,9 @@ public class MainActivity extends ActionBarActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_build_info) {
-            String versionInfo =
-                    "SDK Version: " + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
-                            + "\n" + "Sample application version: " + BuildConfig.VERSION_NAME;
-            Log.d(TAG, versionInfo);
-            Toast.makeText(this, versionInfo, Toast.LENGTH_LONG).show();
+            String log = "SDK Version: " + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
+                    + "\n" + "Sample application version: " + BuildConfig.VERSION_NAME;
+            toastLogLong(TAG, this, log);
             return true;
         } else if (id == R.id.action_configuration) {
             // update the main content by replacing fragments

@@ -1,6 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +28,12 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.MainActivity.ARG_SECTION_NUMBER;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getRoomRoomId;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.isConnectingOrConnected;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
 
 public class DataTransferFragment extends MultiPartyFragment implements
         RemotePeerListener, DataTransferListener,
@@ -86,7 +89,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
             // Set listeners to receive callbacks when events are triggered
             setListeners();
 
-            if (isConnected()) {
+            if (isConnectingOrConnected()) {
                 // Set states
                 peerJoined = savedInstanceState.getBoolean(BUNDLE_IS_PEER_JOINED);
                 // [MultiParty]
@@ -108,7 +111,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
                 String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
 
         // Try to connect to room if not yet connected.
-        if (!isConnected()) {
+        if (!isConnectingOrConnected()) {
             connectToRoom();
         }
 
@@ -132,15 +135,12 @@ public class DataTransferFragment extends MultiPartyFragment implements
                                 skylinkConnection.sendData(remotePeerId, dataPrivate);
                             }
                         } catch (SkylinkException e) {
-                            String exMsg = e.getMessage();
-                            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_LONG).show();
-                            Log.e(TAG, exMsg, e);
+                            String log = e.getMessage();
+                            toastLogLong(TAG, context, log);
                         } catch (UnsupportedOperationException e) {
-                            String exMsg = e.getMessage();
-                            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_SHORT).show();
-                            Log.e(TAG, exMsg, e);
+                            String log = e.getMessage();
+                            toastLogLong(TAG, context, log);
                         }
-
                     }
                 }
         );
@@ -152,9 +152,8 @@ public class DataTransferFragment extends MultiPartyFragment implements
                         // [MultiParty]
                         // Do not allow button actions if there are no Peers in the room.
                         if (getPeerNum() == 0) {
-                            Toast.makeText(parentActivity,
-                                    getString(R.string.warn_no_peer_message),
-                                    Toast.LENGTH_SHORT).show();
+                            String log = getString(R.string.warn_no_peer_message);
+                            toastLog(TAG, context, log);
                             return;
                         }
                         // Select All Peers RadioButton if not already selected
@@ -168,13 +167,11 @@ public class DataTransferFragment extends MultiPartyFragment implements
                         try {
                             skylinkConnection.sendData(null, dataGroup);
                         } catch (SkylinkException e) {
-                            String exMsg = e.getMessage();
-                            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_LONG).show();
-                            Log.e(TAG, exMsg, e);
+                            String log = e.getMessage();
+                            toastLogLong(TAG, context, log);
                         } catch (UnsupportedOperationException e) {
-                            String exMsg = e.getMessage();
-                            Toast.makeText(parentActivity, exMsg, Toast.LENGTH_LONG).show();
-                            Log.e(TAG, exMsg, e);
+                            String log = e.getMessage();
+                            toastLogLong(TAG, context, log);
                         }
                     }
                 }
@@ -190,12 +187,11 @@ public class DataTransferFragment extends MultiPartyFragment implements
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         //update actionbar title
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(MainActivity.ARG_SECTION_NUMBER));
-        parentActivity = getActivity();
+        ((MainActivity) context).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
+        this.context = context;
     }
 
     @Override
@@ -213,8 +209,8 @@ public class DataTransferFragment extends MultiPartyFragment implements
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
-        if (!parentActivity.isChangingConfigurations() && skylinkConnection != null
-                && isConnected()) {
+        if (!((MainActivity) context).isChangingConfigurations() && skylinkConnection != null
+                && isConnectingOrConnected()) {
             skylinkConnection.disconnectFromRoom();
             dataPrivate = null;
             dataGroup = null;
@@ -224,18 +220,6 @@ public class DataTransferFragment extends MultiPartyFragment implements
     //----------------------------------------------------------------------------------------------
     // Skylink helper methods
     //----------------------------------------------------------------------------------------------
-
-    /**
-     * Check if we are currently connected to the room.
-     *
-     * @return True if we are connected and false otherwise.
-     */
-    private boolean isConnected() {
-        if (skylinkConnection != null) {
-            return skylinkConnection.isConnected();
-        }
-        return false;
-    }
 
     private SkylinkConfig getSkylinkConfig() {
         if (skylinkConfig != null) {
@@ -275,7 +259,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
         skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(),
-                parentActivity.getApplicationContext());
+                context.getApplicationContext());
 
         //set listeners to receive callbacks when events are triggered
         setListeners();
@@ -322,7 +306,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
      */
     private void getDataPrivate() {
         if (dataPrivate == null) {
-            InputStream inputStream = parentActivity.getResources().openRawResource(R.raw.icon);
+            InputStream inputStream = context.getResources().openRawResource(R.raw.icon);
             try {
                 dataPrivate = new byte[inputStream.available()];
                 inputStream.read(dataPrivate);
@@ -350,10 +334,14 @@ public class DataTransferFragment extends MultiPartyFragment implements
      * Set the room details on UI.
      */
     void setRoomDetails() {
-        Utils.setRoomDetailsMulti(isConnected(), peerJoined, tvRoomDetails,
+        Utils.setRoomDetailsMulti(isConnectingOrConnected(), peerJoined, tvRoomDetails,
                 getRoomRoomId(skylinkConnection, ROOM_NAME),
                 Utils.getDisplayName(skylinkConnection, MY_USER_NAME, null));
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Skylink Listeners
+    //----------------------------------------------------------------------------------------------
 
     /***
      * Lifecycle Listener Callbacks -- triggered during events that happen during the SDK's
@@ -366,28 +354,15 @@ public class DataTransferFragment extends MultiPartyFragment implements
         if (isSuccessful) {
             String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
-            Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-            Log.d(TAG, log);
+            toastLogLong(TAG, context, log);
             // [MultiParty]
             // Set the appropriate UI if already isConnected().
             onConnectUIChange();
         } else {
-            String error = "Skylink failed to connect!\nReason : " + message;
-            Log.d(TAG, error);
-            Toast.makeText(parentActivity, error, Toast.LENGTH_LONG).show();
+            String log = "Skylink failed to connect!\nReason : " + message;
+            toastLogLong(TAG, context, log);
             setRoomDetails();
         }
-    }
-
-    @Override
-    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        Toast.makeText(parentActivity, "Peer " + remotePeerId +
-                " has changed Room locked status to " + lockStatus, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, parentActivity, TAG);
     }
 
     @Override
@@ -397,22 +372,31 @@ public class DataTransferFragment extends MultiPartyFragment implements
         peerList.clear();
         // Set the appropriate UI after disconnecting.
         onConnectUIChange();
-        String log = "";
+        String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log += "We have successfully disconnected from the room.";
         } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
             log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
         log += " Server message: " + message;
+        toastLogLong(TAG, context, log);
+    }
 
-        Toast.makeText(parentActivity, log, Toast.LENGTH_LONG).show();
-        log = "[onDisconnect] " + log;
-        Log.d(TAG, log);
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
+                + lockStatus + ".";
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, parentActivity, TAG);
+        Utils.handleSkylinkReceiveLog(infoCode, message, context, TAG);
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     /**
@@ -437,8 +421,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
             setRoomDetails();
         }
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId) + " connected.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -457,8 +440,7 @@ public class DataTransferFragment extends MultiPartyFragment implements
         int numRemotePeers = getNumRemotePeers();
         String log = "Your Peer " + Utils.getPeerIdNick(remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -475,13 +457,19 @@ public class DataTransferFragment extends MultiPartyFragment implements
             log += ".\r\n";
         }
 
-        Toast.makeText(parentActivity, log, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-        Log.d(TAG, remotePeerId + " onRemotePeerUserDataReceive");
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        String log = "[SA][onRemotePeerUserDataReceive] Peer " + Utils.getPeerIdNick(remotePeerId) +
+                ":\n" + nick;
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -499,16 +487,15 @@ public class DataTransferFragment extends MultiPartyFragment implements
     public void onDataReceive(String remotePeerId, byte[] data) {
         // Check if it is one of the data that we can send.
         if (Arrays.equals(data, this.dataPrivate) || Arrays.equals(data, this.dataGroup)) {
-            Toast.makeText(parentActivity,
-                    String.format(getString(R.string.data_transfer_received_expected),
-                            String.valueOf(data.length)), Toast.LENGTH_SHORT).show();
+            String log = String.format(getString(R.string.data_transfer_received_expected),
+                    String.valueOf(data.length));
+            toastLog(TAG, context, log);
         } else {
             // Received some unexpected data that could be from other apps
             // or perhaps different due to so some problems somewhere.
-            Toast.makeText(parentActivity,
-                    String.format(getString(R.string.data_transfer_received_unexpected),
-                            String.valueOf(data.length)), Toast.LENGTH_LONG).show();
+            String log = String.format(getString(R.string.data_transfer_received_unexpected),
+                    String.valueOf(data.length));
+            toastLogLong(TAG, context, log);
         }
     }
-
 }
