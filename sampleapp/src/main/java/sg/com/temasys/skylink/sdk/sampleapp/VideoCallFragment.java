@@ -519,7 +519,8 @@ public class VideoCallFragment extends Fragment
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(), context);
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(),
+                context.getApplicationContext());
         // Set listeners to receive callbacks when events are triggered
         setListeners();
     }
@@ -1243,7 +1244,8 @@ public class VideoCallFragment extends Fragment
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        getVideoResolutions();
+                                        // getVideoResolutions();
+                                        Utils.getVideoResolutions(getPeerId(1));
                                     }
                                 });
                         // Switch camera if possible.
@@ -1272,7 +1274,7 @@ public class VideoCallFragment extends Fragment
             // And new self video.
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 2f);
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1f);
             videoView.setLayoutParams(params);
             linearLayout.addView(videoView);
 
@@ -1315,7 +1317,7 @@ public class VideoCallFragment extends Fragment
         // Add view to parent
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
         videoView.setLayoutParams(params);
         linearLayout.addView(videoView);
     }
@@ -1457,7 +1459,7 @@ public class VideoCallFragment extends Fragment
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
-        toastLog(TAG, context, log);
+        Log.d(TAG, log);
     }
 
     @Override
@@ -1470,7 +1472,7 @@ public class VideoCallFragment extends Fragment
 
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        toastLog(TAG, context, log);
+        Log.d(TAG, log);
     }
 
     @Override
@@ -1483,7 +1485,7 @@ public class VideoCallFragment extends Fragment
 
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        toastLog(TAG, context, log);
+        Log.d(TAG, log);
     }
 
     @Override
@@ -1512,7 +1514,7 @@ public class VideoCallFragment extends Fragment
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        toastLog(TAG, context, log);
+        Log.d(TAG, log);
     }
 
     @Override

@@ -6,11 +6,16 @@
   MAKE A COPY of config_example.xml (do NOT edit config_example.xml for app usage)
     and give it a name not used in this directory (res/value/), e.g. config.xml.
   Uncomment the xml elements in it.
+  In the Sample App, keys with Skylink Media Relay (SMR) enabled and those without
+   are kept in 2 separate categories.
+  If desired, you may provide below a default App key for each category.
+  If not, simply uncomment the xml elements without changing their values.
+  Note that an appropriate App key and its secret are required to connect to Skylink successfully.
   Populate the boolean value for is_app_key_smr with whether the app should start by selecting
     app_key_no_smr (false) or app_key_smr (true) as the App key to use.
   Populate the values for app_key_no_smr and app_key_smr with the appropriate app keys.
   Populate the values for app_key_secret_no_smr and app_key_secret_smr with the appropriate app secret.
-  Populate the values for app_key_desc_no_smr and app_key_desc_smr with the appropriate app secret.
+  Populate the values for app_key_desc_no_smr and app_key_desc_smr with the appropriate app description.
 <-->
 <resources>
 

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/vid_res_sent"
+        android:title="@string/vid_res_sent"/>
+    <item
+        android:id="@+id/vid_res_recv"
+        android:title="@string/vid_res_recv"/>
+    <item
         android:id="@+id/webrtc_stats"
         android:title="@string/webrtc_stats"/>
     <item

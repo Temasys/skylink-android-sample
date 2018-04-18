@@ -45,6 +45,8 @@
     <string name="recording_stop">Recording stop</string>
     <string name="recording_start">Recording start</string>
     <string name="transfer_speed">Transfer speed</string>
+    <string name="vid_res_sent">Video Res: Sent</string>
+    <string name="vid_res_recv">Video Res: Recv</string>
     <string name="webrtc_stats">WebRTC Stats</string>
 
 </resources>

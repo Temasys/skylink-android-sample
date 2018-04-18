@@ -264,8 +264,8 @@ public class ChatFragment extends MultiPartyFragment
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(),
-                getSkylinkConfig(), context);
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(),
+                context.getApplicationContext());
 
         //set listeners to receive callbacks when events are triggered
         setListeners();

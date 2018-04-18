@@ -1129,6 +1129,20 @@ public class Utils {
     }
 
     /**
+     * Call Skylink APIs to get all Video resolutions available, including:
+     * Input, sent and received.
+     *
+     * @param peerId
+     */
+    public static void getVideoResolutions(String peerId) {
+        getScInstance().getInputVideoResolution();
+        if (peerId != null) {
+            getScInstance().getSentVideoResolution(peerId);
+            getScInstance().getReceivedVideoResolution(peerId);
+        }
+    }
+
+    /**
      * Will cancel the previous {@link #toastLog} attempt to Toast if still ongoing, and
      * Toast the given log with the given Toast length.
      * Will also Log.d the given log.

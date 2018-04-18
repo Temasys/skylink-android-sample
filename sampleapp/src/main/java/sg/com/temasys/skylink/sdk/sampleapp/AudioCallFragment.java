@@ -207,7 +207,8 @@ public class AudioCallFragment extends Fragment
 
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
-        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(), context);
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(),
+                context.getApplicationContext());
 
         // Set listeners to receive callbacks when events are triggered
         setListeners();

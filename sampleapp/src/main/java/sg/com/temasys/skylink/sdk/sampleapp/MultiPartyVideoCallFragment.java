@@ -42,6 +42,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 
+import static android.view.Gravity.CENTER;
 import static sg.com.temasys.skylink.sdk.sampleapp.MainActivity.ARG_SECTION_NUMBER;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getNumRemotePeers;
 import static sg.com.temasys.skylink.sdk.sampleapp.Utils.getTotalInRoom;
@@ -121,6 +122,15 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                                     new AlertDialog.Builder(context);
                             selfDialogBuilder.setView(selfTV);
                             selfDialogBuilder.setPositiveButton("OK", null);
+                            // Get the input video resolution.
+                            selfDialogBuilder.setPositiveButton("Input video resolution",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            skylinkConnection.getInputVideoResolution();
+                                        }
+                                    });
+
                             selfDialogBuilder.setNegativeButton("Switch Camera",
                                     new DialogInterface.OnClickListener() {
                                         @Override
@@ -299,7 +309,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     private void initializeSkylinkConnection() {
         skylinkConnection = SkylinkConnection.getInstance();
         //the app_key and app_secret is obtained from the temasys developer console.
-        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(), context);
+        skylinkConnection.init(Config.getAppKey(), getSkylinkConfig(),
+                context.getApplicationContext());
         // Set listeners to receive callbacks when events are triggered
         setListeners();
     }
@@ -470,6 +481,18 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     }
 
     /**
+     * Set LayoutParams for a VideoView to fit within it's containing FrameLayout, in the center.
+     *
+     * @param videoView
+     */
+    private void setLayoutParams(SurfaceViewRenderer videoView) {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT, CENTER);
+        videoView.setLayoutParams(params);
+    }
+
+    /**
      * Get the Peer index of a Peer, given it's PeerId.
      *
      * @param peerId PeerId of the Peer for whom to retrieve its Peer index
@@ -567,6 +590,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
                 SurfaceViewRenderer view = (SurfaceViewRenderer) peerFrameLayout.getChildAt(0);
                 if (view != null) {
                     peerFrameLayout.removeAllViews();
+                    setLayoutParams(view);
                     videoViewLayouts[indexEmpty].addView(view);
                 }
                 ++indexEmpty;
@@ -593,6 +617,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (index < 1 || index > videoViewLayouts.length) {
             return;
         }
+        setLayoutParams(videoView);
         videoViewLayouts[index].addView(videoView);
     }
 
@@ -612,6 +637,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         if (peers != null) {
             peerList[0] = peers[0];
         }
+        setLayoutParams(videoView);
         videoViewLayouts[0].addView(videoView);
     }
 
@@ -675,6 +701,18 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
                                 int id = item.getItemId();
                                 switch (id) {
+                                    case R.id.vid_res_sent:
+                                        if (peerId == null || skylinkConnection == null) {
+                                            return false;
+                                        }
+                                        skylinkConnection.getSentVideoResolution(peerId);
+                                        return true;
+                                    case R.id.vid_res_recv:
+                                        if (peerId == null || skylinkConnection == null) {
+                                            return false;
+                                        }
+                                        skylinkConnection.getReceivedVideoResolution(peerId);
+                                        return true;
                                     case R.id.webrtc_stats:
                                         if (peerId == null) {
                                             return false;
@@ -723,6 +761,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
                 popupMenu.getMenu().add(title);
                 // Populate actions of Popup Menu.
+                if (peerId != null) {
+                    popupMenu.getMenu().add(0, R.id.vid_res_sent, 0, R.string.vid_res_sent);
+                    popupMenu.getMenu().add(0, R.id.vid_res_recv, 0, R.string.vid_res_recv);
+                }
                 if (peerId != null) {
                     String statsStr = getString(R.string.webrtc_stats);
                     final Boolean gettingStats = isGettingWebrtcStats.get(peerId);
@@ -818,21 +860,21 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
-        toastLog(TAG, context, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        toastLog(TAG, context, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        toastLog(TAG, context, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -857,6 +899,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements
         log += "from Peer " + Utils.getPeerIdNick(remotePeerId) + ".\r\n";
 
         UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
+
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
