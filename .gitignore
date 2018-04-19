@@ -11,3 +11,6 @@
 /adtSample/src/main/bin
 sampleapp/.idea
 local.properties
+.idea
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
