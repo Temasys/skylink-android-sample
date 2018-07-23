@@ -27,15 +27,15 @@ import org.json.JSONObject;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.appKeyListNoSmr;
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.appKeyListSmr;
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.deleteAppKey;
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.setSelectedKeyViews;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.checkAppKeyAndSecret;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.checkAppKeyAndSecret;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by phyo.pwint on 29/7/16.

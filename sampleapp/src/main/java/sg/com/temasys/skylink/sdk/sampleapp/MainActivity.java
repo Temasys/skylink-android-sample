@@ -1,7 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -11,28 +11,25 @@ import android.view.MenuItem;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
+import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall.MultiPartyVideoCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.videocall.VideoCallActivity;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
-
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_AUDIO_CALL;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_CHAT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_DATA_TRANSFER;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_FILE_TRANSFER;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_VIDEO_CALL;
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    public static final String ARG_SECTION_NUMBER = "section_number";
-    private static final int CASE_SECTION_AUDIO_CALL = 1;
-    private static final int CASE_SECTION_VIDEO_CALL = 2;
-    private static final int CASE_SECTION_CHAT = 3;
-    private static final int CASE_SECTION_FILE_TRANSFER = 4;
-    private static final int CASE_SECTION_DATA_TRANSFER = 5;
-    private static final int CASE_SECTION_MULTI_PARTY_VIDEO_CALL = 6;
-
-    private static final int CASE_FRAGMENT_AUDIO_CALL = 0;
-    private static final int CASE_FRAGMENT_VIDEO_CALL = 1;
-    private static final int CASE_FRAGMENT_CHAT = 2;
-    private static final int CASE_FRAGMENT_FILE_TRANSFER = 3;
-    private static final int CASE_FRAGMENT_DATA_TRANSFER = 4;
-    private static final int CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL = 5;
-    private static final int CASE_FRAGMENT_CONFIG = 6;
     private static final String TAG = MainActivity.class.getName();
 
     /**
@@ -60,41 +57,33 @@ public class MainActivity extends ActionBarActivity
         // Load selected App key details
         Config.loadSelectedAppKey(this);
         Config.loadRoomUserNames(this);
+
+        //init Utils
+        Utils utils = new Utils(this);
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
+//        // update the main content by replacing fragments
 
-        Fragment fragmentToLaunch = getFragmentToLaunch(position);
-
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragmentToLaunch)
-                .commit();
-    }
-
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case CASE_SECTION_AUDIO_CALL:
-                mTitle = getString(R.string.title_section1);
+        switch (position){
+            case CASE_FRAGMENT_AUDIO_CALL:
+                startActivity(new Intent(this, AudioCallActivity.class));
                 break;
-            case CASE_SECTION_VIDEO_CALL:
-                mTitle = getString(R.string.title_section2);
+            case CASE_FRAGMENT_CHAT:
+                startActivity(new Intent(this, ChatActivity.class));
                 break;
-            case CASE_SECTION_CHAT:
-                mTitle = getString(R.string.title_section3);
+            case CASE_FRAGMENT_FILE_TRANSFER:
+                startActivity(new Intent(this, FileTransferActivity.class));
                 break;
-            case CASE_SECTION_FILE_TRANSFER:
-                mTitle = getString(R.string.title_section4);
+            case CASE_FRAGMENT_DATA_TRANSFER:
+                startActivity(new Intent(this, DataTransferActivity.class));
                 break;
-            case CASE_SECTION_DATA_TRANSFER:
-                mTitle = getString(R.string.title_section5);
+            case CASE_FRAGMENT_VIDEO_CALL:
+                startActivity(new Intent(this, VideoCallActivity.class));
                 break;
-            case CASE_SECTION_MULTI_PARTY_VIDEO_CALL:
-                mTitle = getString(R.string.title_section6);
-                break;
-            default:
+            case CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL:
+                startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
                 break;
         }
     }
@@ -105,7 +94,6 @@ public class MainActivity extends ActionBarActivity
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -146,44 +134,4 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * returns fragment
-     *
-     * @param position
-     * @return fragment to launch based on the item clicked on the navigation drawer
-     */
-    public Fragment getFragmentToLaunch(int position) {
-        Fragment fragmentToLaunch = null;
-        switch (position) {
-            case CASE_FRAGMENT_AUDIO_CALL:
-                fragmentToLaunch = new AudioCallFragment();
-                break;
-            case CASE_FRAGMENT_VIDEO_CALL:
-                fragmentToLaunch = new VideoCallFragment();
-                break;
-            case CASE_FRAGMENT_CHAT:
-                fragmentToLaunch = new ChatFragment();
-                break;
-            case CASE_FRAGMENT_FILE_TRANSFER:
-                fragmentToLaunch = new FileTransferFragment();
-                break;
-            case CASE_FRAGMENT_DATA_TRANSFER:
-                fragmentToLaunch = new DataTransferFragment();
-                break;
-            case CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL:
-                fragmentToLaunch = new MultiPartyVideoCallFragment();
-                break;
-            case CASE_FRAGMENT_CONFIG:
-                fragmentToLaunch = new ConfigFragment();
-                break;
-            default:
-                break;
-        }
-
-        Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, position + 1);
-        fragmentToLaunch.setArguments(args);
-
-        return fragmentToLaunch;
-    }
 }

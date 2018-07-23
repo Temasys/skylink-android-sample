@@ -37,18 +37,18 @@ import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config.setUser
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config.setUserNameFile;
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config.setUserNameParty;
 import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config.setUserNameVideo;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.ROOM_NAME_AUDIO_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.ROOM_NAME_CHAT_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.ROOM_NAME_DATA_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.ROOM_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.ROOM_NAME_PARTY_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.ROOM_NAME_VIDEO_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.USER_NAME_AUDIO_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.USER_NAME_CHAT_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.USER_NAME_DATA_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.USER_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.USER_NAME_PARTY_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.Constants.USER_NAME_VIDEO_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VIDEO_DEFAULT;
 
 /**
  * A simple {@link Fragment} subclass.

@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.content.Context.MODE_PRIVATE;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.jsonArrayRemove;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLogLong;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.jsonArrayRemove;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 
 /**

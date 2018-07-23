@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp;
+package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

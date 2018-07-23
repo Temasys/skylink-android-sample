@@ -49,4 +49,7 @@
     <string name="vid_res_recv">Video Res: Recv</string>
     <string name="webrtc_stats">WebRTC Stats</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

@@ -11,14 +11,17 @@ import android.widget.RadioGroup;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.Utils.toastLog;
+import sg.com.temasys.skylink.sdk.sampleapp.data.service.SdkConnectionManager;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by xiangrong on 16/2/16.
  */
 public class MultiPartyFragment extends Fragment {
 
-    static final String BUNDLE_PEER_ID_LIST = "peerIdList";
+    public static final String BUNDLE_PEER_ID_LIST = "peerIdList";
     private static final String TAG = MultiPartyFragment.class.getName();
 
     // Container for PeerId and nick
@@ -34,6 +37,7 @@ public class MultiPartyFragment extends Fragment {
     protected RadioButton peer4;
     protected Context context;
 
+
     /***
      * Multi party methods
      */
@@ -44,7 +48,7 @@ public class MultiPartyFragment extends Fragment {
      * @param peerId PeerId of the Peer to add.
      * @param nick   Nickname of the Peer to add. Empty string if not available.
      */
-    void addPeerRadioBtn(String peerId, String nick) {
+    public void addPeerRadioBtn(String peerId, String nick) {
         String logTag = "[SA][addPeerRadioBtn] ";
         String log = logTag + "Adding Peer \"" + peerId + "\"(" + nick + ") to peerList...";
         Log.d(TAG, log);
@@ -64,7 +68,7 @@ public class MultiPartyFragment extends Fragment {
      * Unpopulated radio buttons will be invisible.
      * Ensure All Peer button is visible IFF there are Peer(s), invisible otherwise.
      */
-    void fillPeerRadioBtn() {
+    public void fillPeerRadioBtn() {
         // Check for initialised peerList
         if (peerList == null) {
             return;
@@ -118,7 +122,7 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return String array of PeerIds.
      */
-    String[] getPeerIdList() {
+    public String[] getPeerIdList() {
 
         int peerNum = getPeerNum();
         String[] peerIdList = new String[peerNum];
@@ -136,7 +140,7 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return PeerId to send to.
      */
-    String getPeerIdSelected() {
+    public String getPeerIdSelected() {
         int selectedRB = peerRadioGroup.getCheckedRadioButtonId();
 
         // If none is selected, return empty string.
@@ -149,7 +153,7 @@ public class MultiPartyFragment extends Fragment {
             return null;
         }
 
-        RadioButton rb = (RadioButton) ((MainActivity) context).findViewById(selectedRB);
+        RadioButton rb = (RadioButton)(getActivity().findViewById(selectedRB));
         String peerId = rb.getTag().toString();
         return peerId;
     }
@@ -163,7 +167,7 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return
      */
-    String getPeerIdSelectedWithWarning() {
+    public String getPeerIdSelectedWithWarning() {
         // Do not allow button actions if there are no Peers in the room.
         if (getPeerNum() == 0) {
             String log = getString(R.string.warn_no_peer_message);
@@ -187,7 +191,7 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return Number of peer(s).
      */
-    int getPeerNum() {
+    public int getPeerNum() {
 
         int peerNum = 0;
         if (peerList == null) {
@@ -202,13 +206,13 @@ public class MultiPartyFragment extends Fragment {
      *
      * @param peerIdList String Array of PeerIds of remote Peer(s) in the room.
      */
-    void popPeerList(String[] peerIdList) {
+    public void popPeerList(String[] peerIdList) {
         // Clear peerList
         peerList.clear();
         // Populate peerList
         for (int i = 0; i < peerIdList.length; ++i) {
             String peerId = peerIdList[i];
-            String nick = Utils.getNick(peerId);
+            String nick = Utils.getNick(SdkConnectionManager.getCurrentSkylinkConnection(), peerId);
             Pair<String, String> peer = new Pair<>(peerId, nick);
             peerList.add(peer);
         }
@@ -219,7 +223,7 @@ public class MultiPartyFragment extends Fragment {
      *
      * @param peerId PeerId of the Peer to remove.
      */
-    void removePeerRadioBtn(String peerId) {
+    public void removePeerRadioBtn(String peerId) {
         // Remove Peer from peerList
         ListIterator peerIter = peerList.listIterator();
         while (peerIter.hasNext()) {
