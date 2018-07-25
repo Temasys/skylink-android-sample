@@ -29,10 +29,12 @@ public class ChatService extends SDKService implements ChatContract.Service, Lif
 
     private Context mContext;
 
-    private ChatContract.Presenter mPresenter;
+    //this variable need to be static for configuration change
+    private static ChatContract.Presenter mPresenter;
 
     private SdkConnectionManager sdkConnectionManager;
 
+    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
     private String ROOM_NAME;

@@ -34,12 +34,14 @@ public class FileTransferService extends SDKService implements FileTransferContr
 
     private Context mContext;
 
-    private FileTransferContract.Presenter mPresenter;
+    //this variable need to be static for configuration change
+    private static FileTransferContract.Presenter mPresenter;
 
     private SdkConnectionManager sdkConnectionManager;
 
     private PermissionUtils permissionUtils;
 
+    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
     private String ROOM_NAME;

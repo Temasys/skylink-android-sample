@@ -36,6 +36,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
     private final String TAG = FileTransferFragment.class.getName();
 
+    //this variable need to be static for configuration change
     private static FileTransferContract.Presenter mPresenter;
 
     private PermissionUtils permissionUtils;

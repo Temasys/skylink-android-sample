@@ -49,10 +49,12 @@ public class MultiPartyVideoCallService extends SDKService implements MultiParty
 
     private Context mContext;
 
+    //this variable need to be static for configuration change
     private static MultiPartyVideoCallContract.Presenter mPresenter;
 
     private SdkConnectionManager sdkConnectionManager;
 
+    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
     private String ROOM_NAME;

@@ -35,6 +35,7 @@ public class ChatFragment extends MultiPartyFragment
 
     private final String TAG = ChatFragment.class.getName();
 
+    //this variable need to be static for configuration change
     private static ChatContract.Presenter mPresenter;
 
     // Constants for configuration change

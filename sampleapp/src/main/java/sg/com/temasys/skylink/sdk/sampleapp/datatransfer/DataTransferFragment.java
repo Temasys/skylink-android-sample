@@ -30,6 +30,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
 
     private static final String TAG = DataTransferFragment.class.getName();
 
+    //this variable need to be static for configuration change
     private static DataTransferContract.Presenter mPresenter;
 
     // Constants for configuration change

@@ -39,8 +39,10 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
 
     private  SdkConnectionManager sdkConnectionManager;
 
-    private AudioCallContract.Presenter mPresenter;
+    //this variable need to be static for configuration change
+    private static AudioCallContract.Presenter mPresenter;
 
+    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
     private AudioRemotePeer audioRemotePeer;

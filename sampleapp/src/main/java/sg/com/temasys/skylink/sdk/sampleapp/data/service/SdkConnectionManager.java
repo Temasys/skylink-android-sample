@@ -19,6 +19,7 @@ public class SdkConnectionManager {
 
     private Context context;
 
+    //this variable need to be static for configuration change
     public static SkylinkConnection currentSkylinkConnection = null;
 
     public SdkConnectionManager(Context context){

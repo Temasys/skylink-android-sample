@@ -37,10 +37,12 @@ public class VideoCallService extends SDKService implements VideoCallContract.Se
 
     private Context mContext;
 
-    private VideoCallContract.Presenter mPresenter;
+    //this variable need to be static for configuration change
+    private static VideoCallContract.Presenter mPresenter;
 
     private SdkConnectionManager sdkConnectionManager;
 
+    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
     private String MY_USER_NAME;

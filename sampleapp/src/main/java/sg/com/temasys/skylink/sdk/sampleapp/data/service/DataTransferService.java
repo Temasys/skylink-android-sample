@@ -31,10 +31,12 @@ public class DataTransferService extends SDKService implements DataTransferContr
 
     private Context mContext;
 
-    private DataTransferContract.Presenter mPresenter;
+    //this variable need to be static for configuration change
+    private static DataTransferContract.Presenter mPresenter;
 
     private SdkConnectionManager sdkConnectionManager;
 
+    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
     private String ROOM_NAME;

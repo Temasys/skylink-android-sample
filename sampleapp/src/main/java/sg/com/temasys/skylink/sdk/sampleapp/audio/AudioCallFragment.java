@@ -29,6 +29,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private TextView tvAudioRoomDetails;
 
+    //this variable need to be static for configuration change
     private static AudioCallContract.Presenter mPresenter;
 
     private AudioRemotePeer audioRemotePeer;

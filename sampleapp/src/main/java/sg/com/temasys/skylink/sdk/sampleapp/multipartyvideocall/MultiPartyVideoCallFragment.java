@@ -37,6 +37,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
     private static final String TAG = MultiPartyVideoCallFragment.class.getName();
 
+    //this variable need to be static for configuration change
     private static MultiPartyVideoCallContract.Presenter mPresenter;
 
     private PermissionUtils permissionUtils;
