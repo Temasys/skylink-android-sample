@@ -2,10 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:layout_margin="@dimen/dp_10dp"
               android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tv_room_details"
+        android:id="@+id/tv_data_room_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -78,7 +79,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_gravity="center_horizontal"
-            android:text="@string/send_data_peer"/>
+            android:text="@string/send_data_peer"
+            android:background="@drawable/button_corner_ripple"
+            android:layout_marginRight="@dimen/dp_10dp"/>
 
         <Button
             android:id="@+id/btn_send_data_to_room"
@@ -86,7 +89,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_gravity="center_horizontal"
-            android:text="@string/send_data_room"/>
+            android:text="@string/send_data_room"
+            android:background="@drawable/button_corner_ripple"/>
 
     </LinearLayout>
 

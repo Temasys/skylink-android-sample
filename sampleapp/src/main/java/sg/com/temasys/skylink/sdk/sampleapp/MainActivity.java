@@ -1,15 +1,20 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
@@ -19,119 +24,194 @@ import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall.MultiPartyVideoC
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.videocall.VideoCallActivity;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_AUDIO_CALL;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_DATA_TRANSFER;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_FILE_TRANSFER;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.CASE_FRAGMENT_VIDEO_CALL;
-
 public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements View.OnClickListener {
 
-    private static final String TAG = MainActivity.class.getName();
+    private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig;
+    private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer;
+    private ImageButton btnAudio, btnVideo, btnChat, btnFile, btnData, btnMultiVideo;
+    private TextView tvAudio, tvVideo, tvChat, tvFile, tvData, tvMultiVideo;
+    private ImageView imgLogo;
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
+        getControlWidgets();
 
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        initComponents();
 
         // Load selected App key details
         Config.loadSelectedAppKey(this);
         Config.loadRoomUserNames(this);
 
-        //init Utils
+        //init utils
         Utils utils = new Utils(this);
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-//        // update the main content by replacing fragments
+    private void getControlWidgets() {
+        audioContainerBig = (LinearLayout) findViewById(R.id.audioContainerBig);
+        videoContainerBig = (LinearLayout) findViewById(R.id.videoContainerBig);
+        chatContainerBig = (LinearLayout) findViewById(R.id.chatContainerBig);
+        fileContainerBig = (LinearLayout) findViewById(R.id.fileContainerBig);
+        dataContainerBig = (LinearLayout) findViewById(R.id.dataContainerBig);
+        multiVideoContainerBig = (LinearLayout) findViewById(R.id.multiVideoContainerBig);
 
-        switch (position){
-            case CASE_FRAGMENT_AUDIO_CALL:
-                startActivity(new Intent(this, AudioCallActivity.class));
-                break;
-            case CASE_FRAGMENT_CHAT:
-                startActivity(new Intent(this, ChatActivity.class));
-                break;
-            case CASE_FRAGMENT_FILE_TRANSFER:
-                startActivity(new Intent(this, FileTransferActivity.class));
-                break;
-            case CASE_FRAGMENT_DATA_TRANSFER:
-                startActivity(new Intent(this, DataTransferActivity.class));
-                break;
-            case CASE_FRAGMENT_VIDEO_CALL:
-                startActivity(new Intent(this, VideoCallActivity.class));
-                break;
-            case CASE_FRAGMENT_MULTI_PARTY_VIDEO_CALL:
-                startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
-                break;
-        }
+        audioContainer = (RelativeLayout) findViewById(R.id.audioContainer);
+        videoContainer = (RelativeLayout) findViewById(R.id.videoContainer);
+        chatContainer = (RelativeLayout) findViewById(R.id.chatContainer);
+        fileContainer = (RelativeLayout) findViewById(R.id.fileContainer);
+        dataContainer = (RelativeLayout) findViewById(R.id.dataContainer);
+        multiVideoContainer = (RelativeLayout) findViewById(R.id.multiVideoContainer);
+
+        btnAudio = (ImageButton) findViewById(R.id.btnAudioCall);
+        btnVideo = (ImageButton) findViewById(R.id.btnVideoCall);
+        btnChat = (ImageButton) findViewById(R.id.btnChat);
+        btnFile = (ImageButton) findViewById(R.id.btnFileTransfer);
+        btnData = (ImageButton) findViewById(R.id.btnDataTransfer);
+        btnMultiVideo = (ImageButton) findViewById(R.id.btnMultiVideoCall);
+
+        tvAudio = (TextView) findViewById(R.id.tvAudio);
+        tvVideo = (TextView) findViewById(R.id.tvVideo);
+        tvChat = (TextView) findViewById(R.id.tvChat);
+        tvFile = (TextView) findViewById(R.id.tvFileTransfer);
+        tvData = (TextView) findViewById(R.id.tvDataTransfer);
+        tvMultiVideo = (TextView) findViewById(R.id.tvMultiVideoCall);
+
+        imgLogo = (ImageView) findViewById(R.id.imgLogo);
     }
 
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+    private void initComponents() {
+        audioContainerBig.setOnClickListener(this);
+        videoContainerBig.setOnClickListener(this);
+        chatContainerBig.setOnClickListener(this);
+        fileContainerBig.setOnClickListener(this);
+        dataContainerBig.setOnClickListener(this);
+        multiVideoContainerBig.setOnClickListener(this);
+
+        audioContainer.setOnClickListener(this);
+        videoContainer.setOnClickListener(this);
+        chatContainer.setOnClickListener(this);
+        fileContainer.setOnClickListener(this);
+        dataContainer.setOnClickListener(this);
+        multiVideoContainer.setOnClickListener(this);
+
+        btnAudio.setOnClickListener(this);
+        btnVideo.setOnClickListener(this);
+        btnChat.setOnClickListener(this);
+        btnFile.setOnClickListener(this);
+        btnData.setOnClickListener(this);
+        btnMultiVideo.setOnClickListener(this);
+
+        tvAudio.setOnClickListener(this);
+        tvVideo.setOnClickListener(this);
+        tvChat.setOnClickListener(this);
+        tvFile.setOnClickListener(this);
+        tvData.setOnClickListener(this);
+        tvMultiVideo.setOnClickListener(this);
+
+        //need check imgLogo incase of landscape orientation
+        //cause imgLogo is not available for landscape orientation
+        if(imgLogo != null)
+            imgLogo.setOnClickListener(this);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
+
+        getMenuInflater().inflate(R.menu.main, menu);
+
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_build_info) {
-            String log = "SDK Version: " + sg.com.temasys.skylink.sdk.BuildConfig.VERSION_NAME
-                    + "\n" + "Sample application version: " + BuildConfig.VERSION_NAME;
-            toastLogLong(TAG, this, log);
+        if (item.getItemId() == R.id.action_settings) {
+            startActivity(new Intent(this, ConfigActivity.class));
+
             return true;
-        } else if (id == R.id.action_configuration) {
-            // update the main content by replacing fragments
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            ConfigFragment fragment = new ConfigFragment();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.container, fragment)
-                    .commit();
-
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.audioContainerBig:
+            case R.id.audioContainer:
+            case R.id.btnAudioCall:
+            case R.id.tvAudio:
+                processAudio();
+                break;
+            case R.id.videoContainerBig:
+            case R.id.videoContainer:
+            case R.id.btnVideoCall:
+            case R.id.tvVideo:
+                processVideo();
+                break;
+            case R.id.chatContainerBig:
+            case R.id.chatContainer:
+            case R.id.btnChat:
+            case R.id.tvChat:
+                processChat();
+                break;
+            case R.id.fileContainerBig:
+            case R.id.fileContainer:
+            case R.id.btnFileTransfer:
+            case R.id.tvFileTransfer:
+                processFileTransfer();
+                break;
+            case R.id.dataContainerBig:
+            case R.id.dataContainer:
+            case R.id.btnDataTransfer:
+            case R.id.tvDataTransfer:
+                processDataTransfer();
+                break;
+            case R.id.multiVideoContainerBig:
+            case R.id.multiVideoContainer:
+            case R.id.btnMultiVideoCall:
+            case R.id.tvMultiVideoCall:
+                processMultiVideo();
+                break;
+            case R.id.imgLogo:
+                processImglogo();
+                break;
+        }
+    }
+
+    private void processAudio() {
+        startActivity(new Intent(this, AudioCallActivity.class));
+    }
+
+    private void processVideo() {
+        startActivity(new Intent(this, VideoCallActivity.class));
+    }
+
+    private void processChat() {
+        startActivity(new Intent(this, ChatActivity.class));
+    }
+
+    private void processFileTransfer() {
+        startActivity(new Intent(this, FileTransferActivity.class));
+    }
+
+    private void processDataTransfer() {
+        startActivity(new Intent(this, DataTransferActivity.class));
+    }
+
+    private void processMultiVideo() {
+        startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
+    }
+
+    private void processImglogo(){
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setData(Uri.parse("https://temasys.io/"));
+        startActivity(intent);
+    }
 }

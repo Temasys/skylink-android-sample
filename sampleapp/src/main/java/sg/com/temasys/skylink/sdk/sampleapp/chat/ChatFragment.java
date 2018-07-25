@@ -266,7 +266,7 @@ public class ChatFragment extends MultiPartyFragment
 
         btnSendServerMessage = (Button) rootView.findViewById(R.id.btn_send_server_message);
         btnSendP2PMessage = (Button) rootView.findViewById(R.id.btn_send_p2p_message);
-        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_chat_room_details);
     }
 
     private void setActionBar(){

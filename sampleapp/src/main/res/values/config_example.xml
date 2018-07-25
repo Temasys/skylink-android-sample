@@ -19,19 +19,19 @@
 <-->
 <resources>
 
-    <!-- App Keys and secrets. -->
+    <!--&lt;!&ndash; App Keys and secrets. &ndash;&gt;-->
 
-    <!--Uncomment in config.xml-->
-    <bool name="is_app_key_smr">false</bool>
+    <!--&lt;!&ndash;Uncomment in config.xml&ndash;&gt;-->
+    <!--<bool name="is_app_key_smr">false</bool>-->
 
-    <!--Uncomment in config.xml-->
-    <string name="app_key_no_smr">"Enter app key with Skylink Media Relay disabled."</string>
-    <string name="app_key_secret_no_smr">"Enter the corresponding app secret."</string>
-    <string name="app_key_desc_no_smr">"Enter the corresponding key description."</string>
+    <!--&lt;!&ndash;Uncomment in config.xml&ndash;&gt;-->
+    <!--<string name="app_key_no_smr">"Enter app key with Skylink Media Relay disabled."</string>-->
+    <!--<string name="app_key_secret_no_smr">"Enter the corresponding app secret."</string>-->
+    <!--<string name="app_key_desc_no_smr">"Enter the corresponding key description."</string>-->
 
-    <!--Uncomment in config.xml-->
-    <string name="app_key_smr">"Enter app key with Skylink Media Relay enabled."</string>
-    <string name="app_key_secret_smr">"Enter the corresponding app secret."</string>
-    <string name="app_key_desc_smr">"Enter the corresponding key description."</string>
+    <!--&lt;!&ndash;Uncomment in config.xml&ndash;&gt;-->
+    <!--<string name="app_key_smr">"Enter app key with Skylink Media Relay enabled."</string>-->
+    <!--<string name="app_key_secret_smr">"Enter the corresponding app secret."</string>-->
+    <!--<string name="app_key_desc_smr">"Enter the corresponding key description."</string>-->
 
 </resources>

@@ -19,8 +19,6 @@ public interface DataTransferContract {
 
         void addPeerRadioBtnViewHandler(String remotePeerId, String nick);
 
-        int getPeerNumViewHandler();
-
         void removePeerRadioBtnViewHandler(String remotePeerId);
 
         int getPeerlistSizeViewHandler();
@@ -40,8 +38,6 @@ public interface DataTransferContract {
         void clearPeerListPresenterHandler();
 
         void addPeerRadioBtnPresenterHandler(String remotePeerId, String nick);
-
-        int getPeerNumPresenterHandler();
 
         void removePeerRadioBtnPresenterHandler(String remotePeerId);
 

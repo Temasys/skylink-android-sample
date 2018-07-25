@@ -8,7 +8,6 @@ import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -28,8 +27,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private Context mContext;
 
-    private TextView tvRoomDetails;
-    private Button btnAudioCall;
+    private TextView tvAudioRoomDetails;
 
     private static AudioCallContract.Presenter mPresenter;
 
@@ -57,7 +55,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
         setActionBar();
 
-        permissionUtils = new PermissionUtils(mContext);
+        initComponents();
 
         // Check if it was an orientation change
         if (savedInstanceState != null) {
@@ -69,6 +67,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
                 // Set the appropriate UI if already isConnected().
                 onConnectUIChangeViewHandler();
+
             } else {
                 disconnectUIChangeViewHandler();
             }
@@ -77,10 +76,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
             permissionUtils.permQReset();
         }
 
-        btnAudioCall.setOnClickListener(v -> {
+        //try to connect to room if not connected
+        if (!mPresenter.isConnectingOrConnectedPresenterHandler()) {
             connectToRoomViewHandler();
             onConnectUIChangeViewHandler();
-        });
+        }
+
         return rootView;
     }
 
@@ -145,8 +146,11 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
-        btnAudioCall = (Button) rootView.findViewById(R.id.btn_audio_call);
+        tvAudioRoomDetails = (TextView) rootView.findViewById(R.id.tv_audio_room_details);
+    }
+
+    private void initComponents() {
+        permissionUtils = new PermissionUtils(mContext);
     }
 
     private void setActionBar() {
@@ -175,7 +179,6 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
      * Change certain UI elements once isConnected() to room or when Peer(s) join or leave.
      */
     private void onConnectUIChangeViewHandler() {
-        btnAudioCall.setEnabled(false);
         setTvRoomDetails();
     }
 
@@ -183,7 +186,6 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
      * Change certain UI elements when disconnecting from room.
      */
     private void disconnectUIChangeViewHandler() {
-        btnAudioCall.setEnabled(true);
         setTvRoomDetails();
     }
 
@@ -195,14 +197,13 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
         String roomDetails = mPresenter.getRoomDetailsPresenterHandler(isPeerJoined);
 
-        tvRoomDetails.setText(roomDetails);
+        tvAudioRoomDetails.setText(roomDetails);
     }
 
     /**
      * Set the room details on UI.
      */
     private void setTvRoomDetails(String roomDetails) {
-        tvRoomDetails.setText(roomDetails);
+        tvAudioRoomDetails.setText(roomDetails);
     }
-
 }

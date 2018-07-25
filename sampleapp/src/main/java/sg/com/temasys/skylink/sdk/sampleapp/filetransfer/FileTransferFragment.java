@@ -138,9 +138,11 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
                 // [MultiParty]
                 // Populate peerList
-                popPeerList(multiFileTransferPeersInfo.getPeerIdList());
-                // Set the appropriate UI if already connected.
-                onConnectUIChange();
+                if(multiFileTransferPeersInfo != null) {
+                    popPeerList(multiFileTransferPeersInfo.getPeerIdList());
+                    // Set the appropriate UI if already connected.
+                    onConnectUIChange();
+                }
             }
         } else {
             // This is the start of this sample, reset permission request states.
@@ -217,8 +219,10 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // Save states for fragment restart
-        multiFileTransferPeersInfo.setPeerIdList(getPeerIdList());
-        outState.putSerializable(BUNDLE_PEERS_JOINED, multiFileTransferPeersInfo);
+        if(multiFileTransferPeersInfo != null) {
+            multiFileTransferPeersInfo.setPeerIdList(getPeerIdList());
+            outState.putSerializable(BUNDLE_PEERS_JOINED, multiFileTransferPeersInfo);
+        }
     }
 
     @Override
@@ -311,7 +315,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         sendFilePrivate = (Button) rootView.findViewById(R.id.btn_send_file_pte);
         sendFileGroup = (Button) rootView.findViewById(R.id.btn_send_file_grp);
-        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_file_room_details);
         etSenderFilePath = (EditText) rootView.findViewById(R.id.et_file_path);
         ivFilePreview = (ImageView) rootView.findViewById(R.id.iv_file_preview);
         tvFileTransferDetails = (TextView) rootView.findViewById(R.id.tv_file_transfer_details);

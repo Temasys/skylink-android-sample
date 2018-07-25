@@ -45,11 +45,6 @@ public class DataTransferPresenter implements DataTransferContract.Presenter{
     }
 
     @Override
-    public int getPeerNumPresenterHandler() {
-        return mDataTransferView.getPeerNumViewHandler();
-    }
-
-    @Override
     public void removePeerRadioBtnPresenterHandler(String remotePeerId) {
         mDataTransferView.removePeerRadioBtnViewHandler(remotePeerId);
     }

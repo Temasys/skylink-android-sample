@@ -3,45 +3,25 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@android:color/black">
-
-        <ImageView
-            android:id="@+id/imgBanner"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/img_banner" />
-
-        <ImageView
-            android:id="@+id/imgLogo"
-            android:layout_width="@dimen/dp_80dp"
-            android:layout_height="@dimen/dp_40dp"
-            android:layout_margin="@dimen/dp_10dp"
-            android:src="@drawable/ic_temasys_logo_icon" />
-
-    </FrameLayout>
-
     <LinearLayout
         android:id="@+id/contentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_horizontal">
+        android:gravity="center">
 
         <GridLayout
             android:id="@+id/gridContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp_30dp"
-            android:columnCount="2">
+            android:columnCount="3">
 
             <LinearLayout
                 android:id="@+id/audioContainerBig"
                 android:layout_width="@dimen/dp_160dp"
                 android:layout_height="@dimen/dp_80dp"
-                android:layout_margin="@dimen/dp_10dp"
-                style="@style/CustonmButton">
+                style="@style/CustonmButton"
+                android:layout_marginRight="@dimen/dp_20dp"
+                android:layout_marginBottom="@dimen/dp_20dp">
 
                 <RelativeLayout
                     android:id="@+id/audioContainer"
@@ -63,16 +43,18 @@
                         android:layout_below="@id/btnAudioCall"
                         android:gravity="center_horizontal"
                         android:text="@string/audio" />
-                </RelativeLayout>
 
+                </RelativeLayout>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/videoContainerBig"
-                style="@style/CustonmButton"
                 android:layout_width="@dimen/dp_160dp"
                 android:layout_height="@dimen/dp_80dp"
-                android:layout_margin="@dimen/dp_10dp">
+                style="@style/CustonmButton"
+                android:layout_marginLeft="@dimen/dp_20dp"
+                android:layout_marginRight="@dimen/dp_20dp"
+                android:layout_marginBottom="@dimen/dp_20dp">
 
                 <RelativeLayout
                     android:id="@+id/videoContainer"
@@ -100,10 +82,11 @@
 
             <LinearLayout
                 android:id="@+id/chatContainerBig"
-                style="@style/CustonmButton"
                 android:layout_width="@dimen/dp_160dp"
                 android:layout_height="@dimen/dp_80dp"
-                android:layout_margin="@dimen/dp_10dp">
+                style="@style/CustonmButton"
+                android:layout_marginLeft="@dimen/dp_20dp"
+                android:layout_marginBottom="@dimen/dp_20dp">
 
                 <RelativeLayout
                     android:id="@+id/chatContainer"
@@ -131,10 +114,11 @@
 
             <LinearLayout
                 android:id="@+id/fileContainerBig"
-                style="@style/CustonmButton"
                 android:layout_width="@dimen/dp_160dp"
                 android:layout_height="@dimen/dp_80dp"
-                android:layout_margin="@dimen/dp_10dp">
+                style="@style/CustonmButton"
+                android:layout_marginRight="@dimen/dp_20dp"
+                android:layout_marginTop="@dimen/dp_20dp">
 
                 <RelativeLayout
                     android:id="@+id/fileContainer"
@@ -162,10 +146,12 @@
 
             <LinearLayout
                 android:id="@+id/dataContainerBig"
-                style="@style/CustonmButton"
                 android:layout_width="@dimen/dp_160dp"
                 android:layout_height="@dimen/dp_80dp"
-                android:layout_margin="@dimen/dp_10dp">
+                style="@style/CustonmButton"
+                android:layout_marginLeft="@dimen/dp_20dp"
+                android:layout_marginRight="@dimen/dp_20dp"
+                android:layout_marginTop="@dimen/dp_20dp">
 
                 <RelativeLayout
                     android:id="@+id/dataContainer"
@@ -193,10 +179,11 @@
 
             <LinearLayout
                 android:id="@+id/multiVideoContainerBig"
-                style="@style/CustonmButton"
                 android:layout_width="@dimen/dp_160dp"
                 android:layout_height="@dimen/dp_80dp"
-                android:layout_margin="@dimen/dp_10dp">
+                style="@style/CustonmButton"
+                android:layout_marginLeft="@dimen/dp_20dp"
+                android:layout_marginTop="@dimen/dp_20dp">
 
                 <RelativeLayout
                     android:id="@+id/multiVideoContainer"

@@ -76,17 +76,15 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     // not necessarily the currently used frame rate.
     private int fpsSel = -1;
 
-    private String ROOM_NAME;
+    private String strRoomName;
 
-    private String roomName;
     private Context mContext;
 
     // UI Controls
     private LinearLayout linearLayout;
     // Room
     private Button disconnectButton;
-    private Button btnEnterRoom;
-    private EditText etRoomName;
+    private TextView tvRoomName;
     // Media
     private Button btnAudioMute;
     private Button btnVideoMute;
@@ -125,7 +123,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         String logTag = "[SA][Video][onCreateView] ";
         String log = logTag;
 
-        ROOM_NAME = Config.ROOM_NAME_VIDEO;
+        strRoomName = Config.ROOM_NAME_VIDEO;
 
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
 
@@ -175,15 +173,14 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             // This is the start of this sample, reset permission request states.
             permissionUtils.permQReset();
 
-            onDisconnectUIChange();
+            //try to connect to room if not connected
+            if(!mPresenter.isConnectingOrConnectedPresenterHandler()){
+                connectToRoom();
+                onConnectingUIChange();
+            }
         }
 
         Log.d(TAG, log);
-
-        btnEnterRoom.setOnClickListener(v -> {
-            connectToRoom();
-            onConnectingUIChange();
-        });
 
         btnAudioMute.setOnClickListener(v -> {
             processBtnAudioMute(!videoLocalState.isAudioMute());
@@ -277,9 +274,8 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
     private void getControlWidgets(View rootView) {
         linearLayout = (LinearLayout) rootView.findViewById(R.id.ll_video_call);
-        btnEnterRoom = (Button) rootView.findViewById(R.id.btn_enter_room);
-        etRoomName = (EditText) rootView.findViewById(R.id.et_room_name);
-        etRoomName.setText(ROOM_NAME.toString());
+        tvRoomName = (TextView) rootView.findViewById(R.id.tv_room_name);
+
         btnAudioMute = (Button) rootView.findViewById(R.id.toggle_audio);
         btnVideoMute = (Button) rootView.findViewById(R.id.toggle_video);
         btnCameraToggle = (Button) rootView.findViewById(R.id.toggle_camera);
@@ -314,6 +310,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         // Set UI elements
         setAudioBtnLabel(false, false);
         setVideoBtnLabel(false, false);
+
+        tvRoomName.setText(strRoomName);
+        //can not edit room name
+        tvRoomName.setEnabled(false);
     }
 
     /**
@@ -322,21 +322,17 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Initializes SkylinkConnection if not initialized.
      */
     private void connectToRoom() {
-        roomName = etRoomName.getText().toString();
-
         String log = "";
-        // If roomName is not set through the UI, get the default roomName from Constants
-        if (roomName == null || "".equals(roomName)) {
-            roomName = ROOM_NAME;
-            etRoomName.setText(roomName);
-            log = "No room name provided, entering default video room \"" + roomName
+        // If strRoomName is not set through the UI, get the default strRoomName from Constants
+        if (strRoomName == null || "".equals(strRoomName)) {
+            log = "No room name provided, entering default video room \"" + Config.ROOM_NAME_VIDEO
                     + "\".";
         } else {
-            log = "Entering video room \"" + roomName + "\".";
+            log = "Entering video room \"" + strRoomName + "\".";
         }
         toastLog(TAG, mContext, log);
 
-        mPresenter.connectToRoomPresenterHandler(roomName);
+        mPresenter.connectToRoomPresenterHandler(strRoomName);
     }
 
     /**
@@ -449,8 +445,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     private void onConnectUIChange() {
-        btnEnterRoom.setVisibility(GONE);
-        etRoomName.setEnabled(false);
         btnAudioMute.setVisibility(VISIBLE);
         btnVideoMute.setVisibility(VISIBLE);
         btnCameraToggle.setVisibility(VISIBLE);
@@ -462,8 +456,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Change certain UI elements when trying to connect to room.
      */
     private void onConnectingUIChange() {
-        btnEnterRoom.setVisibility(GONE);
-        etRoomName.setEnabled(false);
         btnAudioMute.setVisibility(GONE);
         btnVideoMute.setVisibility(GONE);
         btnCameraToggle.setVisibility(GONE);
@@ -485,8 +477,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             linearLayout.removeView(peer);
         }
 
-        btnEnterRoom.setVisibility(VISIBLE);
-        etRoomName.setEnabled(true);
         btnAudioMute.setVisibility(GONE);
         btnVideoMute.setVisibility(GONE);
         btnCameraToggle.setVisibility(GONE);
@@ -497,6 +487,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         videoReceive = new VideoResolution();
 
         setUiResControlsVisibility(GONE);
+
+        if(getActivity()!= null){
+            getActivity().finish();
+        }
     }
 
     @NonNull

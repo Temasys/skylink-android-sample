@@ -38,12 +38,17 @@
         <activity
             android:name=".filetransfer.FileTransferActivity"
             android:label="@string/title_section4" />
-        <activity android:name=".datatransfer.DataTransferActivity"
-            android:label="@string/title_section5"/>
-        <activity android:name=".videocall.VideoCallActivity"
-            android:label="@string/title_section2"></activity>
-        <activity android:name=".multipartyvideocall.MultiPartyVideoCallActivity"
-            android:label="@string/title_section6"></activity>
+        <activity
+            android:name=".datatransfer.DataTransferActivity"
+            android:label="@string/title_section5" />
+        <activity
+            android:name=".videocall.VideoCallActivity"
+            android:label="@string/title_section2" />
+        <activity
+            android:name=".multipartyvideocall.MultiPartyVideoCallActivity"
+            android:label="@string/title_section6" />
+        <activity android:name=".ConfigFragment.ConfigActivity"
+            android:label="@string/settings" ></activity>
     </application>
 
 </manifest>

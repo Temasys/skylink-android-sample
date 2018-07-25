@@ -50,6 +50,13 @@
     <string name="webrtc_stats">WebRTC Stats</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="audio">Audio</string>
+    <string name="video">Video</string>
+    <string name="chat">Chat</string>
+    <string name="fileTransfer">File Transfer</string>
+    <string name="dataTransfer">Data Transfer</string>
+    <string name="multiVideo">Multi Videos</string>
+    <string name="settings">Settings</string>
+
 
 </resources>

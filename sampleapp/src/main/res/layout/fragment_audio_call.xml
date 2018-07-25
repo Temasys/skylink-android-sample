@@ -3,10 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="@dimen/dp_10dp"
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tv_room_details"
+        android:id="@+id/tv_audio_room_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -14,13 +15,5 @@
         android:text="You are not connected to any room"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textIsSelectable="true"/>
-
-    <Button
-        android:id="@+id/btn_audio_call"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="Enter Audio Call Room"/>
-
 
 </LinearLayout>

@@ -1,8 +1,24 @@
 <resources>
 
-    <!-- Base application theme. -->
+    <!-- Application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:actionOverflowButtonStyle">@style/CustomActionButtonOverflow</item>
+    </style>
+
+    <!-- Style to replace actionbar overflow icon. set item 'android:actionOverflowButtonStyle' in AppTheme -->
+    <style name="CustomActionButtonOverflow" parent="android:style/Widget.Holo.Light.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_settings</item>
+        <item name="android:background">?android:attr/actionBarItemBackground</item>
+        <item name="android:contentDescription">@string/action_configuration</item>
+    </style>
+
+    <style name="CustonmButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_margin">@dimen/dp_10dp</item>
+        <item name="android:background">@drawable/button_corner_ripple</item>
+        <item name="android:gravity">center</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
     </style>
 
 </resources>

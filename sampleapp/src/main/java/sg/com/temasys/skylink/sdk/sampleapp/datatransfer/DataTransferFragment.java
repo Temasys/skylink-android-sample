@@ -72,12 +72,15 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
                 // Set states
                 multiDataPeersInfo = (MultiPeersInfo) savedInstanceState.getSerializable(BUNDLE_PEERS_JOINED);
 
-                mPresenter.saveIsPeerJoinedPresenterHandler(multiDataPeersInfo.isPeerJoined());
-                // [MultiParty]
-                // Populate peerList
-                popPeerList(multiDataPeersInfo.getPeerIdList());
-                // Set the appropriate UI if already connected.
-                onConnectUIChange();
+                if(multiDataPeersInfo != null) {
+
+                    mPresenter.saveIsPeerJoinedPresenterHandler(multiDataPeersInfo.isPeerJoined());
+                    // [MultiParty]
+                    // Populate peerList
+                    popPeerList(multiDataPeersInfo.getPeerIdList());
+                    // Set the appropriate UI if already connected.
+                    onConnectUIChange();
+                }
             }
         } else {
             // [MultiParty]
@@ -190,7 +193,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         peer3 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer3);
         peer4 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer4);
 
-        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_room_details);
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_data_room_details);
         transferStatus = (TextView) rootView.findViewById(R.id.txt_data_transfer_status);
         btnSendDataRoom = (Button) rootView.findViewById(R.id.btn_send_data_to_room);
         btnSendDataPeer = (Button) rootView.findViewById(R.id.btn_send_data_to_peer);
@@ -265,11 +268,6 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     @Override
     public void addPeerRadioBtnViewHandler(String remotePeerId, String nick) {
         addPeerRadioBtn(remotePeerId, nick);
-    }
-
-    @Override
-    public int getPeerNumViewHandler() {
-        return getPeerNum();
     }
 
     @Override
