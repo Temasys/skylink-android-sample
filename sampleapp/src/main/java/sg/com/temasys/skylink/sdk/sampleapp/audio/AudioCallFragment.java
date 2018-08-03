@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.AudioRemotePeer;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
 
 /**
@@ -22,20 +20,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private final String TAG = AudioCallFragment.class.getName();
 
-    // Constants for configuration change
-    private final String BUNDLE_PEER = "REMOTE_PEER";
-
     private Context mContext;
 
-    private TextView tvAudioRoomDetails;
+    private TextView tvRoomDetails;
 
     //this variable need to be static for configuration change
     private static AudioCallContract.Presenter mPresenter;
-
-    private AudioRemotePeer audioRemotePeer;
-
-    private PermissionUtils permissionUtils;
-
 
     public static AudioCallFragment newInstance() {
         return new AudioCallFragment();
@@ -56,32 +46,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
         setActionBar();
 
-        initComponents();
-
-        // Check if it was an orientation change
-        if (savedInstanceState != null) {
-            permissionUtils.permQResume(mContext, this);
-
-            // Set the appropriate UI if already isConnected().
-            if (mPresenter.isConnectingOrConnectedPresenterHandler()) {
-                audioRemotePeer = (AudioRemotePeer) savedInstanceState.getSerializable(BUNDLE_PEER);
-
-                // Set the appropriate UI if already isConnected().
-                onConnectUIChangeViewHandler();
-
-            } else {
-                disconnectUIChangeViewHandler();
-            }
-        } else {
-            // This is the start of this sample, reset permission request states.
-            permissionUtils.permQReset();
-        }
-
-        //try to connect to room if not connected
-        if (!mPresenter.isConnectingOrConnectedPresenterHandler()) {
-            connectToRoomViewHandler();
-            onConnectUIChangeViewHandler();
-        }
+        requestViewLayout(true);
 
         return rootView;
     }
@@ -100,31 +65,21 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save states for fragment restart
-        outState.putSerializable(BUNDLE_PEER, audioRemotePeer);
-    }
-
-    @Override
     public void onDetach() {
         super.onDetach();
-        disconnectFromRoomViewHandler();
+
+        // Close the room connection when this sample app is finished, so the streams can be closed.
+        // I.e. already isConnected() and not changing orientation.
+        // in case of changing screen orientation, do not close the connection
+        if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
+            requestViewLayout(false);
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
-    }
-
-    //----------------------------------------------------------------------------------------------
-    // View Listeners to update GUI from presenter
-    //----------------------------------------------------------------------------------------------
-
-    @Override
-    public void onDisconnectUIChangeViewHandler() {
-        disconnectUIChangeViewHandler();
+        mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
@@ -134,12 +89,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     @Override
     public void setRoomDetailsViewHandler(String roomDetails) {
-        setTvRoomDetails(roomDetails);
-    }
-
-    @Override
-    public void setAudioRemotePeerViewHandler(AudioRemotePeer audioRemotePeer) {
-        this.audioRemotePeer = audioRemotePeer;
+        tvRoomDetails.setText(roomDetails);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -147,11 +97,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        tvAudioRoomDetails = (TextView) rootView.findViewById(R.id.tv_audio_room_details);
-    }
-
-    private void initComponents() {
-        permissionUtils = new PermissionUtils(mContext);
+        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_audio_room_details);
     }
 
     private void setActionBar() {
@@ -164,47 +110,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         setHasOptionsMenu(true);
     }
 
-    private void connectToRoomViewHandler() {
-        mPresenter.connectToRoomPresenterHandler();
-    }
-
-    private void disconnectFromRoomViewHandler() {
-        // Close the room connection when this sample app is finished, so the streams can be closed.
-        // I.e. already isConnected() and not changing orientation.
-        if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.disconnectFromRoomPresenterHandler();
+    /**
+     * request info to display from presenter
+     */
+    private void requestViewLayout(boolean tryToConnect){
+        if(mPresenter != null){
+            mPresenter.onViewLayoutRequestedPresenterHandler(tryToConnect);
         }
-    }
-
-    /**
-     * Change certain UI elements once isConnected() to room or when Peer(s) join or leave.
-     */
-    private void onConnectUIChangeViewHandler() {
-        setTvRoomDetails();
-    }
-
-    /**
-     * Change certain UI elements when disconnecting from room.
-     */
-    private void disconnectUIChangeViewHandler() {
-        setTvRoomDetails();
-    }
-
-    /**
-     * Set the room details on UI.
-     */
-    private void setTvRoomDetails() {
-        boolean isPeerJoined = audioRemotePeer == null ? false : audioRemotePeer.isPeerJoined();
-
-        String roomDetails = mPresenter.getRoomDetailsPresenterHandler(isPeerJoined);
-
-        tvAudioRoomDetails.setText(roomDetails);
-    }
-
-    /**
-     * Set the room details on UI.
-     */
-    private void setTvRoomDetails(String roomDetails) {
-        tvAudioRoomDetails.setText(roomDetails);
     }
 }

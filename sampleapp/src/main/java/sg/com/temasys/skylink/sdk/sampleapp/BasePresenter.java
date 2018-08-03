@@ -6,6 +6,10 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 public interface BasePresenter {
 
+    /**
+     * process data to display on View
+     */
+    void onViewLayoutRequestedPresenterHandler(boolean tryToConnect);
 
 
 }

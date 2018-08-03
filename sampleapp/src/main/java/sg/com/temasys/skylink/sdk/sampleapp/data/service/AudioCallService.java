@@ -37,15 +37,14 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
 
     private Context mContext;
 
-    private  SdkConnectionManager sdkConnectionManager;
+    private SdkConnectionManager sdkConnectionManager;
 
-    //this variable need to be static for configuration change
+    //these variables need to be static for configuration change
     private static AudioCallContract.Presenter mPresenter;
 
-    //this variable need to be static for configuration change
     private static SkylinkConnection skylinkConnection;
 
-    private AudioRemotePeer audioRemotePeer;
+    private static AudioRemotePeer audioRemotePeer;
 
     public AudioCallService(Context mContext) {
         this.mContext = mContext;
@@ -56,6 +55,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         this.mPresenter = presenter;
     }
 
+    @Override
     public void connectToRoomServiceHandler() {
         sdkConnectionManager = new SdkConnectionManager(mContext);
 
@@ -89,6 +89,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         AudioRouter.startAudioRouting(mContext);
     }
 
+    @Override
     public void disconnectFromRoomServiceHandler() {
         if (skylinkConnection != null) {
             disconnectFromRoomBaseServiceHandler(skylinkConnection);
@@ -96,6 +97,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         }
     }
 
+    @Override
     public boolean isConnectingOrConnectedServiceHandler() {
         if (skylinkConnection != null) {
             return isConnectingOrConnectedBaseServiceHandler(skylinkConnection);
@@ -103,25 +105,47 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         return false;
     }
 
-    public String getRoomDetailsServiceHandler(boolean isPeerInRoom) {
+    public String getRoomDetailsServiceHandler() {
         boolean isConnected = isConnectingOrConnectedServiceHandler();
         String roomName = getRoomNameBaseServiceHandler(skylinkConnection, Config.ROOM_NAME_AUDIO);
         String userName = getUserNameBaseServiceHandler(skylinkConnection, null, Config.USER_NAME_AUDIO);
+
+        boolean isPeerJoined = audioRemotePeer == null ? false : audioRemotePeer.isPeerJoined();
 
         String roomDetails = "You are not connected to any room";
 
         if (isConnected) {
             roomDetails = "Now connected to Room named : " + roomName
-                    + "\nYou are signed in as : " + userName + "\n";
-            if (isPeerInRoom) {
-                roomDetails += "Peer(s) are in the room";
+                    + "\n\nYou are signed in as : " + userName + "\n";
+            if (isPeerJoined) {
+                roomDetails += "\nPeer(s) are in the room";
+                roomDetails += "\n" + audioRemotePeer.getRemotePeerName();
             } else {
-                roomDetails += "You are alone in this room";
+                roomDetails += "\nYou are alone in this room";
             }
         }
 
         return roomDetails;
     }
+
+    public int getNumRemotePeersServiceHandler() {
+        int totalInRoom = getTotalInRoomServiceHandler();
+        if (totalInRoom == 0) {
+            return 0;
+        }
+        // The first Peer is the local Peer.
+        return totalInRoom - 1;
+    }
+
+    public int getTotalInRoomServiceHandler() {
+        String[] peerIdList = getPeerIdListBaseServiceHandler(skylinkConnection);
+        if (peerIdList == null) {
+            return 0;
+        }
+        // Size of array is number of Peers in room.
+        return peerIdList.length;
+    }
+
 
     //----------------------------------------------------------------------------------------------
     // Skylink Listeners
@@ -161,24 +185,20 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
     @Override
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
-            String log = "Connected to room " + Config.ROOM_NAME_AUDIO + " (" + skylinkConnection.getRoomId() +
-                    ") as " + skylinkConnection.getPeerId() + " (" + Config.USER_NAME_AUDIO + ").";
+            String log = "Connected to room " + Config.ROOM_NAME_AUDIO + " (" + getRoomIdBaseServiceHandler(skylinkConnection) +
+                    ") as " + getPeerIdBaseServiceHandler(skylinkConnection) + " (" + Config.USER_NAME_AUDIO + ").";
             toastLogLong(TAG, mContext, log);
-
-            boolean isPeerJoined = audioRemotePeer == null ? false : audioRemotePeer.isPeerJoined();
-
-            mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler(isPeerJoined));
 
         } else {
             String log = "Skylink failed to connect!\nReason : " + message;
             toastLogLong(TAG, mContext, log);
-            mPresenter.onDisconnectUIChangePresenterHandler();
         }
+
+        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
     }
 
     @Override
     public void onDisconnect(int errorCode, String message) {
-        mPresenter.onDisconnectUIChangePresenterHandler();
 
         String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
@@ -188,6 +208,9 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         }
         log += " Server message: " + message;
         toastLogLong(TAG, mContext, log);
+
+        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
+
     }
 
     @Override
@@ -247,7 +270,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         }
         log += "from Peer " + getPeerIdNickBaseServiceHandler(skylinkConnection, remotePeerId) + ".\r\n";
 
-        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
+        UserInfo remotePeerUserInfo = getUserInfoBaseServiceHandler(skylinkConnection, remotePeerId);
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, mContext, log);
     }
@@ -258,7 +281,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
                 " Audio mute status via:\r\nCallback: " + isMuted + ".";
 
         // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
+        UserInfo userInfo = getUserInfoBaseServiceHandler(skylinkConnection, remotePeerId);
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
         }
@@ -271,7 +294,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
                 " Video mute status via:\r\nCallback: " + isMuted + ".";
 
         // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = skylinkConnection.getUserInfo(remotePeerId);
+        UserInfo userInfo = getUserInfoBaseServiceHandler(skylinkConnection, remotePeerId);
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
         }
@@ -313,10 +336,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
 
         audioRemotePeer = new AudioRemotePeer(true, remotePeerId, remotePeerName);
 
-        //save peer info to view for saveInstanceState
-        mPresenter.setAudioRemotePeerPresenterHandler(audioRemotePeer);
-
-        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler(true));
+        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
 
         String log = "Your Peer " + getPeerIdNickBaseServiceHandler(skylinkConnection, remotePeerId) + " connected.";
         toastLog(TAG, mContext, log);
@@ -327,12 +347,10 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         //reset audioRemotePeer
         audioRemotePeer = null;
 
-        mPresenter.setAudioRemotePeerPresenterHandler(null);
+        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
 
-        //update textview to show room status
-        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler(false));
+        int numRemotePeers = getNumRemotePeersServiceHandler();
 
-        int numRemotePeers = mPresenter.getNumRemotePeersPresenterHandler();
         String log = "Your Peer " + getPeerIdNickBaseServiceHandler(skylinkConnection, remotePeerId, userInfo) + " left: " +
                 message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
         toastLog(TAG, mContext, log);
@@ -352,7 +370,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
             log += ".\r\n";
         }
 
-        UserInfo remotePeerUserInfo = skylinkConnection.getUserInfo(remotePeerId);
+        UserInfo remotePeerUserInfo = getUserInfoBaseServiceHandler(skylinkConnection, remotePeerId);
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, mContext, log);
     }
@@ -374,21 +392,5 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         Log.d(TAG, "onOpenDataConnection");
     }
 
-    public int getNumRemotePeersServiceHandler() {
-        int totalInRoom = getTotalInRoomServiceHandler();
-        if (totalInRoom == 0) {
-            return 0;
-        }
-        // The first Peer is the local Peer.
-        return totalInRoom - 1;
-    }
 
-    public int getTotalInRoomServiceHandler() {
-        String[] peerIdList = skylinkConnection.getPeerIdList();
-        if (peerIdList == null) {
-            return 0;
-        }
-        // Size of array is number of Peers in room.
-        return peerIdList.length;
-    }
 }

@@ -13,34 +13,24 @@ import sg.com.temasys.skylink.sdk.sampleapp.data.model.AudioRemotePeer;
 public interface AudioCallContract {
     interface View extends BaseView<Presenter> {
 
-        void onDisconnectUIChangeViewHandler();
-
+        /**
+         * Get instance of the fragment for processing permission
+         */
         Fragment getFragmentViewHandler();
 
+        /**
+         * Set the room details information on UI.
+         */
         void setRoomDetailsViewHandler(String roomDetails);
-
-        void setAudioRemotePeerViewHandler(AudioRemotePeer audioRemotePeer);
     }
 
     interface Presenter extends BasePresenter {
 
-        void connectToRoomPresenterHandler();
-
-        void disconnectFromRoomPresenterHandler();
-
-        boolean isConnectingOrConnectedPresenterHandler();
-
-        void setAudioRemotePeerPresenterHandler(AudioRemotePeer audioRemotePeer);
-
-        void onDisconnectUIChangePresenterHandler();
-
         Fragment getFragmentPresenterHandler();
-
-        String getRoomDetailsPresenterHandler(boolean isPeerJoined);
 
         void setRoomDetailsPresenterHandler(String roomDetails);
 
-        int getNumRemotePeersPresenterHandler();
+        void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag);
     }
 
     interface Service extends BaseService<Presenter> {
