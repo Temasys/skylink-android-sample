@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp;
+package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -11,8 +11,8 @@ import android.widget.RadioGroup;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.SdkConnectionManager;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 

@@ -83,12 +83,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
-    public Fragment getFragmentViewHandler() {
+    public Fragment onGetFragmentViewHandler() {
         return this;
     }
 
     @Override
-    public void setRoomDetailsViewHandler(String roomDetails) {
+    public void onUpdateUIViewHandler(String roomDetails) {
         tvRoomDetails.setText(roomDetails);
     }
 

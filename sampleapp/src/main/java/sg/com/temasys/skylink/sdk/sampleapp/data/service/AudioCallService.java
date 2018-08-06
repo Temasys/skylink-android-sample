@@ -194,7 +194,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
             toastLogLong(TAG, mContext, log);
         }
 
-        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
+        mPresenter.onConnectPresenterHandler();
     }
 
     @Override
@@ -209,7 +209,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         log += " Server message: " + message;
         toastLogLong(TAG, mContext, log);
 
-        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
+        mPresenter.onDisconnectPresenterHandler();
 
     }
 
@@ -307,18 +307,18 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
     @Override
     public void onPermissionRequired(
             final String[] permissions, final int requestCode, final int infoCode) {
-        PermRequesterInfor infor = new PermRequesterInfor(permissions, requestCode, infoCode);
-        PermissionUtils.onPermissionRequiredHandler(infor, TAG, mContext, mPresenter.getFragmentPresenterHandler());
+        PermRequesterInfor info = new PermRequesterInfor(permissions, requestCode, infoCode);
+        mPresenter.onPermissionRequiredPresenterHandler(info);
     }
 
     @Override
     public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
-        Utils.onPermissionGrantedHandler(permissions, infoCode, TAG);
+        PermissionUtils.onPermissionGrantedHandler(permissions, infoCode, TAG);
     }
 
     @Override
     public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
-        Utils.onPermissionDeniedHandler(infoCode, mContext, TAG);
+        PermissionUtils.onPermissionDeniedHandler(infoCode, mContext, TAG);
     }
 
     /**
@@ -336,7 +336,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
 
         audioRemotePeer = new AudioRemotePeer(true, remotePeerId, remotePeerName);
 
-        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
+        mPresenter.onRemotePeerJoinPresenterHandler();
 
         String log = "Your Peer " + getPeerIdNickBaseServiceHandler(skylinkConnection, remotePeerId) + " connected.";
         toastLog(TAG, mContext, log);
@@ -347,7 +347,7 @@ public class AudioCallService extends SDKService implements AudioCallContract.Se
         //reset audioRemotePeer
         audioRemotePeer = null;
 
-        mPresenter.setRoomDetailsPresenterHandler(getRoomDetailsServiceHandler());
+        mPresenter.onRemotePeerLeavePresenterHandler();
 
         int numRemotePeers = getNumRemotePeersServiceHandler();
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfor;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.AudioCallService;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
@@ -44,18 +45,38 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
     }
 
     @Override
-    public Fragment getFragmentPresenterHandler() {
-        return mAudioCallView.getFragmentViewHandler();
-    }
-
-    @Override
-    public void setRoomDetailsPresenterHandler(String roomDetails) {
-        mAudioCallView.setRoomDetailsViewHandler(roomDetails);
-    }
-
-    @Override
     public void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag) {
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+    }
+
+    @Override
+    public void onPermissionRequiredPresenterHandler(PermRequesterInfor info) {
+        permissionUtils.onPermissionRequiredHandler(info, TAG, mContext,  mAudioCallView.onGetFragmentViewHandler());
+    }
+
+    @Override
+    public void onConnectPresenterHandler() {
+        updateUIPresenterHandler();
+    }
+
+    @Override
+    public void onDisconnectPresenterHandler() {
+        updateUIPresenterHandler();
+    }
+
+    @Override
+    public void onRemotePeerJoinPresenterHandler() {
+        updateUIPresenterHandler();
+    }
+
+    @Override
+    public void onRemotePeerLeavePresenterHandler() {
+        updateUIPresenterHandler();
+    }
+
+    private void updateUIPresenterHandler() {
+        String strRoomDetails = mAudioCallService.getRoomDetailsServiceHandler();
+        mAudioCallView.onUpdateUIViewHandler(strRoomDetails);
     }
 
     /**
@@ -89,11 +110,10 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             } else {
 
                 //if it already connected to room, then resume permission
-                permissionUtils.permQResume(mContext, mAudioCallView.getFragmentViewHandler());
+                permissionUtils.permQResume(mContext, mAudioCallView.onGetFragmentViewHandler());
 
                 //update UI into connected
-                String strRoomDetails = mAudioCallService.getRoomDetailsServiceHandler();
-                mAudioCallView.setRoomDetailsViewHandler(strRoomDetails);
+                updateUIPresenterHandler();
 
                 Log.d(TAG, "Try to update UI when changing configuration");
             }
@@ -107,4 +127,5 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             Log.d(TAG, "Try to disconnect from room");
         }
     }
+
 }
