@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
-import sg.com.temasys.skylink.sdk.sampleapp.MultiPartyFragment;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;

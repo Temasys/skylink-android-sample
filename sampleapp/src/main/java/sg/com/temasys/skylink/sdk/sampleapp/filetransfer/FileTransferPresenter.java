@@ -3,13 +3,14 @@ package sg.com.temasys.skylink.sdk.sampleapp.filetransfer;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.FileTransferService;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
 
-public class FileTransferPresenter implements FileTransferContract.Presenter{
+public abstract class FileTransferPresenter implements FileTransferContract.Presenter{
 
     private FileTransferContract.View mFileTransferView;
     private FileTransferService mFileTransferService;
@@ -19,7 +20,7 @@ public class FileTransferPresenter implements FileTransferContract.Presenter{
         mFileTransferService = new FileTransferService(context);
 
         this.mFileTransferView.setPresenter(this);
-        this.mFileTransferService.setPresenter(this);
+//        this.mFileTransferService.setPresenter(this);
     }
 
 
@@ -27,8 +28,8 @@ public class FileTransferPresenter implements FileTransferContract.Presenter{
 
     @Override
     public void setRoomDetailsPresenterHandler(boolean isPeerJoined) {
-        String roomDetails = mFileTransferService.getRoomDetailsServiceHandler(isPeerJoined);
-        mFileTransferView.setRoomDetailsViewHandler(roomDetails);
+//        String roomDetails = mFileTransferService.getRoomDetailsServiceHandler(isPeerJoined);
+//        mFileTransferView.setRoomDetailsViewHandler(roomDetails);
     }
 
     @Override
@@ -81,22 +82,61 @@ public class FileTransferPresenter implements FileTransferContract.Presenter{
 
     @Override
     public void sendFilePresenterHandler(String remotePeerId, String filePath) {
-        mFileTransferService.sendFileServiceHandler(remotePeerId, filePath);
+//        mFileTransferService.sendFileServiceHandler(remotePeerId, filePath);
     }
 
     @Override
     public void disconnectFromRoomPresenterHandler() {
-        mFileTransferService.disconnectFromRoomServiceHandler();
+//        mFileTransferService.disconnectFromRoomServiceHandler();
     }
 
     @Override
     public void connectToRoomPresenterHandler() {
-        mFileTransferService.connectToRoomServiceHandler();
+//        mFileTransferService.connectToRoomServiceHandler();
     }
 
     @Override
     public boolean isConnectingOrConnectedPresenterHandler() {
-        return mFileTransferService.isConnectingOrConnectedServiceHandler();
+//        return mFileTransferService.isConnectingOrConnectedServiceHandler();
+        return false;
     }
 
+//    @Override
+    public void onViewLayoutRequestedPresenterHandler(boolean tryToConnect) {
+
+    }
+
+    @Override
+    public void onViewLayoutRequestedPresenterHandler() {
+
+    }
+
+    @Override
+    public void onViewExitPresenterHandler() {
+
+    }
+
+    public void onConnectPresenterHandler() {
+
+    }
+
+    @Override
+    public void onDisconnectPresenterHandler() {
+
+    }
+
+    @Override
+    public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
+
+    }
+
+    @Override
+    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
+
+    }
+
+    @Override
+    public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
+
+    }
 }

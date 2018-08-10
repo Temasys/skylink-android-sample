@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfor;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.PermissionService;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_AUDIO_MIC;
@@ -110,19 +110,19 @@ public class PermissionUtils {
      * provide a dialog to inform user why such permissions are required,
      * and provide the chance to set the required permissions again.
      *
-     * @param permRequesterInfor As given in OsListener method.
+     * @param permRequesterInfo As given in OsListener method.
      * @param tag                Tag string for logging.
      * @param context            Current context.
      * @param fragment           Current fragment.
      */
-    public static void onPermissionRequiredHandler(PermRequesterInfor permRequesterInfor,
+    public static void onPermissionRequiredHandler(PermRequesterInfo permRequesterInfo,
                                                    final String tag, final Context context, final Fragment fragment) {
 
-        // Create a new PermRequesterInfor to represent this request.
-        PermRequester permRequester = new PermRequester(permRequesterInfor,
+        // Create a new PermRequesterInfo to represent this request.
+        PermRequester permRequester = new PermRequester(permRequesterInfo,
                 tag, context, fragment);
 
-        // Add PermRequesterInfor to Queue.
+        // Add PermRequesterInfo to Queue.
         permQOfferLast(permRequester);
     }
 
@@ -333,14 +333,14 @@ public class PermissionUtils {
      */
     public static class PermRequester {
 
-        private PermRequesterInfor requester;
+        private PermRequesterInfo requester;
 
         String tag;
-        // Static elements that are common to all PermRequesterInfor
+        // Static elements that are common to all PermRequesterInfo
         static Context context;
         static Fragment fragment;
 
-        public PermRequester(PermRequesterInfor requester, String tag,
+        public PermRequester(PermRequesterInfo requester, String tag,
                              Context context, Fragment fragment) {
             this.requester = requester;
             this.tag = tag;
@@ -379,7 +379,7 @@ public class PermissionUtils {
          * @param fragment
          * @return
          */
-        void processOnPermReq(final PermRequesterInfor requester, final String tag,
+        void processOnPermReq(final PermRequesterInfo requester, final String tag,
                               final Context context, final Fragment fragment) {
             String log = "[SA][PR][procPermReq] SDK requesting permission for " + requester.getPermissions()[0] +
                     ", which ";

@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.data.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -8,12 +9,12 @@ import java.io.Serializable;
 
 public class MultiPeersInfo implements Serializable{
     private boolean isPeerJoined;
-    private String[] peerIdList;
+    private List<String> peerIdList;
 
     public MultiPeersInfo() {
     }
 
-    public MultiPeersInfo(boolean isPeerJoined, String[] peerIdList) {
+    public MultiPeersInfo(boolean isPeerJoined, List<String> peerIdList) {
         this.isPeerJoined = isPeerJoined;
         this.peerIdList = peerIdList;
     }
@@ -26,11 +27,11 @@ public class MultiPeersInfo implements Serializable{
         isPeerJoined = peerJoined;
     }
 
-    public String[] getPeerIdList() {
+    public List<String> getPeerIdList() {
         return peerIdList;
     }
 
-    public void setPeerIdList(String[] peerIdList) {
+    public void setPeerIdList(List<String> peerIdList) {
         this.peerIdList = peerIdList;
     }
 }

@@ -5,17 +5,16 @@ import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.MultiPartyVideoCallService;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.data.service.MultiPartyVideoService;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
-public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract.Presenter {
+public abstract class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract.Presenter {
 
     public MultiPartyVideoCallContract.View mVideoCallView;
-    private MultiPartyVideoCallService mMultiPartyVideoCallService;
+    private MultiPartyVideoService mMultiPartyVideoCallService;
 
     private Context mContext;
 
@@ -23,10 +22,10 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
         this.mVideoCallView = videoCallView;
         this.mContext = context;
 
-        mMultiPartyVideoCallService = new MultiPartyVideoCallService(mContext);
+        mMultiPartyVideoCallService = new MultiPartyVideoService(mContext);
 
         this.mVideoCallView.setPresenter(this);
-        this.mMultiPartyVideoCallService.setPresenter(this);
+//        this.mMultiPartyVideoCallService.setPresenter(this);
     }
 
     @Override
@@ -61,102 +60,148 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
 
     @Override
     public void getInputVideoResolutionPresenterHandler(){
-        mMultiPartyVideoCallService.getInputVideoResolutionServiceHandler();
+//        mMultiPartyVideoCallService.getInputVideoResolutionServiceHandler();
     }
 
     @Override
     public void refreshConnectionPresenterHandler(String peerId, boolean iceRestart){
-        mMultiPartyVideoCallService.refreshConnectionServiceHandler(peerId, iceRestart);
+//        mMultiPartyVideoCallService.refreshConnectionServiceHandler(peerId, iceRestart);
     }
 
     @Override
     public boolean startRecordingPresenterHandler(){
-        return mMultiPartyVideoCallService.startRecordingServiceHandler();
+//        return mMultiPartyVideoCallService.startRecordingServiceHandler();
+        return false;
     }
 
     @Override
     public boolean stopRecordingPresenterHandler(){
-        return mMultiPartyVideoCallService.stopRecordingServiceHandler();
+//        return mMultiPartyVideoCallService.stopRecordingServiceHandler();
+        return false;
     }
 
     @Override
     public boolean getTransferSpeedsPresenterHandler(String peerId, int mediaDirectionBoth, int mediaAll){
-        return mMultiPartyVideoCallService.getTransferSpeedsServiceHandler(peerId, mediaDirectionBoth, mediaAll);
+//        return mMultiPartyVideoCallService.getTransferSpeedsServiceHandler(peerId, mediaDirectionBoth, mediaAll);
+        return false;
     }
 
     @Override
     public boolean getWebrtcStatsPresenterHandler(String peerId, int mediaDirectionBoth, int mediaAll){
-        return mMultiPartyVideoCallService.getWebrtcStatsServiceHandler(peerId, mediaDirectionBoth, mediaAll);
+//        return mMultiPartyVideoCallService.getWebrtcStatsServiceHandler(peerId, mediaDirectionBoth, mediaAll);
+        return false;
     }
 
     @Override
     public String[] getPeerIdListPresenterHandler(){
-        return mMultiPartyVideoCallService.getPeerIdListServiceHandler();
+//        return mMultiPartyVideoCallService.getPeerIdListServiceHandler();
+        return null;
     }
 
     @Override
     public void getSentVideoResolutionPresenterHandler(String peerId){
-        mMultiPartyVideoCallService.getSentVideoResolutionServiceHandler(peerId);
+//        mMultiPartyVideoCallService.getSentVideoResolutionServiceHandler(peerId);
     }
 
     @Override
     public void getReceivedVideoResolutionPresenterHandler(String peerId){
-        mMultiPartyVideoCallService.getReceivedVideoResolutionServiceHandler(peerId);
+//        mMultiPartyVideoCallService.getReceivedVideoResolutionServiceHandler(peerId);
     }
 
     @Override
     public String getRoomPeerIdNickPresenterHandler(String room_name, String peerId){
-        return mMultiPartyVideoCallService.getRoomPeerIdNickServiceHandler(room_name, peerId);
+//        return mMultiPartyVideoCallService.getRoomPeerIdNickServiceHandler(room_name, peerId);
+        return null;
     }
 
     @Override
     public void disconnectFromRoomPresenterHandler() {
-        mMultiPartyVideoCallService.disconnectFromRoomServiceHandler();
+//        mMultiPartyVideoCallService.disconnectFromRoomServiceHandler();
     }
 
     @Override
     public void connectToRoomPresenterHandler(String roomName) {
-        mMultiPartyVideoCallService.connectToRoomServiceHandler(roomName);
+//        mMultiPartyVideoCallService.connectToRoomServiceHandler(roomName);
     }
 
     @Override
     public boolean isConnectingOrConnectedPresenterHandler() {
-        return mMultiPartyVideoCallService.isConnectingOrConnectedServiceHandler();
+//        return mMultiPartyVideoCallService.isConnectingOrConnectedServiceHandler();
+        return false;
     }
 
     @Override
     public boolean toggleCameraPresenterHandler() {
-        return mMultiPartyVideoCallService.toggleCameraServiceHandler();
+//        return mMultiPartyVideoCallService.toggleCameraServiceHandler();
+        return false;
     }
 
     @Override
     public boolean toggleCameraPresenterHandler(boolean isToggle) {
-        return mMultiPartyVideoCallService.toggleCameraServiceHandler(isToggle);
+//        return mMultiPartyVideoCallService.toggleCameraServiceHandler(isToggle);
+        return false;
     }
 
     @Override
     public SurfaceViewRenderer getVideoViewPresenterHandler(String remotePeerId){
-        return mMultiPartyVideoCallService.getVideoViewServiceHandler(remotePeerId);
+//        return mMultiPartyVideoCallService.getVideoViewServiceHandler(remotePeerId);
+        return null;
     }
 
     @Override
     public String getRoomPeerIdNickPresenterHandler() {
-        return mMultiPartyVideoCallService.getRoomPeerIdNickServiceHandler();
+//        return mMultiPartyVideoCallService.getRoomPeerIdNickServiceHandler();
+        return null;
     }
 
     @Override
     public void switchCameraPresenterHandler() {
-        mMultiPartyVideoCallService.switchCameraServiceHandler();
+//        mMultiPartyVideoCallService.switchCameraServiceHandler();
     }
 
     @Override
     public int getTotalInRoomPresenterHandler() {
-        return mMultiPartyVideoCallService.getTotalInRoomServiceHandler();
+//        return mMultiPartyVideoCallService.getTotalInRoomServiceHandler();
+        return 0;
     }
 
     @Override
     public int getNumRemotePeersPresenterHandler() {
-        return mMultiPartyVideoCallService.getNumRemotePeersServiceHandler();
+//        return mMultiPartyVideoCallService.getNumRemotePeersServiceHandler();
+        return 0;
     }
 
+    @Override
+    public void onViewLayoutRequestedPresenterHandler() {
+
+    }
+
+    @Override
+    public void onViewExitPresenterHandler() {
+
+    }
+
+    public void onConnectPresenterHandler() {
+
+    }
+
+    @Override
+    public void onDisconnectPresenterHandler() {
+
+    }
+
+    @Override
+    public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
+
+    }
+
+    @Override
+    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
+
+    }
+
+    @Override
+    public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
+
+    }
 }

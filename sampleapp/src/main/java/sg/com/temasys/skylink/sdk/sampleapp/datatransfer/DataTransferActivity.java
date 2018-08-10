@@ -34,7 +34,7 @@ public class DataTransferActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mDataTransferPresenter = new DataTransferPresenter(mDataTransferFragment, this);
+//        mDataTransferPresenter = new DataTransferPresenter(mDataTransferFragment, this);
     }
 
     @Override

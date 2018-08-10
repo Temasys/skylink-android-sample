@@ -34,7 +34,7 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mMultiPartyVideoPresenter = new MultiPartyVideoCallPresenter(mMultiPartyVideoFragment, this);
+//        mMultiPartyVideoPresenter = new MultiPartyVideoCallPresenter(mMultiPartyVideoFragment, this);
     }
 
     @Override

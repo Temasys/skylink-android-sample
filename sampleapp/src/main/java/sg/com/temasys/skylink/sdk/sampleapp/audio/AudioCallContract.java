@@ -5,8 +5,7 @@ import android.support.v4.app.Fragment;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.AudioRemotePeer;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfor;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -29,7 +28,7 @@ public interface AudioCallContract {
 
         void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        void onPermissionRequiredPresenterHandler(PermRequesterInfor infor);
+        void onPermissionRequiredPresenterHandler(PermRequesterInfo infor);
     }
 
     interface Service extends BaseService<Presenter> {

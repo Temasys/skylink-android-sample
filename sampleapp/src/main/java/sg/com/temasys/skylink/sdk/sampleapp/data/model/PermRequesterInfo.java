@@ -4,15 +4,15 @@ package sg.com.temasys.skylink.sdk.sampleapp.data.model;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class PermRequesterInfor {
+public class PermRequesterInfo {
     private String[] permissions;
     private int requestCode;
     private int infoCode;
 
-    public PermRequesterInfor() {
+    public PermRequesterInfo() {
     }
 
-    public PermRequesterInfor(String[] permissions, int requestCode, int infoCode) {
+    public PermRequesterInfo(String[] permissions, int requestCode, int infoCode) {
         this.permissions = permissions;
         this.requestCode = requestCode;
         this.infoCode = infoCode;

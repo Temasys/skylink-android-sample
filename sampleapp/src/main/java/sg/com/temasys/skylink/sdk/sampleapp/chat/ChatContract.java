@@ -26,33 +26,15 @@ public interface ChatContract {
 
         void listViewRefreshViewHandler();
 
-        void setRoomDetailsViewHandler(String roomDetails);
-
         void clearChatMessageCollectionViewHandler();
 
         void addToChatMessageCollectionViewHandler(String s);
 
-        void setMultiChatPeersInfoViewHandler(boolean isPeerJoined);
+        void onUpdateUIViewHandler(String roomDetails);
     }
 
     interface Presenter extends BasePresenter {
 
-        //for service call
-        void clearPeerListPresenterHandler();
-
-        void fillPeerRadioBtnPresenterHandler() ;
-
-        void addPeerRadioBtnPresenterHandler(String remotePeerId, String nick);
-
-        int getPeerNumPresenterHandler();
-
-        void removePeerRadioBtnPresenterHandler(String remotePeerId);
-
-        int getPeerListSizePresenterHandler();
-
-        void listViewRefreshPresenterHandler();
-
-        //for view call
         void sendServerMessagePresenterHandler(String remotePeerId, String message);
 
         void sendP2PMessagePresenterHandler(String remotePeerId, String message);
@@ -61,17 +43,11 @@ public interface ChatContract {
 
         void connectToRoomPresenterHandler();
 
-        void setRoomDetailsPresenterHandler(boolean isPeerInRoom);
-
-        void setMultiChatPeersInfoPresenterHandler(boolean isPeerJoined);
-
-        void saveIsPeerJoinPresenterHandler(boolean isPeerJoined);
-
-        void clearChatMessageCollectionPresenterHandler();
-
-        void addToChatMessageCollectionPresenterHandler(String s);
+        void setRoomDetailsPresenterHandler();
 
         boolean isConnectingOrConnectedPresenterHandler();
+
+        void onMessageReceivePresenterHandler(String msg);
     }
 
     interface Service extends BaseService<Presenter> {

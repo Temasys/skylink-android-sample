@@ -9,6 +9,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -17,74 +18,49 @@ import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 public interface VideoCallContract {
     interface View extends BaseView<Presenter> {
 
-        void setRoomDetailsViewHandler(String roomDetails);
+        void onConnectingUIChangeViewHandler();
 
-        void onConnectUIChangeViewHandler();
+        void onConnectedUIChangeViewHandler();
 
         void onDisconnectUIChangeViewHandler();
 
-        void addSelfViewPresenterHandler(SurfaceViewRenderer videoView);
+        void onSetUiResTvStatsSentViewHandler(VideoResolution videoSent);
 
-        void noteInputVideoResolutionsViewHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
+        void onSetUiResTvStatsReceiveViewHandler(VideoResolution videoReceive);
 
-        void setUiResTvStatsReceivedViewHandler(int width, int height, int fps);
+        void onAddSelfViewViewHandler(SurfaceViewRenderer videoView);
 
-        void setUiResTvStatsSentViewHandler(int width, int height, int fps);
-
-        void addRemoteViewViewHandler();
+        void onAddRemoteViewViewHandler(SurfaceViewRenderer remoteVideoView);
 
         void onRemotePeerLeaveUIChangeViewHandler();
 
-        Fragment getFragmentViewHandler();
+        Fragment onGetFragmentViewHandler();
 
-        
+        void onSetAudioBtnLabelViewHandler(boolean isAudioMuted, boolean isToast);
+
+        void onSetVideoBtnLabelViewHandler(boolean isVideoMuted, boolean isToast);
+
+        void onSetTvResInputStatsViewHandler(VideoResolution videoInput);
+
+        boolean onSetUiResTvDimViewHandler(int width, int height);
+
+        void onSetUiResSeekBarRangeDimViewHandler(int maxSeekBarDimRange);
+
+        void onSetSeekBarResDimViewHandler(int index, int width, int height);
+
+        void onSetUiResSeekBarRangeFpsViewHandler(int seekBarResFpsMax);
+
+        void onSetSeekBarResFpsViewHandler(int index, int fps);
+
+        void onSetUiResTvFpsViewHandler(int fps);
+
     }
 
     interface Presenter extends BasePresenter {
 
         void disconnectFromRoomPresenterHandler();
 
-        void connectToRoomPresenterHandler(String roomName);
-
-        boolean isConnectingOrConnectedPresenterHandler();
-
-        void onConnectUIChangePresenterHandler();
-
-        void onDisconnectUIChangePresenterHandler();
-
-        void addSelfViewPresenterHandler(SurfaceViewRenderer videoView);
-
-        void noteInputVideoResolutionsPresenterHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
-
-        void setUiResTvStatsReceivedPresenterHandler(int width, int height, int fps);
-
-        void setUiResTvStatsSentPresenterHandler(int width, int height, int fps);
-
-        void addRemoteViewPresenterHandler();
-
-        void onRemotePeerLeaveUIChangePresenterHandler();
-
-        boolean toggleCameraPresenterHandler();
-
-        boolean toggleCameraPresenterHandler(boolean isToggle);
-
-        void muteLocalAudioPresenterHandler(boolean audioMuted);
-
-        void muteLocalVideoPresenterHandler(boolean videoMuted);
-
-        SkylinkCaptureFormat[] getCaptureFormatsPresenterHandler(SkylinkConfig.VideoDevice videoDevice);
-
-        String getCaptureFormatsStringPresenterHandler(SkylinkCaptureFormat[] captureFormats);
-
         String getPeerIdPresenterHandler(int index);
-
-        SkylinkConfig.VideoDevice getCurrentVideoDevicePresenterHandler();
-
-        String getCurrentCameraNamePresenterHandler();
-
-        void setInputVideoResolutionPresenterHandler(int width, int height, int fps);
-
-        SurfaceViewRenderer getVideoViewPresenterHandler(String remotePeerId);
 
         String getRoomPeerIdNickPresenterHandler();
 
@@ -92,15 +68,26 @@ public interface VideoCallContract {
 
         void switchCameraPresenterHandler();
 
-        Fragment getFragmentPresenterHandler();
+        void processBtnAudioMutePresenterHandler();
 
-        int getSeekBarIndexDimPresenterHandler(SkylinkCaptureFormat[] captureFormats, int width, int height);
+        void processBtnVideoMutePresenterHandler();
 
-        int getSeekBarIndexFpsPresenterHandler(SkylinkCaptureFormat format, int fps);
+        void processBtnCameraTogglePresenterHandler();
 
-        SkylinkCaptureFormat getSeekBarValueDimPresenterHandler(int progress, SkylinkCaptureFormat[] captureFormats);
+        void onViewPausePresenterHandler();
 
-        int getSeekBarValueFpsPresenterHandler(int progress, SkylinkCaptureFormat captureFormatSel);
+        void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag);
+
+        void onDimProgressChangedPresenterHandler(int progress);
+
+        void onFpsProgressChangedPresenterHandler(int progress);
+
+        void onDimStopTrackingTouchPresenterHandler(int progress);
+
+        void onFpsStopTrackingTouchPresenterHandler(int progress);
+
+
+        void onViewResumePresenterHandler();
     }
 
     interface Service extends BaseService<Presenter> {

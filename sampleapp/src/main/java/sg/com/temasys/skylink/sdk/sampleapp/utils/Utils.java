@@ -47,6 +47,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
@@ -396,71 +397,6 @@ public class Utils {
     }
 
     /**
-     * Handles Skylink SDK OsListener callback onPermissionGranted.
-     * Log the permission that had been granted.
-     *
-     * @param permissions As given in OsListener method.
-     * @param infoCode    As given in OsListener method.
-     * @param tag         Tag string for logging.
-     */
-    public static void onPermissionGrantedHandler(String[] permissions, int infoCode, String tag) {
-        String log = "[SA][onPermGrant] Permission has been GRANTED for " + permissions[0] +
-                ", infoCode:" + infoCode + " (" + getInfoString(infoCode) + ").";
-        Log.d(tag, log);
-    }
-
-    /**
-     * @param infoCode As given in OsListener method.
-     * @param context  Current context to show AlertDialog.
-     * @param tag      Tag string for logging.
-     */
-    public static void onPermissionDeniedHandler(int infoCode, Context context, String tag) {
-        // Create alert to inform user about the permission denied and resultant feature disabled.
-        // Log the same.
-        // Check if should explain reason for requesting permission, which happens if the user
-        // has denied this Permission before, but did not indicate to never ask again.
-        String alertText = "";
-        switch (infoCode) {
-            case PERM_AUDIO_MIC:
-                alertText += "Android permission to use the Microphone was denied. " +
-                        "We are now NOT able to send our audio to a remote Peer!";
-                break;
-            case PERM_VIDEO_CAM:
-                alertText += "Android permission to use the Camera was denied. " +
-                        "We are now NOT able to send our video to a remote Peer!";
-                break;
-            case PERM_STORAGE_READ:
-                alertText += "Android permission to read from device storage was denied. " +
-                        "We are now NOT able to send file to a remote Peer!";
-                break;
-            case PERM_STORAGE_WRITE:
-                alertText += "Android permission to write to device storage was denied. " +
-                        "We are now NOT able to receive file from a remote Peer!";
-                break;
-        }
-        alertText += "\r\nTo enable feature, restart this feature and grant the permission(s) " +
-                "required. Alternatively, go to Android's Settings -> \"Apps\", select this App, " +
-                "go to \"Permissions\", grant required permission(s), and restart this feature.";
-
-        // Create AlertDialog to warn user of consequences of permission denied.
-        AlertDialog.Builder permissionDeniedDialogBuilder =
-                new AlertDialog.Builder(context);
-        permissionDeniedDialogBuilder.setTitle("Warning! Feature(s) unavailable " +
-                "due to Permission(s) denied.");
-
-        // Create TextView for permission alert.
-        final TextView msgTxtView = new TextView(context);
-        msgTxtView.setText(alertText);
-        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
-        permissionDeniedDialogBuilder.setView(msgTxtView);
-        permissionDeniedDialogBuilder.setPositiveButton("Ok", null);
-
-        alertText = "[SA][onPermDenied] " + alertText;
-        Log.d(tag, alertText);
-        permissionDeniedDialogBuilder.show();
-    }
-
-    /**
      * Will cancel the previous {@link #toastLog} attempt to Toast if still ongoing, and
      * Toast the given log with the given Toast length.
      * Will also Log.d the given log.
@@ -699,6 +635,11 @@ public class Utils {
         return fps + " fps";
     }
 
+    @NonNull
+    public static String getResFpsStr(VideoResolution videoResolution) {
+        return videoResolution.getFps() + " fps";
+    }
+
     /**
      * Generate a string to display a set of video resolution dimensions (i.e. width and height).
      *
@@ -710,4 +651,54 @@ public class Utils {
     public static String getResDimStr(int width, int height) {
         return width + " x " + height;
     }
+
+    /**
+     * Generate a string to display a set of video resolution dimensions (i.e. width and height).
+     *
+     * @param videoResolution
+     * @return
+     */
+    @NonNull
+    public static String getResDimStr(VideoResolution videoResolution) {
+        return videoResolution.getWidth() + " x " + videoResolution.getHeight();
+    }
+
+    public static String getRoomNameByType(Constants.CONFIG_TYPE typeCall) {
+        switch (typeCall){
+            case AUDIO:
+                return Config.ROOM_NAME_AUDIO;
+            case VIDEO:
+                return Config.ROOM_NAME_VIDEO;
+            case CHAT:
+                return Config.ROOM_NAME_CHAT;
+            case DATA:
+                return Config.ROOM_NAME_DATA;
+            case FILE:
+                return Config.ROOM_NAME_FILE;
+            case MULTI_PARTY_VIDEO:
+                return Config.ROOM_NAME_PARTY;
+        }
+
+        return null;
+    }
+
+    public static String getUserNameByType(Constants.CONFIG_TYPE typeCall) {
+        switch (typeCall){
+            case AUDIO:
+                return Config.USER_NAME_AUDIO;
+            case VIDEO:
+                return Config.USER_NAME_VIDEO;
+            case CHAT:
+                return Config.USER_NAME_CHAT;
+            case DATA:
+                return Config.USER_NAME_DATA;
+            case FILE:
+                return Config.USER_NAME_FILE;
+            case MULTI_PARTY_VIDEO:
+                return Config.USER_NAME_PARTY;
+        }
+
+        return null;
+    }
+
 }

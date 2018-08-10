@@ -46,7 +46,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
         setActionBar();
 
-        requestViewLayout(true);
+        requestViewLayout();
 
         return rootView;
     }
@@ -71,15 +71,16 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
-        if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
-            requestViewLayout(false);
+        if (!((AudioCallActivity) mContext).isChangingConfigurations() && mPresenter != null) {
+            mPresenter.onViewExitPresenterHandler();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
+        if(mPresenter != null)
+            mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
@@ -112,10 +113,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     /**
      * request info to display from presenter
+     * try to connect to room if not connected
+     * try to disconnect from room if left the room
      */
-    private void requestViewLayout(boolean tryToConnect){
+    private void requestViewLayout(){
         if(mPresenter != null){
-            mPresenter.onViewLayoutRequestedPresenterHandler(tryToConnect);
+            mPresenter.onViewLayoutRequestedPresenterHandler();
         }
     }
 }

@@ -34,7 +34,7 @@ public class FileTransferActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mFileTransferPresenter = new FileTransferPresenter(mFileTransferFragment, this);
+//        mFileTransferPresenter = new FileTransferPresenter(mFileTransferFragment, this);
     }
 
     @Override

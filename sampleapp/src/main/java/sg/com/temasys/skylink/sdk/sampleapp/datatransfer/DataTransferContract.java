@@ -11,8 +11,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 public interface DataTransferContract {
     interface View extends BaseView<Presenter> {
 
-        void setRoomDetailsViewHandler(String roomDetails);
-
         void fillPeerRadioBtnViewHandler();
 
         void clearPeerListViewHandler();
@@ -21,35 +19,25 @@ public interface DataTransferContract {
 
         void removePeerRadioBtnViewHandler(String remotePeerId);
 
-        int getPeerlistSizeViewHandler();
+        void onUpdateUIViewHandler(String strRoomDetails);
 
-        void setIsPeerJoinedViewHandler(boolean isPeerJoined);
+        int getPeerNumViewHandler();
+
+        int getPeerListSizeViewHandler();
     }
 
     interface Presenter extends BasePresenter {
-        void setRoomDetailsPresenterHandler(boolean isPeerJoined);
+
+        void setRoomDetailsPresenterHandler();
 
         void disconnectFromRoomPresenterHandler();
 
         void connectToRoomPresenterHandler();
 
-        void fillPeerRadioBtnPresenterHandler();
-
-        void clearPeerListPresenterHandler();
-
-        void addPeerRadioBtnPresenterHandler(String remotePeerId, String nick);
-
-        void removePeerRadioBtnPresenterHandler(String remotePeerId);
-
-        int getPeerlistSizePresenterHandler();
-
         void sendDataPresenterHandler(String remotePeerId, byte[] data);
 
         boolean isConnectingOrConnectedPresenterHandler();
 
-        void saveIsPeerJoinedPresenterHandler(boolean peerJoined);
-
-        void setIsPeerJoinedPresenterHandler(boolean isPeerJoined);
     }
 
     interface Service extends BaseService<Presenter> {

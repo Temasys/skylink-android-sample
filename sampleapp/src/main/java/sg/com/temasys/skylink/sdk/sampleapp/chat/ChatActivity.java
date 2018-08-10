@@ -33,7 +33,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mChatPresenter = new ChatPresenter(mChatFragment, this);
+//        mChatPresenter = new ChatPresenter(mChatFragment, this);
     }
 
     @Override

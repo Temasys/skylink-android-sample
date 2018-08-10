@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;

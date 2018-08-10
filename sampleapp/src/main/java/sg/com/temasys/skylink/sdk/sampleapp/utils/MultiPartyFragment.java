@@ -9,6 +9,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -122,13 +123,13 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return String array of PeerIds.
      */
-    public String[] getPeerIdList() {
+    public List<String> getPeerIdList() {
 
         int peerNum = getPeerNum();
-        String[] peerIdList = new String[peerNum];
+        List<String> peerIdList = new ArrayList<String>();
         // Populate peeIdList with PeerIds.
         for (int i = 0; i < peerNum; ++i) {
-            peerIdList[i] = peerList.get(i).first;
+            peerIdList.set(i, peerList.get(i).first);
         }
         return peerIdList;
     }
@@ -206,12 +207,12 @@ public class MultiPartyFragment extends Fragment {
      *
      * @param peerIdList String Array of PeerIds of remote Peer(s) in the room.
      */
-    public void popPeerList(String[] peerIdList) {
+    public void popPeerList(List<String> peerIdList) {
         // Clear peerList
         peerList.clear();
         // Populate peerList
-        for (int i = 0; i < peerIdList.length; ++i) {
-            String peerId = peerIdList[i];
+        for (int i = 0; i < peerIdList.size(); ++i) {
+            String peerId = peerIdList.get(i);
             String nick = Utils.getNick(SdkConnectionManager.getCurrentSkylinkConnection(), peerId);
             Pair<String, String> peer = new Pair<>(peerId, nick);
             peerList.add(peer);

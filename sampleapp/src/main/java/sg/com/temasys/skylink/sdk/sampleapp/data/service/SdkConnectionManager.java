@@ -5,6 +5,7 @@ import android.content.Context;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -15,18 +16,49 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 public class SdkConnectionManager {
 
-    private final String TAG = SdkConnectionManager.class.getName();
-
-    private Context context;
+    private Context mContext;
 
     //this variable need to be static for configuration change
     public static SkylinkConnection currentSkylinkConnection = null;
 
     public SdkConnectionManager(Context context){
-        this.context = context;
+        this.mContext = context;
     }
 
-    //---------------------------------SkylinkConnection for AudioCall------------------------------
+    public SkylinkConnection initializeSkylinkConnection(Constants.CONFIG_TYPE type) {
+
+        SkylinkConfig skylinkConfig = null;
+
+        switch (type){
+            case AUDIO:
+                skylinkConfig = getSkylinkConfigForAudioCall();
+                break;
+            case VIDEO:
+                skylinkConfig = getSkylinkConfigForVideoCall();
+                break;
+            case CHAT:
+                skylinkConfig = getSkylinkConfigForChat();
+                break;
+            case DATA:
+                skylinkConfig = getSkylinkConfigForDataTransfer();
+                break;
+            case FILE:
+                skylinkConfig = getSkylinkConfigForFileTransfer();
+                break;
+            case MULTI_PARTY_VIDEO:
+                skylinkConfig = getSkylinkConfigForMultiPartyVideoCall();
+                break;
+        }
+
+        if(skylinkConfig != null) {
+            currentSkylinkConnection = SkylinkConnection.getInstance();
+            currentSkylinkConnection.init(Config.getAppKey(), skylinkConfig,
+                    mContext.getApplicationContext());
+        }
+
+        return currentSkylinkConnection;
+
+    }
 
     private SkylinkConfig getSkylinkConfigForAudioCall() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -45,15 +77,6 @@ public class SdkConnectionManager {
         return skylinkConfig;
     }
 
-    public SkylinkConnection initializeSkylinkConnectionForAudioCall() {
-        currentSkylinkConnection = SkylinkConnection.getInstance();
-        currentSkylinkConnection.init(Config.getAppKey(), getSkylinkConfigForAudioCall(),
-                context.getApplicationContext());
-        return currentSkylinkConnection;
-    }
-
-    //---------------------------------SkylinkConnection for Chat-----------------------------------
-
     private SkylinkConfig getSkylinkConfigForChat() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         // Chat config options can be:
@@ -66,15 +89,6 @@ public class SdkConnectionManager {
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
     }
-
-    public SkylinkConnection initializeSkylinkConnectionForChat() {
-        currentSkylinkConnection = SkylinkConnection.getInstance();
-        currentSkylinkConnection.init(Config.getAppKey(), getSkylinkConfigForChat(),
-                context.getApplicationContext());
-        return currentSkylinkConnection;
-    }
-
-    //---------------------------------SkylinkConnection for DataTransfer-----------------------------------
 
     private SkylinkConfig getSkylinkConfigForDataTransfer() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -89,15 +103,6 @@ public class SdkConnectionManager {
         return skylinkConfig;
     }
 
-    public SkylinkConnection initializeSkylinkConnectionForDataTransfer() {
-        currentSkylinkConnection = SkylinkConnection.getInstance();
-        currentSkylinkConnection.init(Config.getAppKey(), getSkylinkConfigForDataTransfer(),
-                context.getApplicationContext());
-        return currentSkylinkConnection;
-    }
-
-    //---------------------------------SkylinkConnection for FileTransfer---------------------------
-
     private SkylinkConfig getSkylinkConfigForFileTransfer() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         // FileTransfer config options can be:
@@ -110,15 +115,6 @@ public class SdkConnectionManager {
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
     }
-
-    public SkylinkConnection initializeSkylinkConnectionForFileTransfer() {
-        currentSkylinkConnection = SkylinkConnection.getInstance();
-        currentSkylinkConnection.init(Config.getAppKey(), getSkylinkConfigForFileTransfer(),
-                context.getApplicationContext());
-        return currentSkylinkConnection;
-    }
-
-    //---------------------------------SkylinkConnection for MultiPartyVideoCall--------------------
 
     private SkylinkConfig getSkylinkConfigForMultiPartyVideoCall() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -138,15 +134,6 @@ public class SdkConnectionManager {
         return skylinkConfig;
     }
 
-    public SkylinkConnection initializeSkylinkConnectionForMultiPartyVideoCall() {
-        currentSkylinkConnection = SkylinkConnection.getInstance();
-        currentSkylinkConnection.init(Config.getAppKey(), getSkylinkConfigForMultiPartyVideoCall(),
-                context.getApplicationContext());
-        return currentSkylinkConnection;
-    }
-
-    //---------------------------------SkylinkConnection for VideoCall------------------------------
-
     private SkylinkConfig getSkylinkConfigForVideoCall() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         // VideoCall config options can be:
@@ -165,15 +152,6 @@ public class SdkConnectionManager {
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
     }
-
-    public SkylinkConnection initializeSkylinkConnectionForVideoCall() {
-        currentSkylinkConnection = SkylinkConnection.getInstance();
-        currentSkylinkConnection.init(Config.getAppKey(), getSkylinkConfigForVideoCall(),
-                context.getApplicationContext());
-        return currentSkylinkConnection;
-    }
-
-    //---------------------------------get current SkylinkConnection--------------------------------
 
     //static method for the other to access currentSkylinkConnection
     public static SkylinkConnection getCurrentSkylinkConnection() {
