@@ -17,7 +17,7 @@
 
             <LinearLayout
                 android:id="@+id/audioContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 style="@style/CustonmButton"
                 android:layout_marginRight="@dimen/dp_20dp"
@@ -49,7 +49,7 @@
 
             <LinearLayout
                 android:id="@+id/videoContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 style="@style/CustonmButton"
                 android:layout_marginLeft="@dimen/dp_20dp"
@@ -82,7 +82,7 @@
 
             <LinearLayout
                 android:id="@+id/chatContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 style="@style/CustonmButton"
                 android:layout_marginLeft="@dimen/dp_20dp"
@@ -114,7 +114,7 @@
 
             <LinearLayout
                 android:id="@+id/fileContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 style="@style/CustonmButton"
                 android:layout_marginRight="@dimen/dp_20dp"
@@ -146,7 +146,7 @@
 
             <LinearLayout
                 android:id="@+id/dataContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 style="@style/CustonmButton"
                 android:layout_marginLeft="@dimen/dp_20dp"
@@ -179,7 +179,7 @@
 
             <LinearLayout
                 android:id="@+id/multiVideoContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 style="@style/CustonmButton"
                 android:layout_marginLeft="@dimen/dp_20dp"

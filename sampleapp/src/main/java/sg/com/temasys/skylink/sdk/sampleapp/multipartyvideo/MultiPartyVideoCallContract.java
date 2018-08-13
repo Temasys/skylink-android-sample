@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall;
+package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
 import android.support.v4.app.Fragment;
 

@@ -22,13 +22,14 @@ import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
@@ -37,7 +38,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class SDKService implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener, MessagesListener, DataTransferListener, FileTransferListener, RecordingListener, StatsListener {
+public class SDKService implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener, MessagesListener,
+        DataTransferListener, FileTransferListener, RecordingListener, StatsListener {
 
     private final String TAG = SDKService.class.getName();
 
@@ -45,11 +47,13 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
 
     private Context mContext;
 
-    private SdkConnectionManager sdkConnectionManager;
+    private SdkConnectionManager mSdkConnectionManager;
+
+    protected AudioCallContract.Presenter mAudioPresenter;
+
+    protected VideoCallContract.Presenter mVideoPresenter;
 
     //these variables need to be static for configuration change
-    protected static BasePresenter mPresenter;
-
     protected static SkylinkConnection mSkylinkConnection;
 
     public static SkylinkPeer mSkylinkPeer;
@@ -68,33 +72,32 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             mSkylinkConnection.setLifeCycleListener(this);
             mSkylinkConnection.setRemotePeerListener(this);
 
-
             //MediaListener for audio, video, multi_video call
-            if(mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO ||
+            if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO ||
                     mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
                 mSkylinkConnection.setMediaListener(this);
             }
 
             //OsListener for audio, video, file, multi_video call
-            if(mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO ||
+            if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO ||
                     mTypeCall == Constants.CONFIG_TYPE.FILE | mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
                 mSkylinkConnection.setOsListener(this);
             }
 
             //MessagesListener for chat
-            if(mTypeCall == Constants.CONFIG_TYPE.CHAT)
+            if (mTypeCall == Constants.CONFIG_TYPE.CHAT)
                 mSkylinkConnection.setMessagesListener(this);
 
             //DataTransferListener for data transfer
-            if(mTypeCall == Constants.CONFIG_TYPE.DATA)
+            if (mTypeCall == Constants.CONFIG_TYPE.DATA)
                 mSkylinkConnection.setDataTransferListener(this);
 
             //FileTransferListener for file transfer
-            if(mTypeCall == Constants.CONFIG_TYPE.FILE)
+            if (mTypeCall == Constants.CONFIG_TYPE.FILE)
                 mSkylinkConnection.setFileTransferListener(this);
 
             //RecordingListener and StatsListener for multi_video call
-            if(mTypeCall ==  Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
+            if (mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
                 mSkylinkConnection.setRecordingListener(this);
                 mSkylinkConnection.setStatsListener(this);
             }
@@ -105,11 +108,276 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         }
     }
 
+    @Override
+    public void onConnect(boolean isSuccessful, String message) {
+        if (isSuccessful) {
+            String log = "Connected to room " + mRoomName + " (" + mSkylinkConnection.getRoomId() +
+                    ") as " + mSkylinkConnection.getPeerId() + " (" + mUserName + ").";
+            toastLogLong(TAG, mContext, log);
+
+        } else {
+            String log = "Skylink failed to connect!\nReason : " + message;
+            toastLogLong(TAG, mContext, log);
+        }
+
+        //update UI to connected state for all types call
+        switch (mTypeCall) {
+            case AUDIO:
+                if (mAudioPresenter != null) {
+                    mAudioPresenter.onConnectPresenterHandler(isSuccessful);
+                }
+                break;
+            case VIDEO:
+                if (mVideoPresenter != null) {
+                    mVideoPresenter.onConnectPresenterHandler(isSuccessful);
+                }
+                break;
+        }
+
+
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String message) {
+        String log = "[onDisconnect] ";
+        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
+            log += "We have successfully disconnected from the room.";
+        } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
+            log += "WARNING! We have been unexpectedly disconnected from the room!";
+        }
+        log += " Server message: " + message;
+        toastLogLong(TAG, mContext, log);
+
+        //update UI to disconnect state
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onDisconnectPresenterHandler();
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onDisconnectPresenterHandler();
+        }
+
+    }
+
+    @Override
+    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
+        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
+                + lockStatus + ".";
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onReceiveLog(int infoCode, String message) {
+        Utils.handleSkylinkReceiveLog(infoCode, message, mContext, TAG);
+    }
+
+    @Override
+    public void onWarning(int errorCode, String message) {
+        Utils.handleSkylinkWarning(errorCode, message, mContext, TAG);
+    }
+
+    @Override
+    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
+        Log.d(TAG, "onLocalMediaCapture");
+
+        //only video call need to implement this callback
+        if (mVideoPresenter != null)
+            mVideoPresenter.onLocalMediaCapturePresenterHandler(videoView);
+    }
+
+    @Override
+    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
+        String log = "Peer " + getPeerIdNickServiceHandler(remotePeerId) +
+                " Audio mute status via:\r\nCallback: " + isMuted + ".";
+
+        // It is also possible to get the mute status via the UserInfo.
+        UserInfo userInfo = getUserInfoServiceHandler(remotePeerId);
+
+        if (userInfo != null) {
+            log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
+        }
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
+        String log = "Peer " + getPeerIdNickServiceHandler(remotePeerId) +
+                " Video mute status via:\r\nCallback: " + isMuted + ".";
+
+        // It is also possible to get the mute status via the UserInfo.
+        UserInfo userInfo = getUserInfoServiceHandler(remotePeerId);
+        if (userInfo != null) {
+            log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
+        }
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
+        String log = "Received new ";
+        if (videoView != null) {
+            log += "Video ";
+        } else {
+            log += "Audio ";
+        }
+        log += "from Peer " + getPeerIdNickServiceHandler(remotePeerId) + ".\r\n";
+
+        UserInfo remotePeerUserInfo = getUserInfoServiceHandler(remotePeerId);
+
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onRemotePeerMediaReceivePresenterHandler(log, remotePeerUserInfo);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onRemotePeerMediaReceivePresenterHandler(log, remotePeerUserInfo);
+        }
+    }
+
+    @Override
+    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+
+        //only video call need to implement this callback
+        if (mVideoPresenter != null)
+            mVideoPresenter.onInputVideoResolutionObtainedPresenterHandler(width, height, fps, captureFormat);
+    }
+
+    @Override
+    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+
+        //only video call need to implement this callback
+        if (mVideoPresenter != null)
+            mVideoPresenter.onReceivedVideoResolutionObtainedPresenterHandler(peerId, width, height, fps);
+    }
+
+    @Override
+    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+
+        //only video call need to implement this callback
+        if (mVideoPresenter != null)
+            mVideoPresenter.onSentVideoResolutionObtainedPresenterHandler(peerId, width, height, fps);
+    }
+
+    @Override
+    public void onVideoSizeChange(String peerId, Point size) {
+
+        //only video call need to implement this callback
+        if (mVideoPresenter != null)
+            mVideoPresenter.onVideoSizeChangePresenterHandler(peerId, size);
+    }
+
+    @Override
+    public void onPermissionRequired(String[] permissions, int requestCode, int infoCode) {
+
+        PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
+
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onPermissionRequiredPresenterHandler(info);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onPermissionRequiredPresenterHandler(info);
+        }
+    }
+
+    @Override
+    public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
+
+        PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
+
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onPermissionGrantedPresenterHandler(info);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onPermissionGrantedPresenterHandler(info);
+        }
+    }
+
+    @Override
+    public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
+
+        PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
+
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onPermissionDeniedPresenterHandler(info);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onPermissionDeniedPresenterHandler(info);
+        }
+    }
+
+    @Override
+    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
+        // When remote peer joins room, keep track of user and update text-view to display details
+        String remotePeerName = null;
+        if (userData instanceof String) {
+            remotePeerName = (String) userData;
+        }
+
+        mSkylinkPeer = new SkylinkPeer(remotePeerId, remotePeerName);
+
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onRemotePeerJoinPresenterHandler(mSkylinkPeer);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onRemotePeerJoinPresenterHandler(mSkylinkPeer);
+        }
+
+        String log = "Your Peer " + getPeerIdNickServiceHandler(remotePeerId) + " connected.";
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onRemotePeerConnectionRefreshed(String remotePeerId, Object userData, boolean hasDataChannel, boolean wasIceRestarted) {
+        String peer = "Skylink Media Relay server";
+        if (remotePeerId != null) {
+            peer = "Peer " + getPeerIdNickServiceHandler(remotePeerId);
+        }
+        String log = "Your connection with " + peer + " has just been refreshed";
+        if (wasIceRestarted) {
+            log += ", with ICE restarted.";
+        } else {
+            log += ".\r\n";
+        }
+
+        UserInfo remotePeerUserInfo = getUserInfoServiceHandler(remotePeerId);
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onRemotePeerConnectionRefreshedPresenterHandler(log, remotePeerUserInfo);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onRemotePeerConnectionRefreshedPresenterHandler(log, remotePeerUserInfo);
+        }
+    }
+
+    @Override
+    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
+        // If Peer has no userData, use an empty string for nick.
+        String nick = "";
+        if (userData != null) {
+            nick = userData.toString();
+        }
+        String log = "[SA][onRemotePeerUserDataReceive] Peer " + getPeerIdNickServiceHandler(remotePeerId) +
+                ":\n" + nick;
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onOpenDataConnection(String remotePeerId) {
+        Log.d(TAG, "onOpenDataConnection");
+    }
+
+    @Override
+    public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
+        //reset mAudioRemotePeer
+        mSkylinkPeer = null;
+
+        if (mAudioPresenter != null) {
+            mAudioPresenter.onRemotePeerLeavePresenterHandler(remotePeerId);
+        } else if (mVideoPresenter != null) {
+            mVideoPresenter.onRemotePeerLeavePresenterHandler(remotePeerId);
+        }
+
+        int numRemotePeers = getNumRemotePeersServiceHandler();
+
+        String log = "Your Peer " + getPeerIdNickServiceHandler(remotePeerId, userInfo) + " left: " +
+                message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
+        toastLog(TAG, mContext, log);
+    }
+
     public void connectToRoomServiceHandler() {
-        sdkConnectionManager = new SdkConnectionManager(mContext);
+        mSdkConnectionManager = new SdkConnectionManager(mContext);
 
         // Initialize the skylink connection using SdkConnectionManager
-        mSkylinkConnection = sdkConnectionManager.initializeSkylinkConnection(mTypeCall);
+        mSkylinkConnection = mSdkConnectionManager.initializeSkylinkConnection(mTypeCall);
 
         setListeners();
 
@@ -137,23 +405,20 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         }
 
         // Initialize and use the Audio router to switch between headphone and headset
-        if(mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall ==  Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
+        if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
             AudioRouter.startAudioRouting(mContext);
     }
-
-
 
     public void disconnectFromRoomServiceHandler() {
 
         mSkylinkConnection.disconnectFromRoom();
 
-        if(mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall ==  Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
+        if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
             AudioRouter.stopAudioRouting(mContext);
     }
 
-
-    public boolean isConnectingOrConnectedServiceHandler(){
-        if(mSkylinkConnection == null) return false;
+    public boolean isConnectingOrConnectedServiceHandler() {
+        if (mSkylinkConnection == null) return false;
 
         SkylinkConnection.SkylinkState state = mSkylinkConnection.getSkylinkState();
         if (state == SkylinkConnection.SkylinkState.CONNECTING ||
@@ -163,211 +428,12 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return false;
     }
 
-    @Override
-    public void onConnect(boolean isSuccessful, String message) {
-        if (isSuccessful) {
-            String log = "Connected to room " + mRoomName + " (" + mSkylinkConnection.getRoomId() +
-                    ") as " + mSkylinkConnection.getPeerId() + " (" + mUserName + ").";
-            toastLogLong(TAG, mContext, log);
-
-        } else {
-            String log = "Skylink failed to connect!\nReason : " + message;
-            toastLogLong(TAG, mContext, log);
-        }
-
-        //update UI to connected state
-        mPresenter.onConnectPresenterHandler(isSuccessful);
+    //static method for the other to access currentSkylinkConnection
+    public static SkylinkConnection getCurrentSkylinkConnection() {
+        return mSkylinkConnection;
     }
 
-    @Override
-    public void onDisconnect(int errorCode, String message) {
-        String log = "[onDisconnect] ";
-        if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
-            log += "We have successfully disconnected from the room.";
-        } else if (errorCode == Errors.DISCONNECT_UNEXPECTED_ERROR) {
-            log += "WARNING! We have been unexpectedly disconnected from the room!";
-        }
-        log += " Server message: " + message;
-        toastLogLong(TAG, mContext, log);
-
-        //update UI to disconnect state
-        mPresenter.onDisconnectPresenterHandler();
-
-    }
-
-    @Override
-    public void onLockRoomStatusChange(String remotePeerId, boolean lockStatus) {
-        String log = "[SA] Peer " + remotePeerId + " changed Room locked status to "
-                + lockStatus + ".";
-        toastLog(TAG, mContext, log);
-    }
-
-    @Override
-    public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, mContext, TAG);
-    }
-
-    @Override
-    public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, mContext, TAG);
-    }
-
-    @Override
-    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
-        Log.d(TAG, "onLocalMediaCapture");
-
-        mPresenter.onLocalMediaCapturePresenterHandler(videoView);
-    }
-
-    @Override
-    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        String log = "Peer " + getPeerIdNickBaseServiceHandler(remotePeerId) +
-                " Audio mute status via:\r\nCallback: " + isMuted + ".";
-
-        // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = getUserInfoBaseServiceHandler(remotePeerId);
-
-        if (userInfo != null) {
-            log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
-        }
-        toastLog(TAG, mContext, log);
-    }
-
-    @Override
-    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
-        String log = "Peer " + getPeerIdNickBaseServiceHandler(remotePeerId) +
-                " Video mute status via:\r\nCallback: " + isMuted + ".";
-
-        // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = getUserInfoBaseServiceHandler(remotePeerId);
-        if (userInfo != null) {
-            log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
-        }
-        toastLog(TAG, mContext, log);
-    }
-
-    @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
-        String log = "Received new ";
-        if (videoView != null) {
-            log += "Video ";
-        } else {
-            log += "Audio ";
-        }
-        log += "from Peer " + getPeerIdNickBaseServiceHandler(remotePeerId) + ".\r\n";
-
-        UserInfo remotePeerUserInfo = getUserInfoBaseServiceHandler(remotePeerId);
-
-        mPresenter.onRemotePeerMediaReceivePresenterHandler(log, remotePeerUserInfo);
-    }
-
-    @Override
-    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-        mPresenter.onInputVideoResolutionObtainedPresenterHandler(width, height, fps, captureFormat);
-    }
-
-    @Override
-    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
-        mPresenter.onReceivedVideoResolutionObtainedPresenterHandler(peerId, width, height, fps);
-    }
-
-    @Override
-    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
-        mPresenter.onSentVideoResolutionObtainedPresenterHandler(peerId, width, height, fps);
-    }
-
-    @Override
-    public void onVideoSizeChange(String peerId, Point size) {
-        mPresenter.onVideoSizeChangePresenterHandler(peerId, size);
-    }
-
-    @Override
-    public void onPermissionRequired(String[] permissions, int requestCode, int infoCode) {
-        PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
-        mPresenter.onPermissionRequiredPresenterHandler(info);
-    }
-
-    @Override
-    public void onPermissionGranted(String[] permissions, int requestCode, int infoCode) {
-        mPresenter.onPermissionGrantedPresenterHandler(permissions, infoCode);
-    }
-
-    @Override
-    public void onPermissionDenied(String[] permissions, int requestCode, int infoCode) {
-        mPresenter.onPermissionDeniedPresenterHandler(infoCode);
-    }
-
-    @Override
-    public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
-        // When remote peer joins room, keep track of user and update text-view to display details
-        String remotePeerName = null;
-        if (userData instanceof String) {
-            remotePeerName = (String) userData;
-        }
-
-        mSkylinkPeer = new SkylinkPeer(remotePeerId, remotePeerName);
-
-        mPresenter.onRemotePeerJoinPresenterHandler(remotePeerId, remotePeerName);
-
-        String log = "Your Peer " + getPeerIdNickBaseServiceHandler(remotePeerId) + " connected.";
-        toastLog(TAG, mContext, log);
-
-    }
-
-    @Override
-    public void onRemotePeerConnectionRefreshed(String remotePeerId, Object userData, boolean hasDataChannel, boolean wasIceRestarted) {
-        String peer = "Skylink Media Relay server";
-        if (remotePeerId != null) {
-            peer = "Peer " + getPeerIdNickBaseServiceHandler(remotePeerId);
-        }
-        String log = "Your connection with " + peer + " has just been refreshed";
-        if (wasIceRestarted) {
-            log += ", with ICE restarted.";
-        } else {
-            log += ".\r\n";
-        }
-
-        UserInfo remotePeerUserInfo = getUserInfoBaseServiceHandler(remotePeerId);
-        mPresenter.onRemotePeerConnectionRefreshedPresenterHandler(log, remotePeerUserInfo);
-
-    }
-
-    @Override
-    public void onRemotePeerUserDataReceive(String remotePeerId, Object userData) {
-    // If Peer has no userData, use an empty string for nick.
-        String nick = "";
-        if (userData != null) {
-            nick = userData.toString();
-        }
-        String log = "[SA][onRemotePeerUserDataReceive] Peer " + getPeerIdNickBaseServiceHandler(mSkylinkPeer.getRemotePeerId()) +
-                ":\n" + nick;
-        toastLog(TAG, mContext, log);
-    }
-
-    @Override
-    public void onOpenDataConnection(String remotePeerId) {
-        Log.d(TAG, "onOpenDataConnection");
-    }
-
-    @Override
-    public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
-        //reset mAudioRemotePeer
-        mSkylinkPeer = null;
-
-        mPresenter.onRemotePeerLeavePresenterHandler(remotePeerId);
-
-        int numRemotePeers = getNumRemotePeersServiceHandler();
-
-        String log = "Your Peer " + getPeerIdNickBaseServiceHandler(remotePeerId, userInfo) + " left: " +
-                message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-        toastLog(TAG, mContext, log);
-    }
-
-
-
-
-    //private method
-    protected String getPeerIdNickBaseServiceHandler(String peerId) {
+    private String getPeerIdNickServiceHandler(String peerId) {
         String peerIdShow = peerId;
         if (peerId == null) {
             if (mSkylinkConnection != null) {
@@ -377,11 +443,11 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
                 peerIdShow = "Self";
             }
         }
-        final String peerIdNick = "\"" + peerIdShow + "\"(" + getUserDataStringBaseServiceHandler(peerId) + ")";
+        final String peerIdNick = "\"" + peerIdShow + "\"(" + getUserDataStringServiceHandler(peerId) + ")";
         return peerIdNick;
     }
 
-    protected String getPeerIdNickBaseServiceHandler(SkylinkConnection skylinkConnection, String peerId) {
+    private String getPeerIdNickServiceHandler(SkylinkConnection skylinkConnection, String peerId) {
         String peerIdShow = peerId;
         if (peerId == null) {
             if (skylinkConnection != null) {
@@ -391,15 +457,15 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
                 peerIdShow = "Self";
             }
         }
-        final String peerIdNick = "\"" + peerIdShow + "\"(" + getUserDataStringBaseServiceHandler(peerId) + ")";
+        final String peerIdNick = "\"" + peerIdShow + "\"(" + getUserDataStringServiceHandler(peerId) + ")";
         return peerIdNick;
     }
 
-    protected String getPeerIdNickBaseServiceHandler(String peerId, UserInfo userInfo) {
-        return peerId + " (" + getUserDataStringBaseServiceHandler(userInfo) + ")";
+    private String getPeerIdNickServiceHandler(String peerId, UserInfo userInfo) {
+        return peerId + " (" + getUserDataStringServiceHandler(userInfo) + ")";
     }
 
-    protected String getUserDataStringBaseServiceHandler(String peerId) {
+    private String getUserDataStringServiceHandler(String peerId) {
         String userDataString = "";
 
         if (mSkylinkConnection != null) {
@@ -411,7 +477,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return userDataString;
     }
 
-    protected String getUserDataStringBaseServiceHandler(UserInfo userInfo) {
+    private String getUserDataStringServiceHandler(UserInfo userInfo) {
         if (userInfo == null) {
             userInfo = mSkylinkConnection.getUserInfo(null);
         }
@@ -427,7 +493,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return userDataString;
     }
 
-    protected UserInfo getUserInfoBaseServiceHandler(String userId) {
+    private UserInfo getUserInfoServiceHandler(String userId) {
         if (mSkylinkConnection != null) {
             return mSkylinkConnection.getUserInfo(userId);
         }
@@ -445,7 +511,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return totalInRoom - 1;
     }
 
-    public int getTotalInRoomServiceHandler() {
+    private int getTotalInRoomServiceHandler() {
         String[] peerIdList = mSkylinkConnection.getPeerIdList();
 
         if (peerIdList == null) {
@@ -455,44 +521,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return peerIdList.length;
     }
 
-//    public String getRoomNameServiceHandler(){
-//        if (mSkylinkConnection != null) {
-//            return getRoomNameBaseServiceHandler(Config.ROOM_NAME_AUDIO);
-//        }
-//        return null;
-//    }
-
-//    public String getUserNameServiceHandler(String peerId){
-//        if (mSkylinkConnection != null) {
-//            return getUserNameBaseServiceHandler(peerId, Config.USER_NAME_AUDIO);
-//        }
-//        return null;
-//    }
-//
-//    public String getRoomDetailsServiceHandler() {
-//        boolean isConnected = isConnectingOrConnectedServiceHandler();
-//        String roomName = getRoomNameBaseServiceHandler(Config.ROOM_NAME_AUDIO);
-//        String userName = getUserNameBaseServiceHandler(null, Config.USER_NAME_AUDIO);
-//
-//        boolean isPeerJoined = mSkylinkPeer == null ? false : true;
-//
-//        String roomDetails = "You are not connected to any room";
-//
-//        if (isConnected) {
-//            roomDetails = "Now connected to Room named : " + roomName
-//                    + "\n\nYou are signed in as : " + userName + "\n";
-//            if (isPeerJoined) {
-//                roomDetails += "\nPeer(s) are in the room";
-//                roomDetails += "\n" + mSkylinkPeer.getRemotePeerName();
-//            } else {
-//                roomDetails += "\nYou are alone in this room";
-//            }
-//        }
-//
-//        return "roomDetails";
-//    }
-
-    public String getRoomNameBaseServiceHandler(String defaultName) {
+    public String getRoomNameServiceHandler(String defaultName) {
         String roomId = "";
         if (mSkylinkConnection != null) {
             roomId = mSkylinkConnection.getRoomId();
@@ -500,16 +529,15 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return defaultName + " (" + roomId + ")";
     }
 
-    public String getUserNameBaseServiceHandler(String peerId, String defaultName) {
+    public String getUserNameServiceHandler(String peerId, String defaultName) {
         if (mSkylinkConnection == null) {
             return defaultName;
         }
-        return getPeerIdNickBaseServiceHandler(peerId);
+        return getPeerIdNickServiceHandler(peerId);
     }
 
-    public boolean isPeerJoinServiceHandler(){
-        boolean isPeerJoined = mSkylinkPeer == null ? false : true;
-        return isPeerJoined;
+    public boolean isPeerJoinServiceHandler() {
+        return mSkylinkPeer == null ? false : true;
     }
 
     public String getRoomPeerIdNickServiceHandler() {
@@ -521,7 +549,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
 
         String title = "Room: " + getRoomRoomIdServiceHandler(roomName);
         // Add PeerId to title if a Peer occupies clicked location.
-        title += "\r\n" + getPeerIdNickBaseServiceHandler(getPeerIdServiceHandler());
+        title += "\r\n" + getPeerIdNickServiceHandler(getPeerIdServiceHandler());
         return title;
 
     }
@@ -535,8 +563,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return roomName + " (" + roomId + ")";
     }
 
-    public String getPeerIdServiceHandler(){
-        if(mSkylinkConnection != null){
+    public String getPeerIdServiceHandler() {
+        if (mSkylinkConnection != null) {
             return mSkylinkConnection.getPeerId();
         }
 
@@ -549,7 +577,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
      * @param index 0 for self Peer, 1 onwards for remote Peer(s).
      * @return Desired peerId or null if not available.
      */
-    public String getPeerIdServiceHandler(int index){
+    public String getPeerIdServiceHandler(int index) {
 
         if (mSkylinkConnection == null) {
             return null;

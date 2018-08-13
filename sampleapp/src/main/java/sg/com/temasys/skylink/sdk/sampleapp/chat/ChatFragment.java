@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
@@ -149,8 +150,8 @@ public class ChatFragment extends MultiPartyFragment
     }
 
     @Override
-    public void addPeerRadioBtnViewHandler(String remotePeerId, String nick) {
-        addPeerRadioBtn(remotePeerId, nick);
+    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
+        addPeerRadioBtn(skylinkPeer);
     }
 
     @Override

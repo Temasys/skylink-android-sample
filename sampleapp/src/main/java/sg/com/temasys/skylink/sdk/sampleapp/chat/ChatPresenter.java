@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.ChatService;
 
 /**
@@ -98,9 +99,9 @@ public abstract class ChatPresenter implements ChatContract.Presenter {
     }
 
     @Override
-    public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
+    public void onRemotePeerJoinPresenterHandler(SkylinkPeer skylinkPeer) {
 
-        mChatView.addPeerRadioBtnViewHandler(remotePeerId, nick);
+        mChatView.addPeerRadioBtnViewHandler(skylinkPeer);
 
         //Set room status if it's the only peer in the room.
         if (mChatView.getPeerNumViewHandler() == 1) {
@@ -119,7 +120,7 @@ public abstract class ChatPresenter implements ChatContract.Presenter {
         }
     }
 
-    @Override
+//    @Override
     public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
 
     }

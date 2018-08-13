@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -199,8 +200,8 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     }
 
     @Override
-    public void addPeerRadioBtnViewHandler(String remotePeerId, String nick) {
-        addPeerRadioBtn(remotePeerId, nick);
+    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
+        addPeerRadioBtn(skylinkPeer);
     }
 
     @Override

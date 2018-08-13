@@ -1,11 +1,9 @@
-package sg.com.temasys.skylink.sdk.sampleapp.videocall;
+package sg.com.temasys.skylink.sdk.sampleapp.video;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-
-import android.content.DialogInterface;
 
 /**
  * Created by muoi.pham on 20/07/18.

@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.videocall;
+package sg.com.temasys.skylink.sdk.sampleapp.video;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -10,30 +10,25 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,22 +38,16 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     private final String TAG = VideoCallFragment.class.getName();
 
     //this variable need to be static for configuration change
-    private static VideoCallContract.Presenter mPresenter;
-
-    private String strRoomName;
+    private VideoCallContract.Presenter mPresenter;
 
     private Context mContext;
 
-    // UI Controls
     private LinearLayout linearLayout;
-    // Room
     private Button disconnectButton;
     private TextView tvRoomName;
-    // Media
     private Button btnAudioMute;
     private Button btnVideoMute;
     private Button btnCameraToggle;
-    // Media - Resolution
     private TextView tvInput;
     private TextView tvResInput;
     private TextView tvSent;
@@ -101,10 +90,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        String logTag = "[SA][Video][onCreateView] ";
-        String log = logTag;
-
-        strRoomName = Config.ROOM_NAME_VIDEO;
+        Log.d(TAG, "[SA][Video][onCreateView] ");
 
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
 
@@ -116,25 +102,23 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
         requestViewLayout();
 
-        Log.d(TAG, log);
-
         btnAudioMute.setOnClickListener(v -> {
-            mPresenter.processBtnAudioMutePresenterHandler();
+            mPresenter.onProcessBtnAudioMutePresenterHandler();
         });
 
         btnVideoMute.setOnClickListener(v -> {
-            mPresenter.processBtnVideoMutePresenterHandler();
+            mPresenter.onProcessBtnVideoMutePresenterHandler();
         });
 
         btnCameraToggle.setOnClickListener(v -> {
-            mPresenter.processBtnCameraTogglePresenterHandler();
+            mPresenter.onProcessBtnCameraTogglePresenterHandler();
         });
 
         disconnectButton.setOnClickListener(v -> {
-            mPresenter.disconnectFromRoomPresenterHandler();
 
-            String log1 = "Clicked Disconnect!";
-            toastLog(TAG, mContext, log1);
+            mPresenter.onDisconnectFromRoomPresenterHandler();
+
+            toastLog(TAG, mContext, "Clicked Disconnect!");
         });
 
         return rootView;
@@ -161,15 +145,14 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        if(mPresenter != null)
-            mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
+        mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onDetach() {
         super.onDetach();
-        if (!((VideoCallActivity) mContext).isChangingConfigurations() && mPresenter != null) {
+        if (!((VideoCallActivity) mContext).isChangingConfigurations()) {
             mPresenter.onViewExitPresenterHandler();
         }
     }
@@ -194,7 +177,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         tvResRecv = (TextView) rootView.findViewById(R.id.textViewResRecv);
         tvResDim = (TextView) rootView.findViewById(R.id.textViewDim);
         tvResFps = (TextView) rootView.findViewById(R.id.textViewFps);
-
     }
 
     private void setActionBar() {
@@ -215,19 +197,17 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         setAudioBtnLabel(false, false);
         setVideoBtnLabel(false, false);
 
-        tvRoomName.setText(strRoomName);
+        tvRoomName.setText(Config.ROOM_NAME_VIDEO);
         //can not edit room name
         tvRoomName.setEnabled(false);
     }
-
-
 
     @NonNull
     private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerDim() {
         return new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // Set textView to match
+
                 mPresenter.onDimProgressChangedPresenterHandler(progress);
             }
 
@@ -238,8 +218,8 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mPresenter.onDimStopTrackingTouchPresenterHandler(seekBar.getProgress());
 
+                mPresenter.onDimStopTrackingTouchPresenterHandler(seekBar.getProgress());
             }
         };
     }
@@ -249,6 +229,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         return new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
                 mPresenter.onFpsProgressChangedPresenterHandler(progress);
             }
 
@@ -289,6 +270,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         tvResFps.setClickable(true);
         tvResFps.setFocusableInTouchMode(true);
 
+        setUiResTvStats(null, tvResInput);
+        setUiResTvStats(null, tvResSent);
+        setUiResTvStats(null, tvResRecv);
+
         tvInput.setFreezesText(true);
         tvResInput.setFreezesText(true);
         tvSent.setFreezesText(true);
@@ -319,8 +304,8 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * request info to display from presenter
      * try to connect to room if not connected
      */
-    private void requestViewLayout(){
-        if(mPresenter != null){
+    private void requestViewLayout() {
+        if (mPresenter != null) {
             mPresenter.onViewLayoutRequestedPresenterHandler();
         }
     }
@@ -333,12 +318,12 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * @param videoResolution
      */
     private void setUiResTvStats(VideoResolution videoResolution, TextView textView) {
-        if (videoResolution.getWidth() <= 0 || videoResolution.getHeight() <= 0 || videoResolution.getFps() < 0) {
-            textView.setText("Width x Height, fps");
+        if (videoResolution == null || videoResolution.getWidth() <= 0 || videoResolution.getHeight() <= 0 || videoResolution.getFps() < 0) {
+            textView.setText("N/A");
             return;
         }
         // Set textView to match
-        String str = Utils.getResDimStr(videoResolution) + ", " + Utils.getResFpsStr(videoResolution);
+        String str = Utils.getResDimStr(videoResolution) + ",\n" + Utils.getResFpsStr(videoResolution);
         textView.setText(str);
     }
 
@@ -352,7 +337,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      */
     private boolean setUiResTvDim(int width, int height) {
         if (width <= 0 || height <= 0) {
-            tvResDim.setText("Width x Height");
+            tvResDim.setText("N/A");
             return false;
         }
         // Set textView to match
@@ -368,7 +353,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      */
     private void setUiResTvFps(int fps) {
         if (fps < 0) {
-            tvResFps.setText("Framerate (fps)");
+            tvResFps.setText("N/A");
             return;
         }
         // Set textView to match
@@ -425,47 +410,12 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Change certain UI elements when trying to connect to room, but not connected
      */
     @Override
-    public void onConnectingUIChangeViewHandler(){
+    public void onConnectingUIChangeViewHandler() {
         btnAudioMute.setVisibility(GONE);
         btnVideoMute.setVisibility(GONE);
         btnCameraToggle.setVisibility(GONE);
         disconnectButton.setVisibility(VISIBLE);
         setUiResControlsVisibility(VISIBLE);
-    }
-
-    @Override
-    public void onSetAudioBtnLabelViewHandler(boolean isAudioMuted, boolean isToast){
-        if (isAudioMuted) {
-            btnAudioMute.setText(getString(R.string.enable_audio));
-            if (isToast) {
-                String log = getString(R.string.muted_audio);
-                toastLog(TAG, mContext, log);
-            }
-        } else {
-            btnAudioMute.setText(getString(R.string.mute_audio));
-            if (isToast) {
-                String log = getString(R.string.enabled_audio);
-                toastLog(TAG, mContext, log);
-            }
-        }
-    }
-
-
-    @Override
-    public void onSetVideoBtnLabelViewHandler(boolean isVideoMuted, boolean isToast){
-        if (isVideoMuted) {
-            btnVideoMute.setText(getString(R.string.enable_video));
-            if (isToast) {
-                String log = getString(R.string.muted_video);
-                toastLog(TAG, mContext, log);
-            }
-        } else {
-            btnVideoMute.setText(getString(R.string.mute_video));
-            if (isToast) {
-                String log = getString(R.string.enabled_video);
-                toastLog(TAG, mContext, log);
-            }
-        }
     }
 
     /**
@@ -502,13 +452,33 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
         setUiResControlsVisibility(GONE);
 
-        if(getActivity()!= null){
+        if (getActivity() != null) {
             getActivity().finish();
         }
     }
 
     @Override
-    public void onSetUiResTvFpsViewHandler(int fps){
+    public void onSetUiResTvStatsInputViewHandler(VideoResolution videoInput) {
+        setUiResTvStats(videoInput, tvResInput);
+    }
+
+    @Override
+    public void onSetUiResTvStatsSentViewHandler(VideoResolution videoSent) {
+        setUiResTvStats(videoSent, tvResSent);
+    }
+
+    @Override
+    public void onSetUiResTvStatsReceiveViewHandler(VideoResolution videoReceive) {
+        setUiResTvStats(videoReceive, tvResRecv);
+    }
+
+    @Override
+    public boolean onSetUiResTvDimViewHandler(int width, int height) {
+        return setUiResTvDim(width, height);
+    }
+
+    @Override
+    public void onSetUiResTvFpsViewHandler(int fps) {
         setUiResTvFps(fps);
     }
 
@@ -534,7 +504,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             // Show room and self info, plus give option to
             // switch self view between different cameras (if any).
             videoView.setOnClickListener(v -> {
-                String name = mPresenter.getRoomPeerIdNickPresenterHandler();
+                String name = mPresenter.onGetRoomPeerIdNickPresenterHandler();
 
                 name += "\r\nClick outside dialog to return.";
                 TextView selfTV = new TextView(mContext);
@@ -547,11 +517,11 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
                 selfDialogBuilder.setView(selfTV);
                 // Get the available video resolutions.
                 selfDialogBuilder.setPositiveButton("Video resolutions",
-                        (dialog, which) -> mPresenter.getVideoResolutionsPresenterHandler(mPresenter.getPeerIdPresenterHandler(1)));
+                        (dialog, which) -> mPresenter.onGetVideoResolutionsPresenterHandler());
                 // Switch camera if possible.
                 selfDialogBuilder.setNegativeButton("Switch Camera",
                         (dialog, which) -> {
-                            mPresenter.switchCameraPresenterHandler();
+                            mPresenter.onSwitchCameraPresenterHandler();
                         });
                 selfDialogBuilder.show();
             });
@@ -570,6 +540,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+            params.gravity = Gravity.CENTER_HORIZONTAL;
             videoView.setLayoutParams(params);
             linearLayout.addView(videoView);
 
@@ -602,13 +573,13 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+        params.gravity = Gravity.CENTER_HORIZONTAL;
         remoteVideoView.setLayoutParams(params);
         linearLayout.addView(remoteVideoView);
     }
 
-
     @Override
-    public void onRemotePeerLeaveUIChangeViewHandler() {
+    public void onRemoveRemotePeerViewHandler() {
         View peerView = linearLayout.findViewWithTag("peer");
         linearLayout.removeView(peerView);
     }
@@ -618,30 +589,52 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         return this;
     }
 
-
-
     @Override
-    public void onSetTvResInputStatsViewHandler(VideoResolution videoInput) {
-        setUiResTvStats(videoInput, tvResInput);
+    public void onSetAudioBtnLabelViewHandler(boolean isAudioMuted, boolean isToast) {
+        if (isAudioMuted) {
+            btnAudioMute.setText(getString(R.string.enable_audio));
+            if (isToast) {
+                String log = getString(R.string.muted_audio);
+                toastLog(TAG, mContext, log);
+            }
+        } else {
+            btnAudioMute.setText(getString(R.string.mute_audio));
+            if (isToast) {
+                String log = getString(R.string.enabled_audio);
+                toastLog(TAG, mContext, log);
+            }
+        }
     }
 
     @Override
-    public void onSetUiResTvStatsReceiveViewHandler(VideoResolution videoReceive){
-        setUiResTvStats(videoReceive, tvResRecv);
+    public void onSetVideoBtnLabelViewHandler(boolean isVideoMuted, boolean isToast) {
+        if (isVideoMuted) {
+            btnVideoMute.setText(getString(R.string.enable_video));
+            if (isToast) {
+                String log = getString(R.string.muted_video);
+                toastLog(TAG, mContext, log);
+            }
+        } else {
+            btnVideoMute.setText(getString(R.string.mute_video));
+            if (isToast) {
+                String log = getString(R.string.enabled_video);
+                toastLog(TAG, mContext, log);
+            }
+        }
     }
 
     @Override
-    public void onSetUiResTvStatsSentViewHandler(VideoResolution videoSent) {
-        setUiResTvStats(videoSent, tvResSent);
+    public void onSetUiResSeekBarRangeDimViewHandler(int maxSeekBarDimRange) {
+        seekBarResDim.setMax(maxSeekBarDimRange);
     }
 
     @Override
-    public boolean onSetUiResTvDimViewHandler(int width, int height){
-        return setUiResTvDim(width, height);
+    public void onSetUiResSeekBarRangeFpsViewHandler(int maxSeekBarFpsRange) {
+        seekBarResFps.setMax(maxSeekBarFpsRange);
     }
 
     @Override
-    public void onSetSeekBarResDimViewHandler(int index, int width, int height){
+    public void onSetSeekBarResDimViewHandler(int index, int width, int height) {
         // Set the SeekBar
         seekBarResDim.setProgress(index);
         // Set TextView
@@ -649,28 +642,11 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onSetUiResSeekBarRangeFpsViewHandler(int seekBarResFpsMax){
-        seekBarResFps.setMax(seekBarResFpsMax);
-    }
-
-    @Override
-    public void onSetSeekBarResFpsViewHandler(int index, int fps){
+    public void onSetSeekBarResFpsViewHandler(int index, int fps) {
         // Set the SeekBar
         seekBarResFps.setProgress(index);
         // Set TextView
         setUiResTvFps(fps);
-    }
-
-    /**
-     * Set the ranges of values for seekBarResDim.
-     * Set to zero if range of values invalid.
-     *
-     * @return True if captureFormats was valid and false otherwise.
-     */
-
-    @Override
-    public void onSetUiResSeekBarRangeDimViewHandler(int maxSeekBarDimRange){
-        seekBarResDim.setMax(maxSeekBarDimRange);
     }
 
 }

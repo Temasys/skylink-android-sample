@@ -42,10 +42,10 @@
             android:name=".datatransfer.DataTransferActivity"
             android:label="@string/title_section5" />
         <activity
-            android:name=".videocall.VideoCallActivity"
+            android:name=".video.VideoCallActivity"
             android:label="@string/title_section2" />
         <activity
-            android:name=".multipartyvideocall.MultiPartyVideoCallActivity"
+            android:name=".multipartyvideo.MultiPartyVideoCallActivity"
             android:label="@string/title_section6" />
         <activity android:name=".ConfigFragment.ConfigActivity"
             android:label="@string/settings" ></activity>

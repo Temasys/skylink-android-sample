@@ -8,8 +8,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-
 /**
  * Created by muoi.pham on 20/07/18.
  */
@@ -18,8 +16,7 @@ public class SdkConnectionManager {
 
     private Context mContext;
 
-    //this variable need to be static for configuration change
-    public static SkylinkConnection currentSkylinkConnection = null;
+    private SkylinkConnection mSkylinkConnection = null;
 
     public SdkConnectionManager(Context context){
         this.mContext = context;
@@ -51,12 +48,12 @@ public class SdkConnectionManager {
         }
 
         if(skylinkConfig != null) {
-            currentSkylinkConnection = SkylinkConnection.getInstance();
-            currentSkylinkConnection.init(Config.getAppKey(), skylinkConfig,
+            mSkylinkConnection = SkylinkConnection.getInstance();
+            mSkylinkConnection.init(Config.getAppKey(), skylinkConfig,
                     mContext.getApplicationContext());
         }
 
-        return currentSkylinkConnection;
+        return mSkylinkConnection;
 
     }
 
@@ -153,8 +150,4 @@ public class SdkConnectionManager {
         return skylinkConfig;
     }
 
-    //static method for the other to access currentSkylinkConnection
-    public static SkylinkConnection getCurrentSkylinkConnection() {
-        return currentSkylinkConnection;
-    }
 }

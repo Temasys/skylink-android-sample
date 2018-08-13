@@ -1,12 +1,9 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import android.graphics.Point;
-
-import org.webrtc.SurfaceViewRenderer;
-
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo; /**
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+
+/**
  * Created by muoi.pham on 20/07/18.
  */
 
@@ -16,11 +13,6 @@ public interface BasePresenter {
      * process data to display on View
      */
     void onViewLayoutRequestedPresenterHandler();
-
-    /**
-     * process disconnect from room when view exit
-     */
-    void onViewExitPresenterHandler();
 
     /**
      * process update view when connected to Skylink SDK
@@ -33,11 +25,15 @@ public interface BasePresenter {
     void onDisconnectPresenterHandler();
 
     /**
-     * process update view when remote peer joined the room
-     * @param remotePeerId
-     * @param nick
+     * process disconnect from room when view exit
      */
-    void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick);
+    void onViewExitPresenterHandler();
+
+    /**
+     * process update view when remote peer joined the room
+     * @param remotePeer
+     */
+    void onRemotePeerJoinPresenterHandler(SkylinkPeer remotePeer);
 
     /**
      * process update view when remote peer left the room
@@ -45,23 +41,18 @@ public interface BasePresenter {
      */
     void onRemotePeerLeavePresenterHandler(String remotePeerId);
 
+    /**
+     * process update view when remote peer refresh the connection
+     * @param log info to display
+     * @param remotePeerUserInfo
+     */
     void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo);
 
-    void onLocalMediaCapturePresenterHandler(SurfaceViewRenderer videoView);
-
-    void onInputVideoResolutionObtainedPresenterHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
-
-    void onReceivedVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps);
-
-    void onSentVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps);
-
-    void onVideoSizeChangePresenterHandler(String peerId, Point size);
-
+    /**
+     * process update view when remote peer has receive media info
+     * @param log info to display
+     * @param remotePeerUserInfo
+     */
     void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo);
 
-    void onPermissionRequiredPresenterHandler(PermRequesterInfo info);
-
-    void onPermissionGrantedPresenterHandler(String[] permissions, int infoCode);
-
-    void onPermissionDeniedPresenterHandler(int infoCode);
 }

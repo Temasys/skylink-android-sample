@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -22,7 +23,7 @@ public interface FileTransferContract {
 
         void onFileReceiveCompleteViewHandler(String msg);
 
-        void addPeerRadioBtnViewHandler(String remotePeerId, String nick);
+        void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer);
 
         int getPeerNumViewHandler();
 
@@ -50,7 +51,7 @@ public interface FileTransferContract {
         
         void onFileReceiveCompletePresenterHandler(String msg);
         
-        void addPeerRadioBtnPresenterHandler(String remotePeerId, String nick);
+        void addPeerRadioBtnPresenterHandler(SkylinkPeer skylinkPeer);
         
         int getPeerNumPresenterHandler();
 

@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall;
+package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -190,7 +190,7 @@ public abstract class MultiPartyVideoCallPresenter implements MultiPartyVideoCal
 
     }
 
-    @Override
+//    @Override
     public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
 
     }
@@ -200,7 +200,7 @@ public abstract class MultiPartyVideoCallPresenter implements MultiPartyVideoCal
 
     }
 
-    @Override
+//    @Override
     public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
 
     }

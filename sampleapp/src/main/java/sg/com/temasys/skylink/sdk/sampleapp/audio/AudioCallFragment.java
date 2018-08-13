@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +25,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private TextView tvRoomDetails;
 
-    //this variable need to be static for configuration change
-    private static AudioCallContract.Presenter mPresenter;
+    private AudioCallContract.Presenter mPresenter;
 
     public static AudioCallFragment newInstance() {
         return new AudioCallFragment();
@@ -37,8 +37,22 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.mContext = context;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Allow volume to be controlled using volume keys
+        ((AudioCallActivity) mContext).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "[SA][Audio][onCreateView] ");
 
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
 
@@ -52,16 +66,9 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // Allow volume to be controlled using volume keys
-        ((AudioCallActivity) mContext).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.mContext = context;
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
@@ -71,16 +78,9 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
-        if (!((AudioCallActivity) mContext).isChangingConfigurations() && mPresenter != null) {
+        if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
             mPresenter.onViewExitPresenterHandler();
         }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        if(mPresenter != null)
-            mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override

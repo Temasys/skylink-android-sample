@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall;
+package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
 import android.support.v7.app.ActionBar;
 import android.app.AlertDialog;
@@ -240,7 +240,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     }
 
     private void initComponents(){
-        permissionUtils = new PermissionUtils(mContext);
+        permissionUtils = new PermissionUtils();
     }
 
     private void connectToRoom() {

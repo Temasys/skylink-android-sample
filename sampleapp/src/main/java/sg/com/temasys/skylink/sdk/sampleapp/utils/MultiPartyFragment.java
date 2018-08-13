@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.SdkConnectionManager;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.data.service.SDKService;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
@@ -46,16 +47,15 @@ public class MultiPartyFragment extends Fragment {
     /**
      * Add Peer name to next available Radio button.
      *
-     * @param peerId PeerId of the Peer to add.
-     * @param nick   Nickname of the Peer to add. Empty string if not available.
+     * @param skylinkPeer the Peer to add.
      */
-    public void addPeerRadioBtn(String peerId, String nick) {
+    public void addPeerRadioBtn(SkylinkPeer skylinkPeer) {
         String logTag = "[SA][addPeerRadioBtn] ";
-        String log = logTag + "Adding Peer \"" + peerId + "\"(" + nick + ") to peerList...";
+        String log = logTag + "Adding Peer \"" + skylinkPeer.getPeerId() + "\"(" + skylinkPeer.getPeerName() + ") to peerList...";
         Log.d(TAG, log);
 
         // Add Peer to peerList
-        Pair<String, String> peer = new Pair<>(peerId, nick);
+        Pair<String, String> peer = new Pair<>(skylinkPeer.getPeerId(), skylinkPeer.getPeerName());
         peerList.add(peer);
 
         // Add Peer to radio buttons.
@@ -123,13 +123,13 @@ public class MultiPartyFragment extends Fragment {
      *
      * @return String array of PeerIds.
      */
-    public List<String> getPeerIdList() {
+    public List<SkylinkPeer> getPeerIdList() {
 
         int peerNum = getPeerNum();
-        List<String> peerIdList = new ArrayList<String>();
+        List<SkylinkPeer> peerIdList = new ArrayList<SkylinkPeer>();
         // Populate peeIdList with PeerIds.
         for (int i = 0; i < peerNum; ++i) {
-            peerIdList.set(i, peerList.get(i).first);
+            peerIdList.set(i, new SkylinkPeer(peerList.get(i).first));
         }
         return peerIdList;
     }
@@ -207,13 +207,13 @@ public class MultiPartyFragment extends Fragment {
      *
      * @param peerIdList String Array of PeerIds of remote Peer(s) in the room.
      */
-    public void popPeerList(List<String> peerIdList) {
+    public void popPeerList(List<SkylinkPeer> peerIdList) {
         // Clear peerList
         peerList.clear();
         // Populate peerList
         for (int i = 0; i < peerIdList.size(); ++i) {
-            String peerId = peerIdList.get(i);
-            String nick = Utils.getNick(SdkConnectionManager.getCurrentSkylinkConnection(), peerId);
+            String peerId = peerIdList.get(i).getPeerId();
+            String nick = Utils.getNick(SDKService.getCurrentSkylinkConnection(), peerId);
             Pair<String, String> peer = new Pair<>(peerId, nick);
             peerList.add(peer);
         }

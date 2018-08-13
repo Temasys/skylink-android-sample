@@ -1,31 +1,37 @@
 package sg.com.temasys.skylink.sdk.sampleapp.data.model;
 
-public class SkylinkPeer {
+import java.io.Serializable;
 
-    private String remotePeerId;
-    private String remotePeerName;
+public class SkylinkPeer implements Serializable{
+
+    private String peerId;
+    private String peerName;
 
     public SkylinkPeer() {
     }
 
-    public SkylinkPeer(String remotePeerId, String remotePeerName) {
-        this.remotePeerId = remotePeerId;
-        this.remotePeerName = remotePeerName;
+    public SkylinkPeer(String peerId) {
+        this.peerId = peerId;
     }
 
-    public String getRemotePeerId() {
-        return remotePeerId;
+    public SkylinkPeer(String peerId, String peerName) {
+        this.peerId = peerId;
+        this.peerName = peerName;
     }
 
-    public void setRemotePeerId(String remotePeerId) {
-        this.remotePeerId = remotePeerId;
+    public String getPeerId() {
+        return peerId;
     }
 
-    public String getRemotePeerName() {
-        return remotePeerName;
+    public void setPeerId(String peerId) {
+        this.peerId = peerId;
     }
 
-    public void setRemotePeerName(String remotePeerName) {
-        this.remotePeerName = remotePeerName;
+    public String getPeerName() {
+        return peerName;
+    }
+
+    public void setPeerName(String peerName) {
+        this.peerName = peerName;
     }
 }

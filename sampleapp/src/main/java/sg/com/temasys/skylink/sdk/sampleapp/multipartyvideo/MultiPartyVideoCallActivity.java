@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall;
+package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

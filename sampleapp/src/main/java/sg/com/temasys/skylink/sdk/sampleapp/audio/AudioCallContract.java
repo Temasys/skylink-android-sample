@@ -26,9 +26,14 @@ public interface AudioCallContract {
 
     interface Presenter extends BasePresenter {
 
+        void onPermissionRequiredPresenterHandler(PermRequesterInfo info);
+
+        void onPermissionGrantedPresenterHandler(PermRequesterInfo info);
+
+        void onPermissionDeniedPresenterHandler(PermRequesterInfo info);
+
         void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        void onPermissionRequiredPresenterHandler(PermRequesterInfo infor);
     }
 
     interface Service extends BaseService<Presenter> {

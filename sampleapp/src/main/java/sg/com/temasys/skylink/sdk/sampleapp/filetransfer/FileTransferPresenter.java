@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.FileTransferService;
 
 /**
@@ -48,8 +49,8 @@ public abstract class FileTransferPresenter implements FileTransferContract.Pres
     }
 
     @Override
-    public void addPeerRadioBtnPresenterHandler(String remotePeerId, String nick) {
-        mFileTransferView.addPeerRadioBtnViewHandler(remotePeerId, nick);
+    public void addPeerRadioBtnPresenterHandler(SkylinkPeer skylinkPeer) {
+        mFileTransferView.addPeerRadioBtnViewHandler(skylinkPeer);
     }
 
     @Override
@@ -126,7 +127,7 @@ public abstract class FileTransferPresenter implements FileTransferContract.Pres
     }
 
     @Override
-    public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
+    public void onRemotePeerJoinPresenterHandler(SkylinkPeer skylinkPeer) {
 
     }
 
@@ -135,7 +136,7 @@ public abstract class FileTransferPresenter implements FileTransferContract.Pres
 
     }
 
-    @Override
+//    @Override
     public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
 
     }

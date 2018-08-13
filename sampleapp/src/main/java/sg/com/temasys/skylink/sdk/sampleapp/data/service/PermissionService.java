@@ -10,17 +10,9 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 public class PermissionService {
 
-    private Context mContext;
-    private SkylinkConnection skylinkConnection;
-    private SdkConnectionManager sdkConnectionManager;
-
-    public PermissionService(Context context){
-        this.mContext = context;
-        sdkConnectionManager = new SdkConnectionManager(mContext);
-    }
-
-    public boolean processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        skylinkConnection = sdkConnectionManager.getCurrentSkylinkConnection();
+    public static boolean processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        //
+        SkylinkConnection skylinkConnection = SDKService.getCurrentSkylinkConnection();
 
         if(skylinkConnection != null){
             return skylinkConnection.processPermissionsResult(requestCode, permissions, grantResults);

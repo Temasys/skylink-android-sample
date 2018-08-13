@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -15,7 +16,7 @@ public interface DataTransferContract {
 
         void clearPeerListViewHandler();
 
-        void addPeerRadioBtnViewHandler(String remotePeerId, String nick);
+        void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer);
 
         void removePeerRadioBtnViewHandler(String remotePeerId);
 

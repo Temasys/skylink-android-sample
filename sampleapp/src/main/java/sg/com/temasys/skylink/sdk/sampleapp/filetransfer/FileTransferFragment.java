@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
@@ -150,7 +151,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
             permissionUtils.permQReset();
 
             // Just set room details
-            boolean isPeerJoined = multiFileTransferPeersInfo == null ? false : multiFileTransferPeersInfo.isPeerJoined();
+            boolean isPeerJoined = multiFileTransferPeersInfo == null ? false : true;
             mPresenter.setRoomDetailsPresenterHandler(isPeerJoined);
         }
 
@@ -268,8 +269,8 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     @Override
-    public void addPeerRadioBtnViewHandler(String remotePeerId, String nick) {
-        addPeerRadioBtn(remotePeerId, nick);
+    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
+        addPeerRadioBtn(skylinkPeer);
     }
 
     @Override
@@ -297,8 +298,6 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         if(multiFileTransferPeersInfo == null){
             multiFileTransferPeersInfo = new MultiPeersInfo();
         }
-
-        multiFileTransferPeersInfo.setPeerJoined(isPeerJoined);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -332,7 +331,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     private void initComponents(){
-        permissionUtils = new PermissionUtils(getContext());
+        permissionUtils = new PermissionUtils();
 
         // Prepare default file for transfer and set UI.
         prepFile(Utils.getFileToTransfer(FILENAME_PRIVATE).getAbsolutePath());
@@ -388,7 +387,8 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
      */
     private void onConnectUIChange() {
         // [MultiParty]
-        mPresenter.setRoomDetailsPresenterHandler(multiFileTransferPeersInfo.isPeerJoined());
+        boolean isPeerJoined = multiFileTransferPeersInfo == null ? false : true;
+        mPresenter.setRoomDetailsPresenterHandler(isPeerJoined);
         fillPeerRadioBtn();
     }
 

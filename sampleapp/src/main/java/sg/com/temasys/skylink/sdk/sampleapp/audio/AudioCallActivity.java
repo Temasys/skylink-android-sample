@@ -33,6 +33,7 @@ public class AudioCallActivity extends AppCompatActivity {
                     .findFragmentByTag(AUDIO_CALL_FRAGMENT_TAG);
         }
 
+
         //link between view and presenter
         mAudioCallPresenter = new AudioCallPresenter(mAudioCallFragment, this);
     }
@@ -50,4 +51,6 @@ public class AudioCallActivity extends AppCompatActivity {
         //Save the fragment's instance
         getSupportFragmentManager().putFragment(outState, AUDIO_CALL_FRAGMENT_TAG, mAudioCallFragment);
     }
+
+
 }

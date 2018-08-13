@@ -38,7 +38,7 @@
 
             <LinearLayout
                 android:id="@+id/audioContainerBig"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 android:layout_margin="@dimen/dp_10dp"
                 style="@style/CustonmButton">
@@ -70,7 +70,7 @@
             <LinearLayout
                 android:id="@+id/videoContainerBig"
                 style="@style/CustonmButton"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 android:layout_margin="@dimen/dp_10dp">
 
@@ -101,7 +101,7 @@
             <LinearLayout
                 android:id="@+id/chatContainerBig"
                 style="@style/CustonmButton"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 android:layout_margin="@dimen/dp_10dp">
 
@@ -132,7 +132,7 @@
             <LinearLayout
                 android:id="@+id/fileContainerBig"
                 style="@style/CustonmButton"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 android:layout_margin="@dimen/dp_10dp">
 
@@ -163,7 +163,7 @@
             <LinearLayout
                 android:id="@+id/dataContainerBig"
                 style="@style/CustonmButton"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 android:layout_margin="@dimen/dp_10dp">
 
@@ -194,7 +194,7 @@
             <LinearLayout
                 android:id="@+id/multiVideoContainerBig"
                 style="@style/CustonmButton"
-                android:layout_width="@dimen/dp_160dp"
+                android:layout_width="@dimen/dp_150dp"
                 android:layout_height="@dimen/dp_80dp"
                 android:layout_margin="@dimen/dp_10dp">
 

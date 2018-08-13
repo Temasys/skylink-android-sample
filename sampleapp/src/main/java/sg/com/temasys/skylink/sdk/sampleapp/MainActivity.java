@@ -19,9 +19,9 @@ import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall.MultiPartyVideoCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.videocall.VideoCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
 public class MainActivity extends ActionBarActivity
         implements View.OnClickListener {

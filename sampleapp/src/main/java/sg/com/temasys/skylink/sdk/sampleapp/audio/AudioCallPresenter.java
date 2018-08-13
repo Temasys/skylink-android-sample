@@ -1,17 +1,13 @@
 package sg.com.temasys.skylink.sdk.sampleapp.audio;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.util.Log;
 
-import org.webrtc.SurfaceViewRenderer;
-
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.AudioService;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -49,44 +45,9 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         //link between service and presenter
         this.mAudioCallService.setPresenter(this);
 
-        mPermissionUtils = new PermissionUtils(context);
+        mPermissionUtils = new PermissionUtils();
 
         this.mAudioCallService.setTypeCall();
-    }
-
-    @Override
-    public void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag) {
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
-    }
-
-    @Override
-    public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onGetFragmentViewHandler());
-    }
-
-    @Override
-    public void onPermissionGrantedPresenterHandler(String[] permissions, int infoCode){
-        mPermissionUtils.onPermissionGrantedHandler(permissions, infoCode, TAG);
-    }
-
-    @Override
-    public void onPermissionDeniedPresenterHandler(int infoCode){
-        mPermissionUtils.onPermissionDeniedHandler(infoCode, mContext, TAG);
-    }
-
-    @Override
-    public void onDisconnectPresenterHandler() {
-        updateUIPresenterHandler();
-    }
-
-    @Override
-    public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
-        updateUIPresenterHandler();
-    }
-
-    @Override
-    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
-        updateUIPresenterHandler();
     }
 
     /**
@@ -110,7 +71,7 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             //connect to room on Skylink connection
             mAudioCallService.connectToRoomServiceHandler();
 
-            //after connected to skylink SDK, UI will be updated latter on AudioService.onConnect
+            //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -119,11 +80,21 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             //if it already connected to room, then resume permission
             mPermissionUtils.permQResume(mContext, mAudioCallView.onGetFragmentViewHandler());
 
-            //update UI into connected
+            //update UI into connected state
             updateUIPresenterHandler();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
+    }
+
+    @Override
+    public void onConnectPresenterHandler(boolean isSuccessful) {
+        updateUIPresenterHandler();
+    }
+
+    @Override
+    public void onDisconnectPresenterHandler() {
+        updateUIPresenterHandler();
     }
 
     @Override
@@ -132,12 +103,49 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         //process disconnect from room
         mAudioCallService.disconnectFromRoomServiceHandler();
 
-        //after disconnected from skylink SDK, UI will be updated latter on AudioService.onDisconnect
+        //after disconnected from skylink SDK, UI will be updated later on AudioService.onDisconnect
     }
 
     @Override
-    public void onConnectPresenterHandler(boolean isSuccessful) {
-            updateUIPresenterHandler();
+    public void onRemotePeerJoinPresenterHandler(SkylinkPeer remotePeer) {
+        updateUIPresenterHandler();
+    }
+
+    @Override
+    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
+        updateUIPresenterHandler();
+    }
+
+    @Override
+    public void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo) {
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo) {
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onGetFragmentViewHandler());
+    }
+
+    @Override
+    public void onPermissionGrantedPresenterHandler(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionGrantedHandler(info, TAG);
+    }
+
+    @Override
+    public void onPermissionDeniedPresenterHandler(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionDeniedHandler(info, mContext, TAG);
+    }
+
+    @Override
+    public void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag) {
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
     private void updateUIPresenterHandler() {
@@ -145,10 +153,10 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         mAudioCallView.onUpdateUIViewHandler(strRoomDetails);
     }
 
-    public String getRoomDetailsPresenterHandler() {
+    private String getRoomDetailsPresenterHandler() {
         boolean isConnected = mAudioCallService.isConnectingOrConnectedServiceHandler();
-        String roomName = mAudioCallService.getRoomNameBaseServiceHandler(Config.ROOM_NAME_AUDIO);
-        String userName = mAudioCallService.getUserNameBaseServiceHandler(null, Config.USER_NAME_AUDIO);
+        String roomName = mAudioCallService.getRoomNameServiceHandler(Config.ROOM_NAME_AUDIO);
+        String userName = mAudioCallService.getUserNameServiceHandler(null, Config.USER_NAME_AUDIO);
 
         boolean isPeerJoined = mAudioCallService.isPeerJoinServiceHandler();
 
@@ -159,7 +167,6 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
                     + "\n\nYou are signed in as : " + userName + "\n";
             if (isPeerJoined) {
                 roomDetails += "\nPeer(s) are in the room";
-//                roomDetails += "\n" + mAudioCallService..getRemotePeerName();
             } else {
                 roomDetails += "\nYou are alone in this room";
             }
@@ -167,45 +174,4 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
 
         return roomDetails;
     }
-
-    @Override
-    public void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo){
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, mContext, log);
-    }
-
-    @Override
-    public void onLocalMediaCapturePresenterHandler(SurfaceViewRenderer videoView){
-        //do nothing
-    }
-
-    @Override
-    public void onInputVideoResolutionObtainedPresenterHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat){
-        // Will not be implemented in Audio only client.
-    }
-
-    @Override
-    public void onReceivedVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps){
-        // Will not be implemented in Audio only client.
-    }
-
-    @Override
-    public void onSentVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps){
-        // Will not be implemented in Audio only client.
-    }
-
-    @Override
-    public void onVideoSizeChangePresenterHandler(String peerId, Point size){
-        // Will not be implemented in Audio only client.
-    }
-
-    @Override
-    public void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo){
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, mContext, log);
-    }
-
-
-
-
 }

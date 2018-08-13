@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.data.service.DataTransferService;
 
 /**
@@ -114,9 +115,9 @@ public abstract class DataTransferPresenter implements DataTransferContract.Pres
     }
 
     @Override
-    public void onRemotePeerJoinPresenterHandler(String remotePeerId, String nick) {
+    public void onRemotePeerJoinPresenterHandler(SkylinkPeer skylinkPeer) {
 
-        mDataTransferView.addPeerRadioBtnViewHandler(remotePeerId, nick);
+        mDataTransferView.addPeerRadioBtnViewHandler(skylinkPeer);
 
         //Set room status if it's the only peer in the room.
         if (mDataTransferView.getPeerNumViewHandler() == 1) {
@@ -134,7 +135,7 @@ public abstract class DataTransferPresenter implements DataTransferContract.Pres
         }
     }
 
-    @Override
+//    @Override
     public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
 
     }

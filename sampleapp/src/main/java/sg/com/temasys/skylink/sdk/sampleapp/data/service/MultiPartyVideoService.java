@@ -1,43 +1,12 @@
 package sg.com.temasys.skylink.sdk.sampleapp.data.service;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Point;
-import android.support.annotation.NonNull;
-import android.text.SpannableString;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
-import android.util.Log;
-import android.widget.TextView;
 
-import org.webrtc.SurfaceViewRenderer;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
-import sg.com.temasys.skylink.sdk.listener.MediaListener;
-import sg.com.temasys.skylink.sdk.listener.OsListener;
-import sg.com.temasys.skylink.sdk.listener.RecordingListener;
-import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
-import sg.com.temasys.skylink.sdk.listener.StatsListener;
-import sg.com.temasys.skylink.sdk.rtc.Errors;
-import sg.com.temasys.skylink.sdk.rtc.Info;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideocall.MultiPartyVideoCallContract;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
+import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.

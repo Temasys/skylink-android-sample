@@ -30,6 +30,7 @@ public class PermissionUtils {
     private static final String TAG = PermissionUtils.class.getName();
 
     // Queue of Permission requesting objects.
+    //these variables need to be static for all type call and configuration change
     private static Deque<PermRequester> permQ = new ArrayDeque<>();
 
     /**
@@ -43,13 +44,7 @@ public class PermissionUtils {
      */
     private static PermRequester permRequester = null;
 
-    private static PermissionService service;
-
-    private Context mContext;
-
-    public PermissionUtils(Context context) {
-        this.mContext = context;
-        this.service = new PermissionService(mContext);
+    public PermissionUtils() {
     }
 
     /**
@@ -62,7 +57,7 @@ public class PermissionUtils {
      * @param grantResults As given in Android method.
      * @param tag          Tag string for logging.
      */
-    public static void onRequestPermissionsResultHandler(
+    public void onRequestPermissionsResultHandler(
             int requestCode, String[] permissions, int[] grantResults,
             String tag) {
 
@@ -87,8 +82,7 @@ public class PermissionUtils {
         String log = "[SA][onPermRes] Received results for requestCode:" + requestCode +
                 ", Permissions:" + permission + ", with results:" + grantResult + ", that ";
         // Call SDK processPermissionsResult with the given parameters.
-        boolean wasSkylinkRequest = service
-                .processPermissionsResult(requestCode, permissions, grantResults);
+        boolean wasSkylinkRequest = PermissionService.processPermissionsResult(requestCode, permissions, grantResults);
 
         if (wasSkylinkRequest) {
             log += "originates ";
@@ -115,7 +109,7 @@ public class PermissionUtils {
      * @param context            Current context.
      * @param fragment           Current fragment.
      */
-    public static void onPermissionRequiredHandler(PermRequesterInfo permRequesterInfo,
+    public void onPermissionRequiredHandler(PermRequesterInfo permRequesterInfo,
                                                    final String tag, final Context context, final Fragment fragment) {
 
         // Create a new PermRequesterInfo to represent this request.
@@ -130,28 +124,27 @@ public class PermissionUtils {
      * Handles Skylink SDK OsListener callback onPermissionGranted.
      * Log the permission that had been granted.
      *
-     * @param permissions As given in OsListener method.
-     * @param infoCode    As given in OsListener method.
+     * @param info As given in OsListener method.
      * @param tag         Tag string for logging.
      */
-    public static void onPermissionGrantedHandler(String[] permissions, int infoCode, String tag) {
-        String log = "[SA][onPermGrant] Permission has been GRANTED for " + permissions[0] +
-                ", infoCode:" + infoCode + " (" + getInfoString(infoCode) + ").";
+    public void onPermissionGrantedHandler(PermRequesterInfo info, String tag) {
+        String log = "[SA][onPermGrant] Permission has been GRANTED for " + info.getPermissions()[0] +
+                ", infoCode:" + info.getInfoCode() + " (" + getInfoString(info.getInfoCode()) + ").";
         Log.d(tag, log);
     }
 
     /**
-     * @param infoCode As given in OsListener method.
+     * @param info As given in OsListener method.
      * @param context  Current context to show AlertDialog.
      * @param tag      Tag string for logging.
      */
-    public static void onPermissionDeniedHandler(int infoCode, Context context, String tag) {
+    public void onPermissionDeniedHandler(PermRequesterInfo info, Context context, String tag) {
         // Create alert to inform user about the permission denied and resultant feature disabled.
         // Log the same.
         // Check if should explain reason for requesting permission, which happens if the user
         // has denied this Permission before, but did not indicate to never ask again.
         String alertText = "";
-        switch (infoCode) {
+        switch (info.getInfoCode()) {
             case PERM_AUDIO_MIC:
                 alertText += "Android permission to use the Microphone was denied. " +
                         "We are now NOT able to send our audio to a remote Peer!";
@@ -198,7 +191,7 @@ public class PermissionUtils {
      *
      * @param permRequester
      */
-    public static void permQOfferFirst(PermRequester permRequester) {
+    public void permQOfferFirst(PermRequester permRequester) {
         synchronized (permProcessing) {
             permQ.offerFirst(permRequester);
 
@@ -220,7 +213,7 @@ public class PermissionUtils {
      *
      * @param permRequester
      */
-    public static void permQOfferLast(PermRequester permRequester) {
+    public void permQOfferLast(PermRequester permRequester) {
         synchronized (permProcessing) {
             permQ.offerLast(permRequester);
             String log = "[SA][permQOfferLast] Added permission request to tail of permQ. " +
@@ -236,7 +229,7 @@ public class PermissionUtils {
      *
      * @return True if a new permission request is triggered to process, false otherwise.
      */
-    public static boolean permQPoll() {
+    public boolean permQPoll() {
         synchronized (permProcessing) {
             String log = "[SA][permQPoll] ";
             if (permProcessing) {
@@ -272,7 +265,7 @@ public class PermissionUtils {
      * Restarting a sample after disruption by "Screen Overlay detected" permission setting error.
      * Synchronised with permProcessing.
      */
-    public static void permQReset() {
+    public void permQReset() {
         synchronized (permProcessing) {
 
             permProcessing = false;
@@ -293,7 +286,7 @@ public class PermissionUtils {
      * @param context
      * @param fragment
      */
-    public static void permQResume(Context context, Fragment fragment) {
+    public void permQResume(Context context, Fragment fragment) {
         synchronized (permProcessing) {
             if (permRequester == null) {
                 return;
@@ -313,7 +306,7 @@ public class PermissionUtils {
      * Will trigger permQ to process next task.
      * Synchronised with permProcessing.
      */
-    public static void permQTaskCompleted() {
+    public void permQTaskCompleted() {
         synchronized (permProcessing) {
             // Set state to not processing.
             permProcessing = false;
@@ -331,14 +324,14 @@ public class PermissionUtils {
      * Stores parameters required for making permission request
      * and have methods to perform permission request.
      */
-    public static class PermRequester {
+    public class PermRequester {
 
         private PermRequesterInfo requester;
 
         String tag;
         // Static elements that are common to all PermRequesterInfo
-        static Context context;
-        static Fragment fragment;
+        Context context;
+        Fragment fragment;
 
         public PermRequester(PermRequesterInfo requester, String tag,
                              Context context, Fragment fragment) {
@@ -393,7 +386,7 @@ public class PermissionUtils {
                         "infoCode:" + requester.getInfoCode() + " (" + getInfoString(requester.getInfoCode()) + ")";
 
                 int[] grantResults = new int[]{PackageManager.PERMISSION_GRANTED};
-                if (!service.processPermissionsResult(requester.getRequestCode(), requester.getPermissions(),
+                if (!PermissionService.processPermissionsResult(requester.getRequestCode(), requester.getPermissions(),
                         grantResults)) {
                     // If result is false, an error has occurred.
                     log += "\r\n[ERROR] The SDK should but does not recognise permission requestCode: "
@@ -462,7 +455,7 @@ public class PermissionUtils {
                             // Call Sylink SDK processPermissionsResult with
                             // PERMISSION_DENIED as the result.
                             int[] grantResults = new int[]{PackageManager.PERMISSION_DENIED};
-                            if (!service.processPermissionsResult(requester.getRequestCode(), requester.getPermissions(),
+                            if (!PermissionService.processPermissionsResult(requester.getRequestCode(), requester.getPermissions(),
                                     grantResults)) {
                                 // If result is false, an error has occurred.
                                 logDeny += "\r\n[ERROR] The SDK should but does not recognise "
@@ -525,5 +518,4 @@ public class PermissionUtils {
             return;
         }
     }
-
 }

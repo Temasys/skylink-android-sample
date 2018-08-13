@@ -9,7 +9,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.videocall.VideoCallContract;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -17,7 +17,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.videocall.VideoCallContract;
 
 public class VideoService extends SDKService implements VideoCallContract.Service {
 
-    private static VideoLocalState videoLocalState;
+    private static VideoLocalState videoLocalState = new VideoLocalState();
 
     public VideoService(Context context) {
         super(context);
@@ -25,9 +25,7 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
 
     @Override
     public void setPresenter(VideoCallContract.Presenter presenter) {
-        this.mPresenter = presenter;
-
-        videoLocalState = new VideoLocalState();
+        this.mVideoPresenter = presenter;
     }
 
     @Override
@@ -43,7 +41,7 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
     }
 
     public void setAudioMuteServiceHandler(boolean isAudioMuted) {
-        videoLocalState.setVideoMute(isAudioMuted);
+        videoLocalState.setAudioMute(isAudioMuted);
     }
 
     public boolean isVideoMuteServiceHandler() {

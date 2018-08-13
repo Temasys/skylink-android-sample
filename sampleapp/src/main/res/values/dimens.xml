@@ -3,11 +3,12 @@
     <dimen name="dp_80dp">80dp</dimen>
     <dimen name="dp_10dp">10dp</dimen>
     <dimen name="dp_30dp">30dp</dimen>
-    <dimen name="dp_160dp">160dp</dimen>
+    <dimen name="dp_150dp">150dp</dimen>
     <dimen name="dp_3dp">3dp</dimen>
     <dimen name="dp_0.5dp">0.5dp</dimen>
     <dimen name="dp_40dp">40dp</dimen>
 
-    <dimen name="sp_12sp">12sp</dimen>
+    <dimen name="sp_11sp">11sp</dimen>
+    <dimen name="sp_9sp">9sp</dimen>
 
 </resources>
