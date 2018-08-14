@@ -3,18 +3,13 @@ package sg.com.temasys.skylink.sdk.sampleapp.utils;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.Pair;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.SDKService;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
@@ -23,12 +18,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  */
 public class MultiPartyFragment extends Fragment {
 
-    public static final String BUNDLE_PEER_ID_LIST = "peerIdList";
     private static final String TAG = MultiPartyFragment.class.getName();
-
-    // Container for PeerId and nick
-    // ArrayList<Pair<String peerId, String nick>> of remote Peer info.
-    protected static ArrayList<Pair<String, String>> peerList;
 
     // RadioGroup and RadioButtons for selection of Peer(s)
     protected RadioGroup peerRadioGroup;
@@ -39,6 +29,9 @@ public class MultiPartyFragment extends Fragment {
     protected RadioButton peer4;
     protected Context context;
 
+    //list of peers in room
+    private MultiPeersInfo mPeersList;
+
 
     /***
      * Multi party methods
@@ -47,21 +40,22 @@ public class MultiPartyFragment extends Fragment {
     /**
      * Add Peer name to next available Radio button.
      *
-     * @param skylinkPeer the Peer to add.
+     * @param newPeer new peer to be added
      */
-    public void addPeerRadioBtn(SkylinkPeer skylinkPeer) {
+    public void addPeerRadioBtn(SkylinkPeer newPeer) {
+
         String logTag = "[SA][addPeerRadioBtn] ";
-        String log = logTag + "Adding Peer \"" + skylinkPeer.getPeerId() + "\"(" + skylinkPeer.getPeerName() + ") to peerList...";
-        Log.d(TAG, log);
+        logTag += "Adding Peer \"" + newPeer.getPeerId() + "\"(" + newPeer.getPeerName() + ") to peerList...";
 
-        // Add Peer to peerList
-        Pair<String, String> peer = new Pair<>(skylinkPeer.getPeerId(), skylinkPeer.getPeerName());
-        peerList.add(peer);
+        // Add Peers to radio buttons.
+        logTag += "\nPopulating RadioButton UI with added Peer.";
 
-        // Add Peer to radio buttons.
-        log = logTag + "Populating RadioButton UI with added Peer.";
-        Log.d(TAG, log);
-        fillPeerRadioBtn();
+        Log.d(TAG, logTag);
+
+        //need check other effect to this variable
+//        mPeersList.addPeer(newPeer);
+
+        fillPeerRadioBtn(mPeersList);
     }
 
     /**
@@ -69,69 +63,57 @@ public class MultiPartyFragment extends Fragment {
      * Unpopulated radio buttons will be invisible.
      * Ensure All Peer button is visible IFF there are Peer(s), invisible otherwise.
      */
-    public void fillPeerRadioBtn() {
-        // Check for initialised peerList
-        if (peerList == null) {
-            return;
-        }
-        int peerNum = getPeerNum();
+    public void fillPeerRadioBtn(MultiPeersInfo peersList) {
+
+        //reset mPeersList
+        this.mPeersList = peersList;
+
+        int totalPeerNum = peersList.getSize();
+
         String logTag = "[SA][fillPeerRadioBtn] ";
-        String log = logTag + "Populating RadioButton UI with " + peerNum + " Peer(s)...";
-        Log.d(TAG, log);
+        logTag += "\nPopulating RadioButton UI with " + totalPeerNum + " Peer(s)...";
+        Log.d(TAG, logTag);
 
         // Ensure All Peers button visibility is correct.
-        if (peerNum > 0) {
+        if (totalPeerNum > 1) {
             peerAll.setVisibility(View.VISIBLE);
         } else {
             peerAll.setVisibility(View.INVISIBLE);
-            log = logTag + "There are no remote Peers, so there will be no RadioButtons.";
-            Log.d(TAG, log);
+            logTag = "There are no remote Peers, so there will be no RadioButtons.";
+            Log.d(TAG, logTag);
         }
 
         // Populate each radio button appropriately starting after All Peers button.
+        // Not populate self peer
         for (int i = 1; i < peerRadioGroup.getChildCount(); ++i) {
             RadioButton rb = (RadioButton) peerRadioGroup.getChildAt(i);
             // If there are no more Peers
-            if (i > peerNum) {
+            if (i >= totalPeerNum) {
                 // Make radio button invisible
                 rb.setVisibility(View.INVISIBLE);
                 // Clear text and tag
                 rb.setText("");
                 rb.setTag("");
-                log = logTag + "RadioButton " + i + " is invisible as there are only " +
-                        peerNum + " remote Peer(s).";
-                Log.d(TAG, log);
+                logTag =  "RadioButton " + i + " is invisible as there are only " +
+                        totalPeerNum + " remote Peer(s).";
+                Log.d(TAG, logTag);
 
             } else {
                 // Make radio button visible
                 rb.setVisibility(View.VISIBLE);
                 // Set text and tag
-                Pair<String, String> peerPair = peerList.get(i - 1);
-                String peerId = peerPair.first;
-                String nick = peerPair.second;
+                SkylinkPeer remotePeer = peersList.getPeerByIndex(i);
+
+                String peerId = remotePeer.getPeerId();
+                String nick = remotePeer.getPeerName();
+
                 rb.setText(peerId + " (" + nick + ")");
                 rb.setTag(peerId);
-                log = logTag + "RadioButton " + i + " is visible as there are " +
-                        peerNum + " remote Peer(s).";
-                Log.d(TAG, log);
+                logTag = "RadioButton " + i + " is visible as there are " +
+                        totalPeerNum + " remote Peer(s).";
+                Log.d(TAG, logTag);
             }
         }
-    }
-
-    /**
-     * Get a String array of PeerIds from a ArrayList<Pair<String, String>> peerList provided.
-     *
-     * @return String array of PeerIds.
-     */
-    public List<SkylinkPeer> getPeerIdList() {
-
-        int peerNum = getPeerNum();
-        List<SkylinkPeer> peerIdList = new ArrayList<SkylinkPeer>();
-        // Populate peeIdList with PeerIds.
-        for (int i = 0; i < peerNum; ++i) {
-            peerIdList.set(i, new SkylinkPeer(peerList.get(i).first));
-        }
-        return peerIdList;
     }
 
     /**
@@ -149,7 +131,7 @@ public class MultiPartyFragment extends Fragment {
             return "";
         }
 
-        // Return null of All Peer(s) was selected.
+        // Return null when All Peer(s) was selected.
         if (selectedRB == peerAll.getId()) {
             return null;
         }
@@ -169,15 +151,14 @@ public class MultiPartyFragment extends Fragment {
      * @return
      */
     public String getPeerIdSelectedWithWarning() {
-        // Do not allow button actions if there are no Peers in the room.
-        if (getPeerNum() == 0) {
+        // Do not allow button actions if there are no remote Peers in the room.
+        if (mPeersList.getSize() < 2) {
             String log = getString(R.string.warn_no_peer_message);
             toastLog(TAG, context, log);
             return "";
         }
 
-        String remotePeerId = getPeerIdSelected(
-        );
+        String remotePeerId = getPeerIdSelected();
         // Do not allow button actions if no selection was made.
         if ("".equals(remotePeerId)) {
             String log = getString(R.string.warn_no_sel_message);
@@ -188,54 +169,17 @@ public class MultiPartyFragment extends Fragment {
     }
 
     /**
-     * Get number of remote Peers in the room.
-     *
-     * @return Number of peer(s).
-     */
-    public int getPeerNum() {
-
-        int peerNum = 0;
-        if (peerList == null) {
-            return 0;
-        }
-        peerNum = peerList.size();
-        return peerNum;
-    }
-
-    /**
-     * Populate peerList from a list of PeerIds of remote Peers, using info from SkylinkConnection.
-     *
-     * @param peerIdList String Array of PeerIds of remote Peer(s) in the room.
-     */
-    public void popPeerList(List<SkylinkPeer> peerIdList) {
-        // Clear peerList
-        peerList.clear();
-        // Populate peerList
-        for (int i = 0; i < peerIdList.size(); ++i) {
-            String peerId = peerIdList.get(i).getPeerId();
-            String nick = Utils.getNick(SDKService.getCurrentSkylinkConnection(), peerId);
-            Pair<String, String> peer = new Pair<>(peerId, nick);
-            peerList.add(peer);
-        }
-    }
-
-    /**
      * Remove Peer name from Radio buttons.
      *
      * @param peerId PeerId of the Peer to remove.
      */
     public void removePeerRadioBtn(String peerId) {
         // Remove Peer from peerList
-        ListIterator peerIter = peerList.listIterator();
-        while (peerIter.hasNext()) {
-            Pair<String, String> peer = (Pair<String, String>) peerIter.next();
-            if (peer.first.equals(peerId)) {
-                peerList.remove(peer);
-                break;
-            }
-        }
+
+        //need to check
+//        mPeersList.removePeer(peerId);
 
         // Remove Peer from radio buttons and rearrange them.
-        fillPeerRadioBtn();
+        fillPeerRadioBtn(mPeersList);
     }
 }

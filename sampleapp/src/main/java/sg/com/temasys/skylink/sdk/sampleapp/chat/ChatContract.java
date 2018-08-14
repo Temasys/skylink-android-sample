@@ -1,8 +1,11 @@
 package sg.com.temasys.skylink.sdk.sampleapp.chat;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 
 /**
@@ -13,42 +16,30 @@ public interface ChatContract {
 
     interface View extends BaseView<Presenter> {
 
-        void clearPeerListViewHandler();
+        void onListViewRefreshViewHandler();
 
-        void fillPeerRadioBtnViewHandler();
+        void fillPeerRadioBtnViewHandler(MultiPeersInfo peersList);
 
-        void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer);
+        void addPeerRadioBtnViewHandler(SkylinkPeer newPeer);
 
-        int getPeerNumViewHandler();
+        void onRemovePeerRadioBtnViewHandler(String remotePeerId);
 
-        void removePeerRadioBtnViewHandler(String remotePeerId);
+        void onUpdateRoomDetailsViewHandler(String roomDetails);
 
-        int getPeerListSizeViewHandler();
-
-        void listViewRefreshViewHandler();
-
-        void clearChatMessageCollectionViewHandler();
-
-        void addToChatMessageCollectionViewHandler(String s);
-
-        void onUpdateUIViewHandler(String roomDetails);
+        void onClearEditTextViewHandler();
     }
 
     interface Presenter extends BasePresenter {
 
-        void sendServerMessagePresenterHandler(String remotePeerId, String message);
+        void onSendServerMessagePresenterHandler(String remotePeerId, String message);
 
-        void sendP2PMessagePresenterHandler(String remotePeerId, String message);
+        void onSendP2PMessagePresenterHandler(String remotePeerId, String message);
 
-        void disconnectFromRoomPresenterHandler();
+        List<String> onGetChatMessageCollectionPresenterHandler();
 
-        void connectToRoomPresenterHandler();
+        void onServerMessageReceivePresenterHandler(String remotePeerId, Object message, boolean isPrivate);
 
-        void setRoomDetailsPresenterHandler();
-
-        boolean isConnectingOrConnectedPresenterHandler();
-
-        void onMessageReceivePresenterHandler(String msg);
+        void onP2PMessageReceivePresenterHandler(String remotePeerId, Object message, boolean isPrivate);
     }
 
     interface Service extends BaseService<Presenter> {

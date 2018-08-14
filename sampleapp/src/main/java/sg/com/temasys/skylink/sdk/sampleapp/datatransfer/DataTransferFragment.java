@@ -86,17 +86,17 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         btnSendDataRoom.setOnClickListener(v -> {
                     // [MultiParty]
                     // Do not allow button actions if there are no Peers in the room.
-                    if (getPeerNum() == 0) {
-                        String log = getString(R.string.warn_no_peer_message);
-                        toastLog(TAG, context, log);
-                        return;
-                    }
-                    // Select All Peers RadioButton if not already selected
-                    String remotePeerId = getPeerIdSelected(
-                    );
-                    if (remotePeerId != null) {
-                        peerAll.setChecked(true);
-                    }
+//                    if (getPeerNum() == 0) {
+//                        String log = getString(R.string.warn_no_peer_message);
+//                        toastLog(TAG, context, log);
+//                        return;
+//                    }
+//                    // Select All Peers RadioButton if not already selected
+//                    String remotePeerId = getPeerIdSelected(
+//                    );
+//                    if (remotePeerId != null) {
+//                        peerAll.setChecked(true);
+//                    }
 
                     // Send dataGroup to all Peers
                     mPresenter.sendDataPresenterHandler(null, dataGroup);
@@ -164,9 +164,9 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     private void initComponents() {
         // [MultiParty]
         // Initialise peerList if required.
-        if (peerList == null) {
-            peerList = new ArrayList<Pair<String, String>>();
-        }
+//        if (peerList == null) {
+//            peerList = new ArrayList<Pair<String, String>>();
+//        }
 
         // Show info about data sizes that can be transferred.
         getDataTranfered();
@@ -191,12 +191,12 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
 
     @Override
     public void fillPeerRadioBtnViewHandler() {
-        fillPeerRadioBtn();
+//        fillPeerRadioBtn();
     }
 
     @Override
     public void clearPeerListViewHandler() {
-        peerList.clear();
+//        peerList.clear();
     }
 
     @Override
@@ -226,12 +226,17 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
 
     @Override
     public int getPeerNumViewHandler() {
-        return getPeerNum();
+        return 0;
     }
 
     @Override
     public int getPeerListSizeViewHandler() {
-        return peerList.size();
+        return 0;
     }
+
+//    @Override
+//    public int getPeerListSizeViewHandler() {
+//        return peerList.size();
+//    }
 
 }

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -141,7 +142,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
                 // [MultiParty]
                 // Populate peerList
                 if(multiFileTransferPeersInfo != null) {
-                    popPeerList(multiFileTransferPeersInfo.getPeerIdList());
+//                    popPeerList(multiFileTransferPeersInfo.getPeerIdList());
                     // Set the appropriate UI if already connected.
                     onConnectUIChange();
                 }
@@ -188,19 +189,19 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         sendFileGroup.setOnClickListener(v -> {
             // [MultiParty]
             // Do not allow button actions if there are no Peers in the room.
-            if (getPeerNum() == 0) {
+//            if (getPeerNum() == 0) {
                 String log = getString(R.string.warn_no_peer_message);
                 toastLog(TAG, context, log);
                 return;
-            }
+//            }
             // Select All Peers RadioButton if not already selected
-            String remotePeerId = getPeerIdSelected();
-            if (remotePeerId != null) {
-                peerAll.setChecked(true);
+//            String remotePeerId = getPeerIdSelected();
+//            if (remotePeerId != null) {
+//                peerAll.setChecked(true);
                 // Prepare group file for transfer.
-                prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
-            }
-            sendFileViewHandler(null);
+//                prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
+//            }
+//            sendFileViewHandler(null);
         });
 
         return rootView;
@@ -222,7 +223,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         super.onSaveInstanceState(outState);
         // Save states for fragment restart
         if(multiFileTransferPeersInfo != null) {
-            multiFileTransferPeersInfo.setPeerIdList(getPeerIdList());
+//            multiFileTransferPeersInfo.setPeerIdList(getPeerIdList());
             outState.putSerializable(BUNDLE_PEERS_JOINED, multiFileTransferPeersInfo);
         }
     }
@@ -255,50 +256,90 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
     @Override
     public void fillPeerRadioBtnViewHandler() {
-        fillPeerRadioBtn();
+//        fillPeerRadioBtn();
     }
 
     @Override
     public void clearPeerListViewHandler() {
-        peerList.clear();
+
     }
 
     @Override
     public void onFileReceiveCompleteViewHandler(String msg) {
-        tvFileTransferDetails.setText(msg);
+
     }
 
     @Override
     public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
-        addPeerRadioBtn(skylinkPeer);
+
     }
 
     @Override
     public int getPeerNumViewHandler() {
-        return getPeerNum();
+        return 0;
     }
 
     @Override
     public void removePeerRadioBtnViewHandler(String remotePeerId) {
-        removePeerRadioBtn(remotePeerId);
+
     }
 
     @Override
     public int getPeerlistSizeViewHandler() {
-        return peerList.size();
+        return 0;
     }
 
     @Override
-    public android.support.v4.app.Fragment getFragmentViewHandler() {
-        return this;
+    public Fragment getFragmentViewHandler() {
+        return null;
     }
 
     @Override
     public void setIsPeerJoinedViewHandler(boolean isPeerJoined) {
-        if(multiFileTransferPeersInfo == null){
-            multiFileTransferPeersInfo = new MultiPeersInfo();
-        }
+
     }
+
+//    @Override
+//    public void clearPeerListViewHandler() {
+//        peerList.clear();
+//    }
+
+//    @Override
+//    public void onFileReceiveCompleteViewHandler(String msg) {
+//        tvFileTransferDetails.setText(msg);
+//    }
+
+//    @Override
+//    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
+//        addPeerRadioBtn(skylinkPeer);
+//    }
+
+//    @Override
+//    public int getPeerNumViewHandler() {
+//        return getPeerNum();
+//    }
+
+//    @Override
+//    public void removePeerRadioBtnViewHandler(String remotePeerId) {
+//        removePeerRadioBtn(remotePeerId);
+//    }
+
+//    @Override
+//    public int getPeerlistSizeViewHandler() {
+//        return peerList.size();
+//    }
+
+//    @Override
+//    public android.support.v4.app.Fragment getFragmentViewHandler() {
+//        return this;
+//    }
+
+//    @Override
+//    public void setIsPeerJoinedViewHandler(boolean isPeerJoined) {
+//        if(multiFileTransferPeersInfo == null){
+//            multiFileTransferPeersInfo = new MultiPeersInfo();
+//        }
+//    }
 
     //----------------------------------------------------------------------------------------------
     // private methods
@@ -338,9 +379,9 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         // [MultiParty]
         // Initialise peerList if required.
-        if (peerList == null) {
-            peerList = new ArrayList<Pair<String, String>>();
-        }
+//        if (peerList == null) {
+//            peerList = new ArrayList<Pair<String, String>>();
+//        }
 
         // Copy files raw/R.raw.icon and raw/R.raw.icon_group to the device's file system
         Utils.createExternalStoragePrivatePicture(FILENAME_PRIVATE, FILENAME_GROUP);
@@ -389,7 +430,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         // [MultiParty]
         boolean isPeerJoined = multiFileTransferPeersInfo == null ? false : true;
         mPresenter.setRoomDetailsPresenterHandler(isPeerJoined);
-        fillPeerRadioBtn();
+//        fillPeerRadioBtn();
     }
 
 }

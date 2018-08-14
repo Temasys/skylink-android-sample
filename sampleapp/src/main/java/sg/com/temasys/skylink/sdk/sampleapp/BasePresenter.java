@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
 
 /**
@@ -31,9 +32,9 @@ public interface BasePresenter {
 
     /**
      * process update view when remote peer joined the room
-     * @param remotePeer
+     * @param newPeer
      */
-    void onRemotePeerJoinPresenterHandler(SkylinkPeer remotePeer);
+    void onRemotePeerJoinPresenterHandler(SkylinkPeer newPeer);
 
     /**
      * process update view when remote peer left the room
@@ -41,18 +42,6 @@ public interface BasePresenter {
      */
     void onRemotePeerLeavePresenterHandler(String remotePeerId);
 
-    /**
-     * process update view when remote peer refresh the connection
-     * @param log info to display
-     * @param remotePeerUserInfo
-     */
-    void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo);
 
-    /**
-     * process update view when remote peer has receive media info
-     * @param log info to display
-     * @param remotePeerUserInfo
-     */
-    void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo);
 
 }
