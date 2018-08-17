@@ -93,7 +93,7 @@ public class ChatPresenter implements ChatContract.Presenter {
     public void onRemotePeerJoin(SkylinkPeer newPeer) {
 
         //add new remote peer
-        mChatView.addPeerRadioBtn(newPeer);
+        mChatView.onAddPeerRadioBtn(newPeer);
 
         // Update textview to show room status when first remote peer has joined with self peer
         if (mChatService.getTotalPeersInRoom() == 2) {
@@ -128,7 +128,7 @@ public class ChatPresenter implements ChatContract.Presenter {
         //need to check remotePeerId existed
         //remotePeerId = null when selecting All peer(s)
         //remotePeerId = "" when not selecting any peer
-        if(remotePeerId == null || !remotePeerId.equals("")) {
+        if (remotePeerId == null || !remotePeerId.equals("")) {
 
             addSelfMessageToListView(remotePeerId, true, message);
 
@@ -143,7 +143,6 @@ public class ChatPresenter implements ChatContract.Presenter {
 
     @Override
     public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
-
         String chatPrefix = "[SIG] ";
         //add prefix if the chat is a private chat - not seen by other users.
         if (isPrivate) {
@@ -156,13 +155,12 @@ public class ChatPresenter implements ChatContract.Presenter {
         if (message instanceof String) {
             String remotePeerName = mChatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onListViewRefresh();
+            mChatView.onRefreshListView();
         }
     }
 
     @Override
     public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
-
         //add prefix if the chat is a private chat - not seen by other users.
         String chatPrefix = "[P2P] ";
         if (isPrivate) {
@@ -175,7 +173,7 @@ public class ChatPresenter implements ChatContract.Presenter {
         if (message instanceof String) {
             String remotePeerName = mChatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onListViewRefresh();
+            mChatView.onRefreshListView();
         }
     }
 
@@ -203,16 +201,16 @@ public class ChatPresenter implements ChatContract.Presenter {
 
         chatMessageCollection.add(prefix + message);
 
-        mChatView.onListViewRefresh();
+        mChatView.onRefreshListView();
 
         mChatView.onClearEditText();
     }
 
     private void updateUI() {
 
-        mChatView.onListViewRefresh();
+        mChatView.onRefreshListView();
 
-        mChatView.fillPeerRadioBtn(mChatService.getPeersList());
+        mChatView.onFillPeerRadioBtn(mChatService.getPeersList());
 
         updateRoomDetails();
     }

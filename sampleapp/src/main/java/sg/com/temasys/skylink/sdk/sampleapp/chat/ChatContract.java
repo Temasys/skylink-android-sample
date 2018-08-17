@@ -15,11 +15,11 @@ public interface ChatContract {
 
     interface View extends BaseView<Presenter> {
 
-        void onListViewRefresh();
+        void onRefreshListView();
 
-        void fillPeerRadioBtn(List<SkylinkPeer> peersList);
+        void onFillPeerRadioBtn(List<SkylinkPeer> peersList);
 
-        void addPeerRadioBtn(SkylinkPeer newPeer);
+        void onAddPeerRadioBtn(SkylinkPeer newPeer);
 
         void onRemovePeerRadioBtn(String remotePeerId);
 

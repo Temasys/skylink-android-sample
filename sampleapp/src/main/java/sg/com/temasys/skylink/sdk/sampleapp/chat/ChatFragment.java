@@ -111,7 +111,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onListViewRefresh(){
+    public void onRefreshListView(){
 
         //refresh adapter and listview selection
         if (adapter != null) {
@@ -128,7 +128,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     }
 
     @Override
-    public void addPeerRadioBtn(SkylinkPeer newPeer) {
+    public void onAddPeerRadioBtn(SkylinkPeer newPeer) {
         addPeerRadioBtn(newPeer);
     }
 
@@ -138,7 +138,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     }
 
     @Override
-    public void fillPeerRadioBtn(List<SkylinkPeer> peersList) {
+    public void onFillPeerRadioBtn(List<SkylinkPeer> peersList) {
         fillPeerRadioBtn(peersList);
     }
 

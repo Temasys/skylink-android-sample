@@ -301,19 +301,31 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     private void setUiResControlsVisibility(int visibility) {
-        // Resolution stats UIs.
+
         tvInput.setVisibility(visibility);
         tvSent.setVisibility(visibility);
         tvRecv.setVisibility(visibility);
-        tvResInput.setVisibility(visibility);
-        tvResSent.setVisibility(visibility);
-        tvResRecv.setVisibility(visibility);
 
-        // Resolution adjustment UIs.
-        tvResDim.setVisibility(visibility);
-        tvResFps.setVisibility(visibility);
-        seekBarResDim.setVisibility(visibility);
-        seekBarResFps.setVisibility(visibility);
+        if (tvResInput != null)
+            tvResInput.setVisibility(visibility);
+
+        if (tvResSent != null)
+            tvResSent.setVisibility(visibility);
+
+        if (tvResRecv != null)
+            tvResRecv.setVisibility(visibility);
+
+        if (tvResDim != null)
+            tvResDim.setVisibility(visibility);
+
+        if (tvResFps != null)
+            tvResFps.setVisibility(visibility);
+
+        if (seekBarResDim != null)
+            seekBarResDim.setVisibility(visibility);
+
+        if (seekBarResFps != null)
+            seekBarResFps.setVisibility(visibility);
     }
 
     /**
@@ -335,6 +347,9 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * @param videoResolution
      */
     private void setUiResTvStats(VideoResolution videoResolution, TextView textView) {
+        if(textView == null)
+            return;
+
         if (videoResolution == null || videoResolution.getWidth() <= 0 || videoResolution.getHeight() <= 0 || videoResolution.getFps() < 0) {
             textView.setText("N/A");
             return;
@@ -577,7 +592,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     @Override
     public void onAddRemoteView(SurfaceViewRenderer remoteVideoView) {
 
-        if(remoteVideoView == null)
+        if (remoteVideoView == null)
             return;
 
         // Remove previous peer video if it exists

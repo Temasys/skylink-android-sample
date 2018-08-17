@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -182,17 +183,20 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
     @Override
     public void onSetImagePreviewFromFile(Uri imgUri) {
-        ivFilePreview.setImageURI(imgUri);
+        if(ivFilePreview != null)
+            ivFilePreview.setImageURI(imgUri);
     }
 
     @Override
     public void onUpdateTvFileTransferDetails(String info){
-        tvFileTransferDetails.setText(info);
+        if(tvFileTransferDetails != null)
+            tvFileTransferDetails.setText(info);
     }
 
     @Override
     public void onUpdateRoomDetails(String roomDetails) {
-        tvRoomDetails.setText(roomDetails);
+        if(tvRoomDetails != null)
+            tvRoomDetails.setText(roomDetails);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -252,8 +256,11 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
      */
     private void prepFile(String filePath) {
         //show preview of file to transfer
-        ivFilePreview.setImageURI(Uri.parse(filePath));
-        etSenderFilePath.setText(filePath);
+        if(ivFilePreview != null)
+            ivFilePreview.setImageURI(Uri.parse(filePath));
+
+        if(etSenderFilePath != null)
+            etSenderFilePath.setText(filePath);
     }
 
 
