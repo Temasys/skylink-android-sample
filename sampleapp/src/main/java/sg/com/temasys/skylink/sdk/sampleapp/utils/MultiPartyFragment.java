@@ -7,9 +7,10 @@ import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
@@ -21,16 +22,16 @@ public class MultiPartyFragment extends Fragment {
     private static final String TAG = MultiPartyFragment.class.getName();
 
     // RadioGroup and RadioButtons for selection of Peer(s)
-    protected RadioGroup peerRadioGroup;
-    protected RadioButton peerAll;
-    protected RadioButton peer1;
-    protected RadioButton peer2;
-    protected RadioButton peer3;
-    protected RadioButton peer4;
+    protected static RadioGroup peerRadioGroup;
+    protected static RadioButton peerAll;
+    protected static RadioButton peer1;
+    protected static RadioButton peer2;
+    protected static RadioButton peer3;
+    protected static RadioButton peer4;
     protected Context context;
 
     //list of peers in room
-    private MultiPeersInfo mPeersList;
+    protected static List<SkylinkPeer> mPeers;
 
 
     /***
@@ -55,7 +56,29 @@ public class MultiPartyFragment extends Fragment {
         //need check other effect to this variable
 //        mPeersList.addPeer(newPeer);
 
-        fillPeerRadioBtn(mPeersList);
+        fillPeerRadioBtn(mPeers);
+    }
+
+    /**
+     * Remove Peer name from Radio buttons.
+     *
+     * @param peerId PeerId of the Peer to remove.
+     */
+    public void removePeerRadioBtn(String peerId) {
+
+        if(mPeers == null)
+            return;
+
+        // Remove Peer from peerList
+        for (SkylinkPeer sp: mPeers) {
+            if(sp.getPeerId().equals(peerId)){
+                mPeers.remove(sp);
+                break;
+            }
+        }
+
+        // Remove Peer from radio buttons and rearrange them.
+        fillPeerRadioBtn(mPeers);
     }
 
     /**
@@ -63,12 +86,12 @@ public class MultiPartyFragment extends Fragment {
      * Unpopulated radio buttons will be invisible.
      * Ensure All Peer button is visible IFF there are Peer(s), invisible otherwise.
      */
-    public void fillPeerRadioBtn(MultiPeersInfo peersList) {
+    public void fillPeerRadioBtn(List<SkylinkPeer> peersList) {
 
         //reset mPeersList
-        this.mPeersList = peersList;
+        this.mPeers = peersList;
 
-        int totalPeerNum = peersList.getSize();
+        int totalPeerNum = peersList.size();
 
         String logTag = "[SA][fillPeerRadioBtn] ";
         logTag += "\nPopulating RadioButton UI with " + totalPeerNum + " Peer(s)...";
@@ -102,7 +125,7 @@ public class MultiPartyFragment extends Fragment {
                 // Make radio button visible
                 rb.setVisibility(View.VISIBLE);
                 // Set text and tag
-                SkylinkPeer remotePeer = peersList.getPeerByIndex(i);
+                SkylinkPeer remotePeer = peersList.get(i);
 
                 String peerId = remotePeer.getPeerId();
                 String nick = remotePeer.getPeerName();
@@ -148,11 +171,11 @@ public class MultiPartyFragment extends Fragment {
      * - There are no Peers, or
      * - Peer(s) are present but none selected.
      *
-     * @return
+     * @return PeerId to send to.
      */
     public String getPeerIdSelectedWithWarning() {
         // Do not allow button actions if there are no remote Peers in the room.
-        if (mPeersList.getSize() < 2) {
+        if (mPeers.size() < 2) {
             String log = getString(R.string.warn_no_peer_message);
             toastLog(TAG, context, log);
             return "";
@@ -168,18 +191,4 @@ public class MultiPartyFragment extends Fragment {
         return remotePeerId;
     }
 
-    /**
-     * Remove Peer name from Radio buttons.
-     *
-     * @param peerId PeerId of the Peer to remove.
-     */
-    public void removePeerRadioBtn(String peerId) {
-        // Remove Peer from peerList
-
-        //need to check
-//        mPeersList.removePeer(peerId);
-
-        // Remove Peer from radio buttons and rearrange them.
-        fillPeerRadioBtn(mPeersList);
-    }
 }

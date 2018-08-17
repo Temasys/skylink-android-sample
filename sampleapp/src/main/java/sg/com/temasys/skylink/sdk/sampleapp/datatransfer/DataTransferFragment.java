@@ -4,7 +4,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.util.Pair;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,14 +13,12 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -30,8 +28,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
 
     private static final String TAG = DataTransferFragment.class.getName();
 
-    //this variable need to be static for configuration change
-    private static DataTransferContract.Presenter mPresenter;
+    private DataTransferContract.Presenter mPresenter;
 
     private byte[] dataPrivate;
     private byte[] dataGroup;
@@ -50,61 +47,9 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle
-            savedInstanceState) {
-
-        super.onCreateView(inflater, container, savedInstanceState);
-        View rootView = inflater.inflate(R.layout.fragment_data_transfer, container, false);
-
-        getControlWidgets(rootView);
-
-        setActionBar();
-
-        initComponents();
-
-        requestViewLayout(true);
-
-        btnSendDataPeer.setOnClickListener(v -> {
-                    // [MultiParty]
-                    String remotePeerId = getPeerIdSelectedWithWarning();
-                    // Do not allow button actions if there are no Peers in the room.
-                    if ("".equals(remotePeerId)) {
-                        return;
-                    }
-
-                    if (remotePeerId == null) {
-                        // Send dataGroup to all Peer(s)
-                        mPresenter.sendDataPresenterHandler(remotePeerId, dataGroup);
-
-                    } else {
-                        // Send dataPrivate to specific Peer
-                        mPresenter.sendDataPresenterHandler(remotePeerId, dataPrivate);
-                    }
-                }
-        );
-
-        btnSendDataRoom.setOnClickListener(v -> {
-                    // [MultiParty]
-                    // Do not allow button actions if there are no Peers in the room.
-//                    if (getPeerNum() == 0) {
-//                        String log = getString(R.string.warn_no_peer_message);
-//                        toastLog(TAG, context, log);
-//                        return;
-//                    }
-//                    // Select All Peers RadioButton if not already selected
-//                    String remotePeerId = getPeerIdSelected(
-//                    );
-//                    if (remotePeerId != null) {
-//                        peerAll.setChecked(true);
-//                    }
-
-                    // Send dataGroup to all Peers
-                    mPresenter.sendDataPresenterHandler(null, dataGroup);
-                }
-
-        );
-
-        return rootView;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
     }
 
     @Override
@@ -113,24 +58,85 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        Log.d(TAG, "[SA][DataTransfer][onCreateView] ");
+
+        View rootView = inflater.inflate(R.layout.fragment_data_transfer, container, false);
+
+        getControlWidgets(rootView);
+
+        setActionBar();
+
+        initControls();
+
+        requestViewLayout();
+
+        btnSendDataPeer.setOnClickListener(v -> {
+
+            processSendDataToPeer();
+
+        });
+
+        btnSendDataRoom.setOnClickListener(v -> {
+
+            processSendDataToGroup();
+
+        });
+
+        return rootView;
     }
 
     @Override
     public void onDetach() {
+
         super.onDetach();
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((DataTransferActivity) context).isChangingConfigurations()) {
-            requestViewLayout(false);
+            //disconnect from room
+            mPresenter.onViewExit();
 
             dataPrivate = null;
             dataGroup = null;
         }
+    }
+
+
+    //----------------------------------------------------------------------------------------------
+    // View Listeners to update GUI from presenter
+    //----------------------------------------------------------------------------------------------
+
+    @Override
+    public void onFillPeerRadioBtn(List<SkylinkPeer> peersList) {
+        fillPeerRadioBtn(peersList);
+    }
+
+    @Override
+    public void onAddPeerRadioBtn(SkylinkPeer skylinkPeer) {
+        addPeerRadioBtn(skylinkPeer);
+    }
+
+    @Override
+    public void onRemovePeerRadioBtn(String remotePeerId) {
+        removePeerRadioBtn(remotePeerId);
+    }
+
+    @Override
+    public void onUpdateRoomDetails(String roomDetails) {
+        tvRoomDetails.setText(roomDetails);
+    }
+
+    @Override
+    public String onGetPeerIdSelected(){
+        return getPeerIdSelected();
+    }
+
+    @Override
+    public void onSetRdPeerAllChecked(boolean isChecked){
+        peerAll.setChecked(isChecked);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -161,17 +167,12 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         setHasOptionsMenu(true);
     }
 
-    private void initComponents() {
-        // [MultiParty]
-        // Initialise peerList if required.
-//        if (peerList == null) {
-//            peerList = new ArrayList<Pair<String, String>>();
-//        }
+    private void initControls() {
 
         // Show info about data sizes that can be transferred.
         getDataTranfered();
 
-        transferStatus.setText(String.format(getString(R.string.data_transfer_status),
+        transferStatus.setText("\n"+ String.format(getString(R.string.data_transfer_status),
                 String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
 
     }
@@ -185,58 +186,39 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         dataGroup = Utils.getDataGroup();
     }
 
-    //----------------------------------------------------------------------------------------------
-    // View Listeners to update GUI from presenter
-    //----------------------------------------------------------------------------------------------
-
-    @Override
-    public void fillPeerRadioBtnViewHandler() {
-//        fillPeerRadioBtn();
-    }
-
-    @Override
-    public void clearPeerListViewHandler() {
-//        peerList.clear();
-    }
-
-    @Override
-    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
-        addPeerRadioBtn(skylinkPeer);
-    }
-
-    @Override
-    public void removePeerRadioBtnViewHandler(String remotePeerId) {
-        removePeerRadioBtn(remotePeerId);
-    }
-
     /**
      * request info to display from presenter
      * try to connect to room if not connected
-     * try to disconnect from room if left the room
+     * try to update UI if connected to room
      */
-    private void requestViewLayout(boolean tryToConnect) {
+    private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewLayoutRequestedPresenterHandler();
+            mPresenter.onViewLayoutRequested();
         }
     }
 
-    public void onUpdateUIViewHandler(String strRoomDetails) {
-        tvRoomDetails.setText(strRoomDetails);
+    private void processSendDataToPeer() {
+        // [MultiParty]
+        String remotePeerId = getPeerIdSelectedWithWarning();
+        // Do not allow button actions if there are no Peers in the room.
+        if ("".equals(remotePeerId)) {
+            return;
+        }
+
+        if (remotePeerId == null) {
+            // Send dataGroup to all Peer(s)
+            mPresenter.onSendData(remotePeerId, dataGroup);
+
+        } else {
+            // Send dataPrivate to specific Peer
+            mPresenter.onSendData(remotePeerId, dataPrivate);
+        }
     }
 
-    @Override
-    public int getPeerNumViewHandler() {
-        return 0;
+    private void processSendDataToGroup() {
+
+        // Send dataGroup to all Peers
+        mPresenter.onSendData(null, dataGroup);
+
     }
-
-    @Override
-    public int getPeerListSizeViewHandler() {
-        return 0;
-    }
-
-//    @Override
-//    public int getPeerListSizeViewHandler() {
-//        return peerList.size();
-//    }
-
 }

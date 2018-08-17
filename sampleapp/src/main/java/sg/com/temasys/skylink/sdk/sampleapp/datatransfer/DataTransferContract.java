@@ -1,44 +1,39 @@
 package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
 
 public interface DataTransferContract {
+
     interface View extends BaseView<Presenter> {
 
-        void fillPeerRadioBtnViewHandler();
+        void onFillPeerRadioBtn(List<SkylinkPeer> peersList);
 
-        void clearPeerListViewHandler();
+        void onAddPeerRadioBtn(SkylinkPeer newPeer);
 
-        void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer);
+        void onRemovePeerRadioBtn(String remotePeerId);
 
-        void removePeerRadioBtnViewHandler(String remotePeerId);
+        void onUpdateRoomDetails(String roomDetails);
 
-        void onUpdateUIViewHandler(String strRoomDetails);
+        String onGetPeerIdSelected();
 
-        int getPeerNumViewHandler();
+        void onSetRdPeerAllChecked(boolean isChecked);
 
-        int getPeerListSizeViewHandler();
     }
 
     interface Presenter extends BasePresenter {
 
-        void setRoomDetailsPresenterHandler();
+        void onSendData(String remotePeerId, byte[] data);
 
-        void disconnectFromRoomPresenterHandler();
-
-        void connectToRoomPresenterHandler();
-
-        void sendDataPresenterHandler(String remotePeerId, byte[] data);
-
-        boolean isConnectingOrConnectedPresenterHandler();
-
+        void onDataReceive(String remotePeerId, byte[] data);
     }
 
     interface Service extends BaseService<Presenter> {

@@ -34,7 +34,7 @@ public class DataTransferActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-//        mDataTransferPresenter = new DataTransferPresenter(mDataTransferFragment, this);
+        mDataTransferPresenter = new DataTransferPresenter(mDataTransferFragment, this);
     }
 
     @Override
@@ -50,7 +50,5 @@ public class DataTransferActivity extends AppCompatActivity {
         //Save the fragment's instance
         getSupportFragmentManager().putFragment(outState, DATA_TRANSFER_FRAGMENT_TAG, mDataTransferFragment);
     }
-
-
 
 }

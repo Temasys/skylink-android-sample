@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.data.model;
+package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
 import java.io.Serializable;
 

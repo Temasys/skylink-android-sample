@@ -5,9 +5,9 @@ import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.AudioService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -57,19 +57,19 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
      * Update info when rotating screen
      */
     @Override
-    public void onViewLayoutRequestedPresenterHandler() {
+    public void onViewLayoutRequested() {
 
-        Log.d(TAG, "onViewLayoutRequestedPresenterHandler");
+        Log.d(TAG, "onViewLayoutRequested");
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mAudioCallService.isConnectingOrConnectedServiceHandler()) {
+        if (!mAudioCallService.isConnectingOrConnected()) {
 
             //reset permission request states.
             mPermissionUtils.permQReset();
 
             //connect to room on Skylink connection
-            mAudioCallService.connectToRoomServiceHandler();
+            mAudioCallService.connectToRoom();
 
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
@@ -78,87 +78,87 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         } else {
 
             //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mAudioCallView.onGetFragmentViewHandler());
+            mPermissionUtils.permQResume(mContext, mAudioCallView.onGetFragment());
 
             //update UI into connected state
-            updateUIPresenterHandler();
+            updateUI();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
     @Override
-    public void onConnectPresenterHandler(boolean isSuccessful) {
-        updateUIPresenterHandler();
+    public void onConnect(boolean isSuccessful) {
+        updateUI();
     }
 
     @Override
-    public void onDisconnectPresenterHandler() {
-        updateUIPresenterHandler();
+    public void onDisconnect() {
+        updateUI();
     }
 
     @Override
-    public void onViewExitPresenterHandler() {
+    public void onViewExit() {
 
         //process disconnect from room
-        mAudioCallService.disconnectFromRoomServiceHandler();
+        mAudioCallService.disconnectFromRoom();
 
         //after disconnected from skylink SDK, UI will be updated later on AudioService.onDisconnect
     }
 
     @Override
-    public void onRemotePeerJoinPresenterHandler(SkylinkPeer remotePeer) {
-        updateUIPresenterHandler();
+    public void onRemotePeerJoin(SkylinkPeer remotePeer) {
+        updateUI();
     }
 
     @Override
-    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
-        updateUIPresenterHandler();
+    public void onRemotePeerLeave(String remotePeerId) {
+        updateUI();
     }
 
     @Override
-    public void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo) {
+    public void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, mContext, log);
     }
 
     @Override
-    public void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo) {
+    public void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, mContext, log);
     }
 
     @Override
-    public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onGetFragmentViewHandler());
+    public void onPermissionRequired(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onGetFragment());
     }
 
     @Override
-    public void onPermissionGrantedPresenterHandler(PermRequesterInfo info) {
+    public void onPermissionGranted(PermRequesterInfo info) {
         mPermissionUtils.onPermissionGrantedHandler(info, TAG);
     }
 
     @Override
-    public void onPermissionDeniedPresenterHandler(PermRequesterInfo info) {
+    public void onPermissionDenied(PermRequesterInfo info) {
         mPermissionUtils.onPermissionDeniedHandler(info, mContext, TAG);
     }
 
     @Override
-    public void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
-    private void updateUIPresenterHandler() {
-        String strRoomDetails = getRoomDetailsPresenterHandler();
-        mAudioCallView.onUpdateUIViewHandler(strRoomDetails);
+    private void updateUI() {
+        String strRoomDetails = getRoomDetails();
+        mAudioCallView.onUpdateUI(strRoomDetails);
     }
 
-    private String getRoomDetailsPresenterHandler() {
-        boolean isConnected = mAudioCallService.isConnectingOrConnectedServiceHandler();
-        String roomName = mAudioCallService.getRoomNameServiceHandler(Config.ROOM_NAME_AUDIO);
-        String userName = mAudioCallService.getUserNameServiceHandler(null, Config.USER_NAME_AUDIO);
+    private String getRoomDetails() {
+        boolean isConnected = mAudioCallService.isConnectingOrConnected();
+        String roomName = mAudioCallService.getRoomName(Config.ROOM_NAME_AUDIO);
+        String userName = mAudioCallService.getUserName(null, Config.USER_NAME_AUDIO);
 
-        boolean isPeerJoined = mAudioCallService.isPeerJoinServiceHandler();
+        boolean isPeerJoined = mAudioCallService.isPeerJoin();
 
         String roomDetails = "You are not connected to any room";
 

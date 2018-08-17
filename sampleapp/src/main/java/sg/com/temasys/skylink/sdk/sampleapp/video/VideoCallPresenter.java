@@ -10,10 +10,10 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.VideoService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.service.VideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -92,18 +92,18 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onViewLayoutRequestedPresenterHandler() {
-        Log.d(TAG, "onViewLayoutRequestedPresenterHandler");
+    public void onViewLayoutRequested() {
+        Log.d(TAG, "onViewLayoutRequested");
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mVideoCallService.isConnectingOrConnectedServiceHandler()) {
+        if (!mVideoCallService.isConnectingOrConnected()) {
 
             //reset permission request states.
             mPermissionUtils.permQReset();
 
             //connect to room on Skylink connection
-            connectToRoomPresenterHandler();
+            connectToRoom();
 
             //after connected to skylink SDK, UI will be updated latter on AudioService.onConnect
 
@@ -112,10 +112,10 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         } else {
 
             //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mVideoCallView.onGetFragmentViewHandler());
+            mPermissionUtils.permQResume(mContext, mVideoCallView.onGetFragment());
 
             //update UI into connected
-            updateConnectedUIPresenterHandler();
+            updateConnectedUI();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
@@ -123,46 +123,46 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onConnectPresenterHandler(boolean isSuccessful) {
+    public void onConnect(boolean isSuccessful) {
         if (isSuccessful) {
 
-            mVideoCallView.onConnectedUIChangeViewHandler();
+            mVideoCallView.onConnectedUIChange();
 
         } else {
-            onDisconnectUIChangePresenterHandler();
+            onDisconnectUIChange();
         }
     }
 
     @Override
-    public void onDisconnectPresenterHandler() {
-        onDisconnectUIChangePresenterHandler();
+    public void onDisconnect() {
+        onDisconnectUIChange();
     }
 
     @Override
-    public void onDisconnectFromRoomPresenterHandler() {
-        mVideoCallService.disconnectFromRoomServiceHandler();
+    public void onDisconnectFromRoom() {
+        mVideoCallService.disconnectFromRoom();
     }
 
     @Override
-    public void onViewExitPresenterHandler() {
+    public void onViewExit() {
         //process disconnect from room
-        mVideoCallService.disconnectFromRoomServiceHandler();
+        mVideoCallService.disconnectFromRoom();
 
         //after disconnected from skylink SDK, UI will be updated latter on AudioService.onDisconnect
     }
 
     @Override
-    public void onRemotePeerJoinPresenterHandler(SkylinkPeer skylinkPeer) {
+    public void onRemotePeerJoin(SkylinkPeer skylinkPeer) {
         //do nothing
     }
 
     @Override
-    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
-        mVideoCallView.onRemoveRemotePeerViewHandler();
+    public void onRemotePeerLeave(String remotePeerId) {
+        mVideoCallView.onRemoveRemotePeer();
     }
 
     @Override
-    public void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo) {
+    public void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -171,8 +171,8 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo) {
-        addRemoteViewPresenterHandler();
+    public void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo) {
+        addRemoteView();
 
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -182,44 +182,44 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onPermissionRequiredPresenterHandler(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mVideoCallView.onGetFragmentViewHandler());
+    public void onPermissionRequired(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mVideoCallView.onGetFragment());
     }
 
     @Override
-    public void onPermissionGrantedPresenterHandler(PermRequesterInfo info) {
+    public void onPermissionGranted(PermRequesterInfo info) {
         mPermissionUtils.onPermissionGrantedHandler(info, TAG);
     }
 
     @Override
-    public void onPermissionDeniedPresenterHandler(PermRequesterInfo info) {
+    public void onPermissionDenied(PermRequesterInfo info) {
         mPermissionUtils.onPermissionDeniedHandler(info, mContext, TAG);
     }
 
     @Override
-    public void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
     @Override
-    public void onLocalMediaCapturePresenterHandler(SurfaceViewRenderer videoView) {
+    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
         String log = "[SA][onLocalMediaCapture] ";
         if (videoView == null) {
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = mVideoCallService.getVideoViewServiceHandler(null);
-            addSelfViewPresenterHandler(selfVideoView);
+            SurfaceViewRenderer selfVideoView = mVideoCallService.getVideoView(null);
+            addSelfView(selfVideoView);
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            addSelfViewPresenterHandler(videoView);
+            addSelfView(videoView);
         }
     }
 
     @Override
-    public void onInputVideoResolutionObtainedPresenterHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-        noteInputVideoResolutionsPresenterHandler(width, height, fps, captureFormat);
+    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+        noteInputVideoResolutions(width, height, fps, captureFormat);
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
@@ -227,8 +227,8 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onReceivedVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps) {
-        setUiResTvStatsReceivedPresenterHandler(width, height, fps);
+    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        setUiResTvStatsReceived(width, height, fps);
 
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
@@ -236,8 +236,8 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onSentVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps) {
-        setUiResTvStatsSentPresenterHandler(width, height, fps);
+    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        setUiResTvStatsSent(width, height, fps);
 
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
@@ -245,7 +245,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onVideoSizeChangePresenterHandler(String peerId, Point size) {
+    public void onVideoSizeChange(String peerId, Point size) {
         String peer = "Peer " + peerId;
         // If peerId is null, this call is for our local video.
         if (peerId == null) {
@@ -255,66 +255,66 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
-    public void onProcessBtnAudioMutePresenterHandler() {
-        boolean isAudioMute = mVideoCallService.isAudioMuteServiceHandler();
+    public void onProcessBtnAudioMute() {
+        boolean isAudioMute = mVideoCallService.isAudioMute();
 
-        processBtnAudioMutePresenterHandler(!isAudioMute);
+        processBtnAudioMute(!isAudioMute);
     }
 
     @Override
-    public void onProcessBtnVideoMutePresenterHandler() {
-        boolean isVideoMute = mVideoCallService.isVideoMuteServiceHandler();
+    public void onProcessBtnVideoMute() {
+        boolean isVideoMute = mVideoCallService.isVideoMute();
 
-        processBtnVideoMutePresenterHandler(!isVideoMute);
+        processBtnVideoMute(!isVideoMute);
     }
 
     @Override
-    public void onProcessBtnCameraTogglePresenterHandler() {
-        boolean isCamToggle = mVideoCallService.isCameraToggleServiceHandler();
+    public void onProcessBtnCameraToggle() {
+        boolean isCamToggle = mVideoCallService.isCameraToggle();
 
-        processBtnCameraTogglePresenterHandler(!isCamToggle);
+        processBtnCameraToggle(!isCamToggle);
     }
 
     @Override
-    public void onViewResumePresenterHandler() {
+    public void onViewResume() {
 
         // Toggle camera back to previous state if required.
-        if (mVideoCallService.isCameraToggleServiceHandler()) {
+        if (mVideoCallService.isCameraToggle()) {
 
-            if (mVideoCallService.getVideoViewServiceHandler(null) != null) {
+            if (mVideoCallService.getVideoView(null) != null) {
 
-                mVideoCallService.toggleCameraServiceHandler();
+                mVideoCallService.toggleCamera();
 
-                mVideoCallService.setCamToggleServiceHandler(false);
+                mVideoCallService.setCamToggle(false);
             }
         }
     }
 
     @Override
-    public void onViewPausePresenterHandler() {
-        boolean toggleCamera = mVideoCallService.toggleCameraServiceHandler(false);
+    public void onViewPause() {
+        boolean toggleCamera = mVideoCallService.toggleCamera(false);
 
-        mVideoCallService.setCamToggleServiceHandler(toggleCamera);
+        mVideoCallService.setCamToggle(toggleCamera);
     }
 
     @Override
-    public void onSwitchCameraPresenterHandler() {
-        mVideoCallService.switchCameraServiceHandler();
+    public void onSwitchCamera() {
+        mVideoCallService.switchCamera();
     }
 
     @Override
-    public void onDimProgressChangedPresenterHandler(int progress) {
-        setUiResTvOnSeekBarProgressDimPresenterHandler(progress);
+    public void onDimProgressChanged(int progress) {
+        setUiResTvOnSeekBarProgressDim(progress);
     }
 
     @Override
-    public void onFpsProgressChangedPresenterHandler(int progress) {
-        setUiResTvOnSeekBarProgressFpsPresenterHandler(progress);
+    public void onFpsProgressChanged(int progress) {
+        setUiResTvOnSeekBarProgressFps(progress);
     }
 
     @Override
-    public void onDimStopTrackingTouchPresenterHandler(int progress) {
-        SkylinkCaptureFormat format = setUiResTvOnSeekBarProgressDimPresenterHandler(progress);
+    public void onDimStopTrackingTouch(int progress) {
+        SkylinkCaptureFormat format = setUiResTvOnSeekBarProgressDim(progress);
         // Check that new CaptureFormat is valid.
         if (!Utils.isCaptureFormatValid(format)) {
             return;
@@ -327,20 +327,20 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         // If any of the new Dim or Fps values are not valid,
         // or setting new resolution was not successful, reset UI to previous values.
 
-        boolean result1 = mVideoCallView.onSetUiResTvDimViewHandler(width, height);
-        boolean result2 = setUiResFpsPresenterHandler(fpsNew, format);
-        boolean result3 = setInputVideoResolutionsPresenterHandler(format, fpsNew);
+        boolean result1 = mVideoCallView.onSetUiResTvDim(width, height);
+        boolean result2 = setUiResFps(fpsNew, format);
+        boolean result3 = setInputVideoResolutions(format, fpsNew);
 
         if (fpsNew < 0 || !result1 || !result2 || result3) {
-            setUiResDimPresenterHandler(mCurrentCaptureFormat.getWidth(), mCurrentCaptureFormat.getHeight(),
+            setUiResDim(mCurrentCaptureFormat.getWidth(), mCurrentCaptureFormat.getHeight(),
                     mCaptureFormats);
-            setUiResFpsPresenterHandler(mCurrentFps, mCurrentCaptureFormat);
+            setUiResFps(mCurrentFps, mCurrentCaptureFormat);
             return;
         }
     }
 
     @Override
-    public void onFpsStopTrackingTouchPresenterHandler(int progress) {
+    public void onFpsStopTrackingTouch(int progress) {
         int fpsNew = setUiResTvOnSeekBarProgressFps(progress);
 
         // Check that new fps is valid for selected CaptureFormat.
@@ -349,25 +349,25 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         // If any of new Fps or selected CaptureFormat are not valid,
         // or setting new resolution was not successful, reset Fps UI to previous values.
 
-        boolean result1 = setInputVideoResolutionsPresenterHandler(mCurrentCaptureFormat, fpsNew);
+        boolean result1 = setInputVideoResolutions(mCurrentCaptureFormat, fpsNew);
 
         if (fpsNew < 0 || result1) {
-            setUiResFpsPresenterHandler(mCurrentFps, mCurrentCaptureFormat);
+            setUiResFps(mCurrentFps, mCurrentCaptureFormat);
             return;
         }
     }
 
     @Override
-    public String onGetRoomPeerIdNickPresenterHandler() {
-        return mVideoCallService.getRoomPeerIdNickServiceHandler();
+    public String onGetRoomPeerIdNick() {
+        return mVideoCallService.getRoomPeerIdNick();
     }
 
     @Override
-    public void onGetVideoResolutionsPresenterHandler() {
+    public void onGetVideoResolutions() {
 
-        String peerId = mVideoCallService.getPeerIdServiceHandler(1);
+        String peerId = mVideoCallService.getPeerId(1);
 
-        mVideoCallService.getVideoResolutionsServiceHandler(peerId);
+        mVideoCallService.getVideoResolutions(peerId);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -388,17 +388,17 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param captureFormat
      */
 
-    private void noteInputVideoResolutionsPresenterHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    private void noteInputVideoResolutions(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
 
         mVideoInput.setWidth(width);
         mVideoInput.setHeight(height);
         mVideoInput.setFps(fps);
 
-        mVideoCallView.onSetUiResTvStatsInputViewHandler(mVideoInput);
+        mVideoCallView.onSetUiResTvStatsInput(mVideoInput);
 
-        mCurrentVideoDevice = mVideoCallService.getCurrentVideoDeviceServiceHandler();
+        mCurrentVideoDevice = mVideoCallService.getCurrentVideoDevice();
         String previousCameraName = mCurrentCameraName;
-        mCurrentCameraName = mVideoCallService.getCurrentCameraNameServiceHandler();
+        mCurrentCameraName = mVideoCallService.getCurrentCameraName();
 
         String captureFormatString = "Current capture formats have not changed.";
 
@@ -418,10 +418,10 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         if (newCamera) {
             // Set the range of supported SkylinkCaptureFormats.
             // Record current range of supported SkylinkCaptureFormats.
-            mCaptureFormats = mVideoCallService.getCaptureFormatsServiceHandler(null);
+            mCaptureFormats = mVideoCallService.getCaptureFormats(null);
 
             //get mCaptureFormats String info
-            captureFormatString = mVideoCallService.getCaptureFormatsStringServiceHandler(mCaptureFormats);
+            captureFormatString = mVideoCallService.getCaptureFormatsString(mCaptureFormats);
             // Try to continue to with last selected Fps if possible.
             int fpsNew = Utils.getFpsForNewCaptureFormat(mCurrentFps, captureFormat);
 
@@ -432,9 +432,9 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
             }
 
             // Set UI values.
-            setUiResDimPresenterHandler(width, height, mCaptureFormats);
+            setUiResDim(width, height, mCaptureFormats);
 
-            setUiResFpsPresenterHandler(fpsNew, captureFormat);
+            setUiResFps(fpsNew, captureFormat);
 
         }
 
@@ -446,60 +446,60 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
     }
 
-    private void setUiResTvStatsReceivedPresenterHandler(int width, int height, int fps) {
+    private void setUiResTvStatsReceived(int width, int height, int fps) {
         mVideoReceive.setWidth(width);
         mVideoReceive.setHeight(height);
         mVideoReceive.setFps(fps);
 
-        mVideoCallView.onSetUiResTvStatsReceiveViewHandler(mVideoReceive);
+        mVideoCallView.onSetUiResTvStatsReceive(mVideoReceive);
     }
 
-    private void setUiResTvStatsSentPresenterHandler(int width, int height, int fps) {
+    private void setUiResTvStatsSent(int width, int height, int fps) {
         mVideoSent.setWidth(width);
         mVideoSent.setHeight(height);
         mVideoSent.setFps(fps);
 
-        mVideoCallView.onSetUiResTvStatsSentViewHandler(mVideoSent);
+        mVideoCallView.onSetUiResTvStatsSent(mVideoSent);
     }
 
-    private SurfaceViewRenderer getRemoteViewPresenterHandler() {
+    private SurfaceViewRenderer getRemoteView() {
         SurfaceViewRenderer videoView;
-        String remotePeerId = mVideoCallService.getPeerIdServiceHandler(1);
+        String remotePeerId = mVideoCallService.getPeerId(1);
         // Proceed only if the first (& only) remote Peer has joined.
         if (remotePeerId == null) {
             return null;
         } else {
-            videoView = getVideoViewPresenterHandler(remotePeerId);
+            videoView = getVideoView(remotePeerId);
         }
 
         return videoView;
     }
 
-    private void onDisconnectUIChangePresenterHandler() {
+    private void onDisconnectUIChange() {
         mVideoInput = null;
         mVideoSent = null;
         mVideoReceive = null;
 
-        mVideoCallView.onDisconnectUIChangeViewHandler();
+        mVideoCallView.onDisconnectUIChange();
     }
 
-    private void addSelfViewPresenterHandler(SurfaceViewRenderer videoView) {
-        mVideoCallView.onAddSelfViewViewHandler(videoView);
+    private void addSelfView(SurfaceViewRenderer videoView) {
+        mVideoCallView.onAddSelfView(videoView);
     }
 
-    private void addRemoteViewPresenterHandler() {
+    private void addRemoteView() {
 
-        SurfaceViewRenderer videoView = getRemoteViewPresenterHandler();
+        SurfaceViewRenderer videoView = getRemoteView();
 
-        mVideoCallView.onAddRemoteViewViewHandler(videoView);
+        mVideoCallView.onAddRemoteView(videoView);
 
     }
 
-    private SurfaceViewRenderer getVideoViewPresenterHandler(String remotePeerId) {
-        return mVideoCallService.getVideoViewServiceHandler(remotePeerId);
+    private SurfaceViewRenderer getVideoView(String remotePeerId) {
+        return mVideoCallService.getVideoView(remotePeerId);
     }
 
-    private SkylinkCaptureFormat getSeekBarValueDimPresenterHandler(int progress, SkylinkCaptureFormat[] captureFormats) {
+    private SkylinkCaptureFormat getSeekBarValueDim(int progress, SkylinkCaptureFormat[] captureFormats) {
         if (!Utils.isCaptureFormatsValid(captureFormats) || progress >= captureFormats.length) {
             return null;
         }
@@ -507,88 +507,88 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         return format;
     }
 
-    private void connectToRoomPresenterHandler() {
+    private void connectToRoom() {
 
         //connect to SDK
-        mVideoCallService.connectToRoomServiceHandler();
+        mVideoCallService.connectToRoom();
 
         //update UI and make toast
-        mVideoCallView.onConnectingUIChangeViewHandler();
+        mVideoCallView.onConnectingUIChange();
 
         //get roomName from setting
         String log = "Entering video room \"" + Config.ROOM_NAME_VIDEO + "\".";
         toastLog(TAG, mContext, log);
     }
 
-    private void updateConnectedUIPresenterHandler() {
+    private void updateConnectedUI() {
 
-        if (mVideoCallService.isAudioMuteServiceHandler()) {
-            processBtnAudioMutePresenterHandler(true);
+        if (mVideoCallService.isAudioMute()) {
+            processBtnAudioMute(true);
         }
 
-        if (mVideoCallService.isVideoMuteServiceHandler()) {
-            processBtnVideoMutePresenterHandler(true);
+        if (mVideoCallService.isVideoMute()) {
+            processBtnVideoMute(true);
         }
 
         // Toggle camera back to previous state if required.
-        if (mVideoCallService.isCameraToggleServiceHandler() && getVideoViewPresenterHandler(null) != null) {
-            processBtnCameraTogglePresenterHandler(true);
+        if (mVideoCallService.isCameraToggle() && getVideoView(null) != null) {
+            processBtnCameraToggle(true);
         }
 
         //update UI
-        mVideoCallView.onConnectedUIChangeViewHandler();
+        mVideoCallView.onConnectedUIChange();
 
-        mVideoCallView.onAddSelfViewViewHandler(getVideoViewPresenterHandler(null));
+        mVideoCallView.onAddSelfView(getVideoView(null));
 
-        SurfaceViewRenderer remoteView = getRemoteViewPresenterHandler();
+        SurfaceViewRenderer remoteView = getRemoteView();
 
         if (remoteView != null) {
-            mVideoCallView.onAddRemoteViewViewHandler(remoteView);
+            mVideoCallView.onAddRemoteView(remoteView);
         }
 
     }
 
     // If audio is enabled, mute audio and if audio is mute, then enable it
-    private void processBtnAudioMutePresenterHandler(boolean isAudioMuted) {
+    private void processBtnAudioMute(boolean isAudioMuted) {
 
         //save audioMuted for other usage
-        mVideoCallService.setAudioMuteServiceHandler(isAudioMuted);
+        mVideoCallService.setAudioMute(isAudioMuted);
 
         //set mute audio to sdk
-        mVideoCallService.muteLocalAudioServiceHandler(isAudioMuted);
+        mVideoCallService.muteLocalAudio(isAudioMuted);
 
         // Set UI and Toast.
-        mVideoCallView.onSetAudioBtnLabelViewHandler(isAudioMuted, true);
+        mVideoCallView.onSetAudioBtnLabel(isAudioMuted, true);
     }
 
     // If audio is enabled, mute audio and if audio is mute, then enable it
-    private void processBtnVideoMutePresenterHandler(boolean isVideoMuted) {
+    private void processBtnVideoMute(boolean isVideoMuted) {
 
         //save audioMuted for other usage
-        mVideoCallService.setVideoMuteServiceHandler(isVideoMuted);
+        mVideoCallService.setVideoMute(isVideoMuted);
 
         //set mute audio to sdk
-        mVideoCallService.muteLocalVideoServiceHandler(isVideoMuted);
+        mVideoCallService.muteLocalVideo(isVideoMuted);
 
         // Set UI and Toast.
-        mVideoCallView.onSetVideoBtnLabelViewHandler(isVideoMuted, true);
+        mVideoCallView.onSetVideoBtnLabel(isVideoMuted, true);
     }
 
     // If video is enable, toggle video and if video is toggle, then enable it
-    private void processBtnCameraTogglePresenterHandler(boolean isCameraToggle) {
+    private void processBtnCameraToggle(boolean isCameraToggle) {
 
         //display instruction log
         String log12 = "Toggled camera ";
-        if (getVideoViewPresenterHandler(null) != null) {
-            if (mVideoCallService.toggleCameraServiceHandler()) {
+        if (getVideoView(null) != null) {
+            if (mVideoCallService.toggleCamera()) {
                 log12 += "to restarted!";
 
                 //change state of camera toggle
-                mVideoCallService.setCamToggleServiceHandler(false);
+                mVideoCallService.setCamToggle(false);
             } else {
                 log12 += "to stopped!";
 
-                mVideoCallService.setCamToggleServiceHandler(true);
+                mVideoCallService.setCamToggle(true);
             }
         } else {
             log12 += "but failed as local video is not available!";
@@ -605,8 +605,8 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param progress
      * @return {@link SkylinkCaptureFormat} selected.
      */
-    private SkylinkCaptureFormat setUiResTvOnSeekBarProgressDimPresenterHandler(int progress) {
-        SkylinkCaptureFormat format = getSeekBarValueDimPresenterHandler(progress, mCaptureFormats);
+    private SkylinkCaptureFormat setUiResTvOnSeekBarProgressDim(int progress) {
+        SkylinkCaptureFormat format = getSeekBarValueDim(progress, mCaptureFormats);
         if (format == null) {
             return null;
         }
@@ -615,7 +615,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         int width = format.getWidth();
         int height = format.getHeight();
 
-        mVideoCallView.onSetUiResTvDimViewHandler(width, height);
+        mVideoCallView.onSetUiResTvDim(width, height);
 
         return format;
     }
@@ -628,15 +628,15 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param format A {@link SkylinkCaptureFormat} that provides the fps range to be set.
      * @return True if provided values were valid and false otherwise.
      */
-    private boolean setUiResFpsPresenterHandler(int fps, SkylinkCaptureFormat format) {
+    private boolean setUiResFps(int fps, SkylinkCaptureFormat format) {
         boolean valid;
         int index = -1;
         // Set the seekbar range.
-        valid = setUiResSeekBarRangeFpsPresenterHandler(format);
+        valid = setUiResSeekBarRangeFps(format);
 
         // Get the fps index in format.
         if (valid) {
-            index = getSeekBarIndexFpsPresenterHandler(format, fps);
+            index = getSeekBarIndexFps(format, fps);
             if (index < 0) {
                 valid = false;
             }
@@ -644,11 +644,11 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
         if (valid) {
 
-            mVideoCallView.onSetSeekBarResFpsViewHandler(index, fps);
+            mVideoCallView.onSetSeekBarResFps(index, fps);
 
         } else {
 
-            mVideoCallView.onSetSeekBarResFpsViewHandler(0, -1);
+            mVideoCallView.onSetSeekBarResFps(0, -1);
         }
         return valid;
     }
@@ -660,7 +660,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param fps
      * @return Negative number if index could not be found, or if captureFormat is invalid.
      */
-    private int getSeekBarIndexFpsPresenterHandler(SkylinkCaptureFormat captureFormat, int fps) {
+    private int getSeekBarIndexFps(SkylinkCaptureFormat captureFormat, int fps) {
         if (!Utils.isCaptureFormatValid(captureFormat)) {
             return -1;
         }
@@ -686,14 +686,14 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param captureFormats The {@link SkylinkCaptureFormat} array that provides range of seekbar.
      * @return True if provided values were valid and false otherwise.
      */
-    private boolean setUiResDimPresenterHandler(int width, int height, SkylinkCaptureFormat[] captureFormats) {
+    private boolean setUiResDim(int width, int height, SkylinkCaptureFormat[] captureFormats) {
         boolean valid;
         int index = -1;
         // Set the seekbar range.
-        valid = setUiResSeekBarRangeDimPresenterHandler(captureFormats);
+        valid = setUiResSeekBarRangeDim(captureFormats);
         // Get the captureFormat that matches for width and height.
         if (valid) {
-            index = getSeekBarIndexDimPresenterHandler(captureFormats, width, height);
+            index = getSeekBarIndexDim(captureFormats, width, height);
             if (index < 0) {
                 valid = false;
             }
@@ -701,11 +701,11 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
         if (valid) {
 
-            mVideoCallView.onSetSeekBarResDimViewHandler(index, width, height);
+            mVideoCallView.onSetSeekBarResDim(index, width, height);
 
         } else {
 
-            mVideoCallView.onSetSeekBarResDimViewHandler(0, -1, -1);
+            mVideoCallView.onSetSeekBarResDim(0, -1, -1);
         }
         return valid;
     }
@@ -719,7 +719,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param height
      * @return Negative number if index could not be found, or if mCaptureFormats is invalid.
      */
-    private int getSeekBarIndexDimPresenterHandler(SkylinkCaptureFormat[] captureFormats, int width, int height) {
+    private int getSeekBarIndexDim(SkylinkCaptureFormat[] captureFormats, int width, int height) {
         if (!isCaptureFormatsValid(captureFormats)) {
             return -1;
         }
@@ -744,7 +744,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      * @param captureFormats SkylinkCaptureFormat array for setting range of seekBarResDim.
      * @return True if mCaptureFormats was valid and false otherwise.
      */
-    private boolean setUiResSeekBarRangeDimPresenterHandler(SkylinkCaptureFormat[] captureFormats) {
+    private boolean setUiResSeekBarRangeDim(SkylinkCaptureFormat[] captureFormats) {
         // If there is no valid mCaptureFormats set, set seekBar range to zero.
 
         int seekBarResDimMax = 0;
@@ -756,7 +756,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         }
 
         // Set dimension range based on size of current CaptureFormat list.
-        mVideoCallView.onSetUiResSeekBarRangeDimViewHandler(seekBarResDimMax);
+        mVideoCallView.onSetUiResSeekBarRangeDim(seekBarResDimMax);
 
         return isValid;
     }
@@ -767,7 +767,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
      *
      * @return True if captureFormat was valid and false otherwise.
      */
-    private boolean setUiResSeekBarRangeFpsPresenterHandler(SkylinkCaptureFormat captureFormat) {
+    private boolean setUiResSeekBarRangeFps(SkylinkCaptureFormat captureFormat) {
         // If there is no valid mCaptureFormats set, set seekBar range to zero.
 
         int maxSeekBarFpsRange = 0;
@@ -779,12 +779,12 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         }
 
         // Set dimension range based on size of current CaptureFormat list.
-        mVideoCallView.onSetUiResSeekBarRangeFpsViewHandler(maxSeekBarFpsRange);
+        mVideoCallView.onSetUiResSeekBarRangeFps(maxSeekBarFpsRange);
 
         return isValid;
     }
 
-    private boolean setInputVideoResolutionsPresenterHandler(SkylinkCaptureFormat format, int fpsNew) {
+    private boolean setInputVideoResolutions(SkylinkCaptureFormat format, int fpsNew) {
         int width = format.getWidth();
         int height = format.getHeight();
         if (width < 0 || height < 0 || fpsNew < 0) {
@@ -800,7 +800,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
             return true;
         }
 
-        mVideoCallService.setInputVideoResolutionServiceHandler(width, height, fpsNew);
+        mVideoCallService.setInputVideoResolution(width, height, fpsNew);
 
         return true;
     }
@@ -820,14 +820,14 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     private int setUiResTvOnSeekBarProgressFps(int progress) {
-        int fps = getSeekBarValueFpsPresenterHandler(progress, mCurrentCaptureFormat);
+        int fps = getSeekBarValueFps(progress, mCurrentCaptureFormat);
 
-        mVideoCallView.onSetUiResTvFpsViewHandler(fps);
+        mVideoCallView.onSetUiResTvFps(fps);
 
         return fps;
     }
 
-    private int getSeekBarValueFpsPresenterHandler(int progress, SkylinkCaptureFormat format) {
+    private int getSeekBarValueFps(int progress, SkylinkCaptureFormat format) {
         if (!Utils.isCaptureFormatValid(format)) {
             return -1;
         }
@@ -840,11 +840,4 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         return fps;
     }
 
-    private int setUiResTvOnSeekBarProgressFpsPresenterHandler(int progress) {
-        int fps = getSeekBarValueFpsPresenterHandler(progress, mCurrentCaptureFormat);
-
-        mVideoCallView.onSetUiResTvFpsViewHandler(fps);
-
-        return fps;
-    }
 }

@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.data.model;
+package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
 /**
  * Created by muoi.pham on 20/07/18.

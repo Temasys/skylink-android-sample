@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,45 +19,35 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * A simple {@link MultiPartyFragment} subclass.
  */
-public class FileTransferFragment extends MultiPartyFragment implements FileTransferContract.View{
+public class FileTransferFragment extends MultiPartyFragment implements FileTransferContract.View {
 
     private final String TAG = FileTransferFragment.class.getName();
 
-    //this variable need to be static for configuration change
-    private static FileTransferContract.Presenter mPresenter;
-
-    private PermissionUtils permissionUtils;
-
-    // Constants for configuration change
-    private final String BUNDLE_PEERS_JOINED = "PEERS_JOINED";
-    private TextView tvRoomDetails;
-    private EditText etSenderFilePath;
-    private TextView tvFileTransferDetails;
-    private ImageView ivFilePreview;
-    private Button sendFilePrivate;
-    private Button sendFileGroup;
     private final String FILENAME_PRIVATE = "FileTransferPrivate.png";
     private final String FILENAME_GROUP = "FileTransferGroup.png";
 
-    private MultiPeersInfo multiFileTransferPeersInfo;
+    private FileTransferContract.Presenter mPresenter;
 
-    public FileTransferFragment() {
-        // Required empty public constructor
-    }
+    //static variables for update UI when changing configuration
+    //cause we use different layout for landscape mode
+    private static TextView tvRoomDetails;
+    private static EditText etSenderFilePath;
+    private static TextView tvFileTransferDetails;
+    private static ImageView ivFilePreview;
+    private Button sendFilePrivate;
+    private Button sendFileGroup;
 
     public static FileTransferFragment newInstance() {
         return new FileTransferFragment();
@@ -70,141 +59,9 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_file_transfer, container, false);
-
-        getControlWidgets(rootView);
-
-        setActionBar();
-
-        initComponents();
-
-        // Manual selection of file to send is now enabled.
-        // After selecting Peer(s) to send to, click on file path (etSenderFilePath)
-        // and enter desired file path.
-        etSenderFilePath.setOnClickListener(v -> {
-            // Create Dialog to change file path.
-            // File path will be validated to be a file before change is accepted.
-            AlertDialog.Builder changePathDialogBuilder =
-                    new AlertDialog.Builder(getContext());
-            changePathDialogBuilder.setTitle("Set the path to the file to be transferred.");
-
-            // Create EditText for file path in Dialog.
-            final EditText filePathEdtTxt = new EditText(getContext());
-            filePathEdtTxt.setText(etSenderFilePath.getText());
-            filePathEdtTxt.setMovementMethod(LinkMovementMethod.getInstance());
-            changePathDialogBuilder.setView(filePathEdtTxt);
-
-            // Create a Positive button but this will be overridden later.
-            changePathDialogBuilder.setPositiveButton("Ok",
-                    (dialog, which) -> {
-                        // Do nothing here as this will be overridden later.
-                    });
-
-            // Negative button to cancel setting of file path.
-            changePathDialogBuilder.setNegativeButton("Cancel", null);
-            final AlertDialog changePathDialog = changePathDialogBuilder.create();
-            changePathDialog.show();
-
-            // Override the handler to prevent changePathDialog from auto closing
-            // after clicking button.
-            // Note: Has to be after show() is called.
-            changePathDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
-                    v1 -> {
-                        // Close changePathDialog only if file exists at path provided.
-                        final String filePathNew = filePathEdtTxt.getText().toString();
-
-                        File file = new File(filePathNew);
-                        if (file.isFile()) {
-                            // Set file to be transferred to this path.
-                            prepFile(filePathNew);
-                            changePathDialog.dismiss();
-                        } else {
-                            // Else changePathDialog stays open.
-                            String log = "[SA] File does not exist at newly provided path. "
-                                    + "Please make corrections or cancel operation.";
-                            toastLog(TAG, context, log);
-                            Log.e(TAG, log);
-                        }
-                    });
-        });
-
-        // Check if it was an orientation change
-        if (savedInstanceState != null) {
-            // Resume previous permission request, if any.
-            permissionUtils.permQResume(getContext(), this);
-
-            if (mPresenter.isConnectingOrConnectedPresenterHandler()) {
-                // Set states
-                multiFileTransferPeersInfo = (MultiPeersInfo) savedInstanceState.getSerializable(BUNDLE_PEERS_JOINED);
-
-                // [MultiParty]
-                // Populate peerList
-                if(multiFileTransferPeersInfo != null) {
-//                    popPeerList(multiFileTransferPeersInfo.getPeerIdList());
-                    // Set the appropriate UI if already connected.
-                    onConnectUIChange();
-                }
-            }
-        } else {
-            // This is the start of this sample, reset permission request states.
-            permissionUtils.permQReset();
-
-            // Just set room details
-            boolean isPeerJoined = multiFileTransferPeersInfo == null ? false : true;
-            mPresenter.setRoomDetailsPresenterHandler(isPeerJoined);
-        }
-
-        // Try to connect to room if not yet connected.
-        if (!mPresenter.isConnectingOrConnectedPresenterHandler()) {
-            connectToRoomViewHandler();
-        }
-
-        // Set file to send based on selected Peer.
-        peerRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radio_btn_peer_all) {
-                // Prepare group file for transfer.
-                prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
-            } else {
-                // Prepare private file for transfer.
-                prepFile(Utils.getFileToTransfer(FILENAME_PRIVATE).getAbsolutePath());
-            }
-        });
-
-        // Send file to specific Peer.
-        sendFilePrivate.setOnClickListener(v -> {
-            // [MultiParty]
-            String remotePeerId = getPeerIdSelectedWithWarning();
-            // Do not allow button actions if there are no Peers in the room.
-            if ("".equals(remotePeerId)) {
-                return;
-            }
-
-            sendFileViewHandler(remotePeerId);
-
-        });
-
-        // Send file to all Peers in room, i.e. via public (AKA group) message.
-        sendFileGroup.setOnClickListener(v -> {
-            // [MultiParty]
-            // Do not allow button actions if there are no Peers in the room.
-//            if (getPeerNum() == 0) {
-                String log = getString(R.string.warn_no_peer_message);
-                toastLog(TAG, context, log);
-                return;
-//            }
-            // Select All Peers RadioButton if not already selected
-//            String remotePeerId = getPeerIdSelected();
-//            if (remotePeerId != null) {
-//                peerAll.setChecked(true);
-                // Prepare group file for transfer.
-//                prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
-//            }
-//            sendFileViewHandler(null);
-        });
-
-        return rootView;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
     }
 
     @Override
@@ -213,20 +70,47 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        Log.d(TAG, "[SA][FileTransfer][onCreateView] ");
+
+        View rootView = inflater.inflate(R.layout.fragment_file_transfer, container, false);
+
+        getControlWidgets(rootView);
+
+        setActionBar();
+
+        initControls();
+
+        requestViewLayout();
+
+        etSenderFilePath.setOnClickListener(v -> {
+
+            processSetFilePath();
+        });
+
+        peerRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+
+            processSelectPeer(checkedId);
+
+        });
+
+        sendFilePrivate.setOnClickListener(v -> {
+
+            processSendFilePrivate();
+
+        });
+
+        sendFileGroup.setOnClickListener(v -> {
+
+            processSendFileGroup();
+
+        });
+
+        return rootView;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save states for fragment restart
-        if(multiFileTransferPeersInfo != null) {
-//            multiFileTransferPeersInfo.setPeerIdList(getPeerIdList());
-            outState.putSerializable(BUNDLE_PEERS_JOINED, multiFileTransferPeersInfo);
-        }
-    }
 
     @Override
     public void onDetach() {
@@ -234,15 +118,26 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
+        // in case of changing screen orientation, do not close the connection
         if (!((FileTransferActivity) context).isChangingConfigurations()) {
-            mPresenter.disconnectFromRoomPresenterHandler();
-        }
-    }
+            //disconnect from room
+            mPresenter.onViewExit();
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
+            //clear all static variables for avoiding memory leak
+            peerRadioGroup = null;
+            peerAll = null;
+            peer1 = null;
+            peer2 = null;
+            peer3 = null;
+            peer4 = null;
+
+            mPeers = null;
+
+            tvRoomDetails = null;
+            etSenderFilePath = null;
+            tvFileTransferDetails = null;
+            ivFilePreview = null;
+        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -250,102 +145,61 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void setRoomDetailsViewHandler(String roomDetails) {
+    public Fragment onGetFragment() {
+        return this;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+    }
+
+    @Override
+    public void onFillPeerRadioBtn(List<SkylinkPeer> peersList) {
+        fillPeerRadioBtn(peersList);
+    }
+
+    @Override
+    public void onAddPeerRadioBtn(SkylinkPeer skylinkPeer) {
+        addPeerRadioBtn(skylinkPeer);
+    }
+
+    @Override
+    public void onRemovePeerRadioBtn(String remotePeerId) {
+        removePeerRadioBtn(remotePeerId);
+    }
+
+    @Override
+    public String onGetPeerIdSelected() {
+        return getPeerIdSelected();
+    }
+
+    @Override
+    public void onSetRdPeerAllChecked(boolean isChecked) {
+        peerAll.setChecked(isChecked);
+    }
+
+    @Override
+    public void onSetImagePreviewFromFile(Uri imgUri) {
+        ivFilePreview.setImageURI(imgUri);
+    }
+
+    @Override
+    public void onUpdateTvFileTransferDetails(String info){
+        tvFileTransferDetails.setText(info);
+    }
+
+    @Override
+    public void onUpdateRoomDetails(String roomDetails) {
         tvRoomDetails.setText(roomDetails);
     }
-
-    @Override
-    public void fillPeerRadioBtnViewHandler() {
-//        fillPeerRadioBtn();
-    }
-
-    @Override
-    public void clearPeerListViewHandler() {
-
-    }
-
-    @Override
-    public void onFileReceiveCompleteViewHandler(String msg) {
-
-    }
-
-    @Override
-    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
-
-    }
-
-    @Override
-    public int getPeerNumViewHandler() {
-        return 0;
-    }
-
-    @Override
-    public void removePeerRadioBtnViewHandler(String remotePeerId) {
-
-    }
-
-    @Override
-    public int getPeerlistSizeViewHandler() {
-        return 0;
-    }
-
-    @Override
-    public Fragment getFragmentViewHandler() {
-        return null;
-    }
-
-    @Override
-    public void setIsPeerJoinedViewHandler(boolean isPeerJoined) {
-
-    }
-
-//    @Override
-//    public void clearPeerListViewHandler() {
-//        peerList.clear();
-//    }
-
-//    @Override
-//    public void onFileReceiveCompleteViewHandler(String msg) {
-//        tvFileTransferDetails.setText(msg);
-//    }
-
-//    @Override
-//    public void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer) {
-//        addPeerRadioBtn(skylinkPeer);
-//    }
-
-//    @Override
-//    public int getPeerNumViewHandler() {
-//        return getPeerNum();
-//    }
-
-//    @Override
-//    public void removePeerRadioBtnViewHandler(String remotePeerId) {
-//        removePeerRadioBtn(remotePeerId);
-//    }
-
-//    @Override
-//    public int getPeerlistSizeViewHandler() {
-//        return peerList.size();
-//    }
-
-//    @Override
-//    public android.support.v4.app.Fragment getFragmentViewHandler() {
-//        return this;
-//    }
-
-//    @Override
-//    public void setIsPeerJoinedViewHandler(boolean isPeerJoined) {
-//        if(multiFileTransferPeersInfo == null){
-//            multiFileTransferPeersInfo = new MultiPeersInfo();
-//        }
-//    }
 
     //----------------------------------------------------------------------------------------------
     // private methods
     //----------------------------------------------------------------------------------------------
 
-    private void getControlWidgets(View rootView){
+    private void getControlWidgets(View rootView) {
         // [MultiParty]
         peerRadioGroup = (RadioGroup) rootView.findViewById(R.id.radio_grp_peers);
         peerAll = (RadioButton) rootView.findViewById(R.id.radio_btn_peer_all);
@@ -362,8 +216,8 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         tvFileTransferDetails = (TextView) rootView.findViewById(R.id.tv_file_transfer_details);
     }
 
-    private void setActionBar(){
-        ActionBar actionBar = ((FileTransferActivity)getActivity()).getSupportActionBar();
+    private void setActionBar() {
+        ActionBar actionBar = ((FileTransferActivity) getActivity()).getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -371,24 +225,24 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         setHasOptionsMenu(true);
     }
 
-    private void initComponents(){
-        permissionUtils = new PermissionUtils();
+    private void initControls() {
 
         // Prepare default file for transfer and set UI.
         prepFile(Utils.getFileToTransfer(FILENAME_PRIVATE).getAbsolutePath());
-
-        // [MultiParty]
-        // Initialise peerList if required.
-//        if (peerList == null) {
-//            peerList = new ArrayList<Pair<String, String>>();
-//        }
 
         // Copy files raw/R.raw.icon and raw/R.raw.icon_group to the device's file system
         Utils.createExternalStoragePrivatePicture(FILENAME_PRIVATE, FILENAME_GROUP);
     }
 
-    private void connectToRoomViewHandler() {
-        mPresenter.connectToRoomPresenterHandler();
+    /**
+     * request info to display from presenter
+     * try to connect to room if not connected
+     * try to update UI if connected to room
+     */
+    private void requestViewLayout() {
+        if (mPresenter != null) {
+            mPresenter.onViewLayoutRequested();
+        }
     }
 
     /**
@@ -402,35 +256,91 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         etSenderFilePath.setText(filePath);
     }
 
-    /**
-     * Sends a file to a Peer or all Peers in room.
-     *
-     * @param remotePeerId Peer to send to. Use null to send to all in room.
-     */
-    private void sendFileViewHandler(String remotePeerId) {
-        // Check if valid file
-        String filePath = etSenderFilePath.getText().toString();
-        File file = new File(filePath);
-        if (file.isFile()) {
-            ivFilePreview.setImageURI(Uri.parse(filePath));
+
+    // Manual selection of file to send is now enabled.
+    // After selecting Peer(s) to send to, click on file path (etSenderFilePath)
+    // and enter desired file path.
+    private void processSetFilePath() {
+        // Create Dialog to change file path.
+        // File path will be validated to be a file before change is accepted.
+        AlertDialog.Builder changePathDialogBuilder =
+                new AlertDialog.Builder(getContext());
+        changePathDialogBuilder.setTitle("Set the path to the file to be transferred.");
+
+        // Create EditText for file path in Dialog.
+        final EditText filePathEdtTxt = new EditText(getContext());
+        filePathEdtTxt.setText(etSenderFilePath.getText());
+        filePathEdtTxt.setMovementMethod(LinkMovementMethod.getInstance());
+        changePathDialogBuilder.setView(filePathEdtTxt);
+
+        // Create a Positive button but this will be overridden later.
+        changePathDialogBuilder.setPositiveButton("Ok",
+                (dialog, which) -> {
+                    // Do nothing here as this will be overridden later.
+                });
+
+        // Negative button to cancel setting of file path.
+        changePathDialogBuilder.setNegativeButton("Cancel", null);
+        final AlertDialog changePathDialog = changePathDialogBuilder.create();
+        changePathDialog.show();
+
+        // Override the handler to prevent changePathDialog from auto closing
+        // after clicking button.
+        // Note: Has to be after show() is called.
+        changePathDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
+                v1 -> {
+                    // Close changePathDialog only if file exists at path provided.
+                    final String filePathNew = filePathEdtTxt.getText().toString();
+
+                    File file = new File(filePathNew);
+                    if (file.isFile()) {
+                        // Set file to be transferred to this path.
+                        prepFile(filePathNew);
+                        changePathDialog.dismiss();
+                    } else {
+                        // Else changePathDialog stays open.
+                        String log = "[SA] File does not exist at newly provided path. "
+                                + "Please make corrections or cancel operation.";
+                        toastLog(TAG, context, log);
+                        Log.e(TAG, log);
+                    }
+                });
+    }
+
+    // Set file to send based on selected Peer.
+    private void processSelectPeer(int checkedId){
+
+        if (checkedId == R.id.radio_btn_peer_all) {
+            // Prepare group file for transfer.
+            prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
         } else {
-            String log = "Please enter a valid filename";
-            toastLog(TAG, context, log);
+            // Prepare private file for transfer.
+            prepFile(Utils.getFileToTransfer(FILENAME_PRIVATE).getAbsolutePath());
+        }
+    }
+
+    // Send file to specific Peer.
+    private void processSendFilePrivate(){
+        // [MultiParty]
+        String remotePeerId = getPeerIdSelectedWithWarning();
+        // Do not allow button actions if there are no Peers in the room.
+        if ("".equals(remotePeerId)) {
             return;
         }
 
-        // Send request to peer requesting permission for file transfer
-        mPresenter.sendFilePresenterHandler(remotePeerId, filePath);
+        String filePath = etSenderFilePath.getText().toString();
+
+        mPresenter.onSendFile(remotePeerId, filePath);
     }
 
-    /**
-     * Change certain UI elements once isConnected() to room or when Peer(s) join or leave.
-     */
-    private void onConnectUIChange() {
-        // [MultiParty]
-        boolean isPeerJoined = multiFileTransferPeersInfo == null ? false : true;
-        mPresenter.setRoomDetailsPresenterHandler(isPeerJoined);
-//        fillPeerRadioBtn();
+    // Send file to all Peers in room, i.e. via public (AKA group) message.
+    private void processSendFileGroup(){
+
+        String filePath = etSenderFilePath.getText().toString();
+
+        mPresenter.onSendFile(null, filePath);
+
     }
+
 
 }

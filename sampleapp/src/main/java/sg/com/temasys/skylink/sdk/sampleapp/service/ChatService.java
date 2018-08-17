@@ -1,9 +1,9 @@
-package sg.com.temasys.skylink.sdk.sampleapp.data.service;
+package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
 import android.util.Log;
+
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
 
@@ -29,13 +29,13 @@ public class ChatService extends SDKService implements ChatContract.Service {
         mTypeCall = Constants.CONFIG_TYPE.CHAT;
     }
 
-    public void sendServerMessageServiceHandler(String remotePeerId, String message) {
+    public void sendServerMessage(String remotePeerId, String message) {
         if (mSkylinkConnection != null) {
             mSkylinkConnection.sendServerMessage(remotePeerId, message);
         }
     }
 
-    public void sendP2PMessageServiceHandler(String remotePeerId, String message) {
+    public void sendP2PMessage(String remotePeerId, String message) {
         if (mSkylinkConnection != null) {
             try {
                 mSkylinkConnection.sendP2PMessage(remotePeerId, message);
@@ -44,17 +44,5 @@ public class ChatService extends SDKService implements ChatContract.Service {
             }
         }
     }
-
-    public MultiPeersInfo getPeersListServiceHandler() {
-        return mPeersList;
-    }
-
-    public int getTotalPeersInRoomServiceHandler() {
-        if(mPeersList == null)
-            return 0;
-
-        return mPeersList.getSize();
-    }
-
 
 }

@@ -10,8 +10,8 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -20,103 +20,93 @@ import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
 public interface VideoCallContract {
     interface View extends BaseView<Presenter> {
 
-        void onConnectingUIChangeViewHandler();
+        void onConnectingUIChange();
 
-        void onConnectedUIChangeViewHandler();
+        void onConnectedUIChange();
 
-        void onDisconnectUIChangeViewHandler();
+        void onDisconnectUIChange();
 
-        void onSetUiResTvStatsInputViewHandler(VideoResolution videoInput);
+        void onSetUiResTvStatsInput(VideoResolution videoInput);
 
-        void onSetUiResTvStatsSentViewHandler(VideoResolution videoSent);
+        void onSetUiResTvStatsSent(VideoResolution videoSent);
 
-        void onSetUiResTvStatsReceiveViewHandler(VideoResolution videoReceive);
+        void onSetUiResTvStatsReceive(VideoResolution videoReceive);
 
-        boolean onSetUiResTvDimViewHandler(int width, int height);
+        boolean onSetUiResTvDim(int width, int height);
 
-        void onSetUiResTvFpsViewHandler(int fps);
+        void onSetUiResTvFps(int fps);
 
-        void onAddSelfViewViewHandler(SurfaceViewRenderer videoView);
+        void onAddSelfView(SurfaceViewRenderer videoView);
 
-        void onAddRemoteViewViewHandler(SurfaceViewRenderer remoteVideoView);
+        void onAddRemoteView(SurfaceViewRenderer remoteVideoView);
 
-        void onRemoveRemotePeerViewHandler();
+        void onRemoveRemotePeer();
 
-        Fragment onGetFragmentViewHandler();
+        Fragment onGetFragment();
 
-        void onSetAudioBtnLabelViewHandler(boolean isAudioMuted, boolean isToast);
+        void onSetAudioBtnLabel(boolean isAudioMuted, boolean isToast);
 
-        void onSetVideoBtnLabelViewHandler(boolean isVideoMuted, boolean isToast);
+        void onSetVideoBtnLabel(boolean isVideoMuted, boolean isToast);
 
-        void onSetUiResSeekBarRangeDimViewHandler(int maxSeekBarDimRange);
+        void onSetUiResSeekBarRangeDim(int maxSeekBarDimRange);
 
-        void onSetUiResSeekBarRangeFpsViewHandler(int maxSeekBarFpsRange);
+        void onSetUiResSeekBarRangeFps(int maxSeekBarFpsRange);
 
-        void onSetSeekBarResDimViewHandler(int index, int width, int height);
+        void onSetSeekBarResDim(int index, int width, int height);
 
-        void onSetSeekBarResFpsViewHandler(int index, int fps);
+        void onSetSeekBarResFps(int index, int fps);
 
     }
 
     interface Presenter extends BasePresenter {
 
-        void onDisconnectFromRoomPresenterHandler();
+        void onDisconnectFromRoom();
 
-        void onPermissionRequiredPresenterHandler(PermRequesterInfo info);
+        void onPermissionRequired(PermRequesterInfo info);
 
-        void onPermissionGrantedPresenterHandler(PermRequesterInfo info);
+        void onPermissionGranted(PermRequesterInfo info);
 
-        void onPermissionDeniedPresenterHandler(PermRequesterInfo info);
+        void onPermissionDenied(PermRequesterInfo info);
 
-        void onRequestPermissionsResultPresenterHandler(int requestCode, String[] permissions, int[] grantResults, String tag);
+        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        /**
-         * process update view when remote peer refresh the connection
-         * @param log info to display
-         * @param remotePeerUserInfo
-         */
-        void onRemotePeerConnectionRefreshedPresenterHandler(String log, UserInfo remotePeerUserInfo);
+        void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo);
 
-        /**
-         * process update view when remote peer has receive media info
-         * @param log info to display
-         * @param remotePeerUserInfo
-         */
-        void onRemotePeerMediaReceivePresenterHandler(String log, UserInfo remotePeerUserInfo);
+        void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo);
 
-        void onLocalMediaCapturePresenterHandler(SurfaceViewRenderer videoView);
+        void onLocalMediaCapture(SurfaceViewRenderer videoView);
 
-        void onInputVideoResolutionObtainedPresenterHandler(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
+        void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
 
-        void onReceivedVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps);
+        void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps);
 
-        void onSentVideoResolutionObtainedPresenterHandler(String peerId, int width, int height, int fps);
+        void onSentVideoResolutionObtained(String peerId, int width, int height, int fps);
 
-        void onVideoSizeChangePresenterHandler(String peerId, Point size);
+        void onVideoSizeChange(String peerId, Point size);
 
-        void onProcessBtnAudioMutePresenterHandler();
+        void onProcessBtnAudioMute();
 
-        void onProcessBtnVideoMutePresenterHandler();
+        void onProcessBtnVideoMute();
 
-        void onProcessBtnCameraTogglePresenterHandler();
+        void onProcessBtnCameraToggle();
 
-        void onViewResumePresenterHandler();
+        void onViewResume();
 
-        void onViewPausePresenterHandler();
+        void onViewPause();
 
-        void onSwitchCameraPresenterHandler();
+        void onSwitchCamera();
 
-        void onDimProgressChangedPresenterHandler(int progress);
+        void onDimProgressChanged(int progress);
 
-        void onFpsProgressChangedPresenterHandler(int progress);
+        void onFpsProgressChanged(int progress);
 
-        void onDimStopTrackingTouchPresenterHandler(int progress);
+        void onDimStopTrackingTouch(int progress);
 
-        void onFpsStopTrackingTouchPresenterHandler(int progress);
+        void onFpsStopTrackingTouch(int progress);
 
-        String onGetRoomPeerIdNickPresenterHandler();
+        String onGetRoomPeerIdNick();
 
-        void onGetVideoResolutionsPresenterHandler();
+        void onGetVideoResolutions();
 
     }
 

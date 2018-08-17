@@ -1,11 +1,15 @@
 package sg.com.temasys.skylink.sdk.sampleapp.filetransfer;
 
+import android.net.Uri;
 import android.support.v4.app.Fragment;
+
+import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -15,55 +19,50 @@ public interface FileTransferContract {
 
     interface View extends BaseView<Presenter> {
 
-        void setRoomDetailsViewHandler(String roomDetails);
+        Fragment onGetFragment();
 
-        void fillPeerRadioBtnViewHandler();
+        void onAddPeerRadioBtn(SkylinkPeer newPeer);
 
-        void clearPeerListViewHandler();
+        void onRemovePeerRadioBtn(String remotePeerId);
 
-        void onFileReceiveCompleteViewHandler(String msg);
+        void onFillPeerRadioBtn(List<SkylinkPeer> peersList);
 
-        void addPeerRadioBtnViewHandler(SkylinkPeer skylinkPeer);
+        String onGetPeerIdSelected();
 
-        int getPeerNumViewHandler();
+        void onSetRdPeerAllChecked(boolean isChecked);
 
-        void removePeerRadioBtnViewHandler(String remotePeerId);
+        void onSetImagePreviewFromFile(Uri imgUri);
 
-        int getPeerlistSizeViewHandler();
+        void onUpdateTvFileTransferDetails(String info);
 
-        Fragment getFragmentViewHandler();
-
-        void setIsPeerJoinedViewHandler(boolean isPeerJoined);
+        void onUpdateRoomDetails(String roomDetails);
     }
 
     interface Presenter extends BasePresenter {
-        void setRoomDetailsPresenterHandler(boolean isPeerJoined);
 
-        void sendFilePresenterHandler(String remotePeerId, String filePath);
+        void onPermissionRequired(PermRequesterInfo info);
 
-        void disconnectFromRoomPresenterHandler();
+        void onPermissionGranted(PermRequesterInfo info);
 
-        void connectToRoomPresenterHandler();
+        void onPermissionDenied(PermRequesterInfo info);
 
-        void fillPeerRadioBtnPresenterHandler();
-        
-        void clearPeerListPresenterHandler();
-        
-        void onFileReceiveCompletePresenterHandler(String msg);
-        
-        void addPeerRadioBtnPresenterHandler(SkylinkPeer skylinkPeer);
-        
-        int getPeerNumPresenterHandler();
+        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        void removePeerRadioBtnPresenterHandler(String remotePeerId);
-        
-        int getPeerlistSizePresenterHandler();
+        void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted);
 
-        Fragment getFragmentPresenterHandler();
+        void onFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate);
 
-        boolean isConnectingOrConnectedPresenterHandler();
+        void onFileTransferDrop(String remotePeerId, String fileName, String message, boolean isExplicit);
 
-        void setIsPeerJoinedPresenterHandler(boolean isPeerJoined);
+        void onFileSendComplete(String remotePeerId, String fileName);
+
+        void onFileReceiveComplete(String remotePeerId, String fileName);
+
+        void onFileSendProgress(String remotePeerId, String fileName, double percentage);
+
+        void onFileReceiveProgress(String remotePeerId, String fileName, double percentage);
+
+        void onSendFile(String remotePeerId, String filePath);
     }
 
     interface Service extends BaseService<Presenter> {

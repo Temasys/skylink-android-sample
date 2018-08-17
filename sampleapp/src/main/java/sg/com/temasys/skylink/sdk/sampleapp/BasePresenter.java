@@ -1,8 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.MultiPeersInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -13,35 +11,31 @@ public interface BasePresenter {
     /**
      * process data to display on View
      */
-    void onViewLayoutRequestedPresenterHandler();
+    void onViewLayoutRequested();
 
     /**
      * process update view when connected to Skylink SDK
      */
-    void onConnectPresenterHandler(boolean isSuccessful);
+    void onConnect(boolean isSuccessful);
 
     /**
      * process update view when disconnect from Skylink SDK
      */
-    void onDisconnectPresenterHandler();
+    void onDisconnect();
 
     /**
      * process disconnect from room when view exit
      */
-    void onViewExitPresenterHandler();
+    void onViewExit();
 
     /**
      * process update view when remote peer joined the room
-     * @param newPeer
      */
-    void onRemotePeerJoinPresenterHandler(SkylinkPeer newPeer);
+    void onRemotePeerJoin(SkylinkPeer newPeer);
 
     /**
      * process update view when remote peer left the room
-     * @param remotePeerId
      */
-    void onRemotePeerLeavePresenterHandler(String remotePeerId);
-
-
+    void onRemotePeerLeave(String remotePeerId);
 
 }

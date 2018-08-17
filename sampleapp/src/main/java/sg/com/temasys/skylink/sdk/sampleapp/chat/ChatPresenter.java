@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.ChatService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.ChatService;
 
 
 /**
@@ -43,16 +43,16 @@ public class ChatPresenter implements ChatContract.Presenter {
      * Try to update UI if connected to room after changing configuration
      */
     @Override
-    public void onViewLayoutRequestedPresenterHandler() {
+    public void onViewLayoutRequested() {
 
-        Log.d(TAG, "onViewLayoutRequestedPresenterHandler");
+        Log.d(TAG, "onViewLayoutRequested");
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mChatService.isConnectingOrConnectedServiceHandler()) {
+        if (!mChatService.isConnectingOrConnected()) {
 
             //connect to room on Skylink connection
-            mChatService.connectToRoomServiceHandler();
+            mChatService.connectToRoom();
 
             //after connected to skylink SDK, UI will be updated later on ChatService.onConnect
 
@@ -61,19 +61,19 @@ public class ChatPresenter implements ChatContract.Presenter {
         } else {
 
             //update UI into connected state
-            updateUIPresenterHandler();
+            updateUI();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
     @Override
-    public void onConnectPresenterHandler(boolean isSuccessful) {
-        updateUIPresenterHandler();
+    public void onConnect(boolean isSuccessful) {
+        updateUI();
     }
 
     @Override
-    public void onDisconnectPresenterHandler() {
+    public void onDisconnect() {
 
         // Reset chat collection
         chatMessageCollection.clear();
@@ -81,68 +81,68 @@ public class ChatPresenter implements ChatContract.Presenter {
     }
 
     @Override
-    public void onViewExitPresenterHandler() {
+    public void onViewExit() {
 
         //process disconnect from room
-        mChatService.disconnectFromRoomServiceHandler();
+        mChatService.disconnectFromRoom();
 
         //after disconnected from skylink SDK, UI will be updated later on ChatService.onDisconnect
     }
 
     @Override
-    public void onRemotePeerJoinPresenterHandler(SkylinkPeer newPeer) {
+    public void onRemotePeerJoin(SkylinkPeer newPeer) {
 
         //add new remote peer
-        mChatView.addPeerRadioBtnViewHandler(newPeer);
+        mChatView.addPeerRadioBtn(newPeer);
 
         // Update textview to show room status when first remote peer has joined with self peer
-        if (mChatService.getTotalPeersInRoomServiceHandler() == 2) {
-            updateRoomDetailsPresenterHandler();
+        if (mChatService.getTotalPeersInRoom() == 2) {
+            updateRoomDetails();
         }
     }
 
     @Override
-    public void onRemotePeerLeavePresenterHandler(String remotePeerId) {
+    public void onRemotePeerLeave(String remotePeerId) {
         // Remove remote peer
-        mChatView.onRemovePeerRadioBtnViewHandler(remotePeerId);
+        mChatView.onRemovePeerRadioBtn(remotePeerId);
 
         // Update textview to show room status when last remote peer has left
-        if (mChatService.getTotalPeersInRoomServiceHandler() == 1) {
-            updateRoomDetailsPresenterHandler();
+        if (mChatService.getTotalPeersInRoom() == 1) {
+            updateRoomDetails();
         }
     }
 
     @Override
-    public void onSendServerMessagePresenterHandler(String remotePeerId, String message) {
+    public void onSendServerMessage(String remotePeerId, String message) {
 
         //add message to listview for displaying
-        addSelfMessageToListViewPresenterHandler(remotePeerId, false, message);
+        addSelfMessageToListView(remotePeerId, false, message);
 
         //send message to SDK
-        mChatService.sendServerMessageServiceHandler(remotePeerId, message);
+        mChatService.sendServerMessage(remotePeerId, message);
     }
 
     @Override
-    public void onSendP2PMessagePresenterHandler(String remotePeerId, String message) {
+    public void onSendP2PMessage(String remotePeerId, String message) {
 
         //need to check remotePeerId existed
         //remotePeerId = null when selecting All peer(s)
         //remotePeerId = "" when not selecting any peer
         if(remotePeerId == null || !remotePeerId.equals("")) {
 
-            addSelfMessageToListViewPresenterHandler(remotePeerId, true, message);
+            addSelfMessageToListView(remotePeerId, true, message);
 
-            mChatService.sendP2PMessageServiceHandler(remotePeerId, message);
+            mChatService.sendP2PMessage(remotePeerId, message);
         }
     }
 
     @Override
-    public List<String> onGetChatMessageCollectionPresenterHandler() {
+    public List<String> onGetChatMessageCollection() {
         return chatMessageCollection;
     }
 
     @Override
-    public void onServerMessageReceivePresenterHandler(String remotePeerId, Object message, boolean isPrivate) {
+    public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
 
         String chatPrefix = "[SIG] ";
         //add prefix if the chat is a private chat - not seen by other users.
@@ -154,14 +154,14 @@ public class ChatPresenter implements ChatContract.Presenter {
 
         // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = mChatService.getPeerNameByIdServiceHandler(remotePeerId);
+            String remotePeerName = mChatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onListViewRefreshViewHandler();
+            mChatView.onListViewRefresh();
         }
     }
 
     @Override
-    public void onP2PMessageReceivePresenterHandler(String remotePeerId, Object message, boolean isPrivate) {
+    public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
 
         //add prefix if the chat is a private chat - not seen by other users.
         String chatPrefix = "[P2P] ";
@@ -173,9 +173,9 @@ public class ChatPresenter implements ChatContract.Presenter {
 
         // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = mChatService.getPeerNameByIdServiceHandler(remotePeerId);
+            String remotePeerName = mChatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onListViewRefreshViewHandler();
+            mChatView.onListViewRefresh();
         }
     }
 
@@ -187,7 +187,7 @@ public class ChatPresenter implements ChatContract.Presenter {
      * @param isP2P        is send P2P msg or server msg
      * @param message      msg to be sent
      */
-    private void addSelfMessageToListViewPresenterHandler(String remotePeerId, boolean isP2P, String message) {
+    private void addSelfMessageToListView(String remotePeerId, boolean isP2P, String message) {
         boolean isPrivateMessage = true;
 
         // Do not allow button actions if there are no Peers in the room.
@@ -203,31 +203,31 @@ public class ChatPresenter implements ChatContract.Presenter {
 
         chatMessageCollection.add(prefix + message);
 
-        mChatView.onListViewRefreshViewHandler();
+        mChatView.onListViewRefresh();
 
-        mChatView.onClearEditTextViewHandler();
+        mChatView.onClearEditText();
     }
 
-    private void updateUIPresenterHandler() {
+    private void updateUI() {
 
-        mChatView.onListViewRefreshViewHandler();
+        mChatView.onListViewRefresh();
 
-        updateRoomDetailsPresenterHandler();
+        mChatView.fillPeerRadioBtn(mChatService.getPeersList());
 
-        mChatView.fillPeerRadioBtnViewHandler(mChatService.getPeersListServiceHandler());
+        updateRoomDetails();
     }
 
-    private void updateRoomDetailsPresenterHandler() {
-        String strRoomDetails = getRoomDetailsPresenterHandler();
-        mChatView.onUpdateRoomDetailsViewHandler(strRoomDetails);
+    private void updateRoomDetails() {
+        String strRoomDetails = getRoomDetails();
+        mChatView.onUpdateRoomDetails(strRoomDetails);
     }
 
-    private String getRoomDetailsPresenterHandler() {
-        boolean isConnected = mChatService.isConnectingOrConnectedServiceHandler();
-        String roomName = mChatService.getRoomNameServiceHandler(Config.ROOM_NAME_CHAT);
-        String userName = mChatService.getUserNameServiceHandler(null, Config.USER_NAME_CHAT);
+    private String getRoomDetails() {
+        boolean isConnected = mChatService.isConnectingOrConnected();
+        String roomName = mChatService.getRoomName(Config.ROOM_NAME_CHAT);
+        String userName = mChatService.getUserName(null, Config.USER_NAME_CHAT);
 
-        boolean isPeerJoined = mChatService.isPeerJoinServiceHandler();
+        boolean isPeerJoined = mChatService.isPeerJoin();
 
         String roomDetails = "You are not connected to any room";
 

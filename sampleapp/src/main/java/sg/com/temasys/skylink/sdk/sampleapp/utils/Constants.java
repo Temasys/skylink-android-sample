@@ -25,7 +25,4 @@ public final class Constants {
         FILE,
         MULTI_PARTY_VIDEO
     }
-
-    private Constants() {
-    }
 }

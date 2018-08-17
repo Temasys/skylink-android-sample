@@ -1,6 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.data.service;
-
-import android.content.Context;
+package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 

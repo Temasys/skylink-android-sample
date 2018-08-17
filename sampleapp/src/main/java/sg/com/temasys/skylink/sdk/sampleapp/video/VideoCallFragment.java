@@ -23,7 +23,7 @@ import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.View.GONE;
@@ -49,17 +49,20 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     private Button btnVideoMute;
     private Button btnCameraToggle;
     private TextView tvInput;
-    private TextView tvResInput;
+
+    //static variables for update UI when changing configuration
+    //cause we use different layout for landscape mode
+    private static TextView tvResInput;
     private TextView tvSent;
-    private TextView tvResSent;
+    private static TextView tvResSent;
     private TextView tvRecv;
-    private TextView tvResRecv;
-    private SeekBar seekBarResDim;
-    private SeekBar seekBarResFps;
-    private TextView tvResDim;
-    private TextView tvResFps;
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim;
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResFps;
+    private static TextView tvResRecv;
+    private static SeekBar seekBarResDim;
+    private static SeekBar seekBarResFps;
+    private static TextView tvResDim;
+    private static TextView tvResFps;
+    private static SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim;
+    private static SeekBar.OnSeekBarChangeListener seekBarChangeListenerResFps;
 
     public VideoCallFragment() {
         // Required empty public constructor
@@ -103,22 +106,24 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         requestViewLayout();
 
         btnAudioMute.setOnClickListener(v -> {
-            mPresenter.onProcessBtnAudioMutePresenterHandler();
+            mPresenter.onProcessBtnAudioMute();
         });
 
         btnVideoMute.setOnClickListener(v -> {
-            mPresenter.onProcessBtnVideoMutePresenterHandler();
+            mPresenter.onProcessBtnVideoMute();
         });
 
         btnCameraToggle.setOnClickListener(v -> {
-            mPresenter.onProcessBtnCameraTogglePresenterHandler();
+            mPresenter.onProcessBtnCameraToggle();
         });
 
         disconnectButton.setOnClickListener(v -> {
 
-            mPresenter.onDisconnectFromRoomPresenterHandler();
+            mPresenter.onDisconnectFromRoom();
 
             toastLog(TAG, mContext, "Clicked Disconnect!");
+
+            onDisconnectUIChange();
         });
 
         return rootView;
@@ -128,7 +133,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     public void onResume() {
         super.onResume();
 
-        mPresenter.onViewResumePresenterHandler();
+        mPresenter.onViewResume();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
@@ -138,14 +143,14 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
         // Stop local video source only if not changing orientation
         if (!((VideoCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewPausePresenterHandler();
+            mPresenter.onViewPause();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
+        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
@@ -153,7 +158,18 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     public void onDetach() {
         super.onDetach();
         if (!((VideoCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewExitPresenterHandler();
+            mPresenter.onViewExit();
+
+            //clear all static variables
+            tvResInput = null;
+            tvResSent = null;
+            tvResRecv = null;
+            seekBarResDim = null;
+            seekBarResFps = null;
+            tvResDim = null;
+            tvResFps = null;
+            seekBarChangeListenerResDim = null;
+            seekBarChangeListenerResFps = null;
         }
     }
 
@@ -208,7 +224,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                mPresenter.onDimProgressChangedPresenterHandler(progress);
+                mPresenter.onDimProgressChanged(progress);
             }
 
             @Override
@@ -219,7 +235,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
-                mPresenter.onDimStopTrackingTouchPresenterHandler(seekBar.getProgress());
+                mPresenter.onDimStopTrackingTouch(seekBar.getProgress());
             }
         };
     }
@@ -230,7 +246,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                mPresenter.onFpsProgressChangedPresenterHandler(progress);
+                mPresenter.onFpsProgressChanged(progress);
             }
 
             @Override
@@ -240,7 +256,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mPresenter.onFpsStopTrackingTouchPresenterHandler(seekBar.getProgress());
+                mPresenter.onFpsStopTrackingTouch(seekBar.getProgress());
 
             }
         };
@@ -303,10 +319,11 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     /**
      * request info to display from presenter
      * try to connect to room if not connected
+     * try to update UI if connnected
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewLayoutRequestedPresenterHandler();
+            mPresenter.onViewLayoutRequested();
         }
     }
 
@@ -410,7 +427,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Change certain UI elements when trying to connect to room, but not connected
      */
     @Override
-    public void onConnectingUIChangeViewHandler() {
+    public void onConnectingUIChange() {
         btnAudioMute.setVisibility(GONE);
         btnVideoMute.setVisibility(GONE);
         btnCameraToggle.setVisibility(GONE);
@@ -422,7 +439,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Change certain UI elements once connected to room or when Peer(s) join or leave.
      */
     @Override
-    public void onConnectedUIChangeViewHandler() {
+    public void onConnectedUIChange() {
         btnAudioMute.setVisibility(VISIBLE);
         btnVideoMute.setVisibility(VISIBLE);
         btnCameraToggle.setVisibility(VISIBLE);
@@ -434,7 +451,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Change certain UI elements when disconnecting from room.
      */
     @Override
-    public void onDisconnectUIChangeViewHandler() {
+    public void onDisconnectUIChange() {
         View self = linearLayout.findViewWithTag("self");
         if (self != null) {
             linearLayout.removeView(self);
@@ -458,27 +475,27 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onSetUiResTvStatsInputViewHandler(VideoResolution videoInput) {
+    public void onSetUiResTvStatsInput(VideoResolution videoInput) {
         setUiResTvStats(videoInput, tvResInput);
     }
 
     @Override
-    public void onSetUiResTvStatsSentViewHandler(VideoResolution videoSent) {
+    public void onSetUiResTvStatsSent(VideoResolution videoSent) {
         setUiResTvStats(videoSent, tvResSent);
     }
 
     @Override
-    public void onSetUiResTvStatsReceiveViewHandler(VideoResolution videoReceive) {
+    public void onSetUiResTvStatsReceive(VideoResolution videoReceive) {
         setUiResTvStats(videoReceive, tvResRecv);
     }
 
     @Override
-    public boolean onSetUiResTvDimViewHandler(int width, int height) {
+    public boolean onSetUiResTvDim(int width, int height) {
         return setUiResTvDim(width, height);
     }
 
     @Override
-    public void onSetUiResTvFpsViewHandler(int fps) {
+    public void onSetUiResTvFps(int fps) {
         setUiResTvFps(fps);
     }
 
@@ -488,7 +505,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * @param videoView
      */
     @Override
-    public void onAddSelfViewViewHandler(SurfaceViewRenderer videoView) {
+    public void onAddSelfView(SurfaceViewRenderer videoView) {
         if (videoView != null) {
             // If previous self video exists,
             // Set new video to size of previous self video
@@ -504,7 +521,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             // Show room and self info, plus give option to
             // switch self view between different cameras (if any).
             videoView.setOnClickListener(v -> {
-                String name = mPresenter.onGetRoomPeerIdNickPresenterHandler();
+                String name = mPresenter.onGetRoomPeerIdNick();
 
                 name += "\r\nClick outside dialog to return.";
                 TextView selfTV = new TextView(mContext);
@@ -517,11 +534,11 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
                 selfDialogBuilder.setView(selfTV);
                 // Get the available video resolutions.
                 selfDialogBuilder.setPositiveButton("Video resolutions",
-                        (dialog, which) -> mPresenter.onGetVideoResolutionsPresenterHandler());
+                        (dialog, which) -> mPresenter.onGetVideoResolutions());
                 // Switch camera if possible.
                 selfDialogBuilder.setNegativeButton("Switch Camera",
                         (dialog, which) -> {
-                            mPresenter.onSwitchCameraPresenterHandler();
+                            mPresenter.onSwitchCamera();
                         });
                 selfDialogBuilder.show();
             });
@@ -558,7 +575,11 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      * Add or update remote Peer's VideoView into the app.
      */
     @Override
-    public void onAddRemoteViewViewHandler(SurfaceViewRenderer remoteVideoView) {
+    public void onAddRemoteView(SurfaceViewRenderer remoteVideoView) {
+
+        if(remoteVideoView == null)
+            return;
+
         // Remove previous peer video if it exists
         View viewToRemove = linearLayout.findViewWithTag("peer");
         if (viewToRemove != null) {
@@ -579,18 +600,18 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onRemoveRemotePeerViewHandler() {
+    public void onRemoveRemotePeer() {
         View peerView = linearLayout.findViewWithTag("peer");
         linearLayout.removeView(peerView);
     }
 
     @Override
-    public Fragment onGetFragmentViewHandler() {
+    public Fragment onGetFragment() {
         return this;
     }
 
     @Override
-    public void onSetAudioBtnLabelViewHandler(boolean isAudioMuted, boolean isToast) {
+    public void onSetAudioBtnLabel(boolean isAudioMuted, boolean isToast) {
         if (isAudioMuted) {
             btnAudioMute.setText(getString(R.string.enable_audio));
             if (isToast) {
@@ -607,7 +628,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onSetVideoBtnLabelViewHandler(boolean isVideoMuted, boolean isToast) {
+    public void onSetVideoBtnLabel(boolean isVideoMuted, boolean isToast) {
         if (isVideoMuted) {
             btnVideoMute.setText(getString(R.string.enable_video));
             if (isToast) {
@@ -624,17 +645,17 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onSetUiResSeekBarRangeDimViewHandler(int maxSeekBarDimRange) {
+    public void onSetUiResSeekBarRangeDim(int maxSeekBarDimRange) {
         seekBarResDim.setMax(maxSeekBarDimRange);
     }
 
     @Override
-    public void onSetUiResSeekBarRangeFpsViewHandler(int maxSeekBarFpsRange) {
+    public void onSetUiResSeekBarRangeFps(int maxSeekBarFpsRange) {
         seekBarResFps.setMax(maxSeekBarFpsRange);
     }
 
     @Override
-    public void onSetSeekBarResDimViewHandler(int index, int width, int height) {
+    public void onSetSeekBarResDim(int index, int width, int height) {
         // Set the SeekBar
         seekBarResDim.setProgress(index);
         // Set TextView
@@ -642,7 +663,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onSetSeekBarResFpsViewHandler(int index, int fps) {
+    public void onSetSeekBarResFps(int index, int fps) {
         // Set the SeekBar
         seekBarResFps.setProgress(index);
         // Set TextView

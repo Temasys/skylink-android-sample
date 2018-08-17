@@ -39,16 +39,14 @@
             android:configChanges="orientation|screenSize"/>
         <activity
             android:name=".filetransfer.FileTransferActivity"
-            android:label="@string/title_section4"
-            android:configChanges="orientation|screenSize"/>
+            android:label="@string/title_section4"/>
         <activity
             android:name=".datatransfer.DataTransferActivity"
             android:label="@string/title_section5"
             android:configChanges="orientation|screenSize"/>
         <activity
             android:name=".video.VideoCallActivity"
-            android:label="@string/title_section2"
-            android:configChanges="orientation|screenSize"/>
+            android:label="@string/title_section2"/>
         <activity
             android:name=".multipartyvideo.MultiPartyVideoCallActivity"
             android:label="@string/title_section6"

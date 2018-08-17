@@ -1,17 +1,14 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
-import android.text.method.LinkMovementMethod;
 import android.util.Base64;
 import android.util.Log;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -43,19 +40,13 @@ import javax.crypto.spec.SecretKeySpec;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_AUDIO_MIC;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_READ;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_WRITE;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_VIDEO_CAM;
-import static sg.com.temasys.skylink.sdk.rtc.Info.getInfoString;
 
 public class Utils {
 
@@ -74,37 +65,6 @@ public class Utils {
 
     public Utils(Context context){
         this.mContext = context;
-    }
-
-    /**
-     * Returns the userData of a Peer as a String.
-     * If there is no userData, returns the empty string, "".
-     *
-     * @param peerId The PeerId for which to search. Use null for self (local Peer).
-     * @return
-     */
-    public static String getUserDataString(SkylinkConnection skylinkConnection, String peerId) {
-        Object userDataObject = skylinkConnection.getUserData(peerId);
-        String userDataString = "";
-        if (userDataObject != null) {
-            userDataString = userDataObject.toString();
-        }
-        return userDataString;
-    }
-
-    /**
-     * Returns the nickname of a Peer as the userData as a string.
-     * If there is no userData, return the PeerId.
-     *
-     * @param peerId
-     * @return
-     */
-    public static String getNick(SkylinkConnection skylinkConnection, String peerId) {
-        String nick = getUserDataString(skylinkConnection, peerId);
-        if ("".equals(nick)) {
-            nick = peerId;
-        }
-        return nick;
     }
 
     /**

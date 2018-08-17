@@ -12,8 +12,8 @@ import android.widget.TextView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.PermRequesterInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.data.service.PermissionService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.PermissionService;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_AUDIO_MIC;
 import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_READ;

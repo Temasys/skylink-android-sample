@@ -1,124 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout android:id="@+id/ll_file_transfer"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_margin="@dimen/dp_10dp"
-              android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/tv_file_room_details"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textIsSelectable="true"/>
-
-
-    <ImageView
-        android:id="@+id/iv_file_preview"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center_horizontal"/>
-
-    <EditText
-        android:id="@+id/et_file_path"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:editable="false"
-        android:focusableInTouchMode="false"
-        android:hint="Path of file to transfer"/>
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <RadioGroup
-            android:id="@+id/radio_grp_peers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer_all"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/label_all_peers"
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer4"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-        </RadioGroup>
-    </HorizontalScrollView>
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="fill_horizontal|fill_vertical"
+    android:layout_margin="@dimen/dp_10dp"
+    android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/lin_layout_buttons"
+        android:id="@+id/ll_first"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_send_file_pte"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tv_file_room_details"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Send File"
-            android:background="@drawable/button_corner_ripple"
-            android:layout_marginRight="@dimen/dp_10dp"/>
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
-        <Button
-            android:id="@+id/btn_send_file_grp"
-            android:layout_width="0dp"
+        <ImageView
+            android:id="@+id/iv_file_preview"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <EditText
+            android:id="@+id/et_file_path"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Send File [Group]"
-            android:background="@drawable/button_corner_ripple"/>
+            android:editable="false"
+            android:focusableInTouchMode="false"
+            android:hint="Path of file to transfer"/>
+
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/scroll_room"
+
+    <LinearLayout
+        android:id="@+id/ll_second"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:orientation="vertical">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tv_file_transfer_details"
+            <RadioGroup
+                android:id="@+id/radio_grp_peers"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text=""
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textIsSelectable="true"/>
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer_all"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_all_peers"
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+                <RadioButton
+                    android:id="@+id/radio_btn_peer4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:visibility="invisible"/>
+
+            </RadioGroup>
         </HorizontalScrollView>
-    </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/lin_layout_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_send_file_pte"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Send File"
+                android:background="@drawable/button_corner_ripple"
+                android:layout_marginRight="@dimen/dp_10dp"/>
+
+            <Button
+                android:id="@+id/btn_send_file_grp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Send File [Group]"
+                android:background="@drawable/button_corner_ripple"/>
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/scroll_room"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <TextView
+                    android:id="@+id/tv_file_transfer_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text=""
+                    android:textSize="@dimen/sp_11sp"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textIsSelectable="true"/>
+            </HorizontalScrollView>
+        </ScrollView>
+
+    </LinearLayout>
+
+
 </LinearLayout>

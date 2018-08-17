@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.data.service;
+package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
 
@@ -6,7 +6,7 @@ import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.sampleapp.data.model.VideoLocalState;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
@@ -17,6 +17,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
 
 public class VideoService extends SDKService implements VideoCallContract.Service {
 
+    //this variable need to be static for configuration change
     private static VideoLocalState videoLocalState = new VideoLocalState();
 
     public VideoService(Context context) {
@@ -33,69 +34,63 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
         mTypeCall = Constants.CONFIG_TYPE.VIDEO;
     }
 
-    public boolean isAudioMuteServiceHandler() {
-        if (videoLocalState != null)
-            return videoLocalState.isAudioMute();
-
-        return false;
+    public boolean isAudioMute() {
+        return videoLocalState.isAudioMute();
     }
 
-    public void setAudioMuteServiceHandler(boolean isAudioMuted) {
+    public void setAudioMute(boolean isAudioMuted) {
         videoLocalState.setAudioMute(isAudioMuted);
     }
 
-    public boolean isVideoMuteServiceHandler() {
+    public boolean isVideoMute() {
         if (videoLocalState != null)
             return videoLocalState.isVideoMute();
 
         return false;
     }
 
-    public void setVideoMuteServiceHandler(boolean isVideoMuted) {
+    public void setVideoMute(boolean isVideoMuted) {
         videoLocalState.setVideoMute(isVideoMuted);
     }
 
-    public boolean isCameraToggleServiceHandler() {
-        if (videoLocalState != null)
-            return videoLocalState.isCameraToggle();
-
-        return false;
+    public boolean isCameraToggle() {
+        return videoLocalState.isCameraToggle();
     }
 
-    public void setCamToggleServiceHandler(boolean isCamToggle) {
+    public void setCamToggle(boolean isCamToggle) {
         videoLocalState.setCameraToggle(isCamToggle);
     }
 
-    public boolean toggleCameraServiceHandler() {
+    public boolean toggleCamera() {
         if (mSkylinkConnection != null)
             return mSkylinkConnection.toggleCamera();
         return false;
     }
 
-    public boolean toggleCameraServiceHandler(boolean isToggle) {
+    public boolean toggleCamera(boolean isToggle) {
         if (mSkylinkConnection != null)
             return mSkylinkConnection.toggleCamera(isToggle);
         return false;
     }
 
-    public void muteLocalAudioServiceHandler(boolean audioMuted) {
+    public void muteLocalAudio(boolean audioMuted) {
         if (mSkylinkConnection != null)
             mSkylinkConnection.muteLocalAudio(audioMuted);
     }
 
-    public void muteLocalVideoServiceHandler(boolean videoMuted) {
+    public void muteLocalVideo(boolean videoMuted) {
         if (mSkylinkConnection != null)
             mSkylinkConnection.muteLocalVideo(videoMuted);
     }
 
-    public SurfaceViewRenderer getVideoViewServiceHandler(String remotePeerId) {
+    public SurfaceViewRenderer getVideoView(String remotePeerId) {
         if (mSkylinkConnection != null)
             return mSkylinkConnection.getVideoView(remotePeerId);
 
         return null;
     }
 
-    public SkylinkCaptureFormat[] getCaptureFormatsServiceHandler(SkylinkConfig.VideoDevice videoDevice) {
+    public SkylinkCaptureFormat[] getCaptureFormats(SkylinkConfig.VideoDevice videoDevice) {
         if (mSkylinkConnection != null) {
             return mSkylinkConnection.getCaptureFormats(videoDevice);
         }
@@ -103,7 +98,7 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
         return null;
     }
 
-    public String getCaptureFormatsStringServiceHandler(SkylinkCaptureFormat[] captureFormats) {
+    public String getCaptureFormatsString(SkylinkCaptureFormat[] captureFormats) {
         String strFormat = "No CaptureFormat currently registered.";
         String strFormats = "No CaptureFormats currently registered.";
 
@@ -112,40 +107,43 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
         }
 
         // Get the current CaptureFormat, if there is one.
-        SkylinkCaptureFormat captureFormat = mSkylinkConnection.getCaptureFormat();
+        String captureFormatString = null;
+        if (mSkylinkConnection != null) {
+            SkylinkCaptureFormat captureFormat = mSkylinkConnection.getCaptureFormat();
 
 
-        if (captureFormat != null) {
-            strFormat = captureFormat.toString();
+            if (captureFormat != null) {
+                strFormat = captureFormat.toString();
+            }
+
+            captureFormatString = "Current capture format: " + strFormat + ".\r\n" +
+                    "Supported capture formats: " + strFormats + ".";
         }
-
-        String captureFormatString = "Current capture format: " + strFormat + ".\r\n" +
-                "Supported capture formats: " + strFormats + ".";
         return captureFormatString;
     }
 
-    public String getCurrentCameraNameServiceHandler() {
+    public String getCurrentCameraName() {
 
-        if(mSkylinkConnection != null){
+        if (mSkylinkConnection != null) {
             return mSkylinkConnection.getCurrentCameraName();
         }
         return null;
     }
 
-    public SkylinkConfig.VideoDevice getCurrentVideoDeviceServiceHandler() {
-        if(mSkylinkConnection != null){
+    public SkylinkConfig.VideoDevice getCurrentVideoDevice() {
+        if (mSkylinkConnection != null) {
             return mSkylinkConnection.getCurrentVideoDevice();
         }
         return null;
     }
 
-    public void setInputVideoResolutionServiceHandler(int width, int height, int fps) {
+    public void setInputVideoResolution(int width, int height, int fps) {
         if (mSkylinkConnection != null) {
             mSkylinkConnection.setInputVideoResolution(width, height, fps);
         }
     }
 
-    public void getVideoResolutionsServiceHandler(String peerId) {
+    public void getVideoResolutions(String peerId) {
 
 
         if (mSkylinkConnection == null) {
@@ -162,7 +160,7 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
         }
     }
 
-    public void switchCameraServiceHandler() {
+    public void switchCamera() {
         if (mSkylinkConnection != null) {
             mSkylinkConnection.switchCamera();
         }

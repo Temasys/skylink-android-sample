@@ -1,12 +1,18 @@
 package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
+import android.graphics.Point;
 import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
 
+import java.util.HashMap;
+
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
+import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -15,72 +21,86 @@ import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 public interface MultiPartyVideoCallContract {
     interface View extends BaseView<Presenter> {
 
-        void addSelfViewPresenterHandler(SurfaceViewRenderer videoView);
+        void onAddSelfView(SurfaceViewRenderer videoView);
 
-        Fragment getFragmentViewHandler();
+        void onAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView);
 
-        void addRemoteViewViewHandler(String remotePeerId);
+        void onRemoveRemotePeer(int viewIndex);
 
-        void addRemotePeerViewHandler(String remotePeerId);
+        Fragment onGetFragment();
 
-        void removeRemotePeerHandler(String remotePeerId);
-
-        void setPeerListViewHandler(String peer);
+        void onDisplayAlerDlg(String recordingId, String msg);
     }
 
     interface Presenter extends BasePresenter {
 
-        void disconnectFromRoomPresenterHandler();
+        void onPermissionRequired(PermRequesterInfo info);
 
-        void connectToRoomPresenterHandler(String roomName);
+        void onPermissionGranted(PermRequesterInfo info);
 
-        boolean isConnectingOrConnectedPresenterHandler();
+        void onPermissionDenied(PermRequesterInfo info);
 
-        void addSelfViewPresenterHandler(SurfaceViewRenderer videoView);
+        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        boolean toggleCameraPresenterHandler();
+        void onViewResume();
 
-        boolean toggleCameraPresenterHandler(boolean isToggle);
+        void onViewPause();
 
-        SurfaceViewRenderer getVideoViewPresenterHandler(String remotePeerId);
+        void onViewExit();
 
-        String getRoomPeerIdNickPresenterHandler();
+        void onSwitchCamera();
 
-        void switchCameraPresenterHandler();
+        boolean onStartRecording();
 
-        Fragment getFragmentPresenterHandler();
+        boolean onStopRecording();
 
-        void addRemoteViewPresenterHandler(String remotePeerId);
+        void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo);
 
-        void addRemotePeerPresenterHandler(String remotePeerId);
+        void onLocalMediaCapture(SurfaceViewRenderer videoView);
 
-        void removeRemotePeerPresenterHandler(String remotePeerId);
+        void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId);
 
-        void getInputVideoResolutionPresenterHandler();
+        void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
 
-        void refreshConnectionPresenterHandler(String peerId, boolean iceRestart);
+        void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps);
 
-        boolean startRecordingPresenterHandler();
+        void onSentVideoResolutionObtained(String peerId, int width, int height, int fps);
 
-        boolean stopRecordingPresenterHandler();
+        void onVideoSizeChange(String peerId, Point size);
 
-        boolean getTransferSpeedsPresenterHandler(String peerId, int mediaDirectionBoth, int mediaAll);
+        void onRecordingStart(boolean recording);
 
-        boolean getWebrtcStatsPresenterHandler(String peerId, int mediaDirectionBoth, int mediaAll);
+        void onRecordingStop(boolean recording);
 
-        String[] getPeerIdListPresenterHandler();
+        void onRecordingVideoLink(String recordingId, String peerId, String videoLink);
 
-        void getSentVideoResolutionPresenterHandler(String peerId);
+        void onRecordingError(String recordingId, int errorCode, String description);
 
-        void getReceivedVideoResolutionPresenterHandler(String peerId);
+        void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed);
 
-        String getRoomPeerIdNickPresenterHandler(String room_name, String peerId);
+        void onWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, HashMap<String, String> stats);
 
-        void setPeerListPresenterHandler(String s);
+        String onGetRoomPeerIdNick();
 
-        int getTotalInRoomPresenterHandler();
+        void onGetInputVideoResolution();
 
-        int getNumRemotePeersPresenterHandler();
+        void onGetSentVideoResolution(int peerIndex);
+
+        void onGetReceivedVideoResolution(int peerIndex);
+
+        void onWebrtcStatsToggle(int peerIndex);
+
+        void onGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType);
+
+        void onRefreshConnection(int peerIndex, boolean iceRestart);
+
+        Boolean onGetWebRtcStatsByPeerId(int peerIndex);
+
+        int onGetTotalInRoom();
+
+        SurfaceViewRenderer onGetVideoViewByIndex(int i);
+
+        void onSetRemovedPeerIndex(int removeIndex);
     }
 
     interface Service extends BaseService<Presenter> {

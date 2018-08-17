@@ -68,7 +68,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResultPresenterHandler(requestCode, permissions, grantResults, TAG);
+        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
@@ -79,17 +79,17 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewExitPresenterHandler();
+            mPresenter.onViewExit();
         }
     }
 
     @Override
-    public Fragment onGetFragmentViewHandler() {
+    public Fragment onGetFragment() {
         return this;
     }
 
     @Override
-    public void onUpdateUIViewHandler(String roomDetails) {
+    public void onUpdateUI(String roomDetails) {
         tvRoomDetails.setText(roomDetails);
     }
 
@@ -118,7 +118,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
      */
     private void requestViewLayout(){
         if(mPresenter != null){
-            mPresenter.onViewLayoutRequestedPresenterHandler();
+            mPresenter.onViewLayoutRequested();
         }
     }
 }

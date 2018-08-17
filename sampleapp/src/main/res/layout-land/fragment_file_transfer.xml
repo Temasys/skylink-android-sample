@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout android:id="@+id/ll_file_transfer"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="fill_horizontal|fill_vertical"
-              android:layout_margin="@dimen/dp_10dp"
-              android:orientation="horizontal">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="fill_horizontal|fill_vertical"
+    android:layout_margin="@dimen/dp_10dp"
+    android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="4"
+        android:id="@+id/ll_first"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/tv_file_room_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:text=""
             android:textAppearance="?android:attr/textAppearanceSmall"/>
@@ -40,11 +41,11 @@
 
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:id="@+id/ll_second"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_weight="6"
-        android:gravity="center_vertical|center_horizontal"
+        android:gravity="center"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <HorizontalScrollView
@@ -134,6 +135,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text=""
+                    android:textSize="@dimen/sp_11sp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textIsSelectable="true"/>
             </HorizontalScrollView>
