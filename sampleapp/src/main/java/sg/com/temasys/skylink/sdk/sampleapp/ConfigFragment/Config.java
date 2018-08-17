@@ -37,6 +37,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VID
 
 public class Config {
 
+    private static final String PREFERENCES_NAME = "SA_PREF_NAME";
+
     // Selected App key details Preferences Key values
     private static final String PREF_SELECTED_APP_KEY = "SelectedAppKey";
     private static final String PREF_SELECTED_APP_KEY_SECRET = "SelectedAppKeySecret";
@@ -81,7 +83,7 @@ public class Config {
      */
     public static void loadSelectedAppKey(Activity activity) {
         // Load from Preferences if available.
-        final SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String appKey = sharedPref.getString(PREF_SELECTED_APP_KEY, null);
         String appKeySecret;
         String appKeyDesc;
@@ -120,7 +122,7 @@ public class Config {
     }
 
     public static void loadRoomUserNames(Activity activity) {
-        final SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         // Populate room and user names with values from Preferences if they exist.
         ROOM_NAME_AUDIO = sharedPref.getString(PREF_ROOM_NAME_AUDIO, ROOM_NAME_AUDIO);
         ROOM_NAME_CHAT = sharedPref.getString(PREF_ROOM_NAME_CHAT, ROOM_NAME_CHAT);
@@ -145,9 +147,10 @@ public class Config {
      * @param activity
      */
     public static void setPrefBoolean(String key, boolean value, Activity activity) {
-        final SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(key, value).commit();
+        editor.putBoolean(key, value);
+        editor.commit();
     }
 
     /**
@@ -158,9 +161,10 @@ public class Config {
      * @param activity
      */
     public static void setPrefString(String key, String value, Activity activity) {
-        final SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(key, value).commit();
+        editor.putString(key, value);
+        editor.commit();
     }
 
     //----------------------------------------------------------------------------------------------
