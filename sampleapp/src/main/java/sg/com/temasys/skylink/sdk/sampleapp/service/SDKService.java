@@ -2,6 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -647,7 +648,15 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         }
     }
 
-    public void connectToRoom() {
+    public boolean connectToRoom() {
+
+        //check internet connection first
+        if(!Utils.isInternetOn()){
+            String log = "Internet connection is off !";
+            toastLog(TAG, mContext, log);
+            return false;
+        }
+
         mSdkConnectionManager = new SdkConnectionManager(mContext);
 
         // Initialize the skylink connection using SdkConnectionManager
@@ -672,7 +681,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         if (connectFailed) {
             String log = "Unable to connect to room!";
             toastLog(TAG, mContext, log);
-            return;
+            return false;
         } else {
             String log = "Connecting...";
             toastLog(TAG, mContext, log);
@@ -681,6 +690,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         // Initialize and use the Audio router to switch between headphone and headset
         if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
             AudioRouter.startAudioRouting(mContext);
+
+        return true;
     }
 
     public void disconnectFromRoom() {

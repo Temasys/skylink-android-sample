@@ -2,6 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.Context;
 import android.media.MediaScannerConnection;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -63,7 +64,7 @@ public class Utils {
      */
     private static Toast toast;
 
-    public Utils(Context context){
+    public Utils(Context context) {
         this.mContext = context;
     }
 
@@ -624,7 +625,7 @@ public class Utils {
     }
 
     public static String getRoomNameByType(Constants.CONFIG_TYPE typeCall) {
-        switch (typeCall){
+        switch (typeCall) {
             case AUDIO:
                 return Config.ROOM_NAME_AUDIO;
             case VIDEO:
@@ -643,7 +644,7 @@ public class Utils {
     }
 
     public static String getUserNameByType(Constants.CONFIG_TYPE typeCall) {
-        switch (typeCall){
+        switch (typeCall) {
             case AUDIO:
                 return Config.USER_NAME_AUDIO;
             case VIDEO:
@@ -660,5 +661,29 @@ public class Utils {
 
         return null;
     }
+
+    public static boolean isInternetOn() {
+
+        // get Connectivity Manager object to check connection
+        ConnectivityManager connec =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Check for network connections
+        if (connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTED ||
+                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTED) {
+
+            return true;
+
+        } else if (
+                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.DISCONNECTED ||
+                        connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.DISCONNECTED) {
+
+            return false;
+        }
+        return false;
+    }
+
 
 }

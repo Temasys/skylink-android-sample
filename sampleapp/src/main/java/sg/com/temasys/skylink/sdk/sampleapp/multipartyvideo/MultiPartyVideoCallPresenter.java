@@ -395,13 +395,12 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
     }
 
     private void connectToRoom() {
-
         //connect to SDK
-        mMultiVideoCallService.connectToRoom();
-
-        //get roomName from setting
-        String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
-        toastLog(TAG, mContext, log);
+        if(mMultiVideoCallService.connectToRoom()){
+            //get roomName from setting
+            String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
+            toastLog(TAG, mContext, log);
+        }
     }
 
     private void updateConnectedUI() {

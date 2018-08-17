@@ -508,16 +508,15 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     private void connectToRoom() {
-
         //connect to SDK
-        mVideoCallService.connectToRoom();
+        if(mVideoCallService.connectToRoom()) {
+            //update UI and make toast
+            mVideoCallView.onConnectingUIChange();
 
-        //update UI and make toast
-        mVideoCallView.onConnectingUIChange();
-
-        //get roomName from setting
-        String log = "Entering video room \"" + Config.ROOM_NAME_VIDEO + "\".";
-        toastLog(TAG, mContext, log);
+            //get roomName from setting
+            String log = "Entering video room \"" + Config.ROOM_NAME_VIDEO + "\".";
+            toastLog(TAG, mContext, log);
+        }
     }
 
     private void updateConnectedUI() {
