@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -37,7 +37,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
     private final String TAG = VideoCallFragment.class.getName();
 
-    //this variable need to be static for configuration change
     private VideoCallContract.Presenter mPresenter;
 
     private Context mContext;
@@ -51,7 +50,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     private TextView tvInput;
 
     //static variables for update UI when changing configuration
-    //cause we use different layout for landscape mode
+    //because we use different layout for landscape mode
     private static TextView tvResInput;
     private TextView tvSent;
     private static TextView tvResSent;

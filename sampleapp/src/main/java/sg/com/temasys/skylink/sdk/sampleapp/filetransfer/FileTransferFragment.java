@@ -5,7 +5,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -42,7 +41,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     private FileTransferContract.Presenter mPresenter;
 
     //static variables for update UI when changing configuration
-    //cause we use different layout for landscape mode
+    //because we use different layout for landscape mode
     private static TextView tvRoomDetails;
     private static EditText etSenderFilePath;
     private static TextView tvFileTransferDetails;
@@ -124,7 +123,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
             //disconnect from room
             mPresenter.onViewExit();
 
-            //clear all static variables for avoiding memory leak
+            //clear all static variables to avoid memory leak
             peerRadioGroup = null;
             peerAll = null;
             peer1 = null;
@@ -342,6 +341,9 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
     // Send file to all Peers in room, i.e. via public (AKA group) message.
     private void processSendFileGroup(){
+
+        // Prepare group file for transfer.
+        prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
 
         String filePath = etSenderFilePath.getText().toString();
 

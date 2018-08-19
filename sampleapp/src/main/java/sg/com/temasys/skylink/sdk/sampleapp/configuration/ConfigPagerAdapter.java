@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment;
+package sg.com.temasys.skylink.sdk.sampleapp.configuration;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

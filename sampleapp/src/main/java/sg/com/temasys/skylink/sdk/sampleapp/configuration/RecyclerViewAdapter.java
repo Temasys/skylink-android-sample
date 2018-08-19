@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment;
+package sg.com.temasys.skylink.sdk.sampleapp.configuration;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -29,10 +29,10 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.appKeyListNoSmr;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.appKeyListSmr;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.deleteAppKey;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigKeyFragment.setSelectedKeyViews;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigKeyFragment.appKeyListNoSmr;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigKeyFragment.appKeyListSmr;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigKeyFragment.deleteAppKey;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigKeyFragment.setSelectedKeyViews;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.checkAppKeyAndSecret;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;

@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment;
+package sg.com.temasys.skylink.sdk.sampleapp.configuration;
 
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 
 
 /**

@@ -9,7 +9,7 @@ import org.webrtc.SurfaceViewRenderer;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
@@ -68,9 +68,9 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
         this.mVideoCallView = videoCallView;
 
-        mVideoCallService = new VideoService(context);
+        this.mVideoCallService = new VideoService(context);
 
-        mPermissionUtils = new PermissionUtils();
+        this.mPermissionUtils = new PermissionUtils();
 
         initialize();
 
@@ -373,8 +373,6 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     //----------------------------------------------------------------------------------------------
     // private methods to process logic
     //----------------------------------------------------------------------------------------------
-
-
 
     /**
      * Record the current local input video width, height, fps and SkylinkCaptureFormat.

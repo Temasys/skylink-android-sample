@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -101,7 +101,6 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((ChatActivity) context).isChangingConfigurations()) {
-            //disconnect from room
             mPresenter.onViewExit();
         }
     }

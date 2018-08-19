@@ -2,7 +2,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.net.ConnectivityManager;
 import android.util.Log;
 
 import org.json.JSONException;

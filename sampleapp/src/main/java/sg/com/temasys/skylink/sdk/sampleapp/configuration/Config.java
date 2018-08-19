@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment;
+package sg.com.temasys.skylink.sdk.sampleapp.configuration;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,18 +6,18 @@ import android.content.SharedPreferences;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_ROOM_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_ROOM_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_ROOM_NAME_PARTY;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_USER_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_USER_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_USER_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_USER_NAME_PARTY;
-import static sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_AUDIO;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_CHAT;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_CHAT;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_DATA;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_FILE;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;

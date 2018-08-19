@@ -13,8 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.ConfigActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
@@ -112,7 +112,7 @@ public class MainActivity extends ActionBarActivity
         tvMultiVideo.setOnClickListener(this);
 
         //need check imgLogo incase of landscape orientation
-        //cause imgLogo is not available for landscape orientation
+        //because imgLogo is not available for landscape orientation
         if(imgLogo != null)
             imgLogo.setOnClickListener(this);
     }

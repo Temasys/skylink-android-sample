@@ -5,7 +5,7 @@ import android.util.Log;
 
 import java.util.Arrays;
 
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.DataTransferService;
@@ -29,10 +29,10 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
 
 
     public DataTransferPresenter(DataTransferContract.View dataTransferView, Context context) {
-        mContext = context;
+        this.mContext = context;
 
         this.mDataTransferView = dataTransferView;
-        mDataTransferService = new DataTransferService(context);
+        this.mDataTransferService = new DataTransferService(context);
 
         this.mDataTransferView.setPresenter(this);
         this.mDataTransferService.setPresenter(this);
@@ -79,10 +79,6 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
     @Override
     public void onDisconnect() {
 
-//        mDataTransferView.clearPeerList();
-
-//        updateUI();
-
         //do nothing
 
     }
@@ -121,7 +117,6 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
 
     @Override
     public void onSendData(String remotePeerId, byte[] data) {
-        // [MultiParty]
         // Do not allow button actions if there are no remote Peers in the room.
         if (mDataTransferService.getTotalPeersInRoom() < 2) {
             String log = mContext.getString(R.string.warn_no_peer_message);

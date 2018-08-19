@@ -114,7 +114,6 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     /**
      * request info to display from presenter
      * try to connect to room if not connected
-     * try to disconnect from room if left the room
      */
     private void requestViewLayout(){
         if(mPresenter != null){

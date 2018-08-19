@@ -53,7 +53,7 @@
             android:configChanges="orientation|screenSize"/>
 
         <activity
-            android:name=".ConfigFragment.ConfigActivity"
+            android:name=".configuration.ConfigActivity"
             android:label="@string/settings"
             android:configChanges="orientation|screenSize"></activity>
     </application>

@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
@@ -49,14 +49,14 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
         this.mMultiVideoCallView = videoCallView;
         this.mContext = context;
 
-        mMultiVideoCallService = new MultiPartyVideoService(mContext);
+        this.mMultiVideoCallService = new MultiPartyVideoService(mContext);
 
         this.mMultiVideoCallView.setPresenter(this);
         this.mMultiVideoCallService.setPresenter(this);
 
         this.mMultiVideoCallService.setTypeCall();
 
-        mPermissionUtils = new PermissionUtils();
+        this.mPermissionUtils = new PermissionUtils();
     }
 
     @Override

@@ -53,9 +53,6 @@ public class MultiPartyFragment extends Fragment {
 
         Log.d(TAG, logTag);
 
-        //need check other effect to this variable
-//        mPeersList.addPeer(newPeer);
-
         fillPeerRadioBtn(mPeers);
     }
 

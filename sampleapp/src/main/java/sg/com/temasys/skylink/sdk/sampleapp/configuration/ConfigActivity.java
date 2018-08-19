@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment;
+package sg.com.temasys.skylink.sdk.sampleapp.configuration;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

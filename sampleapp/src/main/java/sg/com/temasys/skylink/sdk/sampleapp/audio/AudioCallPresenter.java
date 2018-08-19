@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
@@ -45,15 +45,14 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         //link between service and presenter
         this.mAudioCallService.setPresenter(this);
 
-        mPermissionUtils = new PermissionUtils();
+        this.mPermissionUtils = new PermissionUtils();
 
         this.mAudioCallService.setTypeCall();
     }
 
     /**
-     * Triggered when View request data to display to the user when entering room | leaving room | rotating screen
+     * Triggered when View request data to display to the user when entering room | rotating screen
      * Try to connect to room when entering room
-     * Try to disconnect from room when leaving room
      * Update info when rotating screen
      */
     @Override

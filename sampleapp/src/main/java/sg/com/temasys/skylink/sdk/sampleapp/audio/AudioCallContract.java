@@ -20,7 +20,7 @@ public interface AudioCallContract {
         Fragment onGetFragment();
 
         /**
-         * Set the room details information on UI.
+         * Update the room details information on UI.
          */
         void onUpdateUI(String roomDetails);
     }

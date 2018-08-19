@@ -7,7 +7,7 @@ import android.util.Log;
 
 import java.io.File;
 
-import sg.com.temasys.skylink.sdk.sampleapp.ConfigFragment.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -38,17 +38,17 @@ public class FileTransferPresenter implements FileTransferContract.Presenter{
 
 
     public FileTransferPresenter(FileTransferContract.View fileTransferView, Context context) {
-        mContext = context;
+        this.mContext = context;
 
         this.mFileTransferView = fileTransferView;
-        mFileTransferService = new FileTransferService(context);
+        this.mFileTransferService = new FileTransferService(context);
 
         this.mFileTransferView.setPresenter(this);
         this.mFileTransferService.setPresenter(this);
 
         this.mFileTransferService.setTypeCall();
 
-        mPermissionUtils = new PermissionUtils();
+        this.mPermissionUtils = new PermissionUtils();
     }
 
     /**
@@ -216,7 +216,6 @@ public class FileTransferPresenter implements FileTransferContract.Presenter{
     @Override
     public void onSendFile(String remotePeerId, String filePath) {
 
-        //Check remotePeerId valid
         // Do not allow button actions if there are no remote Peers in the room.
         if (mFileTransferService.getTotalPeersInRoom() < 2) {
             String log = mContext.getString(R.string.warn_no_peer_message);
@@ -231,8 +230,6 @@ public class FileTransferPresenter implements FileTransferContract.Presenter{
             //force to select radio button peerAll
             if (remotePeer != null) {
                 mFileTransferView.onSetRdPeerAllChecked(true);
-
-//                prepFile(getFileToTransfer(fileNameGroup).getAbsolutePath());
             }
         }
 
