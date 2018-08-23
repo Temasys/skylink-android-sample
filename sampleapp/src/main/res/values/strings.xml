@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Grab Taxi SampleApp 0.11.1</string>
+    <string name="app_name">Grab Taxi SampleApp 0.11.0</string>
     <string name="label_all_peers">All Peer(s)</string>
     <string name="title_section1"> Audio Call </string>
     <string name="title_section2"> Video Call </string>

@@ -13,7 +13,7 @@ import android.util.Log;
 /**
  * Simple AudioRouter that switches between the speaker phone and the headset
  */
-public class AudioRouter {
+public class AudioRouter{
 
     private static AudioRouter instance = null;
 
@@ -63,16 +63,24 @@ public class AudioRouter {
 
         blueToothBroadcastReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
+                if (intent.getAction().equals(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)) {
                     String logTag = "[SA][headsetBroadcastReceiver][onReceive] ";
                     String log;
-                    int currentAudioState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-                    if (currentAudioState == BluetoothHeadset.STATE_AUDIO_DISCONNECTED) {
+                    int currentAudioState = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
+                    if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTED) {
                         // Bluetooth is disconnected, do speaker on
                         setAudioPathOnBluetooth(context, true);
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
-                    } else if(currentAudioState == BluetoothHeadset.STATE_AUDIO_CONNECTED){
+                    } else if(currentAudioState == BluetoothHeadset.STATE_DISCONNECTING){
+                        setAudioPathOnBluetooth(context, true);
+                        log = logTag + "Bluetooth: off";
+                        Log.d(TAG, log);
+                    } else if(currentAudioState == BluetoothHeadset.STATE_CONNECTED){
+                        setAudioPathOnBluetooth(context, false);
+                        log = logTag + "Bluetooth: on";
+                        Log.d(TAG, log);
+                    } else if(currentAudioState == BluetoothHeadset.STATE_CONNECTING){
                         setAudioPathOnBluetooth(context, false);
                         log = logTag + "Bluetooth: on";
                         Log.d(TAG, log);
@@ -143,7 +151,8 @@ public class AudioRouter {
         appContext.registerReceiver(headsetBroadcastReceiver,
                 new IntentFilter(Intent.ACTION_HEADSET_PLUG));
         appContext.registerReceiver(blueToothBroadcastReceiver,
-                new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+                new IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED));
+
 
         log = logTag + "Setting Audio Path...";
         Log.d(TAG, log);
@@ -271,5 +280,4 @@ public class AudioRouter {
         log = logTag + "Initializing audio router is complete.";
         Log.d(TAG, log);
     }
-
 }
