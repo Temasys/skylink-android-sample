@@ -13,13 +13,14 @@ import android.util.Log;
 /**
  * Simple AudioRouter that switches between the speaker phone and the headset
  */
-public class AudioRouter{
+public class AudioRouter {
 
     private static AudioRouter instance = null;
 
     private static final String TAG = AudioRouter.class.getName();
     private static BroadcastReceiver headsetBroadcastReceiver;
     private static BroadcastReceiver blueToothBroadcastReceiver;
+    private static BroadcastReceiver blueToothAudioBroadcastReceiver;
 
     private static AudioManager audioManager;
 
@@ -63,6 +64,27 @@ public class AudioRouter{
 
         blueToothBroadcastReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    String logTag = "[SA][headsetBroadcastReceiver][onReceive] ";
+                    String log;
+                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                        // Bluetooth is disconnected, do speaker on
+                        setAudioPathOnBluetooth(context, true);
+                        log = logTag + "Bluetooth: off";
+                        Log.d(TAG, log);
+                    }
+                }
+
+                //change variable value for next time usage of audio as normal behavior
+                if (isFirstTimeAudioOnBlueTooth) {
+                    isFirstTimeAudioOnBlueTooth = false;
+                }
+            }
+
+        };
+
+        blueToothAudioBroadcastReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)) {
                     String logTag = "[SA][headsetBroadcastReceiver][onReceive] ";
                     String log;
@@ -72,15 +94,15 @@ public class AudioRouter{
                         setAudioPathOnBluetooth(context, true);
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
-                    } else if(currentAudioState == BluetoothHeadset.STATE_DISCONNECTING){
+                    } else if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTING) {
                         setAudioPathOnBluetooth(context, true);
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
-                    } else if(currentAudioState == BluetoothHeadset.STATE_CONNECTED){
+                    } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTED) {
                         setAudioPathOnBluetooth(context, false);
                         log = logTag + "Bluetooth: on";
                         Log.d(TAG, log);
-                    } else if(currentAudioState == BluetoothHeadset.STATE_CONNECTING){
+                    } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTING) {
                         setAudioPathOnBluetooth(context, false);
                         log = logTag + "Bluetooth: on";
                         Log.d(TAG, log);
@@ -91,9 +113,7 @@ public class AudioRouter{
                 if (isFirstTimeAudioOnBlueTooth) {
                     isFirstTimeAudioOnBlueTooth = false;
                 }
-
             }
-
         };
     }
 
@@ -151,6 +171,8 @@ public class AudioRouter{
         appContext.registerReceiver(headsetBroadcastReceiver,
                 new IntentFilter(Intent.ACTION_HEADSET_PLUG));
         appContext.registerReceiver(blueToothBroadcastReceiver,
+                new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+        appContext.registerReceiver(blueToothAudioBroadcastReceiver,
                 new IntentFilter(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED));
 
 
@@ -194,6 +216,7 @@ public class AudioRouter{
             // Must use applicationContext here and not Activity context.
             context.getApplicationContext().unregisterReceiver(headsetBroadcastReceiver);
             context.getApplicationContext().unregisterReceiver(blueToothBroadcastReceiver);
+            context.getApplicationContext().unregisterReceiver(blueToothAudioBroadcastReceiver);
             log = logTag + "Unregister receivers.";
             // Catch potential exception:
             // java.lang.IllegalArgumentException: Receiver not registered
