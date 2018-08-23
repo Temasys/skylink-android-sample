@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothHeadset;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -62,15 +63,16 @@ public class AudioRouter {
 
         blueToothBroadcastReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                if (intent.getAction().equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
                     String logTag = "[SA][headsetBroadcastReceiver][onReceive] ";
                     String log;
-                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                    int currentAudioState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+                    if (currentAudioState == BluetoothHeadset.STATE_AUDIO_DISCONNECTED) {
                         // Bluetooth is disconnected, do speaker on
                         setAudioPathOnBluetooth(context, true);
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
-                    } else {
+                    } else if(currentAudioState == BluetoothHeadset.STATE_AUDIO_CONNECTED){
                         setAudioPathOnBluetooth(context, false);
                         log = logTag + "Bluetooth: on";
                         Log.d(TAG, log);
@@ -239,7 +241,7 @@ public class AudioRouter {
         } else {
             audioManager.setSpeakerphoneOn(isSpeakerphoneOn);
             log = logTag + "Setting Speakerphone to " + isSpeakerphoneOn +
-                    " as bluetoothAdapter.isEnabled() = " + bluetoothAdapter.isEnabled();
+                    " as currentAudioState = " + bluetoothAdapter.isEnabled();
         }
 
         Log.d(TAG, log);
