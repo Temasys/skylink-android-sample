@@ -128,8 +128,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         if (isSuccessful) {
             String localPeerId = mSkylinkConnection.getPeerId();
 
-            log += "Connected to room " + mRoomName + " (" + mSkylinkConnection.getRoomId() +
-                    ") as " + localPeerId + " (" + mUserName + ").";
+            //for Grab client
+            log += "Connected to room " + mRoomName +" as (" + mUserName + ").";
             toastLogLong(TAG, mContext, log);
 
             //init peers list and add self/local peer to list
@@ -775,7 +775,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             peerIdShow = "Self";
         }
 
-        String peerUserName = "\"" + peerIdShow + "\"(" + getUserDataString(peerId) + ")";
+        //for Grab client
+        String peerUserName = getUserDataString(peerId);
 
         return peerUserName;
 
@@ -794,7 +795,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     }
 
     private String getPeerIdNick(String peerId, UserInfo userInfo) {
-        return peerId + " (" + getUserDataString(userInfo) + ")";
+        return getUserDataString(userInfo);
     }
 
     private String getUserDataString(UserInfo userInfo) {
@@ -825,7 +826,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         if (mSkylinkConnection != null) {
             roomId = mSkylinkConnection.getRoomId();
         }
-        return defaultName + " (" + roomId + ")";
+        //for Grab client
+        return defaultName;
     }
 
     public String getUserName(String peerId, String defaultName) {
@@ -863,7 +865,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             roomId = mSkylinkConnection.getRoomId();
         }
 
-        return roomName + " (" + roomId + ")";
+        return roomName;
     }
 
     public String getPeerId() {

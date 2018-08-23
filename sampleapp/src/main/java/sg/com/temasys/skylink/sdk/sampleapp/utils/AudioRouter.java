@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,8 +18,15 @@ public class AudioRouter {
 
     private static final String TAG = AudioRouter.class.getName();
     private static BroadcastReceiver headsetBroadcastReceiver;
+    private static BroadcastReceiver blueToothBroadcastReceiver;
 
     private static AudioManager audioManager;
+
+    private static BluetoothAdapter bluetoothAdapter;
+
+    //variable to set audio mode = headset at the first time
+    private static boolean isFirstTimeAudioOnHeadset;
+    private static boolean isFirstTimeAudioOnBlueTooth;
 
     private AudioRouter() {
         headsetBroadcastReceiver = new BroadcastReceiver() {
@@ -41,12 +49,36 @@ public class AudioRouter {
                             log = logTag + "Headset: Error determining state!";
                             Log.d(TAG, log);
                     }
+
                     // Reset audio path
                     setAudioPath();
+
+                    //change variable value for next time usage of audio as normal behavior
+                    if (isFirstTimeAudioOnHeadset) {
+                        isFirstTimeAudioOnHeadset = false;
+                    }
                 }
             }
         };
+
+        blueToothBroadcastReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+
+                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                        // Bluetooth is disconnected, do speaker on
+                        setAudioPath(context, true);
+                    } else {
+                        setAudioPath(context, false);
+                    }
+                }
+
+            }
+
+        };
     }
+
 
     /**
      * Gets an instance of the AudioRouter
@@ -64,9 +96,11 @@ public class AudioRouter {
      * Initialize the Audio router
      *
      * @param audioManager
+     * @param bluetoothAdapter
      */
-    public void init(AudioManager audioManager) {
+    public void init(AudioManager audioManager, BluetoothAdapter bluetoothAdapter) {
         this.audioManager = audioManager;
+        this.bluetoothAdapter = bluetoothAdapter;
     }
 
     /**
@@ -101,7 +135,10 @@ public class AudioRouter {
 
         log = logTag + "Setting Audio Path...";
         Log.d(TAG, log);
+
+        isFirstTimeAudioOnHeadset = true;
         setAudioPath();
+
 
         log = logTag + "Starting audio routing is complete.";
         Log.d(TAG, log);
@@ -151,6 +188,38 @@ public class AudioRouter {
      * Set the audio path according to whether earphone is connected. Use ear piece if earphone is
      * connected. Use speakerphone if no earphone is connected.
      */
+    private static void setAudioPath(Context context, boolean isSpeakerphoneOn) {
+        String logTag = "[SA][AR][setAudioPath] ";
+        String log = logTag + "Trying to set audio path...";
+        Log.d(TAG, log);
+
+        if (audioManager == null) {
+            throw new RuntimeException(
+                    "Attempt to set audio path before setting AudioManager");
+        }
+
+        //the audio is in headset mode at the first time
+        if (isFirstTimeAudioOnHeadset) {
+            audioManager.setSpeakerphoneOn(false);
+            log = logTag + "Setting Speakerphone to off as the first time usage.";
+        } else {
+            audioManager.setSpeakerphoneOn(isSpeakerphoneOn);
+            log = logTag + "Setting Speakerphone to " + isSpeakerphoneOn +
+                    " as audioManager.isWiredHeadsetOn() = " + audioManager.isWiredHeadsetOn() +
+                    " or bluetoothAdapter.isEnabled() = " + bluetoothAdapter.isEnabled();
+        }
+
+        Log.d(TAG, log);
+        Utils.toastLogLong(TAG, context.getApplicationContext(), log);
+
+        log = logTag + "Setting audio path is complete.";
+        Log.d(TAG, log);
+    }
+
+    /**
+     * Set the audio path according to whether earphone is connected. Use ear piece if earphone is
+     * connected. Use speakerphone if no earphone is connected.
+     */
     private static void setAudioPath() {
         String logTag = "[SA][AR][setAudioPath] ";
         String log = logTag + "Trying to set audio path...";
@@ -160,14 +229,36 @@ public class AudioRouter {
             throw new RuntimeException(
                     "Attempt to set audio path before setting AudioManager");
         }
-        boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
-        if (isWiredHeadsetOn) {
-            log = logTag + "Setting Speakerphone to off as wired headset is on.";
+
+        //the audio is in headset mode at the first time
+        if (isFirstTimeAudioOnHeadset) {
             audioManager.setSpeakerphoneOn(false);
         } else {
-            audioManager.setSpeakerphoneOn(true);
-            log = logTag + "Setting Speakerphone to on as wired headset is off.";
+            boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
+            if (isWiredHeadsetOn) {
+                log = logTag + "Setting Speakerphone to off as wired headset is on.";
+                audioManager.setSpeakerphoneOn(false);
+            } else {
+                audioManager.setSpeakerphoneOn(true);
+                log = logTag + "Setting Speakerphone to on as wired headset is off.";
+            }
+
+            //for bluetooth check
+            if (bluetoothAdapter == null) {
+                // Device does not support Bluetooth
+            } else if (isWiredHeadsetOn) {
+                //connect by headset
+            } else {
+                if (bluetoothAdapter.isEnabled()) {
+                    audioManager.setSpeakerphoneOn(false);
+                    log = logTag + "Setting Speakerphone to off as bluetooth is on.";
+                } else {
+                    audioManager.setSpeakerphoneOn(true);
+                    log = logTag + "Setting Speakerphone to on as bluetooth is off.";
+                }
+            }
         }
+
         Log.d(TAG, log);
 
         log = logTag + "Setting audio path is complete.";
@@ -186,7 +277,11 @@ public class AudioRouter {
         }
 
         getInstance();
-        instance.init(((AudioManager) context.getSystemService(Context.AUDIO_SERVICE)));
+
+        AudioManager audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        instance.init(audioManager, bluetoothAdapter);
         log = logTag + "Initializing audio router is complete.";
         Log.d(TAG, log);
     }
