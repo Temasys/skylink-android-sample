@@ -1,14 +1,37 @@
 <resources>
     <dimen name="dp_20dp">20dp</dimen>
-    <dimen name="dp_80dp">80dp</dimen>
     <dimen name="dp_10dp">10dp</dimen>
     <dimen name="dp_30dp">30dp</dimen>
     <dimen name="dp_150dp">150dp</dimen>
     <dimen name="dp_3dp">3dp</dimen>
     <dimen name="dp_0.5dp">0.5dp</dimen>
     <dimen name="dp_40dp">40dp</dimen>
+    <dimen name="dp_36dp">36dp</dimen>
+    <dimen name="dp_50dp">50dp</dimen>
+    <dimen name="dp_70dp">70dp</dimen>
 
     <dimen name="sp_11sp">11sp</dimen>
+    <dimen name="sp_12">12sp</dimen>
     <dimen name="sp_9sp">9sp</dimen>
+    <dimen name="dp_24">24dp</dimen>
+    <dimen name="sp_16">16sp</dimen>
+    <dimen name="dp_16">16dp</dimen>
+    <dimen name="dp_28dp">28dp</dimen>
+    <dimen name="dp_80dp">80dp</dimen>
+    <dimen name="dp_46dp">65dp</dimen>
+    <dimen name="sp_7sp">7sp</dimen>
+    <dimen name="dp_5dp">5dp</dimen>
+    <dimen name="floating_btn_size">60dp</dimen>
+    <dimen name="floating_btn_size_land">45dp</dimen>
+    <dimen name="dp_45dp">45dp</dimen>
+    <dimen name="ll_video_res_height">48dp</dimen>
+    <dimen name="ll_video_res_height_land">35dp</dimen>
+    <dimen name="dp_250dp">250dp</dimen>
+    <dimen name="dp_60dp">60dp</dimen>
+    <dimen name="dp_120dp">120dp</dimen>
+    <dimen name="sp_14sp">14sp</dimen>
+    <dimen name="dp_100dp">100dp</dimen>
+    <dimen name="dp_110dp">110dp</dimen>
+
 
 </resources>

@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.configuration;
+package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,18 +6,18 @@ import android.content.SharedPreferences;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_PARTY;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_PARTY;
-import static sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_AUDIO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_CHAT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_CHAT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_DATA;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_FILE;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
@@ -37,7 +37,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VID
 
 public class Config {
 
-    private static final String PREFERENCES_NAME = "SA_PREF_NAME";
+    public static final String PREFERENCES_NAME = "SA_PREF_NAME";
 
     // Selected App key details Preferences Key values
     private static final String PREF_SELECTED_APP_KEY = "SelectedAppKey";
@@ -67,6 +67,22 @@ public class Config {
     public static String USER_NAME_FILE = USER_NAME_FILE_DEFAULT;
     public static String USER_NAME_PARTY = USER_NAME_PARTY_DEFAULT;
     public static String USER_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
+
+    //constant for saving default settings of audio and video
+    public static String DEFAULT_AUDIO_OUTPUT = "DEFAULT_AUDIO_OUTPUT";
+    public static String DEFAULT_VIDEO_OUTPUT = "DEFAULT_VIDEO_OUTPUT";
+    public static String DEFAULT_CAMERA_OUTPUT = "DEFAULT_CAMERA_OUTPUT";
+    public static String DEFAULT_VIDEO_RESOLUTION = "DEFAULT_VIDEO_RESOLUTION";
+
+    public static String VIDEO_RESOLUTION_VGA = "VGA";
+    public static String VIDEO_RESOLUTION_HDR = "HDR";
+    public static String VIDEO_RESOLUTION_FHD = "FHD";
+
+    public enum VideoResolution {
+        VGA,
+        HDR,
+        FHD
+    }
 
     private Config() {
     }

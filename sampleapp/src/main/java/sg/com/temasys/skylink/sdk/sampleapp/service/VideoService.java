@@ -7,6 +7,8 @@ import org.webrtc.SurfaceViewRenderer;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
@@ -19,6 +21,7 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
 
     //this variable need to be static for configuration change
     private static VideoLocalState videoLocalState = new VideoLocalState();
+    private static boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
 
     public VideoService(Context context) {
         super(context);
@@ -58,13 +61,10 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
     }
 
     public void setCamToggle(boolean isCamToggle) {
-        videoLocalState.setCameraToggle(isCamToggle);
-    }
+        //isCamToggle = true, then camera is active
+        //isCamToggle = false, then camera is stop
 
-    public boolean toggleCamera() {
-        if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera();
-        return false;
+        videoLocalState.setCameraToggle(isCamToggle);
     }
 
     public boolean toggleCamera(boolean isToggle) {
@@ -145,7 +145,6 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
 
     public void getVideoResolutions(String peerId) {
 
-
         if (mSkylinkConnection == null) {
             return;
         }
@@ -164,5 +163,17 @@ public class VideoService extends SDKService implements VideoCallContract.Servic
         if (mSkylinkConnection != null) {
             mSkylinkConnection.switchCamera();
         }
+    }
+
+    public void changeAudioOutput(boolean isAudioSpeaker) {
+        AudioRouter.changeAudioOutput(mContext, isAudioSpeaker);
+    }
+
+    public boolean getCurrentVideoSpeaker() {
+        return currentVideoSpeaker;
+    }
+
+    public void setCurrentVideoSpeaker(boolean isSpeakerOn) {
+        currentVideoSpeaker = isSpeakerOn;
     }
 }

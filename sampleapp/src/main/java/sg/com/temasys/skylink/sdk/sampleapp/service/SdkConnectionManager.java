@@ -4,9 +4,13 @@ import android.content.Context;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -18,7 +22,7 @@ public class SdkConnectionManager {
 
     private SkylinkConnection mSkylinkConnection = null;
 
-    public SdkConnectionManager(Context context){
+    public SdkConnectionManager(Context context) {
         this.mContext = context;
     }
 
@@ -26,7 +30,7 @@ public class SdkConnectionManager {
 
         SkylinkConfig skylinkConfig = null;
 
-        switch (type){
+        switch (type) {
             case AUDIO:
                 skylinkConfig = getSkylinkConfigForAudioCall();
                 break;
@@ -47,7 +51,7 @@ public class SdkConnectionManager {
                 break;
         }
 
-        if(skylinkConfig != null) {
+        if (skylinkConfig != null) {
             mSkylinkConnection = SkylinkConnection.getInstance();
             mSkylinkConnection.init(Config.getAppKey(), skylinkConfig,
                     mContext.getApplicationContext());
@@ -128,6 +132,26 @@ public class SdkConnectionManager {
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
+
+        // Set default camera setting
+        if (Utils.getDefaultCameraOutput())
+            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+        else
+            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+
+        //Set default video resolution setting
+        String videoResolution = Utils.getDefaultVideoResolution();
+        if (videoResolution.equals(VIDEO_RESOLUTION_VGA)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_VGA);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_VGA);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_HDR)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_FHD)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
+        }
+
         return skylinkConfig;
     }
 
@@ -147,7 +171,26 @@ public class SdkConnectionManager {
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
+
+        // Set default camera setting
+        if (Utils.getDefaultCameraOutput())
+            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+        else
+            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+
+        //Set default video resolution setting
+        String videoResolution = Utils.getDefaultVideoResolution();
+        if (videoResolution.equals(VIDEO_RESOLUTION_VGA)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_VGA);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_VGA);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_HDR)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_FHD)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
+        }
+
         return skylinkConfig;
     }
-
 }

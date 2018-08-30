@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -41,13 +42,19 @@ import javax.crypto.spec.SecretKeySpec;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.KeyInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_OUTPUT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_CAMERA_OUTPUT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_OUTPUT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREFERENCES_NAME;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 
 public class Utils {
 
@@ -58,6 +65,7 @@ public class Utils {
     private static final String EXTERNAL_STORAGE = "ExternalStorage";
 
     private static Context mContext;
+    private static SharedPreferences sharedPref;
 
     /**
      * The last Toast made with {@link #toastLog};
@@ -66,6 +74,7 @@ public class Utils {
 
     public Utils(Context context) {
         this.mContext = context;
+        sharedPref = mContext.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     /**
@@ -686,4 +695,19 @@ public class Utils {
     }
 
 
+    public static boolean getDefaultAudioSpeaker() {
+        return sharedPref.getBoolean(DEFAULT_AUDIO_OUTPUT, false);
+    }
+
+    public static boolean getDefaultVideoSpeaker() {
+        return sharedPref.getBoolean(DEFAULT_VIDEO_OUTPUT, false);
+    }
+
+    public static boolean getDefaultCameraOutput() {
+        return sharedPref.getBoolean(DEFAULT_CAMERA_OUTPUT, false);
+    }
+
+    public static String getDefaultVideoResolution() {
+        return sharedPref.getString(DEFAULT_VIDEO_RESOLUTION, VIDEO_RESOLUTION_VGA);
+    }
 }

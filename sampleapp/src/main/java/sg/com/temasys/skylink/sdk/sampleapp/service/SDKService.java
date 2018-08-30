@@ -33,6 +33,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingContract;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -55,7 +56,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
 
     protected Context mContext;
 
-    private SdkConnectionManager mSdkConnectionManager;
+    protected SdkConnectionManager mSdkConnectionManager;
 
     //presenter for each type call
     protected AudioCallContract.Presenter mAudioPresenter;
@@ -69,6 +70,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     protected FileTransferContract.Presenter mFilePresenter;
 
     protected MultiPartyVideoCallContract.Presenter mMultiVideoPresenter;
+
+    protected SettingContract.Presenter mSettingPresenter;
 
     //these variables need to be static for configuration change
     protected static SkylinkConnection mSkylinkConnection;
@@ -129,7 +132,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             String localPeerId = mSkylinkConnection.getPeerId();
 
             //for Grab client
-            log += "Connected to room " + mRoomName +" as (" + mUserName + ").";
+            log += "Connected to room " + mRoomName + " as (" + mUserName + ").";
             toastLogLong(TAG, mContext, log);
 
             //init peers list and add self/local peer to list
@@ -650,7 +653,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     public boolean connectToRoom() {
 
         //check internet connection first
-        if(!Utils.isInternetOn()){
+        if (!Utils.isInternetOn()) {
             String log = "Internet connection is off !";
             toastLog(TAG, mContext, log);
             return false;
@@ -687,8 +690,23 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         }
 
         // Initialize and use the Audio router to switch between headphone and headset
-        if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
+        if (mTypeCall == Constants.CONFIG_TYPE.AUDIO) {
+            AudioRouter.setCallType(Constants.CONFIG_TYPE.AUDIO);
             AudioRouter.startAudioRouting(mContext);
+            AudioRouter.setPresenter(mAudioPresenter);
+        }
+
+        if (mTypeCall == Constants.CONFIG_TYPE.VIDEO) {
+            AudioRouter.setCallType(Constants.CONFIG_TYPE.VIDEO);
+            AudioRouter.startAudioRouting(mContext);
+            AudioRouter.setPresenter(mVideoPresenter);
+        }
+
+        if (mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
+            AudioRouter.setCallType(Constants.CONFIG_TYPE.VIDEO);
+            AudioRouter.startAudioRouting(mContext);
+            AudioRouter.setPresenter(mMultiVideoPresenter);
+        }
 
         return true;
     }

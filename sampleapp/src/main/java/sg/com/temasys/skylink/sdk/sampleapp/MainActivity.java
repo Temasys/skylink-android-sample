@@ -3,7 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,25 +13,24 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.ConfigActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
-public class MainActivity extends ActionBarActivity
-        implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity
+        implements View.OnClickListener{
 
     private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig;
     private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer;
     private ImageButton btnAudio, btnVideo, btnChat, btnFile, btnData, btnMultiVideo;
     private TextView tvAudio, tvVideo, tvChat, tvFile, tvData, tvMultiVideo;
     private ImageView imgLogo;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +128,7 @@ public class MainActivity extends ActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == R.id.action_settings) {
-            startActivity(new Intent(this, ConfigActivity.class));
+            startActivity(new Intent(this, SettingActivity.class));
 
             return true;
         }

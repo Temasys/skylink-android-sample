@@ -56,6 +56,14 @@ public interface VideoCallContract {
 
         void onSetSeekBarResFps(int index, int fps);
 
+        void onChangeBtnSpeakerUI(boolean isSpeakerOff);
+
+        void onChangeBtnAudioMuteUI(boolean isAudioMute);
+
+        void onChangeBtnVideoMuteUI(boolean isVideoMute);
+
+        void onChangeBtnCameraMuteUI(boolean isCameraMute);
+
     }
 
     interface Presenter extends BasePresenter {
@@ -84,6 +92,8 @@ public interface VideoCallContract {
 
         void onVideoSizeChange(String peerId, Point size);
 
+        void onProcessBtnSpeakerOn();
+
         void onProcessBtnAudioMute();
 
         void onProcessBtnVideoMute();
@@ -107,6 +117,8 @@ public interface VideoCallContract {
         String onGetRoomPeerIdNick();
 
         void onGetVideoResolutions();
+
+        void onAudioChangedToSpeaker(boolean isSpeakerOn);
 
     }
 

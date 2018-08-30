@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
@@ -396,7 +396,7 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
 
     private void connectToRoom() {
         //connect to SDK
-        if(mMultiVideoCallService.connectToRoom()){
+        if (mMultiVideoCallService.connectToRoom()) {
             //get roomName from setting
             String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
             toastLog(TAG, mContext, log);

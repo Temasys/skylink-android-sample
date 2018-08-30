@@ -14,7 +14,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.BLUETOOTH"  android:required="false" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -32,31 +34,36 @@
         </activity>
         <activity
             android:name=".audio.AudioCallActivity"
-            android:label="@string/title_section1"
-            android:configChanges="orientation|screenSize"/>
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_section1" />
         <activity
             android:name=".chat.ChatActivity"
-            android:label="@string/title_section3"
-            android:configChanges="orientation|screenSize"/>
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_section3" />
         <activity
             android:name=".filetransfer.FileTransferActivity"
-            android:label="@string/title_section4"/>
+            android:label="@string/title_section4" />
         <activity
             android:name=".datatransfer.DataTransferActivity"
-            android:label="@string/title_section5"
-            android:configChanges="orientation|screenSize"/>
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_section5" />
         <activity
             android:name=".video.VideoCallActivity"
-            android:label="@string/title_section2"/>
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_section2" />
         <activity
             android:name=".multipartyvideo.MultiPartyVideoCallActivity"
-            android:label="@string/title_section6"
-            android:configChanges="orientation|screenSize"/>
-
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_section6" />
         <activity
             android:name=".configuration.ConfigActivity"
-            android:label="@string/settings"
-            android:configChanges="orientation|screenSize"></activity>
+            android:configChanges="orientation|screenSize"
+            android:label="@string/settings" />
+
+        <activity
+            android:name=".setting.SettingActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/settings"></activity>
     </application>
 
 </manifest>

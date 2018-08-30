@@ -7,7 +7,7 @@ import android.util.Log;
 
 import java.io.File;
 
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;

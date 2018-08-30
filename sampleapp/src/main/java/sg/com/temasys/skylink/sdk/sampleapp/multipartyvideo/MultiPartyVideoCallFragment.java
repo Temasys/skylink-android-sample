@@ -194,10 +194,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        selfLayout = (FrameLayout) rootView.findViewById(R.id.self_video);
-        FrameLayout peer1Layout = (FrameLayout) rootView.findViewById(R.id.peer_1);
-        FrameLayout peer2Layout = (FrameLayout) rootView.findViewById(R.id.peer_2);
-        FrameLayout peer3Layout = (FrameLayout) rootView.findViewById(R.id.peer_3);
+        selfLayout = rootView.findViewById(R.id.self_video);
+        FrameLayout peer1Layout = rootView.findViewById(R.id.peer_1);
+        FrameLayout peer2Layout = rootView.findViewById(R.id.peer_2);
+        FrameLayout peer3Layout = rootView.findViewById(R.id.peer_3);
 
         videoViewLayouts = new FrameLayout[]{selfLayout, peer1Layout, peer2Layout, peer3Layout};
     }
@@ -253,6 +253,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      * show list of potential actions on clicking space for remote Peers.
      */
     private OnClickListener showMenuRemote(final int peerIndex) {
+
+        //check peerIndex is available or not
+        if(mPresenter.onGetTotalInRoom() <= peerIndex)
+            return null;
+
         // Get peerId
         return v -> {
 
@@ -443,5 +448,4 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
             }
         }
     }
-
 }

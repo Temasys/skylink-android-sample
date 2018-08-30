@@ -9,7 +9,7 @@ import org.webrtc.SurfaceViewRenderer;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
@@ -62,6 +62,8 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     // not necessarily the currently used frame rate.
     private static int mCurrentFps = -1;
 
+    //current audio output
+    private boolean isSpeakerOn;
 
     public VideoCallPresenter(VideoCallContract.View videoCallView, Context context) {
         this.mContext = context;
@@ -120,6 +122,10 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
             Log.d(TAG, "Try to update UI when changing configuration");
         }
 
+        //get default audio output settings
+        isSpeakerOn = mVideoCallService.getCurrentVideoSpeaker();
+        mVideoCallView.onChangeBtnSpeakerUI(isSpeakerOn);
+
     }
 
     @Override
@@ -147,6 +153,9 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     public void onViewExit() {
         //process disconnect from room
         mVideoCallService.disconnectFromRoom();
+
+        //reset default audio speaker
+        mVideoCallService.setCurrentVideoSpeaker(Utils.getDefaultAudioSpeaker());
 
         //after disconnected from skylink SDK, UI will be updated latter on AudioService.onDisconnect
     }
@@ -255,9 +264,26 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     @Override
+    public void onProcessBtnSpeakerOn() {
+        //change current speakerOn
+        isSpeakerOn = !isSpeakerOn;
+
+        mVideoCallService.changeAudioOutput(isSpeakerOn);
+
+    }
+
+    @Override
     public void onProcessBtnAudioMute() {
         boolean isAudioMute = mVideoCallService.isAudioMute();
 
+        //change UI
+        if (!isAudioMute) {
+            mVideoCallView.onChangeBtnAudioMuteUI(true);
+        } else {
+            mVideoCallView.onChangeBtnAudioMuteUI(false);
+        }
+
+        //change SDK
         processBtnAudioMute(!isAudioMute);
     }
 
@@ -265,14 +291,34 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     public void onProcessBtnVideoMute() {
         boolean isVideoMute = mVideoCallService.isVideoMute();
 
+        //change UI
+        if (!isVideoMute) {
+            mVideoCallView.onChangeBtnVideoMuteUI(true);
+        } else {
+            mVideoCallView.onChangeBtnVideoMuteUI(false);
+        }
+
+        //change SDK
         processBtnVideoMute(!isVideoMute);
     }
 
     @Override
     public void onProcessBtnCameraToggle() {
-        boolean isCamToggle = mVideoCallService.isCameraToggle();
+        //get current camera state: true is active, false is stop
+        boolean isCamActive = mVideoCallService.isCameraToggle();
 
-        processBtnCameraToggle(!isCamToggle);
+        //change state
+        mVideoCallService.setCamToggle(!isCamActive);
+
+        //change UI
+        if (mVideoCallService.isCameraToggle()) {
+            mVideoCallView.onChangeBtnCameraMuteUI(false);
+        } else {
+            mVideoCallView.onChangeBtnCameraMuteUI(true);
+        }
+
+        //change SDK
+        mVideoCallService.toggleCamera(mVideoCallService.isCameraToggle());
     }
 
     @Override
@@ -280,21 +326,23 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
         // Toggle camera back to previous state if required.
         if (mVideoCallService.isCameraToggle()) {
-
             if (mVideoCallService.getVideoView(null) != null) {
+                mVideoCallService.toggleCamera(true);
 
-                mVideoCallService.toggleCamera();
-
-                mVideoCallService.setCamToggle(false);
+                mVideoCallView.onChangeBtnCameraMuteUI(false);
             }
+        } else {
+            mVideoCallService.toggleCamera(false);
+
+            mVideoCallView.onChangeBtnCameraMuteUI(true);
         }
     }
 
     @Override
     public void onViewPause() {
-        boolean toggleCamera = mVideoCallService.toggleCamera(false);
 
-        mVideoCallService.setCamToggle(toggleCamera);
+        //stop camera when pause
+        mVideoCallService.toggleCamera(false);
     }
 
     @Override
@@ -348,7 +396,6 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
         // If any of new Fps or selected CaptureFormat are not valid,
         // or setting new resolution was not successful, reset Fps UI to previous values.
-
         boolean result1 = setInputVideoResolutions(mCurrentCaptureFormat, fpsNew);
 
         if (fpsNew < 0 || result1) {
@@ -368,6 +415,12 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         String peerId = mVideoCallService.getPeerId(1);
 
         mVideoCallService.getVideoResolutions(peerId);
+    }
+
+    @Override
+    public void onAudioChangedToSpeaker(boolean isSpeakerOn) {
+        mVideoCallView.onChangeBtnSpeakerUI(isSpeakerOn);
+        mVideoCallService.setCurrentVideoSpeaker(isSpeakerOn);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -507,9 +560,14 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
     private void connectToRoom() {
         //connect to SDK
-        if(mVideoCallService.connectToRoom()) {
+        if (mVideoCallService.connectToRoom()) {
             //update UI and make toast
             mVideoCallView.onConnectingUIChange();
+
+            //Refresh VideoLocalState
+            mVideoCallService.setAudioMute(false);
+            mVideoCallService.setVideoMute(false);
+            mVideoCallService.setCamToggle(true);
 
             //get roomName from setting
             String log = "Entering video room \"" + Config.ROOM_NAME_VIDEO + "\".";
@@ -529,6 +587,8 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
         // Toggle camera back to previous state if required.
         if (mVideoCallService.isCameraToggle() && getVideoView(null) != null) {
+            processBtnCameraToggle(false);
+        } else {
             processBtnCameraToggle(true);
         }
 
@@ -572,27 +632,16 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
     }
 
     // If video is enable, toggle video and if video is toggle, then enable it
-    private void processBtnCameraToggle(boolean isCameraToggle) {
+    private void processBtnCameraToggle(boolean isCameraStop) {
 
-        //display instruction log
-        String log12 = "Toggled camera ";
         if (getVideoView(null) != null) {
-            if (mVideoCallService.toggleCamera()) {
-                log12 += "to restarted!";
-
-                //change state of camera toggle
-                mVideoCallService.setCamToggle(false);
+            if (isCameraStop) {
+                //change UI
+                mVideoCallView.onChangeBtnCameraMuteUI(true);
             } else {
-                log12 += "to stopped!";
-
-                mVideoCallService.setCamToggle(true);
+                mVideoCallView.onChangeBtnCameraMuteUI(false);
             }
-        } else {
-            log12 += "but failed as local video is not available!";
         }
-        toastLog(TAG, mContext, log12);
-
-        //this button don't need to change text
     }
 
     /**

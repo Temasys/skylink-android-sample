@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.configuration;
+package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
 
 import android.app.Activity;
@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.content.Context.MODE_PRIVATE;

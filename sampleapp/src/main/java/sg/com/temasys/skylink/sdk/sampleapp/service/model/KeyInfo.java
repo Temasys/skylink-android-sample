@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.configuration;
+package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
 import android.support.annotation.Nullable;
 import android.util.Log;

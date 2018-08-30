@@ -4,11 +4,12 @@ import android.content.Context;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.configuration.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
@@ -30,6 +31,9 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
 
     //utils to process permission
     private PermissionUtils mPermissionUtils;
+
+    //current audio output
+    private boolean isSpeakerOn;
 
     //constructor
     public AudioCallPresenter(AudioCallContract.View AudioCallView, Context context) {
@@ -80,20 +84,24 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             mPermissionUtils.permQResume(mContext, mAudioCallView.onGetFragment());
 
             //update UI into connected state
-            updateUI();
+            updateUI(mAudioCallService.isPeerJoin());
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
+
+        //get default audio output settings and change UI
+        isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
+        mAudioCallView.onChangeBtnAudioSpeakerUI(isSpeakerOn);
     }
 
     @Override
     public void onConnect(boolean isSuccessful) {
-        updateUI();
+        updateUI(false);
     }
 
     @Override
     public void onDisconnect() {
-        updateUI();
+        updateUI(false);
     }
 
     @Override
@@ -102,17 +110,34 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         //process disconnect from room
         mAudioCallService.disconnectFromRoom();
 
+        //reset default audio speaker
+        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
+
         //after disconnected from skylink SDK, UI will be updated later on AudioService.onDisconnect
     }
 
     @Override
+    public void onChangeAudioToSpeaker() {
+        //check current speakerOn
+        isSpeakerOn = !isSpeakerOn;
+
+        mAudioCallService.changeAudioOutput(isSpeakerOn);
+    }
+
+    @Override
+    public void onAudioChangedToSpeaker(boolean isSpeakerOn) {
+        mAudioCallView.onChangeBtnAudioSpeakerUI(isSpeakerOn);
+        mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
+    }
+
+    @Override
     public void onRemotePeerJoin(SkylinkPeer remotePeer) {
-        updateUI();
+        updateUI(true);
     }
 
     @Override
     public void onRemotePeerLeave(String remotePeerId) {
-        updateUI();
+        updateUI(false);
     }
 
     @Override
@@ -147,15 +172,16 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
-    private void updateUI() {
+    private void updateUI(boolean isPeerJoined) {
         String strRoomDetails = getRoomDetails();
-        mAudioCallView.onUpdateUI(strRoomDetails);
+        mAudioCallView.onUpdateUI(strRoomDetails, isPeerJoined);
     }
 
     private String getRoomDetails() {
         boolean isConnected = mAudioCallService.isConnectingOrConnected();
         String roomName = mAudioCallService.getRoomName(Config.ROOM_NAME_AUDIO);
         String userName = mAudioCallService.getUserName(null, Config.USER_NAME_AUDIO);
+        String remotePeerName = mAudioCallService.getRemotePeerName();
 
         boolean isPeerJoined = mAudioCallService.isPeerJoin();
 
@@ -165,7 +191,7 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             roomDetails = "Now connected to Room named : " + roomName
                     + "\n\nYou are signed in as : " + userName + "\n";
             if (isPeerJoined) {
-                roomDetails += "\nPeer(s) are in the room";
+                roomDetails += "\nPeer(s) are in the room : "+ remotePeerName;
             } else {
                 roomDetails += "\nYou are alone in this room";
             }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="floating_btn_size">20dp</dimen>
+    <dimen name="ll_video_res_height">15dp</dimen>
+</resources>
