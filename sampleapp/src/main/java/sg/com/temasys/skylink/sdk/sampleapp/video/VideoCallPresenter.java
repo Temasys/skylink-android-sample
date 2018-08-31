@@ -107,6 +107,9 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
             //connect to room on Skylink connection
             connectToRoom();
 
+            //default setting for video output
+            mVideoCallService.setCurrentVideoSpeaker(Utils.getDefaultVideoSpeaker());
+
             //after connected to skylink SDK, UI will be updated latter on AudioService.onConnect
 
             Log.d(TAG, "Try to connect when entering room");
@@ -155,7 +158,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
         mVideoCallService.disconnectFromRoom();
 
         //reset default audio speaker
-        mVideoCallService.setCurrentVideoSpeaker(Utils.getDefaultAudioSpeaker());
+        mVideoCallService.setCurrentVideoSpeaker(Utils.getDefaultVideoSpeaker());
 
         //after disconnected from skylink SDK, UI will be updated latter on AudioService.onDisconnect
     }
@@ -419,6 +422,7 @@ public class VideoCallPresenter implements VideoCallContract.Presenter {
 
     @Override
     public void onAudioChangedToSpeaker(boolean isSpeakerOn) {
+        this.isSpeakerOn = isSpeakerOn;
         mVideoCallView.onChangeBtnSpeakerUI(isSpeakerOn);
         mVideoCallService.setCurrentVideoSpeaker(isSpeakerOn);
     }

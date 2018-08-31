@@ -34,7 +34,7 @@ public class AudioService extends SDKService implements AudioCallContract.Servic
     }
 
     public String getRemotePeerName() {
-        if(mPeersList.size()>1)
+        if(mPeersList != null && mPeersList.size()>1)
             return mPeersList.get(1).getPeerName();
         return "";
     }
@@ -45,5 +45,9 @@ public class AudioService extends SDKService implements AudioCallContract.Servic
 
     public void setCurrenAudioSpeaker(boolean isSpeakerOn) {
         currentAudioSpeaker = isSpeakerOn;
+    }
+
+    public void resumeAudioOutput() {
+        changeAudioOutput(currentAudioSpeaker);
     }
 }

@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -90,6 +89,21 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+
+        mPresenter.onViewStop();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //set default audio setting
+        mPresenter.onViewResume();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
 
@@ -122,29 +136,54 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
-    public void onUpdateUI(String roomDetails, boolean isPeerJoined) {
+    public void onUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn) {
         tvRoomDetails.setText(roomDetails);
 
-        AnimationDrawable frameAnimation = (AnimationDrawable) img.getDrawable();
+        AnimationDrawable frameAnimation = null;
         if (isPeerJoined) {
-            frameAnimation.start();
+            AnimationDrawable backgroundSrc = (AnimationDrawable) mContext.getResources().getDrawable(R.drawable.img_blink);
+            if (backgroundSrc != null) {
+                img.setImageDrawable(backgroundSrc);
+
+                frameAnimation = (AnimationDrawable) img.getDrawable();
+                if (frameAnimation != null)
+                    frameAnimation.start();
+            }
         } else {
-            frameAnimation.stop();
+            if (frameAnimation != null)
+                frameAnimation.stop();
+
+            Drawable backgroundSrc = null;
+            if (isSpeakerOn)
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.speaker_image, null);
+            else
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.headset_image, null);
+
+            if (backgroundSrc != null)
+                img.setImageDrawable(backgroundSrc);
         }
     }
 
     @Override
-    public void onChangeBtnAudioSpeakerUI(boolean isSpeakerOn) {
+    public void onChangeBtnAudioSpeakerUI(boolean isPeerJoined, boolean isSpeakerOn) {
         //change the button background and icon
+        Drawable backgroundSrcBtn = null;
+        Drawable backgroundSrcImg = null;
         if (isSpeakerOn) {
             btnAudioSpeaker.setBackground(mContext.getResources().getDrawable(R.drawable.button_circle_press));
-            Drawable backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
-            btnAudioSpeaker.setImageDrawable(backgroundSrc);
+            backgroundSrcBtn = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
+            backgroundSrcImg = mContext.getResources().getDrawable(R.drawable.speaker_image, null);
         } else {
             btnAudioSpeaker.setBackground(mContext.getResources().getDrawable(R.drawable.button_circle));
-            Drawable backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_speaker_mute, null);
-            btnAudioSpeaker.setImageDrawable(backgroundSrc);
+            backgroundSrcBtn = mContext.getResources().getDrawable(R.drawable.icon_speaker_mute, null);
+            backgroundSrcImg = mContext.getResources().getDrawable(R.drawable.headset_image, null);
         }
+
+        if (backgroundSrcBtn != null)
+            btnAudioSpeaker.setImageDrawable(backgroundSrcBtn);
+
+        if (backgroundSrcImg != null && !isPeerJoined)
+            img.setImageDrawable(backgroundSrcImg);
     }
 
     //----------------------------------------------------------------------------------------------

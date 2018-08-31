@@ -74,6 +74,9 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             //connect to room on Skylink connection
             mAudioCallService.connectToRoom();
 
+            //default setting for audio output
+            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
+
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
             Log.d(TAG, "Try to connect when entering room");
@@ -91,11 +94,12 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
 
         //get default audio output settings and change UI
         isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
-        mAudioCallView.onChangeBtnAudioSpeakerUI(isSpeakerOn);
+        mAudioCallView.onChangeBtnAudioSpeakerUI(mAudioCallService.isPeerJoin(), isSpeakerOn);
     }
 
     @Override
     public void onConnect(boolean isSuccessful) {
+
         updateUI(false);
     }
 
@@ -117,6 +121,18 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
     }
 
     @Override
+    public void onViewStop() {
+
+
+    }
+
+    @Override
+    public void onViewResume() {
+        //set default audio output
+        mAudioCallService.resumeAudioOutput();
+    }
+
+    @Override
     public void onChangeAudioToSpeaker() {
         //check current speakerOn
         isSpeakerOn = !isSpeakerOn;
@@ -126,7 +142,8 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
 
     @Override
     public void onAudioChangedToSpeaker(boolean isSpeakerOn) {
-        mAudioCallView.onChangeBtnAudioSpeakerUI(isSpeakerOn);
+        this.isSpeakerOn = isSpeakerOn;
+        mAudioCallView.onChangeBtnAudioSpeakerUI(mAudioCallService.isPeerJoin(), isSpeakerOn);
         mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
     }
 
@@ -174,7 +191,7 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
 
     private void updateUI(boolean isPeerJoined) {
         String strRoomDetails = getRoomDetails();
-        mAudioCallView.onUpdateUI(strRoomDetails, isPeerJoined);
+        mAudioCallView.onUpdateUI(strRoomDetails, isPeerJoined, isSpeakerOn);
     }
 
     private String getRoomDetails() {
@@ -191,7 +208,7 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             roomDetails = "Now connected to Room named : " + roomName
                     + "\n\nYou are signed in as : " + userName + "\n";
             if (isPeerJoined) {
-                roomDetails += "\nPeer(s) are in the room : "+ remotePeerName;
+                roomDetails += "\nPeer(s) are in the room : " + remotePeerName;
             } else {
                 roomDetails += "\nYou are alone in this room";
             }

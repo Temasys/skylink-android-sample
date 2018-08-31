@@ -22,9 +22,9 @@ public interface AudioCallContract {
         /**
          * Update the room details information on UI.
          */
-        void onUpdateUI(String roomDetails, boolean isPeerJoined);
+        void onUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn);
 
-        void onChangeBtnAudioSpeakerUI(boolean isSpeakerOn);
+        void onChangeBtnAudioSpeakerUI(boolean isPeerJoined, boolean isSpeakerOn);
     }
 
     interface Presenter extends BasePresenter {
@@ -54,6 +54,10 @@ public interface AudioCallContract {
         void onChangeAudioToSpeaker();
 
         void onAudioChangedToSpeaker(boolean isSpeakerOn);
+
+        void onViewStop();
+
+        void onViewResume();
     }
 
     interface Service extends BaseService<Presenter> {
