@@ -101,11 +101,6 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     }
 
     @Override
-    public void onServiceRequestDisconnect() {
-        //do nothing
-    }
-
-    @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
 
         //add new remote peer

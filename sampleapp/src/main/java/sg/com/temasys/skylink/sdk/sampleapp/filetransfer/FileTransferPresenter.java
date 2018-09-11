@@ -156,11 +156,6 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     }
 
     @Override
-    public void onServiceRequestDisconnect() {
-        //do nothing
-    }
-
-    @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
         //add new remote peer
         mFileTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer);

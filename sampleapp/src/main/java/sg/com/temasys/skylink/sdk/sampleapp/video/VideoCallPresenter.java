@@ -306,11 +306,11 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             mVideoCallView.onPresenterRequestConnectedUIChange();
 
             //start audio routing
-//            SkylinkConfig skylinkConfig = mVideoCallService.getSkylinkConfig();
-//            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            SkylinkConfig skylinkConfig = mVideoCallService.getSkylinkConfig();
+            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
                 AudioRouter.setPresenter(this);
                 AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
-//            }
+            }
 
         } else {
             processDisconnectUIChange();
@@ -326,11 +326,6 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
             AudioRouter.stopAudioRouting(mContext);
         }
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
-        //do nothing
     }
 
     @Override
