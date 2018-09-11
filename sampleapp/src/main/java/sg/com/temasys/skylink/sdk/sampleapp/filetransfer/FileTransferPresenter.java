@@ -220,8 +220,8 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
     private String processGetRoomDetails() {
         boolean isConnected = mFileTransferService.isConnectingOrConnected();
-        String roomName = mFileTransferService.getRoomName(Config.ROOM_NAME_CHAT);
-        String userName = mFileTransferService.getUserName(null, Config.USER_NAME_CHAT);
+        String roomName = mFileTransferService.getRoomName(Config.ROOM_NAME_FILE);
+        String userName = mFileTransferService.getUserName(null, Config.USER_NAME_FILE);
 
         boolean isPeerJoined = mFileTransferService.isPeerJoin();
 

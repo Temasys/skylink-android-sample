@@ -42,7 +42,7 @@ public class AudioRouter {
                     int state = intent.getIntExtra("state", -1);
                     switch (state) {
                         case 0:
-                            processHeadsetPlug(false);
+//                            processHeadsetPlug(false);
                             break;
                         case 1:
                             processHeadsetPlug(true);
@@ -82,9 +82,9 @@ public class AudioRouter {
                     int currentAudioState = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
 
                     if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTED) {
-                        processHeadsetBluetooth(false);
+//                        processHeadsetBluetooth(false);
                     } else if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTING) {
-                        processHeadsetBluetooth(false);
+//                        processHeadsetBluetooth(false);
                     } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTED) {
                         processHeadsetBluetooth(true);
                     } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTING) {

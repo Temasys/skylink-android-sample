@@ -142,8 +142,8 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
     private String processGetRoomDetails() {
         boolean isConnected = mDataTransferService.isConnectingOrConnected();
-        String roomName = mDataTransferService.getRoomName(Config.ROOM_NAME_CHAT);
-        String userName = mDataTransferService.getUserName(null, Config.USER_NAME_CHAT);
+        String roomName = mDataTransferService.getRoomName(Config.ROOM_NAME_DATA);
+        String userName = mDataTransferService.getUserName(null, Config.USER_NAME_DATA);
 
         boolean isPeerJoined = mDataTransferService.isPeerJoin();
 
