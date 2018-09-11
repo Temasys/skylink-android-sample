@@ -6,18 +6,24 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Arrays;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
 
-public class MultiPartyVideoService extends SDKService implements MultiPartyVideoCallContract.Service{
+public class MultiPartyVideoService extends SkylinkCommonService implements MultiPartyVideoCallContract.Service{
 
     private final String TAG = MultiPartyVideoService.class.getName();
 
@@ -29,12 +35,7 @@ public class MultiPartyVideoService extends SDKService implements MultiPartyVide
 
     @Override
     public void setPresenter(MultiPartyVideoCallContract.Presenter presenter) {
-        this.mMultiVideoPresenter = presenter;
-    }
-
-    @Override
-    public void setTypeCall() {
-        mTypeCall = Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO;
+        mPresenter = (BasePresenter) presenter;
     }
 
     public boolean isCameraToggle() {
@@ -217,5 +218,56 @@ public class MultiPartyVideoService extends SDKService implements MultiPartyVide
         }
 
         return -1;
+    }
+
+    @Override
+    public void setListeners(SkylinkConnection skylinkConnection) {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setOsListener(this);
+            skylinkConnection.setRecordingListener(this);
+            skylinkConnection.setStatsListener(this);
+        }
+    }
+
+    @Override
+    public SkylinkConfig getSkylinkConfig(){
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        // MultiPartyVideoCall config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setHasPeerMessaging(true);
+        skylinkConfig.setHasFileTransfer(true);
+        skylinkConfig.setMirrorLocalView(true);
+
+        // Allow only 3 remote Peers to join, due to current UI design.
+        skylinkConfig.setMaxPeers(3);
+
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+
+        // Set default camera setting
+        if (Utils.getDefaultCameraOutput())
+            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+        else
+            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+
+        //Set default video resolution setting
+        String videoResolution = Utils.getDefaultVideoResolution();
+        if (videoResolution.equals(VIDEO_RESOLUTION_VGA)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_VGA);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_VGA);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_HDR)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_FHD)) {
+            skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
+            skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
+        }
+
+        return skylinkConfig;
     }
 }

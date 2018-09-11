@@ -10,10 +10,6 @@ import android.media.AudioManager;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
-import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallPresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
-
 
 /**
  * Simple AudioRouter that switches between the speaker phone and the headset
@@ -31,13 +27,9 @@ public class AudioRouter {
 
     private static BluetoothAdapter bluetoothAdapter;
 
-    private static AudioCallContract.Presenter mAudioPresenter;
-    private static VideoCallContract.Presenter mVideoPresenter;
+    private static BasePresenter mPresenter;
 
-    //variable to set audio mode = headset at the first time
-    private static boolean isFirstTimeAudioOnHeadset;
-    private static boolean isFirstTimeAudioOnBlueTooth;
-    private static boolean isAudioOnSpeaker, isPlugHeadset, isBluetoothHeadset;
+    private static boolean isAudioOnSpeaker;
 
     private static Constants.CONFIG_TYPE mCallType;
 
@@ -59,11 +51,6 @@ public class AudioRouter {
                             String log = "[SA][headsetBroadcastReceiver][onReceive] Headset: Error determining state!";
                             Log.d(TAG, log);
                     }
-
-                    //change variable value for next time usage of audio as normal behavior
-                    if (isFirstTimeAudioOnHeadset) {
-                        isFirstTimeAudioOnHeadset = false;
-                    }
                 }
             }
         };
@@ -74,25 +61,15 @@ public class AudioRouter {
                     String logTag = "[SA][headsetBroadcastReceiver][onReceive] ";
                     String log;
                     if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
-                        isPlugHeadset = false;
-                        isBluetoothHeadset = false;
                         // Bluetooth is disconnected, do speaker on
                         if (isAudioOnSpeaker) {
                             setAudioPathOnBluetooth(true);
 
-                            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                                mAudioPresenter.onAudioChangedToSpeaker(true);
-                            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                                mVideoPresenter.onAudioChangedToSpeaker(true);
+                            mPresenter.onServiceRequestAudioOutputChanged(true);
                         }
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
                     }
-                }
-
-                //change variable value for next time usage of audio as normal behavior
-                if (isFirstTimeAudioOnBlueTooth) {
-                    isFirstTimeAudioOnBlueTooth = false;
                 }
             }
 
@@ -113,11 +90,6 @@ public class AudioRouter {
                     } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTING) {
                         processHeadsetBluetooth(true);
                     }
-                }
-
-                //change variable value for next time usage of audio as normal behavior
-                if (isFirstTimeAudioOnBlueTooth) {
-                    isFirstTimeAudioOnBlueTooth = false;
                 }
             }
         };
@@ -151,7 +123,7 @@ public class AudioRouter {
      * Initialize AudioRouter and
      * start routing audio to headset if plugged, else to the speaker phone
      */
-    public static void startAudioRouting(Context context) {
+    public static void startAudioRouting(Context context, Constants.CONFIG_TYPE typeCall) {
         String logTag = "[SA][AR][startAudioRouting] ";
         String log = logTag + "Trying to start audio routing...";
         Log.d(TAG, log);
@@ -186,6 +158,7 @@ public class AudioRouter {
         Log.d(TAG, log);
 
         //use default setting for initialize
+        mCallType = typeCall;
         applyDefaultAudioSetting();
 
         log = logTag + "Starting audio routing is complete.";
@@ -218,11 +191,12 @@ public class AudioRouter {
 
         try {
             //reset default audio output
-            isAudioOnSpeaker = false;
-            isPlugHeadset = false;
-            isBluetoothHeadset = false;
-
             applyDefaultAudioSetting();
+
+            isAudioOnSpeaker = false;
+            bluetoothAdapter = null;
+            mPresenter = null;
+            audioManager = null;
 
             // Must use applicationContext here and not Activity context.
             context.getApplicationContext().unregisterReceiver(headsetBroadcastReceiver);
@@ -255,22 +229,9 @@ public class AudioRouter {
                     "Attempt to set audio path before setting AudioManager");
         }
 
-        //check default setting before apply change
-        boolean defaultSpeakerOn = false;
-        if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-            defaultSpeakerOn = Utils.getDefaultAudioSpeaker();
-        else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-            defaultSpeakerOn = Utils.getDefaultVideoSpeaker();
-
-        //the audio is in headset mode at the first time
-        if (isFirstTimeAudioOnHeadset) {
-            audioManager.setSpeakerphoneOn(defaultSpeakerOn);
-            log = logTag + "Setting Speakerphone to " + defaultSpeakerOn + " as default setting";
-        } else {
-            audioManager.setSpeakerphoneOn(isSpeakerphoneOn);
-            log = logTag + "Setting Speakerphone to " + isSpeakerphoneOn +
-                    " as audioManager.isWiredHeadsetOn() = " + audioManager.isWiredHeadsetOn();
-        }
+        audioManager.setSpeakerphoneOn(isSpeakerphoneOn);
+        log = logTag + "Setting Speakerphone to " + isSpeakerphoneOn +
+                " as audioManager.isWiredHeadsetOn() = " + audioManager.isWiredHeadsetOn();
 
         Log.d(TAG, log);
 
@@ -283,23 +244,9 @@ public class AudioRouter {
         String log = logTag + "Trying to set audio path...";
         Log.d(TAG, log);
 
-        //check default setting before apply change
-        boolean defaultSpeakerOn = false;
-        if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-            defaultSpeakerOn = Utils.getDefaultAudioSpeaker();
-        else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-            defaultSpeakerOn = Utils.getDefaultVideoSpeaker();
-
-        if (bluetoothAdapter == null) {
-            // Device does not support Bluetooth
-        } else if (isFirstTimeAudioOnBlueTooth) {
-            audioManager.setSpeakerphoneOn(defaultSpeakerOn);
-            log = logTag + "Setting Speakerphone to off as the first time usage.";
-        } else {
-            audioManager.setSpeakerphoneOn(isSpeakerphoneOn);
-            log = logTag + "Setting Speakerphone to " + isSpeakerphoneOn +
-                    " as currentAudioState = " + bluetoothAdapter.isEnabled();
-        }
+        audioManager.setSpeakerphoneOn(isSpeakerphoneOn);
+        log = logTag + "Setting Speakerphone to " + isSpeakerphoneOn +
+                " as currentAudioState = " + bluetoothAdapter.isEnabled();
 
         Log.d(TAG, log);
 
@@ -331,66 +278,27 @@ public class AudioRouter {
 
     public static void changeAudioOutput(Context context, boolean isSpeakerphoneOn) {
 
-        //in case of connected to wired headset before open the app
-        if (audioManager.isWiredHeadsetOn() && !isPlugHeadset) {
-            isPlugHeadset = true;
-        }
-
-        //in case of connected to bluetooth before open the app
-        if (isBluetoothHeadsetConnected() && !isBluetoothHeadset) {
-            isBluetoothHeadset = true;
-        }
-
         //turn on speaker if no have plug headset or bluetooth headset
-        if (isSpeakerphoneOn && !isPlugHeadset && !isBluetoothHeadset && audioManager != null) {
+        if (!isSpeakerphoneOn) {
+            isAudioOnSpeaker = false;
+            audioManager.setSpeakerphoneOn(false);
+            mPresenter.onServiceRequestAudioOutputChanged(false);
+
+        } else {
             isAudioOnSpeaker = true;
             audioManager.setSpeakerphoneOn(true);
-            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                mAudioPresenter.onAudioChangedToSpeaker(true);
-            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                mVideoPresenter.onAudioChangedToSpeaker(true);
-        } else if (isSpeakerphoneOn && isPlugHeadset) {
-            isAudioOnSpeaker = false;
-            audioManager.setSpeakerphoneOn(false);
-            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                mAudioPresenter.onAudioChangedToSpeaker(false);
-            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                mVideoPresenter.onAudioChangedToSpeaker(false);
-            Utils.toastLogLong(TAG, context, "Can not turn speaker on because headset is plugged");
-        } else if (isSpeakerphoneOn && isBluetoothHeadset) {
-            isAudioOnSpeaker = false;
-            audioManager.setSpeakerphoneOn(false);
-            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                mAudioPresenter.onAudioChangedToSpeaker(false);
-            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                mVideoPresenter.onAudioChangedToSpeaker(false);
-            Utils.toastLogLong(TAG, context, "Can not turn speaker on because bluetooth headset is connected");
-        } else {
-            isAudioOnSpeaker = false;
-            audioManager.setSpeakerphoneOn(false);
-            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                mAudioPresenter.onAudioChangedToSpeaker(false);
-            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                mVideoPresenter.onAudioChangedToSpeaker(false);
+            mPresenter.onServiceRequestAudioOutputChanged(true);
         }
     }
 
-    public static void setPresenter(BasePresenter mPresenter) {
-        if (mPresenter instanceof AudioCallPresenter) {
-            mAudioPresenter = (AudioCallContract.Presenter) mPresenter;
-        } else if (mPresenter instanceof VideoCallContract.Presenter) {
-            mVideoPresenter = (VideoCallContract.Presenter) mPresenter;
-        }
+    public static void setPresenter(BasePresenter presenter) {
+        mPresenter = presenter;
     }
 
     public static boolean isBluetoothHeadsetConnected() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         return mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()
                 && mBluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) == BluetoothHeadset.STATE_CONNECTED;
-    }
-
-    public static void setCallType(Constants.CONFIG_TYPE callType) {
-        mCallType = callType;
     }
 
     public static void applyDefaultAudioSetting() {
@@ -401,26 +309,18 @@ public class AudioRouter {
 
             //default audio is headset
             if (!isAudioSpeaker) {
-                isFirstTimeAudioOnHeadset = true;
-                isFirstTimeAudioOnBlueTooth = true;
                 setAudioPathOnHeadedSet(false);
             } else {
-                isFirstTimeAudioOnHeadset = false;
-                isFirstTimeAudioOnBlueTooth = false;
                 setAudioPathOnHeadedSet(true);
             }
-        } else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO)) {
+        } else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO) || mCallType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {
 
             boolean isVideoSpeaker = Utils.getDefaultVideoSpeaker();
 
             //default audio is headset
             if (!isVideoSpeaker) {
-                isFirstTimeAudioOnHeadset = true;
-                isFirstTimeAudioOnBlueTooth = true;
                 setAudioPathOnHeadedSet(false);
             } else {
-                isFirstTimeAudioOnHeadset = false;
-                isFirstTimeAudioOnBlueTooth = false;
                 setAudioPathOnHeadedSet(true);
             }
         }
@@ -431,27 +331,17 @@ public class AudioRouter {
         String log;
 
         if (isHeadsetPlug) {
-            isPlugHeadset = true;
-            isBluetoothHeadset = false;
             //set speaker off
             setAudioPathOnHeadedSet(false);
 
-            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                mAudioPresenter.onAudioChangedToSpeaker(false);
-            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                mVideoPresenter.onAudioChangedToSpeaker(false);
+            mPresenter.onServiceRequestAudioOutputChanged(false);
             log = logTag + "Headset: Plugged";
 
         } else {
-            isPlugHeadset = false;
-            isBluetoothHeadset = false;
             //only set speaker on when user select turn on speaker button
             if (isAudioOnSpeaker) {
                 setAudioPathOnHeadedSet(true);
-                if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                    mAudioPresenter.onAudioChangedToSpeaker(true);
-                else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                    mVideoPresenter.onAudioChangedToSpeaker(true);
+                mPresenter.onServiceRequestAudioOutputChanged(true);
             }
             log = logTag + "Headset: Unplugged";
         }
@@ -463,36 +353,24 @@ public class AudioRouter {
         String logTag = "[SA][headsetBroadcastReceiver][onReceive] ";
         String log;
         if (isConnected) {
-
-            isPlugHeadset = false;
-            isBluetoothHeadset = true;
             setAudioPathOnBluetooth(false);
-            if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                mAudioPresenter.onAudioChangedToSpeaker(false);
-            else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                mVideoPresenter.onAudioChangedToSpeaker(false);
+
+            mPresenter.onServiceRequestAudioOutputChanged(false);
 
             log = logTag + "Bluetooth: on";
             Log.d(TAG, log);
 
         } else {
-
-            isPlugHeadset = false;
-            isBluetoothHeadset = false;
             // Bluetooth is disconnected, do speaker on
             // only turn on speaker when user select turn on speaker button
             if (isAudioOnSpeaker) {
                 setAudioPathOnBluetooth(true);
 
-                if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO))
-                    mAudioPresenter.onAudioChangedToSpeaker(true);
-                else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO))
-                    mVideoPresenter.onAudioChangedToSpeaker(true);
+                mPresenter.onServiceRequestAudioOutputChanged(true);
             }
 
             log = logTag + "Bluetooth: off";
             Log.d(TAG, log);
-
         }
     }
 }

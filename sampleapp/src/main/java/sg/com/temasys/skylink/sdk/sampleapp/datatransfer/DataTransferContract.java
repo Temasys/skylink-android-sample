@@ -2,7 +2,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -15,25 +14,45 @@ public interface DataTransferContract {
 
     interface View extends BaseView<Presenter> {
 
-        void onFillPeerRadioBtn(List<SkylinkPeer> peersList);
+        /**
+         * Update UI details when changing state
+         */
+        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
 
-        void onAddPeerRadioBtn(SkylinkPeer newPeer);
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer);
 
-        void onRemovePeerRadioBtn(String remotePeerId);
+        void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId);
 
-        void onUpdateRoomDetails(String roomDetails);
+        void onPresenterRequestUpdateUi(String roomDetails);
 
-        String onGetPeerIdSelected();
+        /**
+         * get selected remote peer
+         */
+        String onPresenterRequestGetPeerIdSelected();
 
-        void onSetRdPeerAllChecked(boolean isChecked);
+        /**
+         * set button Select all checked
+         */
+        void onPresenterRequestSetPeerAllSelected(boolean isSelected);
 
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter {
 
-        void onSendData(String remotePeerId, byte[] data);
+        /**
+         * process data to display on view
+         */
+        void onViewRequestLayout();
 
-        void onDataReceive(String remotePeerId, byte[] data);
+        /**
+         * process send data to remote Peer
+         */
+        void onViewRequestSendData(String remotePeerId, byte[] data);
+
+        /**
+         * process change state when view exit/closed
+         */
+        void onViewRequestExit();
     }
 
     interface Service extends BaseService<Presenter> {

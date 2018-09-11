@@ -21,6 +21,9 @@ public class DataTransferActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_transfer);
 
+        //create presenter
+        mDataTransferPresenter = new DataTransferPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             mDataTransferFragment = DataTransferFragment.newInstance();
@@ -34,7 +37,7 @@ public class DataTransferActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mDataTransferPresenter = new DataTransferPresenter(mDataTransferFragment, this);
+        mDataTransferPresenter.setView(mDataTransferFragment);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class DataTransferActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, DATA_TRANSFER_FRAGMENT_TAG, mDataTransferFragment);
     }
 

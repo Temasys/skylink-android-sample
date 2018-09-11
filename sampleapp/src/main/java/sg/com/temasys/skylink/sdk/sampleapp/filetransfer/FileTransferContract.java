@@ -5,7 +5,6 @@ import android.support.v4.app.Fragment;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -19,50 +18,59 @@ public interface FileTransferContract {
 
     interface View extends BaseView<Presenter> {
 
-        Fragment onGetFragment();
+        /**
+         * Get instance of the fragment for processing permission
+         */
+        Fragment onPresenterRequestGetFragmentInstance();
 
-        void onAddPeerRadioBtn(SkylinkPeer newPeer);
+        /**
+         * Update UI details when changing state
+         */
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer);
 
-        void onRemovePeerRadioBtn(String remotePeerId);
+        void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId);
 
-        void onFillPeerRadioBtn(List<SkylinkPeer> peersList);
+        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
 
-        String onGetPeerIdSelected();
+        void onPresenterRequestDisplayFilePreview(Uri imgUri);
 
-        void onSetRdPeerAllChecked(boolean isChecked);
+        void onPresenterRequestDisplayFileReveicedInfo(String info);
 
-        void onSetImagePreviewFromFile(Uri imgUri);
+        void onPresenterRequestUpdateUi(String roomDetails);
 
-        void onUpdateTvFileTransferDetails(String info);
+        /**
+         * get selected remote peer
+         */
+        String onPresenterRequestGetPeerIdSelected();
 
-        void onUpdateRoomDetails(String roomDetails);
+        /**
+         * set radio button Select All checked
+         */
+        void onPresenterRequestSetPeerAllSelected(boolean isSelected);
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter {
 
-        void onPermissionRequired(PermRequesterInfo info);
+        /**
+         * process data to display on view
+         */
+        void onViewRequestLayout();
 
-        void onPermissionGranted(PermRequesterInfo info);
+        /**
+         * process permission result
+         */
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        void onPermissionDenied(PermRequesterInfo info);
+        /**
+         * process send file to remote peer
+         */
+        void onViewRequestSendFile(String remotePeerId, String filePath);
 
-        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+        /**
+         * process change state when view exit/closed
+         */
+        void onViewRequestExit();
 
-        void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted);
-
-        void onFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate);
-
-        void onFileTransferDrop(String remotePeerId, String fileName, String message, boolean isExplicit);
-
-        void onFileSendComplete(String remotePeerId, String fileName);
-
-        void onFileReceiveComplete(String remotePeerId, String fileName);
-
-        void onFileSendProgress(String remotePeerId, String fileName, double percentage);
-
-        void onFileReceiveProgress(String remotePeerId, String fileName, double percentage);
-
-        void onSendFile(String remotePeerId, String filePath);
     }
 
     interface Service extends BaseService<Presenter> {

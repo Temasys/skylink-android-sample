@@ -49,7 +49,6 @@
     <string name="vid_res_recv">Video Res: Recv</string>
     <string name="webrtc_stats">WebRTC Stats</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="audio">Audio</string>
     <string name="video">Video</string>
     <string name="chat">Chat</string>
@@ -58,7 +57,6 @@
     <string name="multiVideo">Multi Videos</string>
     <string name="settings">Settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="default_audio_output">Default audio output for audio</string>
     <string name="default_video_output">Default audio output for video</string>
@@ -74,6 +72,8 @@
     <string name="room_setting">Room setting</string>
     <string name="key_setting">Key setting</string>
     <string name="speaker_on">Speaker</string>
+    <string name="enable_speaker">Enabled Speaker</string>
+    <string name="enable_headset">Enabled Headset</string>
 
 
 </resources>

@@ -3,15 +3,18 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 import android.util.Log;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
 
-public class ChatService extends SDKService implements ChatContract.Service {
+public class ChatService extends SkylinkCommonService implements ChatContract.Service {
 
     private final String TAG = ChatService.class.getName();
 
@@ -21,12 +24,7 @@ public class ChatService extends SDKService implements ChatContract.Service {
 
     @Override
     public void setPresenter(ChatContract.Presenter presenter) {
-        mChatPresenter = presenter;
-    }
-
-    @Override
-    public void setTypeCall(){
-        mTypeCall = Constants.CONFIG_TYPE.CHAT;
+        mPresenter = (BasePresenter) presenter;
     }
 
     public void sendServerMessage(String remotePeerId, String message) {
@@ -43,6 +41,29 @@ public class ChatService extends SDKService implements ChatContract.Service {
                 Log.e(TAG, e.getMessage(), e);
             }
         }
+    }
+
+    @Override
+    public void setListeners(SkylinkConnection skylinkConnection) {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setMessagesListener(this);
+        }
+    }
+
+    @Override
+    public SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        // Chat config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+        skylinkConfig.setHasPeerMessaging(true);
+
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
     }
 
 }

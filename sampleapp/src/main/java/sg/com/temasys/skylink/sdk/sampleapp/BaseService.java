@@ -10,10 +10,4 @@ public interface BaseService<T> {
      * set connection between service and presenter
      */
     void setPresenter(T presenter);
-
-    /**
-     * set current type call for service
-     */
-    void setTypeCall();
-
 }

@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,20 +23,14 @@ import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.listener.StatsListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
-import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
-import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
-import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingContract;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
@@ -46,32 +39,18 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class SDKService implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener, MessagesListener,
+public abstract class SkylinkCommonService implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener, MessagesListener,
         DataTransferListener, FileTransferListener, RecordingListener, StatsListener {
 
-    private final String TAG = SDKService.class.getName();
-
-    //type call to define current call function
-    protected Constants.CONFIG_TYPE mTypeCall;
+    private final String TAG = SkylinkCommonService.class.getName();
 
     protected Context mContext;
 
-    protected SdkConnectionManager mSdkConnectionManager;
+    //common presenter for all presenters
+    protected BasePresenter mPresenter;
 
-    //presenter for each type call
-    protected AudioCallContract.Presenter mAudioPresenter;
-
-    protected VideoCallContract.Presenter mVideoPresenter;
-
-    protected ChatContract.Presenter mChatPresenter;
-
-    protected DataTransferContract.Presenter mDataPresenter;
-
-    protected FileTransferContract.Presenter mFilePresenter;
-
-    protected MultiPartyVideoCallContract.Presenter mMultiVideoPresenter;
-
-    protected SettingContract.Presenter mSettingPresenter;
+    //Skylink connection manager object
+    private SkylinkConnectionManager mSkylinkConnectionManager;
 
     //these variables need to be static for configuration change
     protected static SkylinkConnection mSkylinkConnection;
@@ -79,51 +58,17 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     //list of peers joined in room
     protected static List<SkylinkPeer> mPeersList;
 
-    private String mRoomName;
-    private String mUserName;
+    protected String mRoomName;
+    protected String mUserName;
 
-    public SDKService(Context context) {
+    public SkylinkCommonService(Context context) {
         this.mContext = context;
+        this.mSkylinkConnectionManager = new SkylinkConnectionManager(context);
     }
 
-    private void setListeners() {
-        if (mSkylinkConnection != null) {
+    public abstract void setListeners(SkylinkConnection skylinkConnection);
 
-            //common listener for all
-            mSkylinkConnection.setLifeCycleListener(this);
-            mSkylinkConnection.setRemotePeerListener(this);
-
-            //MediaListener for audio, video, multi_video call
-            if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO ||
-                    mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
-                mSkylinkConnection.setMediaListener(this);
-            }
-
-            //OsListener for audio, video, file, multi_video call
-            if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO ||
-                    mTypeCall == Constants.CONFIG_TYPE.FILE | mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
-                mSkylinkConnection.setOsListener(this);
-            }
-
-            //MessagesListener for chat
-            if (mTypeCall == Constants.CONFIG_TYPE.CHAT)
-                mSkylinkConnection.setMessagesListener(this);
-
-            //DataTransferListener for data transfer
-            if (mTypeCall == Constants.CONFIG_TYPE.DATA)
-                mSkylinkConnection.setDataTransferListener(this);
-
-            //FileTransferListener for file transfer
-            if (mTypeCall == Constants.CONFIG_TYPE.FILE)
-                mSkylinkConnection.setFileTransferListener(this);
-
-            //RecordingListener and StatsListener for multi_video call
-            if (mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
-                mSkylinkConnection.setRecordingListener(this);
-                mSkylinkConnection.setStatsListener(this);
-            }
-        }
-    }
+    public abstract SkylinkConfig getSkylinkConfig();
 
     @Override
     public void onConnect(boolean isSuccessful, String message) {
@@ -131,9 +76,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         if (isSuccessful) {
             String localPeerId = mSkylinkConnection.getPeerId();
 
-            //for Grab client
             log += "Connected to room " + mRoomName + " as (" + mUserName + ").";
-            toastLogLong(TAG, mContext, log);
+            toastLog(TAG, mContext, log);
 
             //init peers list and add self/local peer to list
             if (mPeersList == null) {
@@ -145,42 +89,12 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
 
         } else {
             log += "Skylink failed to connect!\nReason : " + message;
-            toastLogLong(TAG, mContext, log);
+            toastLog(TAG, mContext, log);
         }
 
-        //update UI to connected state for all types call
-        switch (mTypeCall) {
-            case AUDIO:
-                if (mAudioPresenter != null) {
-                    mAudioPresenter.onConnect(isSuccessful);
-                }
-                break;
-            case VIDEO:
-                if (mVideoPresenter != null) {
-                    mVideoPresenter.onConnect(isSuccessful);
-                }
-                break;
-            case CHAT:
-                if (mChatPresenter != null) {
-                    mChatPresenter.onConnect(isSuccessful);
-                }
-                break;
-            case DATA:
-                if (mDataPresenter != null) {
-                    mDataPresenter.onConnect(isSuccessful);
-                }
-                break;
-            case FILE:
-                if (mFilePresenter != null) {
-                    mFilePresenter.onConnect(isSuccessful);
-                }
-                break;
-            case MULTI_PARTY_VIDEO:
-                if (mMultiVideoPresenter != null) {
-                    mMultiVideoPresenter.onConnect(isSuccessful);
-                }
-                break;
-        }
+        //update UI to connected state
+        mPresenter.onServiceRequestConnect(isSuccessful);
+
     }
 
     @Override
@@ -199,38 +113,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             mPeersList.clear();
 
         //update UI to disconnected state for all types call
-        switch (mTypeCall) {
-            case AUDIO:
-                if (mAudioPresenter != null) {
-                    mAudioPresenter.onDisconnect();
-                }
-                break;
-            case VIDEO:
-                if (mVideoPresenter != null) {
-                    mVideoPresenter.onDisconnect();
-                }
-                break;
-            case CHAT:
-                if (mChatPresenter != null) {
-                    mChatPresenter.onDisconnect();
-                }
-                break;
-            case DATA:
-                if (mDataPresenter != null) {
-                    mDataPresenter.onDisconnect();
-                }
-                break;
-            case FILE:
-                if (mFilePresenter != null) {
-                    mFilePresenter.onDisconnect();
-                }
-                break;
-            case MULTI_PARTY_VIDEO:
-                if (mMultiVideoPresenter != null) {
-                    mMultiVideoPresenter.onDisconnect();
-                }
-                break;
-        }
+        mPresenter.onServiceRequestDisconnect();
     }
 
     @Override
@@ -255,11 +138,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
         Log.d(TAG, "[onLocalMediaCapture]");
 
-        //only video call and multi party video call need to implement this callback
-        if (mVideoPresenter != null)
-            mVideoPresenter.onLocalMediaCapture(videoView);
-        else if (mMultiVideoPresenter != null)
-            mMultiVideoPresenter.onLocalMediaCapture(videoView);
+        mPresenter.onServiceRequestLocalMediaCapture(videoView);
     }
 
     @Override
@@ -304,54 +183,35 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
-        //only audio call and video call and multi party video call need to implement this callback
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onRemotePeerMediaReceive(log, remotePeerUserInfo);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onRemotePeerMediaReceive(log, remotePeerUserInfo);
-        } else if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onRemotePeerMediaReceive(log, remotePeerUserInfo, remotePeerId);
-        }
+        mPresenter.onServiceRequestRemotePeerMediaReceive(log, remotePeerUserInfo, remotePeerId);
     }
 
     @Override
     public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         Log.d(TAG, "[onInputVideoResolutionObtained]");
-        //only video call and multi party video call need to implement this callback
-        if (mVideoPresenter != null)
-            mVideoPresenter.onInputVideoResolutionObtained(width, height, fps, captureFormat);
-        else if (mMultiVideoPresenter != null)
-            mMultiVideoPresenter.onInputVideoResolutionObtained(width, height, fps, captureFormat);
+
+        mPresenter.onServiceRequestInputVideoResolutionObtained(width, height, fps, captureFormat);
     }
 
     @Override
     public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
         Log.d(TAG, "[onReceivedVideoResolutionObtained]");
-        //only video call and multi party video call need to implement this callback
-        if (mVideoPresenter != null)
-            mVideoPresenter.onReceivedVideoResolutionObtained(peerId, width, height, fps);
-        else if (mMultiVideoPresenter != null)
-            mMultiVideoPresenter.onReceivedVideoResolutionObtained(peerId, width, height, fps);
+
+        mPresenter.onServiceRequestReceivedVideoResolutionObtained(peerId, width, height, fps);
     }
 
     @Override
     public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
         Log.d(TAG, "[onSentVideoResolutionObtained]");
-        //only video call and multi party video call need to implement this callback
-        if (mVideoPresenter != null)
-            mVideoPresenter.onSentVideoResolutionObtained(peerId, width, height, fps);
-        else if (mMultiVideoPresenter != null)
-            mMultiVideoPresenter.onSentVideoResolutionObtained(peerId, width, height, fps);
+
+        mPresenter.onServiceRequestSentVideoResolutionObtained(peerId, width, height, fps);
     }
 
     @Override
     public void onVideoSizeChange(String peerId, Point size) {
         Log.d(TAG, "[onVideoSizeChange]");
-        //only video call and multi party video call need to implement this callback
-        if (mVideoPresenter != null)
-            mVideoPresenter.onVideoSizeChange(peerId, size);
-        else if (mMultiVideoPresenter != null)
-            mMultiVideoPresenter.onVideoSizeChange(peerId, size);
+
+        mPresenter.onServiceRequestVideoSizeChange(peerId, size);
     }
 
     @Override
@@ -359,16 +219,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         Log.d(TAG, "[onPermissionRequired]");
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
 
-        //Data Transfer and Chat function do not need to implement permission
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onPermissionRequired(info);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onPermissionRequired(info);
-        } else if (mFilePresenter != null) {
-            mFilePresenter.onPermissionRequired(info);
-        } else if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onPermissionRequired(info);
-        }
+        mPresenter.onServiceRequestPermissionRequired(info);
     }
 
     @Override
@@ -376,15 +227,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         Log.d(TAG, "[onPermissionGranted]");
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
 
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onPermissionGranted(info);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onPermissionGranted(info);
-        } else if (mFilePresenter != null) {
-            mFilePresenter.onPermissionGranted(info);
-        } else if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onPermissionGranted(info);
-        }
+        mPresenter.onServiceRequestPermissionGranted(info);
     }
 
     @Override
@@ -392,15 +235,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         Log.d(TAG, "[onPermissionDenied]");
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
 
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onPermissionDenied(info);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onPermissionDenied(info);
-        } else if (mFilePresenter != null) {
-            mFilePresenter.onPermissionDenied(info);
-        } else if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onPermissionDenied(info);
-        }
+        mPresenter.onServiceRequestPermissionDenied(mContext, info);
     }
 
     @Override
@@ -423,20 +258,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         SkylinkPeer remotePeer = new SkylinkPeer(remotePeerId, remotePeerName);
         mPeersList.add(remotePeer);
 
-        //update UI
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onRemotePeerJoin(remotePeer);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onRemotePeerJoin(remotePeer);
-        } else if (mChatPresenter != null) {
-            mChatPresenter.onRemotePeerJoin(remotePeer);
-        } else if (mDataPresenter != null) {
-            mDataPresenter.onRemotePeerJoin(remotePeer);
-        } else if (mFilePresenter != null) {
-            mFilePresenter.onRemotePeerJoin(remotePeer);
-        } else if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onRemotePeerJoin(remotePeer);
-        }
+        mPresenter.onServiceRequestRemotePeerJoin(remotePeer);
 
         logTag += "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
         toastLog(TAG, mContext, logTag);
@@ -457,13 +279,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         }
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onRemotePeerConnectionRefreshed(log, remotePeerUserInfo);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onRemotePeerConnectionRefreshed(log, remotePeerUserInfo);
-        } else if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onRemotePeerConnectionRefreshed(log, remotePeerUserInfo);
-        }
+
+        mPresenter.onServiceRequestRemotePeerConnectionRefreshed(log, remotePeerUserInfo);
     }
 
     @Override
@@ -497,22 +314,7 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             }
         }
 
-        if (mAudioPresenter != null) {
-            mAudioPresenter.onRemotePeerLeave(remotePeerId);
-        } else if (mVideoPresenter != null) {
-            mVideoPresenter.onRemotePeerLeave(remotePeerId);
-        } else if (mChatPresenter != null) {
-            mChatPresenter.onRemotePeerLeave(remotePeerId);
-        } else if (mDataPresenter != null) {
-            mDataPresenter.onRemotePeerLeave(remotePeerId);
-        } else if (mFilePresenter != null) {
-            mFilePresenter.onRemotePeerLeave(remotePeerId);
-        } else if (mMultiVideoPresenter != null) {
-            if (removeIndex > -1) {
-                mMultiVideoPresenter.onSetRemovedPeerIndex(removeIndex);
-                mMultiVideoPresenter.onRemotePeerLeave(remotePeerId);
-            }
-        }
+        mPresenter.onServiceRequestRemotePeerLeave(remotePeerId, removeIndex);
 
         int numRemotePeers = mPeersList.size() - 1;
         if (numRemotePeers >= 0) {
@@ -525,210 +327,127 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     @Override
     public void onDataReceive(String remotePeerId, byte[] data) {
         Log.d(TAG, "[onDataReceive]");
-        if (mDataPresenter != null) {
-            mDataPresenter.onDataReceive(remotePeerId, data);
-        }
+
+        mPresenter.onServiceRequestDataReceive(mContext, remotePeerId, data);
     }
 
     @Override
     public void onFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
         Log.d(TAG, "[onFileTransferPermissionRequest]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileTransferPermissionRequest(remotePeerId, fileName, isPrivate);
-        }
+
+        mPresenter.onServiceRequestFileTransferPermissionRequest(remotePeerId, fileName, isPrivate);
     }
 
     @Override
     public void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted) {
         Log.d(TAG, "[onFileTransferPermissionResponse]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileTransferPermissionResponse(remotePeerId, fileName, isPermitted);
-        }
+
+        mPresenter.onServiceRequestFileTransferPermissionResponse(mContext, remotePeerId, fileName, isPermitted);
     }
 
     @Override
     public void onFileTransferDrop(String remotePeerId, String fileName, String message, boolean isExplicit) {
         Log.d(TAG, "[onFileTransferDrop]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileTransferDrop(remotePeerId, fileName, message, isExplicit);
-        }
+
+        mPresenter.onServiceRequestFileTransferDrop(mContext, remotePeerId, fileName, message, isExplicit);
     }
 
     @Override
     public void onFileSendComplete(String remotePeerId, String fileName) {
         Log.d(TAG, "[onFileSendComplete]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileSendComplete(remotePeerId, fileName);
-        }
+
+        mPresenter.onServiceRequestFileSendComplete(mContext, remotePeerId, fileName);
     }
 
     @Override
     public void onFileReceiveComplete(String remotePeerId, String fileName) {
         Log.d(TAG, "[onFileReceiveComplete]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileReceiveComplete(remotePeerId, fileName);
-        }
+
+        mPresenter.onServiceRequestFileReceiveComplete(remotePeerId, fileName);
     }
 
     @Override
     public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
         Log.d(TAG, "[onFileSendProgress]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileSendProgress(remotePeerId, fileName, percentage);
-        }
+
+        mPresenter.onServiceRequestFileSendProgress(mContext, remotePeerId, fileName, percentage);
     }
 
     @Override
     public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
         Log.d(TAG, "[onFileReceiveProgress]");
-        if (mFilePresenter != null) {
-            mFilePresenter.onFileReceiveProgress(remotePeerId, fileName, percentage);
-        }
+
+        mPresenter.onServiceRequestFileReceiveProgress(mContext, remotePeerId, fileName, percentage);
     }
 
     @Override
     public void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
         Log.d(TAG, "[onServerMessageReceive]");
-        if (mChatPresenter != null) {
-            mChatPresenter.onServerMessageReceive(remotePeerId, message, isPrivate);
-        }
+
+        mPresenter.onServiceRequestServerMessageReceive(remotePeerId, message, isPrivate);
     }
 
     @Override
     public void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
         Log.d(TAG, "[onP2PMessageReceive]");
-        if (mChatPresenter != null) {
-            mChatPresenter.onP2PMessageReceive(remotePeerId, message, isPrivate);
-        }
+
+        mPresenter.onServiceRequestP2PMessageReceive(remotePeerId, message, isPrivate);
     }
 
     @Override
     public void onRecordingStart(String recordingId) {
         Log.d(TAG, "[onRecordingStart]");
-        if (mMultiVideoPresenter != null && mSkylinkConnection != null) {
-            mMultiVideoPresenter.onRecordingStart(mSkylinkConnection.isRecording());
-        }
+
+        mPresenter.onServiceRequestRecordingStart(mContext, mSkylinkConnection.isRecording());
     }
 
     @Override
     public void onRecordingStop(String recordingId) {
         Log.d(TAG, "[onRecordingStop]");
-        if (mMultiVideoPresenter != null && mSkylinkConnection != null) {
-            mMultiVideoPresenter.onRecordingStop(mSkylinkConnection.isRecording());
-        }
+
+        mPresenter.onServiceRequestRecordingStop(mContext, mSkylinkConnection.isRecording());
     }
 
     @Override
     public void onRecordingVideoLink(String recordingId, String peerId, String videoLink) {
         Log.d(TAG, "[onRecordingVideoLink]");
-        if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onRecordingVideoLink(recordingId, peerId, videoLink);
-        }
+
+        mPresenter.onServiceRequestRecordingVideoLink(recordingId, peerId, videoLink);
     }
 
     @Override
     public void onRecordingError(String recordingId, int errorCode, String description) {
         Log.d(TAG, "[onRecordingError]");
-        if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onRecordingError(recordingId, errorCode, description);
-        }
+
+        mPresenter.onServiceRequestRecordingError(mContext, recordingId, errorCode, description);
     }
 
     @Override
     public void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed) {
         Log.d(TAG, "[onTransferSpeedReceived]");
-        if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onTransferSpeedReceived(peerId, mediaDirection, mediaType, transferSpeed);
-        }
+
+        mPresenter.onServiceRequestTransferSpeedReceived(peerId, mediaDirection, mediaType, transferSpeed);
     }
 
     @Override
     public void onWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, HashMap<String, String> stats) {
         Log.d(TAG, "[onWebrtcStatsReceived]");
-        if (mMultiVideoPresenter != null) {
-            mMultiVideoPresenter.onWebrtcStatsReceived(peerId, mediaDirection, mediaType, stats);
-        }
+
+        mPresenter.onServiceRequestWebrtcStatsReceived(peerId, mediaDirection, mediaType, stats);
     }
 
-    public boolean connectToRoom() {
 
-        //check internet connection first
-        if (!Utils.isInternetOn()) {
-            String log = "Internet connection is off !";
-            toastLog(TAG, mContext, log);
-            return false;
-        }
+    public boolean isConnectingOrConnected() {
+        return mSkylinkConnectionManager.isConnectingOrConnected();
+    }
 
-        mSdkConnectionManager = new SdkConnectionManager(mContext);
-
-        // Initialize the skylink connection using SdkConnectionManager
-        mSkylinkConnection = mSdkConnectionManager.initializeSkylinkConnection(mTypeCall);
-
-        setListeners();
-
-        mRoomName = Utils.getRoomNameByType(mTypeCall);
-        mUserName = Utils.getUserNameByType(mTypeCall);
-
-        // Create the Skylink connection string.
-        // In production, the connection string should be generated by an external entity
-        // (such as a secure App server that has the Skylink App Key secret), and sent to the App.
-        // This is to avoid keeping the App Key secret within the application, for better security.
-        String skylinkConnectionString = Utils.getSkylinkConnectionString(
-                mRoomName, new Date(), SkylinkConnection.DEFAULT_DURATION);
-
-        // The skylinkConnectionString should not be logged in production,
-        // as it contains potentially sensitive information like the Skylink App Key ID.
-        boolean connectFailed = !mSkylinkConnection.connectToRoom(skylinkConnectionString, mUserName);
-
-        if (connectFailed) {
-            String log = "Unable to connect to room!";
-            toastLog(TAG, mContext, log);
-            return false;
-        } else {
-            String log = "Connecting...";
-            toastLog(TAG, mContext, log);
-        }
-
-        // Initialize and use the Audio router to switch between headphone and headset
-        if (mTypeCall == Constants.CONFIG_TYPE.AUDIO) {
-            AudioRouter.setCallType(Constants.CONFIG_TYPE.AUDIO);
-            AudioRouter.startAudioRouting(mContext);
-            AudioRouter.setPresenter(mAudioPresenter);
-        }
-
-        if (mTypeCall == Constants.CONFIG_TYPE.VIDEO) {
-            AudioRouter.setCallType(Constants.CONFIG_TYPE.VIDEO);
-            AudioRouter.startAudioRouting(mContext);
-            AudioRouter.setPresenter(mVideoPresenter);
-        }
-
-        if (mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO) {
-            AudioRouter.setCallType(Constants.CONFIG_TYPE.VIDEO);
-            AudioRouter.startAudioRouting(mContext);
-            AudioRouter.setPresenter(mMultiVideoPresenter);
-        }
-
-        return true;
+    public void connectToRoom(Constants.CONFIG_TYPE typeCall) {
+        mSkylinkConnectionManager.setService(this);
+        mSkylinkConnection = mSkylinkConnectionManager.connectToRoom(typeCall);
     }
 
     public void disconnectFromRoom() {
-
-        if (mSkylinkConnection != null)
-            mSkylinkConnection.disconnectFromRoom();
-
-        if (mTypeCall == Constants.CONFIG_TYPE.AUDIO || mTypeCall == Constants.CONFIG_TYPE.VIDEO || mTypeCall == Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)
-            AudioRouter.stopAudioRouting(mContext);
-    }
-
-    public boolean isConnectingOrConnected() {
-        if (mSkylinkConnection == null) return false;
-
-        SkylinkConnection.SkylinkState state = mSkylinkConnection.getSkylinkState();
-        if (state == SkylinkConnection.SkylinkState.CONNECTING ||
-                state == SkylinkConnection.SkylinkState.CONNECTED) {
-            return true;
-        }
-        return false;
+        mSkylinkConnectionManager.disconnectFromRoom();
     }
 
     //static method for the other to access currentSkylinkConnection
@@ -793,11 +512,9 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
             peerIdShow = "Self";
         }
 
-        //for Grab client
-        String peerUserName = getUserDataString(peerId);
+        String peerUserName = getUserDataString(peerIdShow);
 
         return peerUserName;
-
     }
 
     private String getUserDataString(String peerId) {
@@ -840,11 +557,13 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     }
 
     public String getRoomName(String defaultName) {
+
+        //in case of display room Name and room Id
         String roomId = "";
         if (mSkylinkConnection != null) {
             roomId = mSkylinkConnection.getRoomId();
         }
-        //for Grab client
+
         return defaultName;
     }
 
@@ -863,12 +582,12 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
         return null;
     }
 
-    public String getRoomPeerIdNick() {
+    public String getRoomPeerIdNick(Constants.CONFIG_TYPE typeCall) {
         if (mSkylinkConnection == null) {
             return null;
         }
 
-        String roomName = Utils.getRoomNameByType(mTypeCall);
+        String roomName = Utils.getRoomNameByType(typeCall);
 
         String title = "Room: " + getRoomRoomId(roomName);
         // Add PeerId to title if a Peer occupies clicked location.
@@ -878,6 +597,8 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
     }
 
     public String getRoomRoomId(String roomName) {
+
+        //in case of display room Name and room Id
         String roomId = "";
         if (mSkylinkConnection != null) {
             roomId = mSkylinkConnection.getRoomId();
@@ -904,4 +625,13 @@ public class SDKService implements LifeCycleListener, MediaListener, OsListener,
 
         return mPeersList.size();
     }
+
+    public void setRoomName(String roomName) {
+        mRoomName = roomName;
+    }
+
+    public void setUserName(String userName) {
+        mUserName = userName;
+    }
+
 }

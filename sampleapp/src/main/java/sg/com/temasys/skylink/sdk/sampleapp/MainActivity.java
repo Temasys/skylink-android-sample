@@ -24,7 +24,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
 public class MainActivity extends AppCompatActivity
-        implements View.OnClickListener{
+        implements View.OnClickListener {
 
     private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig;
     private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer;
@@ -50,35 +50,35 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void getControlWidgets() {
-        audioContainerBig = (LinearLayout) findViewById(R.id.audioContainerBig);
-        videoContainerBig = (LinearLayout) findViewById(R.id.videoContainerBig);
-        chatContainerBig = (LinearLayout) findViewById(R.id.chatContainerBig);
-        fileContainerBig = (LinearLayout) findViewById(R.id.fileContainerBig);
-        dataContainerBig = (LinearLayout) findViewById(R.id.dataContainerBig);
-        multiVideoContainerBig = (LinearLayout) findViewById(R.id.multiVideoContainerBig);
+        audioContainerBig = findViewById(R.id.audioContainerBig);
+        videoContainerBig = findViewById(R.id.videoContainerBig);
+        chatContainerBig = findViewById(R.id.chatContainerBig);
+        fileContainerBig = findViewById(R.id.fileContainerBig);
+        dataContainerBig = findViewById(R.id.dataContainerBig);
+        multiVideoContainerBig = findViewById(R.id.multiVideoContainerBig);
 
-        audioContainer = (RelativeLayout) findViewById(R.id.audioContainer);
-        videoContainer = (RelativeLayout) findViewById(R.id.videoContainer);
-        chatContainer = (RelativeLayout) findViewById(R.id.chatContainer);
-        fileContainer = (RelativeLayout) findViewById(R.id.fileContainer);
-        dataContainer = (RelativeLayout) findViewById(R.id.dataContainer);
-        multiVideoContainer = (RelativeLayout) findViewById(R.id.multiVideoContainer);
+        audioContainer = findViewById(R.id.audioContainer);
+        videoContainer = findViewById(R.id.videoContainer);
+        chatContainer = findViewById(R.id.chatContainer);
+        fileContainer = findViewById(R.id.fileContainer);
+        dataContainer = findViewById(R.id.dataContainer);
+        multiVideoContainer = findViewById(R.id.multiVideoContainer);
 
-        btnAudio = (ImageButton) findViewById(R.id.btnAudioCall);
-        btnVideo = (ImageButton) findViewById(R.id.btnVideoCall);
-        btnChat = (ImageButton) findViewById(R.id.btnChat);
-        btnFile = (ImageButton) findViewById(R.id.btnFileTransfer);
-        btnData = (ImageButton) findViewById(R.id.btnDataTransfer);
-        btnMultiVideo = (ImageButton) findViewById(R.id.btnMultiVideoCall);
+        btnAudio = findViewById(R.id.btnAudioCall);
+        btnVideo = findViewById(R.id.btnVideoCall);
+        btnChat = findViewById(R.id.btnChat);
+        btnFile = findViewById(R.id.btnFileTransfer);
+        btnData = findViewById(R.id.btnDataTransfer);
+        btnMultiVideo = findViewById(R.id.btnMultiVideoCall);
 
-        tvAudio = (TextView) findViewById(R.id.tvAudio);
-        tvVideo = (TextView) findViewById(R.id.tvVideo);
-        tvChat = (TextView) findViewById(R.id.tvChat);
-        tvFile = (TextView) findViewById(R.id.tvFileTransfer);
-        tvData = (TextView) findViewById(R.id.tvDataTransfer);
-        tvMultiVideo = (TextView) findViewById(R.id.tvMultiVideoCall);
+        tvAudio = findViewById(R.id.tvAudio);
+        tvVideo = findViewById(R.id.tvVideo);
+        tvChat = findViewById(R.id.tvChat);
+        tvFile = findViewById(R.id.tvFileTransfer);
+        tvData = findViewById(R.id.tvDataTransfer);
+        tvMultiVideo = findViewById(R.id.tvMultiVideoCall);
 
-        imgLogo = (ImageView) findViewById(R.id.imgLogo);
+        imgLogo = findViewById(R.id.imgLogo);
     }
 
     private void initComponents() {
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity
 
         //need check imgLogo incase of landscape orientation
         //because imgLogo is not available for landscape orientation
-        if(imgLogo != null)
+        if (imgLogo != null)
             imgLogo.setOnClickListener(this);
     }
 
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity
         startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
     }
 
-    private void processImglogo(){
+    private void processImglogo() {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);

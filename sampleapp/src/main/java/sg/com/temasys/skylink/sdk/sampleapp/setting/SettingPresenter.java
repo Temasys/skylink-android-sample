@@ -2,7 +2,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
 import android.content.Context;
 
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingContract.Presenter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -22,14 +21,15 @@ public class SettingPresenter implements Presenter {
     private SettingContract.View mSettingView;
 
     //constructor
-    public SettingPresenter(SettingContract.View settingView, Context context) {
+    public SettingPresenter(Context context) {
 
         this.mContext = context;
+    }
 
-        this.mSettingView = settingView;
-
-        //link between view and presenter
-        this.mSettingView.setPresenter(this);
+    //link Presenter to View
+    public void setView(SettingContract.View view) {
+        mSettingView = view;
+        mSettingView.setPresenter(this);
     }
 
     @Override
@@ -70,29 +70,8 @@ public class SettingPresenter implements Presenter {
         }
     }
 
-    //need to remove these methods
-    @Override
-    public void onConnect(boolean isSuccessful) {
-
-    }
-
-    @Override
-    public void onDisconnect() {
-
-    }
-
     @Override
     public void onViewExit() {
-
-    }
-
-    @Override
-    public void onRemotePeerJoin(SkylinkPeer newPeer) {
-
-    }
-
-    @Override
-    public void onRemotePeerLeave(String remotePeerId) {
 
     }
 

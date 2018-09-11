@@ -22,6 +22,7 @@ import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.Gravity.CENTER;
@@ -37,9 +38,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
     private MultiPartyVideoCallContract.Presenter mPresenter;
 
-    private FrameLayout selfLayout;
+    private FrameLayout selfViewLayout;
 
-    private FrameLayout[] videoViewLayouts;
+    private FrameLayout[] remoteViewLayouts;
 
     public static MultiPartyVideoCallFragment newInstance() {
         return new MultiPartyVideoCallFragment();
@@ -79,13 +80,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         requestViewLayout();
 
         // Set OnClick actions for each Peer's UI.
-        for (int peerIndex = 0; peerIndex < videoViewLayouts.length; ++peerIndex) {
-            FrameLayout frameLayout = videoViewLayouts[peerIndex];
-            if (frameLayout == selfLayout) {
+        for (int peerIndex = 0; peerIndex < remoteViewLayouts.length; ++peerIndex) {
+            FrameLayout frameLayout = remoteViewLayouts[peerIndex];
+            if (frameLayout == selfViewLayout) {
                 // Show room and self info, plus give option to
                 // switch self view between different cameras (if any).
                 frameLayout.setOnClickListener(v -> {
-                    String name = mPresenter.onGetRoomPeerIdNick();
+                    String name = mPresenter.onViewRequestGetRoomPeerIdNick();
 
                     TextView selfTV = new TextView(mContext);
                     selfTV.setText(name);
@@ -96,11 +97,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                     selfDialogBuilder.setPositiveButton("OK", null);
                     // Get the input video resolution.
                     selfDialogBuilder.setPositiveButton("Input video resolution",
-                            (dialog, which) -> mPresenter.onGetInputVideoResolution());
+                            (dialog, which) -> mPresenter.onViewRequestGetInputVideoResolution());
 
                     selfDialogBuilder.setNegativeButton("Switch Camera",
                             (dialog, which) -> {
-                                mPresenter.onSwitchCamera();
+                                mPresenter.onViewRequestSwitchCamera();
                             });
                     selfDialogBuilder.show();
                 });
@@ -113,13 +114,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         return rootView;
     }
 
-
     @Override
     public void onResume() {
 
         super.onResume();
 
-        mPresenter.onViewResume();
+        mPresenter.onViewRequestResume();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
         // Stop local video source only if not changing orientation
         if (!((MultiPartyVideoCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewPause();
+            mPresenter.onViewRequestPause();
         }
     }
 
@@ -138,39 +138,39 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
         super.onDetach();
         if (!((MultiPartyVideoCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewExit();
-            emptyLayout();
+            mPresenter.onViewRequestExit();
+            processEmptyLayout();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
-    public void onAddSelfView(SurfaceViewRenderer videoView) {
+    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
         addSelfView(videoView);
     }
 
     @Override
-    public void onAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
+    public void onPresenterRequestAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
         addRemoteView(peerIndex, remoteView);
     }
 
     @Override
-    public void onRemoveRemotePeer(int viewIndex) {
+    public void onPresenterRequestRemoveRemotePeer(int viewIndex) {
         removeRemotePeer(viewIndex);
     }
 
     @Override
-    public Fragment onGetFragment() {
+    public Fragment onPresenterRequestGetFragmentInstance() {
         return this;
     }
 
     @Override
-    public void onDisplayAlerDlg(String recordingId, String msg) {
+    public void onPresenterRequestDisplayVideoLinkInfo(String recordingId, String msg) {
         // Create a clickable video link.
         final SpannableString videoLinkClickable = new SpannableString(msg);
         Linkify.addLinks(videoLinkClickable, Linkify.WEB_URLS);
@@ -190,16 +190,16 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     }
 
     //----------------------------------------------------------------------------------------------
-    // private methods
+    // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        selfLayout = rootView.findViewById(R.id.self_video);
+        selfViewLayout = rootView.findViewById(R.id.self_video);
         FrameLayout peer1Layout = rootView.findViewById(R.id.peer_1);
         FrameLayout peer2Layout = rootView.findViewById(R.id.peer_2);
         FrameLayout peer3Layout = rootView.findViewById(R.id.peer_3);
 
-        videoViewLayouts = new FrameLayout[]{selfLayout, peer1Layout, peer2Layout, peer3Layout};
+        remoteViewLayouts = new FrameLayout[]{selfViewLayout, peer1Layout, peer2Layout, peer3Layout};
     }
 
     private void setActionBar() {
@@ -208,28 +208,18 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
-
+        actionBar.setTitle(Config.ROOM_NAME_PARTY);
         setHasOptionsMenu(true);
-    }
-
-    /**
-     * Get Transfer speed in kbps of all media streams for specific Peer.
-     *
-     * @param peerIndex index of the peer
-     */
-    private void getTransferSpeedAll(int peerIndex) {
-        // Request to get media transfer speeds.
-        mPresenter.onGetTransferSpeeds(peerIndex, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
     }
 
     /**
      * Remove all videoViews from layouts.
      */
-    private void emptyLayout() {
-        int totalInRoom = mPresenter.onGetTotalInRoom();
+    private void processEmptyLayout() {
+        int totalInRoom = mPresenter.onViewRequestGetTotalInRoom();
 
         for (int i = 0; i < totalInRoom; i++) {
-            SurfaceViewRenderer videoView = mPresenter.onGetVideoViewByIndex(i);
+            SurfaceViewRenderer videoView = mPresenter.onViewRequestGetVideoViewByIndex(i);
 
             if (videoView != null)
                 Utils.removeViewFromParent(videoView);
@@ -254,10 +244,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private OnClickListener showMenuRemote(final int peerIndex) {
 
-        //check peerIndex is available or not
-        if(mPresenter.onGetTotalInRoom() <= peerIndex)
-            return null;
-
         // Get peerId
         return v -> {
 
@@ -271,26 +257,26 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                         int id = item.getItemId();
                         switch (id) {
                             case R.id.vid_res_sent:
-                                mPresenter.onGetSentVideoResolution(peerIndex);
+                                mPresenter.onViewRequestGetSentVideoResolution(peerIndex);
                                 return true;
 
                             case R.id.vid_res_recv:
-                                mPresenter.onGetReceivedVideoResolution(peerIndex);
+                                mPresenter.onViewRequestGetReceivedVideoResolution(peerIndex);
                                 return true;
 
                             case R.id.webrtc_stats:
-                                mPresenter.onWebrtcStatsToggle(peerIndex);
+                                mPresenter.onViewRequestWebrtcStatsToggle(peerIndex);
                                 return true;
 
                             case R.id.transfer_speed:
-                                getTransferSpeedAll(peerIndex);
+                                mPresenter.onViewRequestGetTransferSpeeds(peerIndex, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
                                 return true;
 
                             case R.id.recording_start:
-                                return startRecording();
+                                return mPresenter.onViewRequestStartRecording();
 
                             case R.id.recording_stop:
-                                return stopRecording();
+                                return mPresenter.onViewRequestStopRecording();
 
                             case R.id.restart:
                                 refreshConnection(peerIndex, false);
@@ -314,7 +300,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                         }
                     };
             // Add room name to title
-            String title = mPresenter.onGetRoomPeerIdNick();
+            String title = mPresenter.onViewRequestGetRoomPeerIdNick();
 
             PopupMenu popupMenu = new PopupMenu(mContext, v);
             popupMenu.setOnMenuItemClickListener(clickListener);
@@ -326,7 +312,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
             popupMenu.getMenu().add(0, R.id.vid_res_recv, 0, R.string.vid_res_recv);
 
             String statsStr = getString(R.string.webrtc_stats);
-            final Boolean gettingStats = mPresenter.onGetWebRtcStatsByPeerId(peerIndex);
+            final Boolean gettingStats = mPresenter.onViewRequestGetWebRtcStatsByPeerId(peerIndex);
             if ((gettingStats != null) && gettingStats) {
                 statsStr += " (ON)";
             } else {
@@ -340,7 +326,9 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
             popupMenu.getMenu().add(0, R.id.restart_all, 0, R.string.restart_all);
             popupMenu.getMenu().add(0, R.id.restart_ice, 0, R.string.restart_ice);
             popupMenu.getMenu().add(0, R.id.restart_all_ice, 0, R.string.restart_all_ice);
-            popupMenu.show();
+
+            if(peerIndex < mPresenter.onViewRequestGetTotalInRoom())
+                popupMenu.show();
         };
     }
 
@@ -351,7 +339,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewLayoutRequested();
+            mPresenter.onViewRequestLayout();
         }
     }
 
@@ -364,23 +352,15 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         Utils.removeViewFromParent(videoView);
 
         // Remove self view if its already added
-        videoViewLayouts[0].removeAllViews();
+        remoteViewLayouts[0].removeAllViews();
 
         setLayoutParams(videoView);
-        videoViewLayouts[0].addView(videoView);
+        remoteViewLayouts[0].addView(videoView);
     }
 
 
     private void refreshConnection(int peerIndex, boolean iceRestart) {
-        mPresenter.onRefreshConnection(peerIndex, iceRestart);
-    }
-
-    private boolean startRecording() {
-        return mPresenter.onStartRecording();
-    }
-
-    private boolean stopRecording() {
-        return mPresenter.onStopRecording();
+        mPresenter.onViewRequestRefreshConnection(peerIndex, iceRestart);
     }
 
     /**
@@ -391,7 +371,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private void addRemoteView(int index, SurfaceViewRenderer remoteVideoView) {
 
-        if (remoteVideoView == null || index < 1 || index > videoViewLayouts.length)
+        if (remoteVideoView == null || index < 1 || index > remoteViewLayouts.length)
             return;
 
         // Remove any existing Peer View at index.
@@ -400,7 +380,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
 
         setLayoutParams(remoteVideoView);
-        videoViewLayouts[index].addView(remoteVideoView);
+        remoteViewLayouts[index].addView(remoteVideoView);
     }
 
     /**
@@ -412,8 +392,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     private void removePeerView(int viewIndex) {
 
         // Remove view
-        if (viewIndex < videoViewLayouts.length && viewIndex > -1)
-            videoViewLayouts[viewIndex].removeAllViews();
+        if (viewIndex < remoteViewLayouts.length && viewIndex > -1)
+            remoteViewLayouts[viewIndex].removeAllViews();
     }
 
     /**
@@ -434,17 +414,20 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private void shiftUpRemotePeers(int removedIndex) {
 
-        //shift all video to new positions
-        for(int i=removedIndex; i<videoViewLayouts.length-1; i++){
+        if(removedIndex < 0 || removedIndex >= remoteViewLayouts.length)
+            return;
 
-            FrameLayout peerFrameLayout = videoViewLayouts[i+1];
+        //shift all video to new positions
+        for (int i = removedIndex; i < remoteViewLayouts.length - 1; i++) {
+
+            FrameLayout peerFrameLayout = remoteViewLayouts[i + 1];
 
             SurfaceViewRenderer view = (SurfaceViewRenderer) peerFrameLayout.getChildAt(0);
 
             if (view != null) {
                 peerFrameLayout.removeAllViews();
                 setLayoutParams(view);
-                videoViewLayouts[i].addView(view);
+                remoteViewLayouts[i].addView(view);
             }
         }
     }

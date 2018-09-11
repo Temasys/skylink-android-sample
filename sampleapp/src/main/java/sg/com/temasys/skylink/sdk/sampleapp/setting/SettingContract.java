@@ -1,7 +1,5 @@
 package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 
 /**
@@ -29,7 +27,7 @@ public interface SettingContract {
         void onCameraBackSelected();
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter{
 
         void onProcessAudioSpeaker(boolean isAudioSpeaker);
 
@@ -38,10 +36,9 @@ public interface SettingContract {
         void onProcessCameraBack(boolean isCameraBack);
 
         void onProcessVideoResolution(Config.VideoResolution videoResolution);
-    }
 
-    interface Service extends BaseService<Presenter> {
+        void onViewExit();
 
-
+        void onViewLayoutRequested();
     }
 }

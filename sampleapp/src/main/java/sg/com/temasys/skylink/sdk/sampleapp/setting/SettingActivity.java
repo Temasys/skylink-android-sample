@@ -17,6 +17,8 @@ public class SettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
+        mSettingPresenter = new SettingPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             mSettingFragment = SettingFragment.newInstance();
@@ -29,8 +31,9 @@ public class SettingActivity extends AppCompatActivity {
                     .findFragmentByTag(SETTING_FRAGMENT_TAG);
         }
 
-        //link between view and presenter
-        mSettingPresenter = new SettingPresenter(mSettingFragment, this);
+        //link view and presenter
+        if(mSettingFragment != null)
+            mSettingPresenter.setView(mSettingFragment);
     }
 
     @Override

@@ -20,6 +20,9 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        //create presenter
+        mChatPresenter = new ChatPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             mChatFragment = ChatFragment.newInstance();
@@ -33,7 +36,8 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mChatPresenter = new ChatPresenter(mChatFragment, this);
+        if(mChatFragment != null)
+            mChatPresenter.setView(mChatFragment);
     }
 
     @Override
@@ -46,7 +50,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, CHAT_FRAGMENT_TAG, mChatFragment);
     }
 }

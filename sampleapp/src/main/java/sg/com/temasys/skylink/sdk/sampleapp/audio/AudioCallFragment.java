@@ -28,7 +28,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private Context mContext;
 
-    private LinearLayout ll_tool;
+    private LinearLayout llTool;
 
     private TextView tvRoomDetails;
 
@@ -71,12 +71,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
         setActionBar();
 
-        initControls();
-
         requestViewLayout();
 
-        btnAudioSpeaker.setOnClickListener(view -> processChangeAudioToSpeaker());
+        // Defining a click event listener for the button "Audio Speaker"
+        btnAudioSpeaker.setOnClickListener(view -> mPresenter.onViewRequestChangeAudioOuput());
 
+        // Defining a click event listener for the button "End call"
         btnAudioEnd.setOnClickListener(view -> processEndAudio());
 
         return rootView;
@@ -85,22 +85,21 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
     public void onStop() {
         super.onStop();
 
-        mPresenter.onViewStop();
+        mPresenter.onViewRequestStop();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        //set default audio setting
-        mPresenter.onViewResume();
+        mPresenter.onViewRequestResume();
     }
 
     @Override
@@ -111,7 +110,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewExit();
+            mPresenter.onViewRequestExit();
         }
     }
 
@@ -119,26 +118,22 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) ll_tool.getLayoutParams();
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_50dp);
-        } else {
-            llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_5dp);
-        }
-
-        ll_tool.setLayoutParams(llParams);
-
+        //when changing configuration, do change layout view to fit with screen
+        changeLayout(newConfig.orientation);
     }
 
     @Override
-    public Fragment onGetFragment() {
+    public Fragment onPresenterRequestGetFragmentInstance() {
         return this;
     }
 
     @Override
-    public void onUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn) {
+    public void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn) {
+
+        //change room detail info
         tvRoomDetails.setText(roomDetails);
 
+        //change img animation
         AnimationDrawable frameAnimation = null;
         if (isPeerJoined) {
             AnimationDrawable backgroundSrc = (AnimationDrawable) mContext.getResources().getDrawable(R.drawable.img_blink);
@@ -165,10 +160,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
-    public void onChangeBtnAudioSpeakerUI(boolean isPeerJoined, boolean isSpeakerOn) {
+    public void onPresenterRequestChangeBtnAudioSpeaker(boolean isPeerJoined, boolean isSpeakerOn) {
+
         //change the button background and icon
         Drawable backgroundSrcBtn = null;
         Drawable backgroundSrcImg = null;
+
         if (isSpeakerOn) {
             btnAudioSpeaker.setBackground(mContext.getResources().getDrawable(R.drawable.button_circle_press));
             backgroundSrcBtn = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
@@ -187,11 +184,11 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     //----------------------------------------------------------------------------------------------
-    // private methods
+    // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        ll_tool = rootView.findViewById(R.id.ll_tool);
+        llTool = rootView.findViewById(R.id.ll_tool);
         tvRoomDetails = rootView.findViewById(R.id.tv_audio_room_details);
         btnAudioSpeaker = rootView.findViewById(R.id.btnAudioSpeaker);
         btnAudioEnd = rootView.findViewById(R.id.btnAudioEnd);
@@ -204,42 +201,44 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
-
         setHasOptionsMenu(true);
-    }
-
-    private void initControls() {
     }
 
     /**
      * request info to display from presenter
      * try to connect to room if not connected
+     * try to update UI if connected to room
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewLayoutRequested();
+            mPresenter.onViewRequestLayout();
         }
 
-        LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) ll_tool.getLayoutParams();
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+        //changing layout to fit with screen
+        changeLayout(getResources().getConfiguration().orientation);
+    }
+
+    private void processEndAudio() {
+
+        //end connection
+        mPresenter.onViewRequestExit();
+
+        //close UI
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
+    }
+
+    private void changeLayout(int orientation){
+
+        LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) llTool.getLayoutParams();
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_50dp);
         } else {
             llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_5dp);
         }
 
-        ll_tool.setLayoutParams(llParams);
-    }
+        llTool.setLayoutParams(llParams);
 
-    private void processChangeAudioToSpeaker() {
-        //change audio output : speaker or headset
-        mPresenter.onChangeAudioToSpeaker();
-    }
-
-    private void processEndAudio() {
-        mPresenter.onViewExit();
-
-        if (getActivity() != null) {
-            getActivity().finish();
-        }
     }
 }

@@ -125,20 +125,18 @@ public class PermissionUtils {
      * Log the permission that had been granted.
      *
      * @param info As given in OsListener method.
-     * @param tag         Tag string for logging.
      */
-    public void onPermissionGrantedHandler(PermRequesterInfo info, String tag) {
+    public static void onPermissionGrantedHandler(PermRequesterInfo info) {
         String log = "[SA][onPermGrant] Permission has been GRANTED for " + info.getPermissions()[0] +
                 ", infoCode:" + info.getInfoCode() + " (" + getInfoString(info.getInfoCode()) + ").";
-        Log.d(tag, log);
+        Log.d("PermissionUtils", log);
     }
 
     /**
      * @param info As given in OsListener method.
      * @param context  Current context to show AlertDialog.
-     * @param tag      Tag string for logging.
      */
-    public void onPermissionDeniedHandler(PermRequesterInfo info, Context context, String tag) {
+    public static void onPermissionDeniedHandler(PermRequesterInfo info, Context context) {
         // Create alert to inform user about the permission denied and resultant feature disabled.
         // Log the same.
         // Check if should explain reason for requesting permission, which happens if the user
@@ -180,7 +178,7 @@ public class PermissionUtils {
         permissionDeniedDialogBuilder.setPositiveButton("Ok", null);
 
         alertText = "[SA][onPermDenied] " + alertText;
-        Log.d(tag, alertText);
+        Log.d("PermissionUtils", alertText);
         permissionDeniedDialogBuilder.show();
     }
 

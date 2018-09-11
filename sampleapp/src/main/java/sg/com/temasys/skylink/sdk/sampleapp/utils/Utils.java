@@ -23,12 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,75 +69,6 @@ public class Utils {
     public Utils(Context context) {
         this.mContext = context;
         sharedPref = mContext.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-    }
-
-    /**
-     * Returns the SkylinkConnectionString, which MUST BE URL SAFE.
-     * Required inputs are: App key, App secret, Room name, Room start time, and Room duration.
-     *
-     * @param roomName  Name of the room
-     * @param startTime Room Start Time
-     * @param duration  Duration of the room in Hours
-     * @return
-     */
-    public static String getSkylinkConnectionString(String roomName, Date startTime, int duration) {
-
-        String info = "Room name: " + roomName + ", startTime: " + startTime +
-                ", duration: " + duration + ".\r\n";
-
-        // Convert the date in to ISO format
-        String dateString = Utils.getISOTimeStamp(startTime);
-
-        // Compute RFC 2104-compliant HMAC signature
-        String cred = calculateRFC2104HMAC(roomName + "_" + duration + "_"
-                + dateString, Config.getAppKeySecret());
-        try {
-            cred = URLEncoder.encode(cred, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            String error = "[ERROR] Unable to encode credentials. Not joining room!"
-                    + "\nDetails: Could not URLEncode generated credentials."
-                    + "\nException: " + e.getMessage();
-            Log.e(TAG, error);
-            return null;
-        }
-
-        // Ensure connectionString is url safe
-        // This is very IMPORTANT!!!
-        // A connectionString that is not url safe will likely generate error(s)
-        // and not be able to connect to room.
-        String urlStart = "http://host/";
-        String connectionString = urlStart + Config.getAppKey() + "/"
-                + roomName + "/" + dateString + "/" + duration;
-        info += "Precursor connectionString: \"" + connectionString + "\"\r\n";
-        URL urlObject = null;
-        URI uriObject = null;
-        try {
-            urlObject = new URL(connectionString);
-            uriObject =
-                    new URI(urlObject.getProtocol(), urlObject.getUserInfo(), urlObject.getHost(),
-                            urlObject.getPort(), urlObject.getPath(),
-                            urlObject.getQuery(), urlObject.getRef());
-        } catch (MalformedURLException e) {
-            info += "Error: Could not create URL safe connectionString:\r\n" + e.getMessage();
-            Log.e(TAG, info);
-            return null;
-        } catch (URISyntaxException e) {
-            info += "Error: Could not create URL safe connectionString:\r\n" + e.getMessage();
-            Log.e(TAG, info);
-            return null;
-        }
-
-        // Add credentials to string.
-        String uriString = uriObject.toString();
-        /* Parse connectionString from:
-        http://host/<connectionString>
-        */
-        connectionString = uriString.substring(urlStart.length(), uriString.length())
-                + "?cred=" + cred;
-        info += "URL safe connectionString: \"" + connectionString + "\"";
-        Log.d(TAG, info);
-
-        return connectionString;
     }
 
     /**

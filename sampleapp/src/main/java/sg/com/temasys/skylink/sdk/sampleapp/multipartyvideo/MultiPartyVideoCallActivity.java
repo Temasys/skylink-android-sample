@@ -21,6 +21,9 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multi_party_video_call);
 
+        //create presenter
+        mMultiPartyVideoPresenter = new MultiPartyVideoCallPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             mMultiPartyVideoFragment = MultiPartyVideoCallFragment.newInstance();
@@ -34,7 +37,7 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mMultiPartyVideoPresenter = new MultiPartyVideoCallPresenter(mMultiPartyVideoFragment, this);
+        mMultiPartyVideoPresenter.setView(mMultiPartyVideoFragment);
     }
 
     @Override

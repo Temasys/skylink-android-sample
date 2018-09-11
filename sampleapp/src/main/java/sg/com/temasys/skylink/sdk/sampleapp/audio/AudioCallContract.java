@@ -2,66 +2,66 @@ package sg.com.temasys.skylink.sdk.sampleapp.audio;
 
 import android.support.v4.app.Fragment;
 
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
 public interface AudioCallContract {
+
+
     interface View extends BaseView<Presenter> {
 
         /**
          * Get instance of the fragment for processing permission
          */
-        Fragment onGetFragment();
+        Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update the room details information on UI.
+         * Update UI details when changing state
          */
-        void onUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn);
+        void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn);
 
-        void onChangeBtnAudioSpeakerUI(boolean isPeerJoined, boolean isSpeakerOn);
+        void onPresenterRequestChangeBtnAudioSpeaker(boolean isPeerJoined, boolean isSpeakerOn);
     }
 
-    interface Presenter extends BasePresenter {
 
-        void onPermissionRequired(PermRequesterInfo info);
-
-        void onPermissionGranted(PermRequesterInfo info);
-
-        void onPermissionDenied(PermRequesterInfo info);
-
-        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+    interface Presenter {
 
         /**
-         * process update view when remote peer refresh the connection
-         * @param log info to display
-         * @param remotePeerUserInfo
+         * process data to display on view
          */
-        void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo);
+        void onViewRequestLayout();
 
         /**
-         * process update view when remote peer has receive media info
-         * @param log info to display
-         * @param remotePeerUserInfo
+         * process permission result
          */
-        void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo);
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        void onChangeAudioToSpeaker();
+        /**
+         * process change audio output between headset and speaker
+         */
+        void onViewRequestChangeAudioOuput();
 
-        void onAudioChangedToSpeaker(boolean isSpeakerOn);
+        /**
+         * process change state when view paused
+         */
+        void onViewRequestStop();
 
-        void onViewStop();
+        /**
+         * process change state when view resumed
+         */
+        void onViewRequestResume();
 
-        void onViewResume();
+        /**
+         * process change state when view exit/closed
+         */
+        void onViewRequestExit();
+
     }
 
     interface Service extends BaseService<Presenter> {
-
 
     }
 }

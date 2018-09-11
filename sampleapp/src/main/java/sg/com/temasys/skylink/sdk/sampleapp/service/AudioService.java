@@ -2,8 +2,10 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -11,7 +13,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class AudioService extends SDKService implements AudioCallContract.Service {
+public class AudioService extends SkylinkCommonService implements AudioCallContract.Service {
 
     private static boolean currentAudioSpeaker = Utils.getDefaultAudioSpeaker();
 
@@ -21,12 +23,7 @@ public class AudioService extends SDKService implements AudioCallContract.Servic
 
     @Override
     public void setPresenter(AudioCallContract.Presenter presenter) {
-        mAudioPresenter = presenter;
-    }
-
-    @Override
-    public void setTypeCall() {
-        mTypeCall = Constants.CONFIG_TYPE.AUDIO;
+        mPresenter = (BasePresenter) presenter;
     }
 
     public void changeAudioOutput(boolean isAudioSpeaker) {
@@ -34,7 +31,7 @@ public class AudioService extends SDKService implements AudioCallContract.Servic
     }
 
     public String getRemotePeerName() {
-        if(mPeersList != null && mPeersList.size()>1)
+        if (mPeersList != null && mPeersList.size() > 1)
             return mPeersList.get(1).getPeerName();
         return "";
     }
@@ -49,5 +46,33 @@ public class AudioService extends SDKService implements AudioCallContract.Servic
 
     public void resumeAudioOutput() {
         changeAudioOutput(currentAudioSpeaker);
+    }
+
+    @Override
+    public void setListeners(SkylinkConnection skylinkConnection) {
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setOsListener(this);
+        }
+    }
+
+    @Override
+    public SkylinkConfig getSkylinkConfig() {
+        SkylinkConfig skylinkConfig = new SkylinkConfig();
+        // AudioVideo config options can be:
+        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+        skylinkConfig.setHasPeerMessaging(true);
+        skylinkConfig.setHasFileTransfer(true);
+
+        // Allow only 1 remote Peer to join.
+        skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
+
+        // Set some common configs.
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        return skylinkConfig;
     }
 }

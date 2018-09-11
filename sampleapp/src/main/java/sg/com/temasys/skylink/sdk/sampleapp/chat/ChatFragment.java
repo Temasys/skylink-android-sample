@@ -12,8 +12,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.util.List;
@@ -57,7 +55,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("Set1", Config.ROOM_NAME_CHAT);
+        Log.e("[SA][Chat][onCreate]", Config.ROOM_NAME_CHAT);
     }
 
     @Override
@@ -75,18 +73,14 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
 
         requestViewLayout();
 
-        /** Defining a click event listener for the button "Send Server Message" */
+        //Defining a click event listener for the button "Send Server Message"
         btnSendServerMessage.setOnClickListener(v -> {
-
             processSendMessage(true);
-
         });
 
-        /** Defining a click event listener for the button "Send Private Message" */
+        //Defining a click event listener for the button "Send Private Message"
         btnSendP2PMessage.setOnClickListener(v -> {
-
             processSendMessage(false);
-
         });
 
         return rootView;
@@ -101,16 +95,22 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((ChatActivity) context).isChangingConfigurations()) {
-            mPresenter.onViewExit();
+            mPresenter.onViewRequestExit();
+
+            //clear all static variables to avoid memory leak
+            peerRadioGroup = null;
+            peerAll = null;
+            peer1 = null;
+            peer2 = null;
+            peer3 = null;
+            peer4 = null;
+
+            mPeers = null;
         }
     }
 
-    //----------------------------------------------------------------------------------------------
-    // View Listeners to update GUI from presenter
-    //----------------------------------------------------------------------------------------------
-
     @Override
-    public void onRefreshListView(){
+    public void onPresenterRequestRefreshChatCollection(){
 
         //refresh adapter and listview selection
         if (adapter != null) {
@@ -122,50 +122,50 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     }
 
     @Override
-    public void onClearEditText(){
+    public void onPresenterRequestClearInput(){
         editChatMessage.setText("");
     }
 
     @Override
-    public void onAddPeerRadioBtn(SkylinkPeer newPeer) {
+    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer) {
         addPeerRadioBtn(newPeer);
     }
 
     @Override
-    public void onRemovePeerRadioBtn(String remotePeerId) {
+    public void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId) {
         removePeerRadioBtn(remotePeerId);
     }
 
     @Override
-    public void onFillPeerRadioBtn(List<SkylinkPeer> peersList) {
+    public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
         fillPeerRadioBtn(peersList);
     }
 
     @Override
-    public void onUpdateRoomDetails(String roomDetails) {
+    public void onPresenterRequestUpdateUi(String roomDetails) {
         tvRoomDetails.setText(roomDetails);
     }
 
     //----------------------------------------------------------------------------------------------
-    // private methods
+    // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView){
-        listViewChats = (ListView) rootView.findViewById(R.id.lv_messages);
+        listViewChats = rootView.findViewById(R.id.lv_messages);
 
         // [MultiParty]
-        peerRadioGroup = (RadioGroup) rootView.findViewById(R.id.radio_grp_peers);
-        peerAll = (RadioButton) rootView.findViewById(R.id.radio_btn_peer_all);
-        peer1 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer1);
-        peer2 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer2);
-        peer3 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer3);
-        peer4 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer4);
+        peerRadioGroup = rootView.findViewById(R.id.radio_grp_peers);
+        peerAll = rootView.findViewById(R.id.radio_btn_peer_all);
+        peer1 = rootView.findViewById(R.id.radio_btn_peer1);
+        peer2 = rootView.findViewById(R.id.radio_btn_peer2);
+        peer3 = rootView.findViewById(R.id.radio_btn_peer3);
+        peer4 = rootView.findViewById(R.id.radio_btn_peer4);
 
-        btnSendServerMessage = (Button) rootView.findViewById(R.id.btn_send_server_message);
-        btnSendP2PMessage = (Button) rootView.findViewById(R.id.btn_send_p2p_message);
-        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_chat_room_details);
+        btnSendServerMessage = rootView.findViewById(R.id.btn_send_server_message);
+        btnSendP2PMessage = rootView.findViewById(R.id.btn_send_p2p_message);
+        tvRoomDetails = rootView.findViewById(R.id.tv_chat_room_details);
 
-        editChatMessage = (EditText) rootView.findViewById(R.id.chatMessage);
+        editChatMessage = rootView.findViewById(R.id.chatMessage);
     }
 
     private void setActionBar(){
@@ -174,16 +174,15 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
-
         setHasOptionsMenu(true);
     }
 
     private void initControls(){
 
-        /** Defining the ArrayAdapter to set items to ListView */
-        adapter = new ArrayAdapter<String>(context, R.layout.list_item, mPresenter.onGetChatMessageCollection());
+        //Defining the ArrayAdapter to set items to ListView
+        adapter = new ArrayAdapter<String>(context, R.layout.list_item, mPresenter.onViewRequestGetChatCollection());
 
-        /** Setting the adapter to the ListView */
+        //Setting the adapter to the ListView
         listViewChats.setAdapter(adapter);
     }
 
@@ -194,10 +193,13 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
      */
     private void requestViewLayout(){
         if(mPresenter != null){
-            mPresenter.onViewLayoutRequested();
+            mPresenter.onViewRequestLayout();
         }
     }
 
+    /**
+     * process sending message to server or directly
+     */
     private void processSendMessage(boolean isSentToServer){
 
         // Pass null for remotePeerId to send message to all users in the room
@@ -206,9 +208,9 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
 
         // Sends message using the signalling server or P2P directly
         if(isSentToServer) {
-            mPresenter.onSendServerMessage(remotePeerId, message);
+            mPresenter.onViewRequestSendServerMessage(remotePeerId, message);
         } else{
-            mPresenter.onSendP2PMessage(remotePeerId, message);
+            mPresenter.onViewRequestSendP2PMessage(remotePeerId, message);
         }
     }
 

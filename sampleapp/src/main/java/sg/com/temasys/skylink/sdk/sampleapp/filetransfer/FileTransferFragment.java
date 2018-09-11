@@ -46,6 +46,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     private static EditText etSenderFilePath;
     private static TextView tvFileTransferDetails;
     private static ImageView ivFilePreview;
+
     private Button sendFilePrivate;
     private Button sendFileGroup;
 
@@ -85,23 +86,27 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         requestViewLayout();
 
+        // Defining a click event listener for the edit text File path
         etSenderFilePath.setOnClickListener(v -> {
 
             processSetFilePath();
         });
 
+        // Defining a click event listener for the radio group
         peerRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
 
             processSelectPeer(checkedId);
 
         });
 
+        // Defining a click event listener for the button SEND FILE
         sendFilePrivate.setOnClickListener(v -> {
 
             processSendFilePrivate();
 
         });
 
+        // Defining a click event listener for the button SEND FILE [GROUP]
         sendFileGroup.setOnClickListener(v -> {
 
             processSendFileGroup();
@@ -121,7 +126,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         // in case of changing screen orientation, do not close the connection
         if (!((FileTransferActivity) context).isChangingConfigurations()) {
             //disconnect from room
-            mPresenter.onViewExit();
+            mPresenter.onViewRequestExit();
 
             //clear all static variables to avoid memory leak
             peerRadioGroup = null;
@@ -140,83 +145,80 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         }
     }
 
-    //----------------------------------------------------------------------------------------------
-    // View Listeners to update GUI from presenter
-    //----------------------------------------------------------------------------------------------
-
     @Override
-    public Fragment onGetFragment() {
+    public Fragment onPresenterRequestGetFragmentInstance() {
         return this;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
-    public void onFillPeerRadioBtn(List<SkylinkPeer> peersList) {
+    public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
         fillPeerRadioBtn(peersList);
     }
 
     @Override
-    public void onAddPeerRadioBtn(SkylinkPeer skylinkPeer) {
+    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer skylinkPeer) {
         addPeerRadioBtn(skylinkPeer);
     }
 
     @Override
-    public void onRemovePeerRadioBtn(String remotePeerId) {
+    public void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId) {
         removePeerRadioBtn(remotePeerId);
     }
 
     @Override
-    public String onGetPeerIdSelected() {
+    public String onPresenterRequestGetPeerIdSelected() {
         return getPeerIdSelected();
     }
 
     @Override
-    public void onSetRdPeerAllChecked(boolean isChecked) {
-        peerAll.setChecked(isChecked);
+    public void onPresenterRequestSetPeerAllSelected(boolean isSelected) {
+        peerAll.setChecked(isSelected);
     }
 
     @Override
-    public void onSetImagePreviewFromFile(Uri imgUri) {
+    public void onPresenterRequestDisplayFilePreview(Uri imgUri) {
         if(ivFilePreview != null)
             ivFilePreview.setImageURI(imgUri);
     }
 
     @Override
-    public void onUpdateTvFileTransferDetails(String info){
+    public void onPresenterRequestDisplayFileReveicedInfo(String info){
         if(tvFileTransferDetails != null)
             tvFileTransferDetails.setText(info);
     }
 
     @Override
-    public void onUpdateRoomDetails(String roomDetails) {
+    public void onPresenterRequestUpdateUi(String roomDetails) {
         if(tvRoomDetails != null)
             tvRoomDetails.setText(roomDetails);
     }
 
     //----------------------------------------------------------------------------------------------
-    // private methods
+    // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
         // [MultiParty]
-        peerRadioGroup = (RadioGroup) rootView.findViewById(R.id.radio_grp_peers);
-        peerAll = (RadioButton) rootView.findViewById(R.id.radio_btn_peer_all);
-        peer1 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer1);
-        peer2 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer2);
-        peer3 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer3);
-        peer4 = (RadioButton) rootView.findViewById(R.id.radio_btn_peer4);
+        peerRadioGroup = rootView.findViewById(R.id.radio_grp_peers);
+        peerAll = rootView.findViewById(R.id.radio_btn_peer_all);
+        peer1 = rootView.findViewById(R.id.radio_btn_peer1);
+        peer2 = rootView.findViewById(R.id.radio_btn_peer2);
+        peer3 = rootView.findViewById(R.id.radio_btn_peer3);
+        peer4 = rootView.findViewById(R.id.radio_btn_peer4);
 
-        sendFilePrivate = (Button) rootView.findViewById(R.id.btn_send_file_pte);
-        sendFileGroup = (Button) rootView.findViewById(R.id.btn_send_file_grp);
-        tvRoomDetails = (TextView) rootView.findViewById(R.id.tv_file_room_details);
-        etSenderFilePath = (EditText) rootView.findViewById(R.id.et_file_path);
-        ivFilePreview = (ImageView) rootView.findViewById(R.id.iv_file_preview);
-        tvFileTransferDetails = (TextView) rootView.findViewById(R.id.tv_file_transfer_details);
+        tvRoomDetails = rootView.findViewById(R.id.tv_file_room_details);
+        etSenderFilePath = rootView.findViewById(R.id.et_file_path);
+        ivFilePreview = rootView.findViewById(R.id.iv_file_preview);
+        tvFileTransferDetails = rootView.findViewById(R.id.tv_file_transfer_details);
+
+        sendFilePrivate = rootView.findViewById(R.id.btn_send_file_pte);
+        sendFileGroup = rootView.findViewById(R.id.btn_send_file_grp);
     }
 
     private void setActionBar() {
@@ -244,14 +246,12 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewLayoutRequested();
+            mPresenter.onViewRequestLayout();
         }
     }
 
     /**
      * Prepare file before transfer. Sets file path in edit text. Sets file preview.
-     *
-     * @param filePath
      */
     private void prepFile(String filePath) {
         //show preview of file to transfer
@@ -263,9 +263,10 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
 
-    // Manual selection of file to send is now enabled.
-    // After selecting Peer(s) to send to, click on file path (etSenderFilePath)
-    // and enter desired file path.
+    /** Manual selection of file to send is now enabled.
+     * After selecting Peer(s) to send to, click on file path (etSenderFilePath)
+     * and enter desired file path.
+     */
     private void processSetFilePath() {
         // Create Dialog to change file path.
         // File path will be validated to be a file before change is accepted.
@@ -336,7 +337,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         String filePath = etSenderFilePath.getText().toString();
 
-        mPresenter.onSendFile(remotePeerId, filePath);
+        mPresenter.onViewRequestSendFile(remotePeerId, filePath);
     }
 
     // Send file to all Peers in room, i.e. via public (AKA group) message.
@@ -347,9 +348,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         String filePath = etSenderFilePath.getText().toString();
 
-        mPresenter.onSendFile(null, filePath);
+        mPresenter.onViewRequestSendFile(null, filePath);
 
     }
-
-
 }

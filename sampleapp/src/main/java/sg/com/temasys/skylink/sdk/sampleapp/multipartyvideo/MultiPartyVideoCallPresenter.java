@@ -1,22 +1,23 @@
 package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -25,14 +26,12 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 /**
  * Created by muoi.pham on 20/07/18.
  */
-public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract.Presenter {
+public class MultiPartyVideoCallPresenter extends BasePresenter implements MultiPartyVideoCallContract.Presenter {
 
     private final String TAG = MultiPartyVideoCallPresenter.class.getName();
 
     public MultiPartyVideoCallContract.View mMultiVideoCallView;
     private MultiPartyVideoService mMultiVideoCallService;
-
-    //utils to process permission
     private PermissionUtils mPermissionUtils;
 
     private Context mContext;
@@ -42,25 +41,20 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
     private static ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
             new ConcurrentHashMap<String, Boolean>();
 
-    //index of removed peer when remote peer leave the room
-    private static int removeIndex = -1;
-
-    public MultiPartyVideoCallPresenter(MultiPartyVideoCallContract.View videoCallView, Context context) {
-        this.mMultiVideoCallView = videoCallView;
+    public MultiPartyVideoCallPresenter(Context context) {
         this.mContext = context;
-
         this.mMultiVideoCallService = new MultiPartyVideoService(mContext);
-
-        this.mMultiVideoCallView.setPresenter(this);
         this.mMultiVideoCallService.setPresenter(this);
-
-        this.mMultiVideoCallService.setTypeCall();
-
         this.mPermissionUtils = new PermissionUtils();
     }
 
+    public void setView(MultiPartyVideoCallContract.View view) {
+        mMultiVideoCallView = view;
+        mMultiVideoCallView.setPresenter(this);
+    }
+
     @Override
-    public void onViewLayoutRequested() {
+    public void onViewRequestLayout() {
         Log.d(TAG, "onViewLayoutRequested");
 
         //start to connect to room when entering room
@@ -71,7 +65,7 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
             mPermissionUtils.permQReset();
 
             //connect to room on Skylink connection
-            connectToRoom();
+            processConnectToRoom();
 
             //after connected to skylink SDK, UI will be updated latter on AudioService.onConnect
 
@@ -80,71 +74,58 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
         } else {
 
             //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mMultiVideoCallView.onGetFragment());
+            mPermissionUtils.permQResume(mContext, mMultiVideoCallView.onPresenterRequestGetFragmentInstance());
 
             //update UI into connected
-            updateConnectedUI();
+            processUpdateConnectedUI();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
     @Override
-    public void onConnect(boolean isSuccessful) {
-
-        //no need to update UI
-    }
-
-    @Override
-    public void onDisconnect() {
-
-        //no need to update UI
-
-    }
-
-    @Override
-    public void onViewExit() {
+    public void onViewRequestExit() {
         //process disconnect from room
         mMultiVideoCallService.disconnectFromRoom();
     }
 
     @Override
-    public void onSwitchCamera() {
+    public void onViewRequestSwitchCamera() {
         mMultiVideoCallService.switchCamera();
     }
 
     @Override
-    public boolean onStartRecording() {
+    public boolean onViewRequestStartRecording() {
         return mMultiVideoCallService.startRecording();
     }
 
     @Override
-    public boolean onStopRecording() {
+    public boolean onViewRequestStopRecording() {
         return mMultiVideoCallService.stopRecording();
     }
 
     @Override
-    public String onGetRoomPeerIdNick() {
-        return mMultiVideoCallService.getRoomPeerIdNick();
+    public String onViewRequestGetRoomPeerIdNick() {
+        return mMultiVideoCallService.getRoomPeerIdNick(Constants.CONFIG_TYPE.VIDEO);
     }
 
     @Override
-    public void onGetInputVideoResolution() {
+    public void onViewRequestGetInputVideoResolution() {
         mMultiVideoCallService.getInputVideoResolution();
     }
 
     @Override
-    public void onGetSentVideoResolution(int peerIndex) {
+    public void onViewRequestGetSentVideoResolution(int peerIndex) {
         mMultiVideoCallService.getSentVideoResolution(peerIndex);
     }
 
     @Override
-    public void onGetReceivedVideoResolution(int peerIndex) {
+    public void onViewRequestGetReceivedVideoResolution(int peerIndex) {
         mMultiVideoCallService.getReceivedVideoResolution(peerIndex);
     }
 
     @Override
-    public void onWebrtcStatsToggle(int peerIndex) {
+    public void onViewRequestWebrtcStatsToggle(int peerIndex) {
 
         String peerId = mMultiVideoCallService.getPeerIdByIndex(peerIndex);
 
@@ -166,22 +147,25 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
             gettingStats = true;
         }
         isGettingWebrtcStats.put(peerId, gettingStats);
-        getWStatsAll(peerId);
+        processGetWStatsAll(peerId);
     }
 
     @Override
-    public void onGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
+    public void onViewRequestGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
         mMultiVideoCallService.getTransferSpeeds(peerIndex, mediaDirection, mediaType);
     }
 
     @Override
-    public void onRefreshConnection(int peerIndex, boolean iceRestart) {
+    public void onViewRequestRefreshConnection(int peerIndex, boolean iceRestart) {
 
         mMultiVideoCallService.refreshConnection(peerIndex, iceRestart);
     }
 
     @Override
-    public Boolean onGetWebRtcStatsByPeerId(int peerIndex) {
+    public Boolean onViewRequestGetWebRtcStatsByPeerId(int peerIndex) {
+
+        if(peerIndex >= onViewRequestGetTotalInRoom())
+            return false;
 
         String peerId = mMultiVideoCallService.getPeerIdByIndex(peerIndex);
 
@@ -189,189 +173,22 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
     }
 
     @Override
-    public int onGetTotalInRoom() {
+    public int onViewRequestGetTotalInRoom() {
         return mMultiVideoCallService.getTotalInRoom();
     }
 
     @Override
-    public SurfaceViewRenderer onGetVideoViewByIndex(int index) {
+    public SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int index) {
         return mMultiVideoCallService.getVideoViewByIndex(index);
     }
 
     @Override
-    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
-        String log = "[SA][onLocalMediaCapture] ";
-
-        if (videoView == null) {
-            log += "VideoView is null!";
-            Log.d(TAG, log);
-
-            SurfaceViewRenderer selfVideoView = mMultiVideoCallService.getVideoView(null);
-            mMultiVideoCallView.onAddSelfView(selfVideoView);
-
-        } else {
-            log += "Adding VideoView as selfView.";
-            Log.d(TAG, log);
-            mMultiVideoCallView.onAddSelfView(videoView);
-        }
-    }
-
-    @Override
-    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-        String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
-                width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        toastLogLong(TAG, mContext, log);
-    }
-
-    @Override
-    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
-        String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
-                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        toastLogLong(TAG, mContext, log);
-    }
-
-    @Override
-    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
-        String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
-                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-        toastLogLong(TAG, mContext, log);
-    }
-
-    @Override
-    public void onVideoSizeChange(String peerId, Point size) {
-        String peer = "Peer " + peerId;
-        // If peerId is null, this call is for our local video.
-        if (peerId == null) {
-            peer = "We've";
-        }
-        Log.d(TAG, peer + " got video size changed to: " + size.toString() + ".");
-    }
-
-    @Override
-    public void onRemotePeerJoin(SkylinkPeer skylinkPeer) {
-
-        isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
-
-        addRemoteView(skylinkPeer.getPeerId());
-
-    }
-
-    @Override
-    public void onRemotePeerLeave(String remotePeerId) {
-
-        isGettingWebrtcStats.remove(remotePeerId);
-
-        mMultiVideoCallView.onRemoveRemotePeer(removeIndex);
-    }
-
-    @Override
-    public void onSetRemovedPeerIndex(int removeIndex) {
-        this.removeIndex = removeIndex;
-    }
-
-    @Override
-    public void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
-                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        toastLog(TAG, mContext, log);
-    }
-
-    @Override
-    public void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
-
-        addRemoteView(remotePeerId);
-
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
-                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        Log.d(TAG, log);
-    }
-
-    @Override
-    public void onRecordingStart(boolean recording) {
-        String log = "[SRS][SA] Recording Started! isRecording=" +
-                recording + ".";
-        toastLogLong(TAG, mContext, log);
-    }
-
-    @Override
-    public void onRecordingStop(boolean recording) {
-        String log = "[SRS][SA] Recording Stopped! isRecording=" +
-                recording + ".";
-        toastLogLong(TAG, mContext, log);
-    }
-
-    @Override
-    public void onRecordingVideoLink(String recordingId, String peerId, String videoLink) {
-        String peer = " Mixin";
-        if (peerId != null) {
-            peer = " Peer " + mMultiVideoCallService.getPeerIdNick(peerId) + "'s";
-        }
-        String msg = "Recording:" + recordingId + peer + " video link:\n" + videoLink;
-
-        mMultiVideoCallView.onDisplayAlerDlg(recordingId, msg);
-
-    }
-
-    @Override
-    public void onRecordingError(String recordingId, int errorCode, String description) {
-        String log = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
-                "! Error: " + description;
-        toastLogLong(TAG, mContext, log);
-        Log.e(TAG, log);
-    }
-
-    @Override
-    public void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed) {
-        String direction = "Send";
-        if (Info.MEDIA_DIRECTION_RECV == mediaDirection) {
-            direction = "Recv";
-        }
-        // Log the transfer speeds.
-        String log = "[SA][TransSpeed] Transfer speed for Peer " + peerId + ": " +
-                Info.getInfoString(mediaType) + " " + direction + " = " + transferSpeed + " kbps";
-        Log.d(TAG, log);
-    }
-
-    @Override
-    public void onWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, HashMap<String, String> stats) {
-        // Log the WebRTC stats.
-        StringBuilder log =
-                new StringBuilder("[SA][WStatsRecv] Received for Peer " + peerId + ":\r\n");
-        for (Map.Entry<String, String> entry : stats.entrySet()) {
-            log.append(entry.getKey()).append(": ").append(entry.getValue()).append(".\r\n");
-        }
-        Log.d(TAG, log.toString());
-    }
-
-    @Override
-    public void onPermissionRequired(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mMultiVideoCallView.onGetFragment());
-    }
-
-    @Override
-    public void onPermissionGranted(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionGrantedHandler(info, TAG);
-    }
-
-    @Override
-    public void onPermissionDenied(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionDeniedHandler(info, mContext, TAG);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
     @Override
-    public void onViewResume() {
+    public void onViewRequestResume() {
         // Toggle camera back to previous state if required.
         if (mMultiVideoCallService.isCameraToggle()) {
 
@@ -385,7 +202,7 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
     }
 
     @Override
-    public void onViewPause() {
+    public void onViewRequestPause() {
 
         if (mMultiVideoCallService.getVideoView(null) != null) {
             boolean toggleCamera = mMultiVideoCallService.toggleCamera(false);
@@ -394,16 +211,135 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
         }
     }
 
-    private void connectToRoom() {
-        //connect to SDK
-        if (mMultiVideoCallService.connectToRoom()) {
-            //get roomName from setting
-            String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
-            toastLog(TAG, mContext, log);
+    @Override
+    public void onServiceRequestConnect(boolean isSuccessful) {
+
+        //start audio routing
+        SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.setPresenter(this);
+            AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
         }
     }
 
-    private void updateConnectedUI() {
+    @Override
+    public void onServiceRequestDisconnect() {
+
+        //stop audio routing
+        SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.stopAudioRouting(mContext);
+        }
+    }
+
+    @Override
+    public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
+        String log = "[SA][onLocalMediaCapture] ";
+
+        if (videoView == null) {
+            log += "VideoView is null!";
+            Log.d(TAG, log);
+
+            SurfaceViewRenderer selfVideoView = mMultiVideoCallService.getVideoView(null);
+            mMultiVideoCallView.onPresenterRequestAddSelfView(selfVideoView);
+
+        } else {
+            log += "Adding VideoView as selfView.";
+            Log.d(TAG, log);
+            mMultiVideoCallView.onPresenterRequestAddSelfView(videoView);
+        }
+    }
+
+    @Override
+    public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+        String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
+                width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        toastLogLong(TAG, mContext, log);
+    }
+
+    @Override
+    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
+                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        toastLogLong(TAG, mContext, log);
+    }
+
+    @Override
+    public void onServiceRequestSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+        String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
+                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
+        Log.d(TAG, log);
+        toastLogLong(TAG, mContext, log);
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
+
+        isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
+
+        processAddRemoteView(skylinkPeer.getPeerId());
+
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+
+        isGettingWebrtcStats.remove(remotePeerId);
+
+        mMultiVideoCallView.onPresenterRequestRemoveRemotePeer(removeIndex);
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
+                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
+        toastLog(TAG, mContext, log);
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+
+        processAddRemoteView(remotePeerId);
+
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
+                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
+        Log.d(TAG, log);
+    }
+
+    @Override
+    public void onServiceRequestRecordingVideoLink(String recordingId, String peerId, String videoLink) {
+        String peer = " Mixin";
+        if (peerId != null) {
+            peer = " Peer " + mMultiVideoCallService.getPeerIdNick(peerId) + "'s";
+        }
+        String msg = "Recording:" + recordingId + peer + " video link:\n" + videoLink;
+
+        mMultiVideoCallView.onPresenterRequestDisplayVideoLinkInfo(recordingId, msg);
+
+    }
+
+    @Override
+    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mMultiVideoCallView.onPresenterRequestGetFragmentInstance());
+    }
+
+    private void processConnectToRoom() {
+
+        //connect to SDK
+        mMultiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
+
+        //get roomName from setting
+        String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
+        toastLog(TAG, mContext, log);
+    }
+
+    private void processUpdateConnectedUI() {
 
         // Toggle camera back to previous state if required.
         if (mMultiVideoCallService.isCameraToggle()) {
@@ -411,17 +347,17 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
         }
 
         //update UI
-        mMultiVideoCallView.onAddSelfView(getVideoView(null));
+        mMultiVideoCallView.onPresenterRequestAddSelfView(processGetVideoView(null));
 
         String[] remotePeerIds = mMultiVideoCallService.getPeerIdList();
 
         for (int i = 0; i < remotePeerIds.length; i++) {
-            addRemoteView(remotePeerIds[i]);
+            processAddRemoteView(remotePeerIds[i]);
         }
 
     }
 
-    private SurfaceViewRenderer getVideoView(String remotePeerId) {
+    private SurfaceViewRenderer processGetVideoView(String remotePeerId) {
         return mMultiVideoCallService.getVideoView(remotePeerId);
     }
 
@@ -430,7 +366,7 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
 
         //display instruction log
         String log12 = "Toggled camera ";
-        if (getVideoView(null) != null) {
+        if (processGetVideoView(null) != null) {
             if (mMultiVideoCallService.toggleCamera()) {
                 log12 += "to restarted!";
 
@@ -445,17 +381,15 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
             log12 += "but failed as local video is not available!";
         }
         toastLog(TAG, mContext, log12);
-
-        //this button don't need to change text
     }
 
     /**
-     * Trigger getWebrtcStats for specific Peer in a loop if current state allows.
+     * Trigger processGetWebrtcStats for specific Peer in a loop if current state allows.
      * To stop loop, set {@link #isGettingWebrtcStats} to false.
      *
      * @param peerId
      */
-    private void getWStatsAll(final String peerId) {
+    private void processGetWStatsAll(final String peerId) {
         Boolean gettingStats = isGettingWebrtcStats.get(peerId);
         if (gettingStats == null) {
             String log = "[SA][WStatsAll] Peer " + peerId +
@@ -466,7 +400,7 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
 
         if (gettingStats) {
             // Request to get WebRTC stats.
-            getWebrtcStats(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+            processGetWebrtcStats(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
 
             // Wait for waitMs ms before requesting WebRTC stats again.
             final int waitMs = 1000;
@@ -479,22 +413,22 @@ public class MultiPartyVideoCallPresenter implements MultiPartyVideoCallContract
                                     e.getMessage();
                     Log.e(TAG, error);
                 }
-                getWStatsAll(peerId);
+                processGetWStatsAll(peerId);
             }).start();
 
         }
     }
 
-    private void getWebrtcStats(String peerId, int mediaDirection, int mediaType) {
+    private void processGetWebrtcStats(String peerId, int mediaDirection, int mediaType) {
         mMultiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
     }
 
-    private void addRemoteView(String remotePeerId) {
+    private void processAddRemoteView(String remotePeerId) {
 
         int index = mMultiVideoCallService.getPeerIndexByPeerId(remotePeerId);
 
         SurfaceViewRenderer videoView = mMultiVideoCallService.getVideoView(remotePeerId);
 
-        mMultiVideoCallView.onAddRemoteView(index, videoView);
+        mMultiVideoCallView.onPresenterRequestAddRemoteView(index, videoView);
     }
 }

@@ -2,7 +2,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.chat;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -15,30 +14,49 @@ public interface ChatContract {
 
     interface View extends BaseView<Presenter> {
 
-        void onRefreshListView();
+        /**
+         * process update view when changing state
+         */
+        void onPresenterRequestRefreshChatCollection();
 
-        void onFillPeerRadioBtn(List<SkylinkPeer> peersList);
+        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
 
-        void onAddPeerRadioBtn(SkylinkPeer newPeer);
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer);
 
-        void onRemovePeerRadioBtn(String remotePeerId);
+        void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId);
 
-        void onUpdateRoomDetails(String roomDetails);
+        void onPresenterRequestUpdateUi(String roomDetails);
 
-        void onClearEditText();
+        void onPresenterRequestClearInput();
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter{
 
-        void onSendServerMessage(String remotePeerId, String message);
+        /**
+         * process data to display on view
+         */
+        void onViewRequestLayout();
 
-        void onSendP2PMessage(String remotePeerId, String message);
+        /**
+         * process send message through server to remote peer
+         */
+        void onViewRequestSendServerMessage(String remotePeerId, String message);
 
-        List<String> onGetChatMessageCollection();
+        /**
+         * process send message directly to remote peer
+         */
+        void onViewRequestSendP2PMessage(String remotePeerId, String message);
 
-        void onServerMessageReceive(String remotePeerId, Object message, boolean isPrivate);
+        /**
+         * get list of chat message
+         */
+        List<String> onViewRequestGetChatCollection();
 
-        void onP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate);
+        /**
+         * process change state when view exit/closed
+         */
+        void onViewRequestExit();
+
     }
 
     interface Service extends BaseService<Presenter> {

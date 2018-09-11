@@ -21,6 +21,9 @@ public class VideoCallActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_call);
 
+        //create presenter
+        mVideoCallPresenter = new VideoCallPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             videoCallFragment = VideoCallFragment.newInstance();
@@ -34,7 +37,7 @@ public class VideoCallActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mVideoCallPresenter = new VideoCallPresenter(videoCallFragment, this);
+        mVideoCallPresenter.setView(videoCallFragment);
     }
 
     @Override
@@ -50,6 +53,4 @@ public class VideoCallActivity extends AppCompatActivity {
         //Save the fragment's instance
         getSupportFragmentManager().putFragment(outState, VIDEO_CALL_FRAGMENT_TAG, videoCallFragment);
     }
-
-
 }

@@ -21,6 +21,9 @@ public class AudioCallActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_call);
 
+        //create presenter
+        mAudioCallPresenter = new AudioCallPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             mAudioCallFragment = AudioCallFragment.newInstance();
@@ -33,9 +36,9 @@ public class AudioCallActivity extends AppCompatActivity {
                     .findFragmentByTag(AUDIO_CALL_FRAGMENT_TAG);
         }
 
-
-        //link between view and presenter
-        mAudioCallPresenter = new AudioCallPresenter(mAudioCallFragment, this);
+        //link view and presenter
+        if(mAudioCallFragment != null)
+            mAudioCallPresenter.setView(mAudioCallFragment);
     }
 
     @Override
@@ -48,9 +51,7 @@ public class AudioCallActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, AUDIO_CALL_FRAGMENT_TAG, mAudioCallFragment);
     }
-
-
 }

@@ -11,13 +11,13 @@ public final class Constants {
     public static final String ROOM_NAME_VIDEO_DEFAULT = "Room-video";
 
     public static final String USER_NAME_AUDIO_DEFAULT = "User-audio";
-    public static final String USER_NAME_CHAT_DEFAULT = "User Pham";
-    public static final String USER_NAME_DATA_DEFAULT = "User Pham";
-    public static final String USER_NAME_FILE_DEFAULT = "User Pham";
-    public static final String USER_NAME_PARTY_DEFAULT = "User Pham";
-    public static final String USER_NAME_VIDEO_DEFAULT = "User Pham";
+    public static final String USER_NAME_CHAT_DEFAULT = "User-chat";
+    public static final String USER_NAME_DATA_DEFAULT = "User-dataTransfer";
+    public static final String USER_NAME_FILE_DEFAULT = "User-fileTransfer";
+    public static final String USER_NAME_PARTY_DEFAULT = "User-multiVideosCall";
+    public static final String USER_NAME_VIDEO_DEFAULT = "User-video";
 
-    public enum CONFIG_TYPE{
+    public enum CONFIG_TYPE {
         AUDIO,
         VIDEO,
         CHAT,

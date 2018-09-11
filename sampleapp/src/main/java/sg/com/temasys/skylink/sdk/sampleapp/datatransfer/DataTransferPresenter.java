@@ -3,22 +3,20 @@ package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 import android.content.Context;
 import android.util.Log;
 
-import java.util.Arrays;
-
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.DataTransferService;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
  */
 
-public class DataTransferPresenter implements DataTransferContract.Presenter {
+public class DataTransferPresenter extends BasePresenter implements DataTransferContract.Presenter {
 
     private final String TAG = DataTransferPresenter.class.getName();
 
@@ -27,19 +25,16 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
     private DataTransferContract.View mDataTransferView;
     private DataTransferService mDataTransferService;
 
-
-    public DataTransferPresenter(DataTransferContract.View dataTransferView, Context context) {
+    public DataTransferPresenter(Context context) {
         this.mContext = context;
-
-        this.mDataTransferView = dataTransferView;
         this.mDataTransferService = new DataTransferService(context);
-
-        this.mDataTransferView.setPresenter(this);
         this.mDataTransferService.setPresenter(this);
-
-        this.mDataTransferService.setTypeCall();
     }
 
+    public void setView(DataTransferContract.View view) {
+        mDataTransferView = view;
+        mDataTransferView.setPresenter(this);
+    }
 
     /**
      * Triggered when View request data to display to the user when entering room | rotating screen
@@ -47,7 +42,7 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
      * Try to update UI if connected to room after changing configuration
      */
     @Override
-    public void onViewLayoutRequested() {
+    public void onViewRequestLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -56,7 +51,7 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
         if (!mDataTransferService.isConnectingOrConnected()) {
 
             //connect to room on Skylink connection
-            mDataTransferService.connectToRoom();
+            mDataTransferService.connectToRoom(Constants.CONFIG_TYPE.DATA);
 
             //after connected to skylink SDK, UI will be updated later on ChatService.onConnect
 
@@ -65,58 +60,21 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
         } else {
 
             //update UI into connected state
-            updateUI();
+            processUpdateUI();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
     @Override
-    public void onConnect(boolean isSuccessful) {
-        updateUI();
-    }
-
-    @Override
-    public void onDisconnect() {
-
-        //do nothing
-
-    }
-
-    @Override
-    public void onViewExit() {
+    public void onViewRequestExit() {
 
         //process disconnect from room
         mDataTransferService.disconnectFromRoom();
-
-        //after disconnected from skylink SDK, UI will be updated later on ChatService.onDisconnect
     }
 
     @Override
-    public void onRemotePeerJoin(SkylinkPeer newPeer) {
-
-        //add new remote peer
-        mDataTransferView.onAddPeerRadioBtn(newPeer);
-
-        // Update textview to show room status when first remote peer has joined with self peer
-        if (mDataTransferService.getTotalPeersInRoom() == 2) {
-            updateRoomDetails();
-        }
-    }
-
-    @Override
-    public void onRemotePeerLeave(String remotePeerId) {
-        // Remove remote peer
-        mDataTransferView.onRemovePeerRadioBtn(remotePeerId);
-
-        // Update textview to show room status when last remote peer has left
-        if (mDataTransferService.getTotalPeersInRoom() == 1) {
-            updateRoomDetails();
-        }
-    }
-
-    @Override
-    public void onSendData(String remotePeerId, byte[] data) {
+    public void onViewRequestSendData(String remotePeerId, byte[] data) {
         // Do not allow button actions if there are no remote Peers in the room.
         if (mDataTransferService.getTotalPeersInRoom() < 2) {
             String log = mContext.getString(R.string.warn_no_peer_message);
@@ -124,13 +82,13 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
             return;
         }
 
-        if(remotePeerId == null) {
+        if (remotePeerId == null) {
             // Select All Peers RadioButton if not already selected
-            String remotePeer = mDataTransferView.onGetPeerIdSelected();
+            String remotePeer = mDataTransferView.onPresenterRequestGetPeerIdSelected();
 
             //force to select radio button peerAll
             if (remotePeer != null) {
-                mDataTransferView.onSetRdPeerAllChecked(true);
+                mDataTransferView.onPresenterRequestSetPeerAllSelected(true);
             }
         }
 
@@ -138,35 +96,51 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
     }
 
     @Override
-    public void onDataReceive(String remotePeerId, byte[] data) {
-        // Check if it is one of the data that we can send.
-        if (Arrays.equals(data, Utils.getDataPrivate()) || Arrays.equals(data, Utils.getDataGroup())) {
-            String log = String.format(Utils.getString(R.string.data_transfer_received_expected),
-                    String.valueOf(data.length));
-            toastLog(TAG, mContext, log);
-        } else {
-            // Received some unexpected data that could be from other apps
-            // or perhaps different due to so some problems somewhere.
-            String log = String.format(Utils.getString(R.string.data_transfer_received_unexpected),
-                    String.valueOf(data.length));
-            toastLogLong(TAG, mContext, log);
+    public void onServiceRequestConnect(boolean isSuccessful) {
+        processUpdateUI();
+    }
+
+    @Override
+    public void onServiceRequestDisconnect() {
+        //do nothing
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
+
+        //add new remote peer
+        mDataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer);
+
+        // Update textview to show room status when first remote peer has joined with self peer
+        if (mDataTransferService.getTotalPeersInRoom() == 2) {
+            processUpdateRoomDetails();
         }
     }
 
+    @Override
+    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+        // Remove remote peer
+        mDataTransferView.onPresenterRequestChangeUiRemotePeerLeave(remotePeerId);
 
-    private void updateUI() {
-
-        mDataTransferView.onFillPeerRadioBtn(mDataTransferService.getPeersList());
-
-        updateRoomDetails();
+        // Update textview to show room status when last remote peer has left
+        if (mDataTransferService.getTotalPeersInRoom() == 1) {
+            processUpdateRoomDetails();
+        }
     }
 
-    private void updateRoomDetails() {
-        String strRoomDetails = getRoomDetails();
-        mDataTransferView.onUpdateRoomDetails(strRoomDetails);
+    private void processUpdateUI() {
+
+        mDataTransferView.onPresenterRequestFillPeers(mDataTransferService.getPeersList());
+
+        processUpdateRoomDetails();
     }
 
-    private String getRoomDetails() {
+    private void processUpdateRoomDetails() {
+        String strRoomDetails = processGetRoomDetails();
+        mDataTransferView.onPresenterRequestUpdateUi(strRoomDetails);
+    }
+
+    private String processGetRoomDetails() {
         boolean isConnected = mDataTransferService.isConnectingOrConnected();
         String roomName = mDataTransferService.getRoomName(Config.ROOM_NAME_CHAT);
         String userName = mDataTransferService.getUserName(null, Config.USER_NAME_CHAT);
@@ -187,6 +161,5 @@ public class DataTransferPresenter implements DataTransferContract.Presenter {
 
         return roomDetails;
     }
-
 }
 

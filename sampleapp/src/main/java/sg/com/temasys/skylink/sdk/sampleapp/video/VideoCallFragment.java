@@ -7,8 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
@@ -54,9 +52,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     private FloatingActionButton btnSpeaker;
     private TextView tvRoomName;
     private TextView tvInput;
-
-    //static variables for update UI when changing configuration
-    //because we use different layout for landscape mode
     private TextView tvResInput;
     private TextView tvSent;
     private TextView tvResSent;
@@ -68,10 +63,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     private TextView tvResFps;
     private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim;
     private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResFps;
-
-    public VideoCallFragment() {
-        // Required empty public constructor
-    }
 
     public static VideoCallFragment newInstance() {
         return new VideoCallFragment();
@@ -111,28 +102,28 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         requestViewLayout();
 
         btnSpeaker.setOnClickListener(v -> {
-            mPresenter.onProcessBtnSpeakerOn();
+            mPresenter.onViewRequestChangeAudioOutput();
         });
 
         btnAudioMute.setOnClickListener(v -> {
-            mPresenter.onProcessBtnAudioMute();
+            mPresenter.onViewRequestChangeAudioState();
         });
 
         btnVideoMute.setOnClickListener(v -> {
-            mPresenter.onProcessBtnVideoMute();
+            mPresenter.onViewRequestChangeVideoState();
         });
 
         btnCameraToggle.setOnClickListener(v -> {
-            mPresenter.onProcessBtnCameraToggle();
+            mPresenter.onViewRequestChangeCameraState();
         });
 
         btnDisconnect.setOnClickListener(v -> {
 
-            mPresenter.onDisconnectFromRoom();
+            mPresenter.onViewRequestDisconnectFromRoom();
 
             toastLog(TAG, mContext, "Clicked Disconnect!");
 
-            onDisconnectUIChange();
+            onPresenterRequestDisconnectUIChange();
         });
 
         return rootView;
@@ -142,32 +133,27 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     public void onResume() {
         super.onResume();
 
-        mPresenter.onViewResume();
+        mPresenter.onViewRequestResume();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onPause() {
         super.onPause();
 
-        // Stop local video source only if not changing orientation
-        if (!((VideoCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewPause();
-        }
+        mPresenter.onViewRequestPause();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onDetach() {
         super.onDetach();
         if (!((VideoCallActivity) mContext).isChangingConfigurations()) {
-            mPresenter.onViewExit();
+            mPresenter.onViewRequestExit();
         }
     }
 
@@ -182,8 +168,330 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Change certain UI elements when trying to connect to room, but not connected
+     */
+    @Override
+    public void onPresenterRequestConnectingUIChange() {
+        btnAudioMute.setVisibility(GONE);
+        btnVideoMute.setVisibility(GONE);
+        btnCameraToggle.setVisibility(GONE);
+        btnDisconnect.setVisibility(VISIBLE);
+        setUiResControlsVisibility(VISIBLE);
+    }
+
+    /**
+     * Change certain UI elements once connected to room or when Peer(s) join or leave.
+     */
+    @Override
+    public void onPresenterRequestConnectedUIChange() {
+        btnAudioMute.setVisibility(VISIBLE);
+        btnVideoMute.setVisibility(VISIBLE);
+        btnCameraToggle.setVisibility(VISIBLE);
+        btnDisconnect.setVisibility(VISIBLE);
+        setUiResControlsVisibility(VISIBLE);
+    }
+
+    /**
+     * Change certain UI elements when disconnecting from room.
+     */
+    @Override
+    public void onPresenterRequestDisconnectUIChange() {
+        View self = linearLayout.findViewWithTag("self");
+        if (self != null) {
+            linearLayout.removeView(self);
+        }
+
+        View peer = linearLayout.findViewWithTag("peer");
+        if (peer != null) {
+            linearLayout.removeView(peer);
+        }
+
+        btnAudioMute.setVisibility(GONE);
+        btnVideoMute.setVisibility(GONE);
+        btnCameraToggle.setVisibility(GONE);
+        btnDisconnect.setVisibility(GONE);
+
+        setUiResControlsVisibility(GONE);
+
+        btnSpeaker.setVisibility(GONE);
+        btnAudioMute.setVisibility(GONE);
+        btnVideoMute.setVisibility(GONE);
+        btnCameraToggle.setVisibility(GONE);
+        btnDisconnect.setVisibility(GONE);
+
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUiResInput(VideoResolution videoInput) {
+        setUiResTvStats(videoInput, tvResInput);
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUiResSent(VideoResolution videoSent) {
+        setUiResTvStats(videoSent, tvResSent);
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive) {
+        setUiResTvStats(videoReceive, tvResRecv);
+    }
+
+    @Override
+    public boolean onPresenterRequestUpdateUiResDimInfo(int width, int height) {
+        return setUiResTvDim(width, height);
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUiResFpsInfo(int fps) {
+        setUiResTvFps(fps);
+    }
+
+    /**
+     * Add or update our self VideoView into the app.
+     *
+     * @param videoView
+     */
+    @Override
+    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
+        if (videoView != null) {
+            // If previous self video exists,
+            // Set new video to size of previous self video
+            // And remove old self video.
+            View self = linearLayout.findViewWithTag("self");
+            if (self != null) {
+                // Remove the old self video.
+                linearLayout.removeView(self);
+            }
+
+            // Tag new video as self and add onClickListener.
+            videoView.setTag("self");
+            // Show room and self info, plus give option to
+            // switch self view between different cameras (if any).
+            videoView.setOnClickListener(v -> {
+                String name = mPresenter.onViewRequestGetRoomPeerIdNick();
+
+                name += "\r\nClick outside dialog to return.";
+                TextView selfTV = new TextView(mContext);
+                selfTV.setText(name);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    selfTV.setTextIsSelectable(true);
+                }
+                AlertDialog.Builder selfDialogBuilder =
+                        new AlertDialog.Builder(mContext);
+                selfDialogBuilder.setView(selfTV);
+                // Get the available video resolutions.
+                selfDialogBuilder.setPositiveButton("Video resolutions",
+                        (dialog, which) -> mPresenter.onViewRequestGetVideoResolutions());
+                // Switch camera if possible.
+                selfDialogBuilder.setNegativeButton("Switch Camera",
+                        (dialog, which) -> {
+                            mPresenter.onViewRequestSwitchCamera();
+                        });
+                selfDialogBuilder.show();
+            });
+
+            // If peer video exists, remove it first.
+            View peer = linearLayout.findViewWithTag("peer");
+            if (peer != null) {
+                linearLayout.removeView(peer);
+            }
+
+            // Show new video on screen
+            // Remove video from previous parent, if any.
+            Utils.removeViewFromParent(videoView);
+
+            // And new self video.
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+            params.gravity = Gravity.CENTER;
+            params.weight = 1;
+            videoView.setLayoutParams(params);
+
+            //alway set self video as vertical orientation
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+
+            linearLayout.addView(videoView);
+
+            // Return the peer video, if it was there before.
+            if (peer != null) {
+                linearLayout.addView(peer);
+            }
+        } else {
+            String log = "[SA][addSelfView] Not adding self view as videoView is null!";
+            Log.d(TAG, log);
+        }
+    }
+
+    /**
+     * Add or update remote Peer's VideoView into the app.
+     */
+    @Override
+    public void onPresenterRequestAddRemoteView(SurfaceViewRenderer remoteVideoView) {
+
+        if (remoteVideoView == null)
+            return;
+
+        // Remove previous peer video if it exists
+        View viewToRemove = linearLayout.findViewWithTag("peer");
+        if (viewToRemove != null) {
+            linearLayout.removeView(viewToRemove);
+        }
+
+        // Add new peer video
+        remoteVideoView.setTag("peer");
+        // Remove view from previous parent, if any.
+        Utils.removeViewFromParent(remoteVideoView);
+        // Add view to parent
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+        params.gravity = Gravity.CENTER;
+        params.weight = 1;
+        remoteVideoView.setLayoutParams(params);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+        } else {
+            linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+        }
+
+        linearLayout.setGravity(Gravity.CENTER);
+        linearLayout.addView(remoteVideoView);
+
+
+    }
+
+    @Override
+    public void onPresenterRequestRemoveRemotePeer() {
+        View peerView = linearLayout.findViewWithTag("peer");
+        linearLayout.removeView(peerView);
+
+        //change orientation to vertical
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+    }
+
+    @Override
+    public Fragment onPresenterRequestGetFragmentInstance() {
+        return this;
+    }
+
+    @Override
+    public void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast) {
+        if (isAudioMuted) {
+            if (isToast) {
+                String log = getString(R.string.muted_audio);
+                toastLog(TAG, mContext, log);
+            }
+        } else {
+            if (isToast) {
+                String log = getString(R.string.enabled_audio);
+                toastLog(TAG, mContext, log);
+            }
+        }
+    }
+
+    @Override
+    public void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast) {
+        if (isVideoMuted) {
+            if (isToast) {
+                String log = getString(R.string.muted_video);
+                toastLog(TAG, mContext, log);
+            }
+        } else {
+            if (isToast) {
+                String log = getString(R.string.enabled_video);
+                toastLog(TAG, mContext, log);
+            }
+        }
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange) {
+        seekBarResDim.setMax(maxDimRange);
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange) {
+        seekBarResFps.setMax(maxFpsRange);
+    }
+
+    @Override
+    public void onPresenterRequestUpdateResDimInfo(int index, int width, int height) {
+        // Set the SeekBar
+        seekBarResDim.setProgress(index);
+        // Set TextView
+        setUiResTvDim(width, height);
+    }
+
+    @Override
+    public void onPresenterRequestUpdateResFpsInfo(int index, int fps) {
+        // Set the SeekBar
+        seekBarResFps.setProgress(index);
+        // Set TextView
+        setUiResTvFps(fps);
+    }
+
+    @Override
+    public void onPresenterRequestChangeSpeakerOuput(boolean isSpeakerOn) {
+        if (isSpeakerOn) {
+            btnSpeaker.setImageResource(R.drawable.ic_audio_speaker);
+            String log = getString(R.string.enable_speaker);
+            toastLog(TAG, mContext, log);
+
+        } else {
+            btnSpeaker.setImageResource(R.drawable.icon_speaker_mute);
+            String log = getString(R.string.enable_headset);
+            toastLog(TAG, mContext, log);
+        }
+    }
+
+    @Override
+    public void onPresenterRequestChangeAudioUI(boolean isAudioMute) {
+        if (isAudioMute) {
+            btnAudioMute.setImageResource(R.drawable.icon_audio_mute);
+
+        } else {
+            btnAudioMute.setImageResource(R.drawable.icon_audio_active);
+        }
+    }
+
+    @Override
+    public void onPresenterRequestChangeVideoUI(boolean isVideoMute) {
+        if (isVideoMute) {
+            btnVideoMute.setImageResource(R.drawable.icon_video_mute);
+
+        } else {
+            btnVideoMute.setImageResource(R.drawable.icon_video_active);
+        }
+    }
+
+    @Override
+    public void onPresenterRequestChangeCameraUI(boolean isCameraMute) {
+        if (isCameraMute) {
+            btnCameraToggle.setImageResource(R.drawable.icon_camera_mute);
+
+        } else {
+            btnCameraToggle.setImageResource(R.drawable.icon_camera_active);
+        }
+    }
+
+    @Override
+    public void onPresenterRequestchangeViewLayout() {
+        //make floating buttons
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            changeFloatingButtons(false);
+        } else {
+            changeFloatingButtons(true);
+        }
+    }
+
     //----------------------------------------------------------------------------------------------
-    // private methods
+    // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
@@ -192,9 +500,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         ll_video_res_sent = rootView.findViewById(R.id.ll_video_res_sent);
         ll_video_res_receive = rootView.findViewById(R.id.ll_video_res_receive);
         ll_video_res_info = rootView.findViewById(R.id.ll_video_res_info);
-
         tvRoomName = rootView.findViewById(R.id.tv_room_name);
-
         btnSpeaker = rootView.findViewById(R.id.toggle_speaker);
         btnAudioMute = rootView.findViewById(R.id.toggle_audio);
         btnVideoMute = rootView.findViewById(R.id.toggle_video);
@@ -216,9 +522,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
-
         actionBar.setTitle(Config.ROOM_NAME_VIDEO);
-
         setHasOptionsMenu(true);
     }
 
@@ -242,52 +546,44 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
-    @NonNull
     private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerDim() {
         return new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-                mPresenter.onDimProgressChanged(progress);
+                mPresenter.onViewRequestDimProgressChanged(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
-                mPresenter.onDimStopTrackingTouch(seekBar.getProgress());
+                mPresenter.onViewRequestDimSelected(seekBar.getProgress());
             }
         };
     }
 
-    @NonNull
     private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerFps() {
         return new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-                mPresenter.onFpsProgressChanged(progress);
+                mPresenter.onViewRequestFpsProgressChanged(progress);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mPresenter.onFpsStopTrackingTouch(seekBar.getProgress());
+                mPresenter.onViewRequestFpsSelected(seekBar.getProgress());
 
                 if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                     linearLayout.setOrientation(LinearLayout.VERTICAL);
                 } else {
                     linearLayout.setOrientation(LinearLayout.HORIZONTAL);
                 }
-
             }
         };
     }
@@ -365,7 +661,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewLayoutRequested();
+            mPresenter.onViewRequestLayout();
         }
     }
 
@@ -460,6 +756,53 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    private void changeFloatingButtons(boolean isLandscapeMode) {
+        if (!isLandscapeMode) {
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+            ll_video_res_input.setOrientation(LinearLayout.VERTICAL);
+            ll_video_res_sent.setOrientation(LinearLayout.VERTICAL);
+            ll_video_res_receive.setOrientation(LinearLayout.VERTICAL);
+
+            int llHeight = (int) mContext.getResources().getDimension(R.dimen.ll_video_res_height);
+
+            RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
+            llParams.height = llHeight;
+            ll_video_res_info.setLayoutParams(llParams);
+
+            changeFloatingButtonPortrait(btnDisconnect);
+            changeFloatingButtonPortrait(btnCameraToggle);
+            changeFloatingButtonPortrait(btnVideoMute);
+            changeFloatingButtonPortrait(btnAudioMute);
+            changeFloatingButtonPortrait(btnSpeaker);
+
+        } else {
+            //only change orientation if there is peer in room
+            View viewToRemove = linearLayout.findViewWithTag("peer");
+            if (viewToRemove != null) {
+                linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+            } else {
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+            }
+
+            ll_video_res_input.setOrientation(LinearLayout.HORIZONTAL);
+            ll_video_res_sent.setOrientation(LinearLayout.HORIZONTAL);
+            ll_video_res_receive.setOrientation(LinearLayout.HORIZONTAL);
+
+            int llHeight = (int) mContext.getResources().getDimension(R.dimen.ll_video_res_height_land);
+
+            RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
+            llParams.height = llHeight;
+            ll_video_res_info.setLayoutParams(llParams);
+
+            changeFloatingButtonLandscape(btnDisconnect);
+            changeFloatingButtonLandscape(btnCameraToggle);
+            changeFloatingButtonLandscape(btnVideoMute);
+            changeFloatingButtonLandscape(btnAudioMute);
+            changeFloatingButtonLandscape(btnSpeaker);
+
+        }
+    }
+
     private void changeFloatingButtonPortrait(FloatingActionButton btn) {
         int landWidth = (int) mContext.getResources().getDimension(R.dimen.floating_btn_size);
         int margin = (int) mContext.getResources().getDimension(R.dimen.dp_10dp);
@@ -530,365 +873,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
         if (backgroundSrc != null)
             btn.setBackgroundDrawable(backgroundSrc);
-    }
-
-    private void changeFloatingButtons(boolean isLandscapeMode) {
-        if (!isLandscapeMode) {
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-            ll_video_res_input.setOrientation(LinearLayout.VERTICAL);
-            ll_video_res_sent.setOrientation(LinearLayout.VERTICAL);
-            ll_video_res_receive.setOrientation(LinearLayout.VERTICAL);
-
-            int llHeight = (int) mContext.getResources().getDimension(R.dimen.ll_video_res_height);
-
-            RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
-            llParams.height = llHeight;
-            ll_video_res_info.setLayoutParams(llParams);
-
-            changeFloatingButtonPortrait(btnDisconnect);
-            changeFloatingButtonPortrait(btnCameraToggle);
-            changeFloatingButtonPortrait(btnVideoMute);
-            changeFloatingButtonPortrait(btnAudioMute);
-            changeFloatingButtonPortrait(btnSpeaker);
-
-        } else {
-            //only change orientation if there is peer in room
-            View viewToRemove = linearLayout.findViewWithTag("peer");
-            if (viewToRemove != null) {
-                linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-            } else {
-                linearLayout.setOrientation(LinearLayout.VERTICAL);
-            }
-
-            ll_video_res_input.setOrientation(LinearLayout.HORIZONTAL);
-            ll_video_res_sent.setOrientation(LinearLayout.HORIZONTAL);
-            ll_video_res_receive.setOrientation(LinearLayout.HORIZONTAL);
-
-            int llHeight = (int) mContext.getResources().getDimension(R.dimen.ll_video_res_height_land);
-
-            RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
-            llParams.height = llHeight;
-            ll_video_res_info.setLayoutParams(llParams);
-
-            changeFloatingButtonLandscape(btnDisconnect);
-            changeFloatingButtonLandscape(btnCameraToggle);
-            changeFloatingButtonLandscape(btnVideoMute);
-            changeFloatingButtonLandscape(btnAudioMute);
-            changeFloatingButtonLandscape(btnSpeaker);
-
-        }
-    }
-
-    //----------------------------------------------------------------------------------------------
-    // listener methods to update UI from Presenter
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * Change certain UI elements when trying to connect to room, but not connected
-     */
-    @Override
-    public void onConnectingUIChange() {
-        btnAudioMute.setVisibility(GONE);
-        btnVideoMute.setVisibility(GONE);
-        btnCameraToggle.setVisibility(GONE);
-        btnDisconnect.setVisibility(VISIBLE);
-        setUiResControlsVisibility(VISIBLE);
-    }
-
-    /**
-     * Change certain UI elements once connected to room or when Peer(s) join or leave.
-     */
-    @Override
-    public void onConnectedUIChange() {
-        btnAudioMute.setVisibility(VISIBLE);
-        btnVideoMute.setVisibility(VISIBLE);
-        btnCameraToggle.setVisibility(VISIBLE);
-        btnDisconnect.setVisibility(VISIBLE);
-        setUiResControlsVisibility(VISIBLE);
-    }
-
-    /**
-     * Change certain UI elements when disconnecting from room.
-     */
-    @Override
-    public void onDisconnectUIChange() {
-        View self = linearLayout.findViewWithTag("self");
-        if (self != null) {
-            linearLayout.removeView(self);
-        }
-
-        View peer = linearLayout.findViewWithTag("peer");
-        if (peer != null) {
-            linearLayout.removeView(peer);
-        }
-
-        btnAudioMute.setVisibility(GONE);
-        btnVideoMute.setVisibility(GONE);
-        btnCameraToggle.setVisibility(GONE);
-        btnDisconnect.setVisibility(GONE);
-
-        setUiResControlsVisibility(GONE);
-
-        btnSpeaker.setVisibility(GONE);
-        btnAudioMute.setVisibility(GONE);
-        btnVideoMute.setVisibility(GONE);
-        btnCameraToggle.setVisibility(GONE);
-        btnDisconnect.setVisibility(GONE);
-
-        if (getActivity() != null) {
-            getActivity().finish();
-        }
-    }
-
-    @Override
-    public void onSetUiResTvStatsInput(VideoResolution videoInput) {
-        setUiResTvStats(videoInput, tvResInput);
-    }
-
-    @Override
-    public void onSetUiResTvStatsSent(VideoResolution videoSent) {
-        setUiResTvStats(videoSent, tvResSent);
-    }
-
-    @Override
-    public void onSetUiResTvStatsReceive(VideoResolution videoReceive) {
-        setUiResTvStats(videoReceive, tvResRecv);
-    }
-
-    @Override
-    public boolean onSetUiResTvDim(int width, int height) {
-        return setUiResTvDim(width, height);
-    }
-
-    @Override
-    public void onSetUiResTvFps(int fps) {
-        setUiResTvFps(fps);
-    }
-
-    /**
-     * Add or update our self VideoView into the app.
-     *
-     * @param videoView
-     */
-    @Override
-    public void onAddSelfView(SurfaceViewRenderer videoView) {
-        if (videoView != null) {
-            // If previous self video exists,
-            // Set new video to size of previous self video
-            // And remove old self video.
-            View self = linearLayout.findViewWithTag("self");
-            if (self != null) {
-                // Remove the old self video.
-                linearLayout.removeView(self);
-            }
-
-            // Tag new video as self and add onClickListener.
-            videoView.setTag("self");
-            // Show room and self info, plus give option to
-            // switch self view between different cameras (if any).
-            videoView.setOnClickListener(v -> {
-                String name = mPresenter.onGetRoomPeerIdNick();
-
-                name += "\r\nClick outside dialog to return.";
-                TextView selfTV = new TextView(mContext);
-                selfTV.setText(name);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    selfTV.setTextIsSelectable(true);
-                }
-                AlertDialog.Builder selfDialogBuilder =
-                        new AlertDialog.Builder(mContext);
-                selfDialogBuilder.setView(selfTV);
-                // Get the available video resolutions.
-                selfDialogBuilder.setPositiveButton("Video resolutions",
-                        (dialog, which) -> mPresenter.onGetVideoResolutions());
-                // Switch camera if possible.
-                selfDialogBuilder.setNegativeButton("Switch Camera",
-                        (dialog, which) -> {
-                            mPresenter.onSwitchCamera();
-                        });
-                selfDialogBuilder.show();
-            });
-
-            // If peer video exists, remove it first.
-            View peer = linearLayout.findViewWithTag("peer");
-            if (peer != null) {
-                linearLayout.removeView(peer);
-            }
-
-            // Show new video on screen
-            // Remove video from previous parent, if any.
-            Utils.removeViewFromParent(videoView);
-
-            // And new self video.
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-            params.gravity = Gravity.CENTER;
-            params.weight = 1;
-            videoView.setLayoutParams(params);
-
-            //alway set self video as vertical orientation
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-
-            linearLayout.addView(videoView);
-
-            // Return the peer video, if it was there before.
-            if (peer != null) {
-                linearLayout.addView(peer);
-            }
-        } else {
-            String log = "[SA][addSelfView] Not adding self view as videoView is null!";
-            Log.d(TAG, log);
-        }
-    }
-
-    /**
-     * Add or update remote Peer's VideoView into the app.
-     */
-    @Override
-    public void onAddRemoteView(SurfaceViewRenderer remoteVideoView) {
-
-        if (remoteVideoView == null)
-            return;
-
-        // Remove previous peer video if it exists
-        View viewToRemove = linearLayout.findViewWithTag("peer");
-        if (viewToRemove != null) {
-            linearLayout.removeView(viewToRemove);
-        }
-
-        // Add new peer video
-        remoteVideoView.setTag("peer");
-        // Remove view from previous parent, if any.
-        Utils.removeViewFromParent(remoteVideoView);
-        // Add view to parent
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-        params.gravity = Gravity.CENTER;
-        params.weight = 1;
-        remoteVideoView.setLayoutParams(params);
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-        } else {
-            linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-        }
-
-        linearLayout.setGravity(Gravity.CENTER);
-        linearLayout.addView(remoteVideoView);
-
-
-    }
-
-    @Override
-    public void onRemoveRemotePeer() {
-        View peerView = linearLayout.findViewWithTag("peer");
-        linearLayout.removeView(peerView);
-
-        //change orientation to vertical
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-    }
-
-    @Override
-    public Fragment onGetFragment() {
-        return this;
-    }
-
-    @Override
-    public void onSetAudioBtnLabel(boolean isAudioMuted, boolean isToast) {
-        if (isAudioMuted) {
-            if (isToast) {
-                String log = getString(R.string.muted_audio);
-                toastLog(TAG, mContext, log);
-            }
-        } else {
-            if (isToast) {
-                String log = getString(R.string.enabled_audio);
-                toastLog(TAG, mContext, log);
-            }
-        }
-    }
-
-    @Override
-    public void onSetVideoBtnLabel(boolean isVideoMuted, boolean isToast) {
-        if (isVideoMuted) {
-            if (isToast) {
-                String log = getString(R.string.muted_video);
-                toastLog(TAG, mContext, log);
-            }
-        } else {
-            if (isToast) {
-                String log = getString(R.string.enabled_video);
-                toastLog(TAG, mContext, log);
-            }
-        }
-    }
-
-    @Override
-    public void onSetUiResSeekBarRangeDim(int maxSeekBarDimRange) {
-        seekBarResDim.setMax(maxSeekBarDimRange);
-    }
-
-    @Override
-    public void onSetUiResSeekBarRangeFps(int maxSeekBarFpsRange) {
-        seekBarResFps.setMax(maxSeekBarFpsRange);
-    }
-
-    @Override
-    public void onSetSeekBarResDim(int index, int width, int height) {
-        // Set the SeekBar
-        seekBarResDim.setProgress(index);
-        // Set TextView
-        setUiResTvDim(width, height);
-    }
-
-    @Override
-    public void onSetSeekBarResFps(int index, int fps) {
-        // Set the SeekBar
-        seekBarResFps.setProgress(index);
-        // Set TextView
-        setUiResTvFps(fps);
-    }
-
-    @Override
-    public void onChangeBtnSpeakerUI(boolean isSpeakerOn) {
-        if (isSpeakerOn) {
-            btnSpeaker.setImageResource(R.drawable.ic_audio_speaker);
-
-        } else {
-            btnSpeaker.setImageResource(R.drawable.icon_speaker_mute);
-        }
-    }
-
-    @Override
-    public void onChangeBtnAudioMuteUI(boolean isAudioMute) {
-        if (isAudioMute) {
-            btnAudioMute.setImageResource(R.drawable.icon_audio_mute);
-
-        } else {
-            btnAudioMute.setImageResource(R.drawable.icon_audio_active);
-        }
-    }
-
-    @Override
-    public void onChangeBtnVideoMuteUI(boolean isVideoMute) {
-        if (isVideoMute) {
-            btnVideoMute.setImageResource(R.drawable.icon_video_mute);
-
-        } else {
-            btnVideoMute.setImageResource(R.drawable.icon_video_active);
-        }
-    }
-
-    @Override
-    public void onChangeBtnCameraMuteUI(boolean isCameraMute) {
-        if (isCameraMute) {
-            btnCameraToggle.setImageResource(R.drawable.icon_camera_mute);
-
-        } else {
-            btnCameraToggle.setImageResource(R.drawable.icon_camera_active);
-        }
     }
 
 }

@@ -21,6 +21,9 @@ public class FileTransferActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_transfer);
 
+        //create presenter
+        mFileTransferPresenter = new FileTransferPresenter(this);
+
         //check previous state in case of screen rotation
         if (savedInstanceState == null) {
             mFileTransferFragment = FileTransferFragment.newInstance();
@@ -34,7 +37,7 @@ public class FileTransferActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mFileTransferPresenter = new FileTransferPresenter(mFileTransferFragment, this);
+        mFileTransferPresenter.setView(mFileTransferFragment);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class FileTransferActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, FILE_TRANSFER_FRAGMENT_TAG, mFileTransferFragment);
     }
 }

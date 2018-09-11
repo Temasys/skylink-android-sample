@@ -3,11 +3,15 @@ package sg.com.temasys.skylink.sdk.sampleapp.audio;
 import android.content.Context;
 import android.util.Log;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -17,13 +21,13 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class AudioCallPresenter implements AudioCallContract.Presenter {
+public class AudioCallPresenter extends BasePresenter implements AudioCallContract.Presenter {
 
     private final String TAG = AudioCallPresenter.class.getName();
 
     private Context mContext;
 
-    //view object
+    //AudioCallFragment object
     private AudioCallContract.View mAudioCallView;
 
     //service object
@@ -36,22 +40,17 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
     private boolean isSpeakerOn;
 
     //constructor
-    public AudioCallPresenter(AudioCallContract.View AudioCallView, Context context) {
-
+    public AudioCallPresenter(Context context) {
         this.mContext = context;
-
-        this.mAudioCallView = AudioCallView;
         this.mAudioCallService = new AudioService(context);
-
-        //link between view and presenter
-        this.mAudioCallView.setPresenter(this);
-
-        //link between service and presenter
         this.mAudioCallService.setPresenter(this);
-
         this.mPermissionUtils = new PermissionUtils();
+    }
 
-        this.mAudioCallService.setTypeCall();
+    //link Presenter to View
+    public void setView(AudioCallContract.View view) {
+        mAudioCallView = view;
+        mAudioCallView.setPresenter(this);
     }
 
     /**
@@ -60,7 +59,7 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
      * Update info when rotating screen
      */
     @Override
-    public void onViewLayoutRequested() {
+    public void onViewRequestLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -72,9 +71,9 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
             mPermissionUtils.permQReset();
 
             //connect to room on Skylink connection
-            mAudioCallService.connectToRoom();
+            mAudioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
-            //default setting for audio output
+            //set default for audio output
             mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
 
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
@@ -83,33 +82,30 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
 
         } else {
 
-            //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mAudioCallView.onGetFragment());
+            //if it already connected to room, then resume state
+            mPermissionUtils.permQResume(mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
 
             //update UI into connected state
-            updateUI(mAudioCallService.isPeerJoin());
+            processUpdateUI(mAudioCallService.isPeerJoin());
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
 
         //get default audio output settings and change UI
         isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
-        mAudioCallView.onChangeBtnAudioSpeakerUI(mAudioCallService.isPeerJoin(), isSpeakerOn);
+        mAudioCallView.onPresenterRequestChangeBtnAudioSpeaker(mAudioCallService.isPeerJoin(), isSpeakerOn);
     }
 
     @Override
-    public void onConnect(boolean isSuccessful) {
-
-        updateUI(false);
+    public void onViewRequestStop() {
     }
 
     @Override
-    public void onDisconnect() {
-        updateUI(false);
+    public void onViewRequestResume() {
     }
 
     @Override
-    public void onViewExit() {
+    public void onViewRequestExit() {
 
         //process disconnect from room
         mAudioCallService.disconnectFromRoom();
@@ -117,23 +113,11 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
         //reset default audio speaker
         mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
 
-        //after disconnected from skylink SDK, UI will be updated later on AudioService.onDisconnect
+        //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
     }
 
     @Override
-    public void onViewStop() {
-
-
-    }
-
-    @Override
-    public void onViewResume() {
-        //set default audio output
-        mAudioCallService.resumeAudioOutput();
-    }
-
-    @Override
-    public void onChangeAudioToSpeaker() {
+    public void onViewRequestChangeAudioOuput() {
         //check current speakerOn
         isSpeakerOn = !isSpeakerOn;
 
@@ -141,60 +125,75 @@ public class AudioCallPresenter implements AudioCallContract.Presenter {
     }
 
     @Override
-    public void onAudioChangedToSpeaker(boolean isSpeakerOn) {
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+    }
+
+    @Override
+    public void onServiceRequestConnect(boolean isSuccessful) {
+
+        processUpdateUI(false);
+
+        //start audio routing
+        SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.setPresenter(this);
+            AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.AUDIO);
+        }
+    }
+
+    @Override
+    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
+    }
+
+    @Override
+    public void onServiceRequestDisconnect() {
+
+        //stop audio routing
+        SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.stopAudioRouting(mContext);
+        }
+
+        processUpdateUI(false);
+    }
+
+    @Override
+    public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
         this.isSpeakerOn = isSpeakerOn;
-        mAudioCallView.onChangeBtnAudioSpeakerUI(mAudioCallService.isPeerJoin(), isSpeakerOn);
+        mAudioCallView.onPresenterRequestChangeBtnAudioSpeaker(mAudioCallService.isPeerJoin(), isSpeakerOn);
         mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
     }
 
     @Override
-    public void onRemotePeerJoin(SkylinkPeer remotePeer) {
-        updateUI(true);
-    }
-
-    @Override
-    public void onRemotePeerLeave(String remotePeerId) {
-        updateUI(false);
-    }
-
-    @Override
-    public void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
+    public void onServiceRequestRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId){
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, mContext, log);
     }
 
     @Override
-    public void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo) {
+    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, mContext, log);
     }
 
     @Override
-    public void onPermissionRequired(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onGetFragment());
+    public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
+        processUpdateUI(true);
     }
 
     @Override
-    public void onPermissionGranted(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionGrantedHandler(info, TAG);
+    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+        processUpdateUI(false);
     }
 
-    @Override
-    public void onPermissionDenied(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionDeniedHandler(info, mContext, TAG);
+    private void processUpdateUI(boolean isPeerJoined) {
+        String strRoomDetails = processGetRoomDetails();
+        mAudioCallView.onPresenterRequestUpdateUI(strRoomDetails, isPeerJoined, isSpeakerOn);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
-    }
-
-    private void updateUI(boolean isPeerJoined) {
-        String strRoomDetails = getRoomDetails();
-        mAudioCallView.onUpdateUI(strRoomDetails, isPeerJoined, isSpeakerOn);
-    }
-
-    private String getRoomDetails() {
+    private String processGetRoomDetails() {
         boolean isConnected = mAudioCallService.isConnectingOrConnected();
         String roomName = mAudioCallService.getRoomName(Config.ROOM_NAME_AUDIO);
         String userName = mAudioCallService.getUserName(null, Config.USER_NAME_AUDIO);

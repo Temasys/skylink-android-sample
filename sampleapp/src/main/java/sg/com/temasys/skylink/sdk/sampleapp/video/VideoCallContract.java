@@ -1,13 +1,9 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
-import android.graphics.Point;
 import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -20,106 +16,128 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 public interface VideoCallContract {
     interface View extends BaseView<Presenter> {
 
-        void onConnectingUIChange();
+        /**
+         * Get instance of the fragment for processing permission
+         */
+        Fragment onPresenterRequestGetFragmentInstance();
 
-        void onConnectedUIChange();
+        /**
+         * Update UI details when changing state
+         */
+        void onPresenterRequestConnectingUIChange();
 
-        void onDisconnectUIChange();
+        void onPresenterRequestConnectedUIChange();
 
-        void onSetUiResTvStatsInput(VideoResolution videoInput);
+        void onPresenterRequestDisconnectUIChange();
 
-        void onSetUiResTvStatsSent(VideoResolution videoSent);
+        void onPresenterRequestUpdateUiResInput(VideoResolution videoInput);
 
-        void onSetUiResTvStatsReceive(VideoResolution videoReceive);
+        void onPresenterRequestUpdateUiResSent(VideoResolution videoSent);
 
-        boolean onSetUiResTvDim(int width, int height);
+        void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive);
 
-        void onSetUiResTvFps(int fps);
+        boolean onPresenterRequestUpdateUiResDimInfo(int width, int height);
 
-        void onAddSelfView(SurfaceViewRenderer videoView);
+        void onPresenterRequestUpdateUiResFpsInfo(int fps);
 
-        void onAddRemoteView(SurfaceViewRenderer remoteVideoView);
+        void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView);
 
-        void onRemoveRemotePeer();
+        void onPresenterRequestAddRemoteView(SurfaceViewRenderer remoteVideoView);
 
-        Fragment onGetFragment();
+        void onPresenterRequestRemoveRemotePeer();
 
-        void onSetAudioBtnLabel(boolean isAudioMuted, boolean isToast);
+        void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast);
 
-        void onSetVideoBtnLabel(boolean isVideoMuted, boolean isToast);
+        void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast);
 
-        void onSetUiResSeekBarRangeDim(int maxSeekBarDimRange);
+        void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange);
 
-        void onSetUiResSeekBarRangeFps(int maxSeekBarFpsRange);
+        void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange);
 
-        void onSetSeekBarResDim(int index, int width, int height);
+        void onPresenterRequestUpdateResDimInfo(int index, int width, int height);
 
-        void onSetSeekBarResFps(int index, int fps);
+        void onPresenterRequestUpdateResFpsInfo(int index, int fps);
 
-        void onChangeBtnSpeakerUI(boolean isSpeakerOff);
+        void onPresenterRequestChangeSpeakerOuput(boolean isSpeakerOff);
 
-        void onChangeBtnAudioMuteUI(boolean isAudioMute);
+        void onPresenterRequestChangeAudioUI(boolean isAudioMute);
 
-        void onChangeBtnVideoMuteUI(boolean isVideoMute);
+        void onPresenterRequestChangeVideoUI(boolean isVideoMute);
 
-        void onChangeBtnCameraMuteUI(boolean isCameraMute);
+        void onPresenterRequestChangeCameraUI(boolean isCameraMute);
+
+        void onPresenterRequestchangeViewLayout();
 
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter{
 
-        void onDisconnectFromRoom();
+        /**
+         * process data to display on view
+         */
+        void onViewRequestLayout();
 
-        void onPermissionRequired(PermRequesterInfo info);
+        /**
+         * process permission result
+         */
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
-        void onPermissionGranted(PermRequesterInfo info);
+        /**
+         * process change audio output between headset and speaker
+         */
+        void onViewRequestChangeAudioOutput();
 
-        void onPermissionDenied(PermRequesterInfo info);
+        /**
+         * process change state when button clicked
+         */
+        void onViewRequestChangeAudioState();
 
-        void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+        void onViewRequestChangeVideoState();
 
-        void onRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo);
+        void onViewRequestChangeCameraState();
 
-        void onRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo);
+        /**
+         * process change state when video dimension or video fps changed
+         */
+        void onViewRequestDimProgressChanged(int progress);
 
-        void onLocalMediaCapture(SurfaceViewRenderer videoView);
+        void onViewRequestFpsProgressChanged(int progress);
 
-        void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat);
+        void onViewRequestDimSelected(int progress);
 
-        void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps);
+        void onViewRequestFpsSelected(int progress);
 
-        void onSentVideoResolutionObtained(String peerId, int width, int height, int fps);
+        /**
+         * process change state when view resumed
+         */
+        void onViewRequestResume();
 
-        void onVideoSizeChange(String peerId, Point size);
+        /**
+         * process change state when view paused
+         */
+        void onViewRequestPause();
 
-        void onProcessBtnSpeakerOn();
+        /**
+         * switch camera between front and back
+         */
+        void onViewRequestSwitchCamera();
 
-        void onProcessBtnAudioMute();
+        /**
+         * get remote peer nick
+         */
+        String onViewRequestGetRoomPeerIdNick();
 
-        void onProcessBtnVideoMute();
+        /**
+         * get current video resolution info
+         */
+        void onViewRequestGetVideoResolutions();
 
-        void onProcessBtnCameraToggle();
+        /**
+         * process change state when view exit/closed
+         */
+        void onViewRequestExit();
 
-        void onViewResume();
-
-        void onViewPause();
-
-        void onSwitchCamera();
-
-        void onDimProgressChanged(int progress);
-
-        void onFpsProgressChanged(int progress);
-
-        void onDimStopTrackingTouch(int progress);
-
-        void onFpsStopTrackingTouch(int progress);
-
-        String onGetRoomPeerIdNick();
-
-        void onGetVideoResolutions();
-
-        void onAudioChangedToSpeaker(boolean isSpeakerOn);
-
+        void onViewRequestDisconnectFromRoom();
     }
 
     interface Service extends BaseService<Presenter> {
