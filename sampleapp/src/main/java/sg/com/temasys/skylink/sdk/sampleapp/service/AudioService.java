@@ -32,7 +32,7 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
 
     public String getRemotePeerName() {
         if (mPeersList != null && mPeersList.size() > 1)
-            return mPeersList.get(1).getPeerName();
+            return mPeersList.get(1).getPeerName() + "(" + mPeersList.get(1).getPeerId() + ")";
         return "";
     }
 

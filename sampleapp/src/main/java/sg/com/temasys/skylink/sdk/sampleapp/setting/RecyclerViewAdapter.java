@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,6 +56,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     Context context;
 
     // UI on Dialog box for changing App Key.
+    CardView listCardLayout;
     EditText keyText;
     EditText secretText;
     EditText descText;
@@ -88,6 +90,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(rvViewHolder holder, int position) {
         final int pos = position;
+        listCardLayout = holder.listCardView;
         final TextView tvKey = holder.tvKey;
         TextView tvDesc = holder.tvDesc;
         ImageView imgEdit = holder.imgEdit;
@@ -110,24 +113,33 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         rbSelect.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                try {
-                    JSONObject selectedItem;
-                    boolean isSMR = ConfigKeyFragment.smrSelect;
-                    if (isSMR) {
-                        selectedItem = appKeyListSmr.getJSONObject(pos);
-                    } else {
-                        selectedItem = appKeyListNoSmr.getJSONObject(pos);
-                    }
-                    Config.setAppKey(KeyInfo.getKey(selectedItem), activity);
-                    Config.setAppKeySecret(KeyInfo.getSecret(selectedItem), activity);
-                    Config.setAppKeyDescription(KeyInfo.getDesc(selectedItem), activity);
-                    Config.setAppKeySmr(isSMR, activity);
-                    // Update UI
-                    ConfigKeyFragment.setSelectedKeyViews();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                processSelectKeyOption(pos);
+                rbSelect.setChecked(true);
                 return true;
+            }
+        });
+
+        listCardLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                processSelectKeyOption(pos);
+                rbSelect.setChecked(true);
+            }
+        });
+
+        tvKey.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                processSelectKeyOption(pos);
+                rbSelect.setChecked(true);
+            }
+        });
+
+        tvDesc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                processSelectKeyOption(pos);
+                rbSelect.setChecked(true);
             }
         });
 
@@ -288,6 +300,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     public class rvViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        CardView listCardView;
         TextView tvKey;
         TextView tvDesc;
         ImageView imgEdit;
@@ -298,6 +311,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         public rvViewHolder(View itemView) {
             super(itemView);
             View v = itemView;
+            listCardView = (CardView) v.findViewById(R.id.list_card_layout);
             tvKey = (TextView) v.findViewById(R.id.subTextview);
             tvDesc = (TextView) v.findViewById(R.id.descTextview);
             // When Click Edit Button
@@ -312,6 +326,26 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         @Override
         public void onClick(View view) {
 
+        }
+    }
+
+    public void processSelectKeyOption(int pos){
+        try {
+            JSONObject selectedItem;
+            boolean isSMR = ConfigKeyFragment.smrSelect;
+            if (isSMR) {
+                selectedItem = appKeyListSmr.getJSONObject(pos);
+            } else {
+                selectedItem = appKeyListNoSmr.getJSONObject(pos);
+            }
+            Config.setAppKey(KeyInfo.getKey(selectedItem), activity);
+            Config.setAppKeySecret(KeyInfo.getSecret(selectedItem), activity);
+            Config.setAppKeyDescription(KeyInfo.getDesc(selectedItem), activity);
+            Config.setAppKeySmr(isSMR, activity);
+            // Update UI
+            ConfigKeyFragment.setSelectedKeyViews();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -127,7 +127,7 @@ public class MultiPartyFragment extends Fragment {
                 String peerId = remotePeer.getPeerId();
                 String nick = remotePeer.getPeerName();
 
-                rb.setText(nick);
+                rb.setText(nick+" ("+peerId+")");
                 rb.setTag(peerId);
                 logTag = "RadioButton " + i + " is visible as there are " +
                         totalPeerNum + " remote Peer(s).";

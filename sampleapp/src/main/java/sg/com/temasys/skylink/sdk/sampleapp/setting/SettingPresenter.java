@@ -72,7 +72,7 @@ public class SettingPresenter implements Presenter {
 
     @Override
     public void onViewExit() {
-
+        //do nothing
     }
 
     @Override
