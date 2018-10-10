@@ -33,20 +33,26 @@ public class SkylinkConnectionManager {
 
     private SkylinkCommonService mSkylinkCommonService = null;
 
-    public SkylinkConnectionManager(Context context) {
+    /**
+     * Both {@link SkylinkCommonService} and {@link Context} are required for {@link SkylinkCommonService} functioning.
+     *
+     * @param skylinkCommonService
+     * @param context
+     */
+    public SkylinkConnectionManager(SkylinkCommonService skylinkCommonService, Context context) {
+        this.mSkylinkCommonService = skylinkCommonService;
         this.mContext = context;
     }
 
-    public void setService(SkylinkCommonService service) {
-        mSkylinkCommonService = service;
-    }
-
-    public SkylinkConnection initializeSkylinkConnection(Constants.CONFIG_TYPE type) {
+    public SkylinkConnection initializeSkylinkConnection() {
 
         SkylinkConfig skylinkConfig = mSkylinkCommonService.getSkylinkConfig();
 
         if (skylinkConfig != null) {
             mSkylinkConnection = SkylinkConnection.getInstance();
+            // Set SkylinkConnection instance in skylinkCommonService ASAP.
+            mSkylinkCommonService.setmSkylinkConnection(mSkylinkConnection);
+            // Initialize this SkylinkConnection instance.
             mSkylinkConnection.init(Config.getAppKey(), skylinkConfig,
                     mContext.getApplicationContext());
         }
@@ -65,9 +71,9 @@ public class SkylinkConnectionManager {
         }
 
         // Initialize the skylink connection using SkylinkConnectionManager
-        mSkylinkConnection = initializeSkylinkConnection(typeCall);
+        mSkylinkConnection = initializeSkylinkConnection();
 
-        mSkylinkCommonService.setListeners(mSkylinkConnection);
+        mSkylinkCommonService.setSkylinkListeners();
 
         String mRoomName = Utils.getRoomNameByType(typeCall);
         String mUserName = Utils.getUserNameByType(typeCall);

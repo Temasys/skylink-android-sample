@@ -6,7 +6,6 @@ import android.util.Log;
 import java.io.File;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
@@ -63,12 +62,12 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     }
 
     @Override
-    public void setListeners(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection != null) {
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-            skylinkConnection.setOsListener(this);
-            skylinkConnection.setFileTransferListener(this);
+    public void setSkylinkListeners() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setLifeCycleListener(this);
+            mSkylinkConnection.setRemotePeerListener(this);
+            mSkylinkConnection.setOsListener(this);
+            mSkylinkConnection.setFileTransferListener(this);
         }
     }
 

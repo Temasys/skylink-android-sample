@@ -6,7 +6,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
@@ -181,12 +180,12 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
     }
 
     @Override
-    public void setListeners(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection != null) {
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-            skylinkConnection.setMediaListener(this);
-            skylinkConnection.setOsListener(this);
+    public void setSkylinkListeners() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setLifeCycleListener(this);
+            mSkylinkConnection.setRemotePeerListener(this);
+            mSkylinkConnection.setMediaListener(this);
+            mSkylinkConnection.setOsListener(this);
         }
     }
 

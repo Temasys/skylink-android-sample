@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
@@ -44,11 +43,11 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     }
 
     @Override
-    public void setListeners(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection != null) {
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-            skylinkConnection.setMessagesListener(this);
+    public void setSkylinkListeners() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setLifeCycleListener(this);
+            mSkylinkConnection.setRemotePeerListener(this);
+            mSkylinkConnection.setMessagesListener(this);
         }
     }
 

@@ -9,11 +9,10 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.service.VideoService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -77,10 +76,15 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     private void initialize() {
         this.mVideoCallService.setPresenter(this);
+        initVideoResolutions();
+    }
 
-        mVideoInput = new VideoResolution();
-        mVideoSent = new VideoResolution();
-        mVideoReceive = new VideoResolution();
+    private void initVideoResolutions() {
+        if (mVideoInput == null || mVideoSent == null || mVideoReceive == null) {
+            mVideoInput = new VideoResolution();
+            mVideoSent = new VideoResolution();
+            mVideoReceive = new VideoResolution();
+        }
     }
 
     public void setView(VideoCallContract.View view) {
@@ -430,6 +434,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      */
     private void processInputVideoResolutions(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
 
+        initVideoResolutions();
         mVideoInput.setWidth(width);
         mVideoInput.setHeight(height);
         mVideoInput.setFps(fps);

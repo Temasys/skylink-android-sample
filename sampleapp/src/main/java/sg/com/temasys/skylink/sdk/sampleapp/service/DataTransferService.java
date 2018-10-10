@@ -3,7 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
@@ -41,11 +40,11 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
     }
 
     @Override
-    public void setListeners(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection != null) {
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-            skylinkConnection.setDataTransferListener(this);
+    public void setSkylinkListeners() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setLifeCycleListener(this);
+            mSkylinkConnection.setRemotePeerListener(this);
+            mSkylinkConnection.setDataTransferListener(this);
         }
     }
 

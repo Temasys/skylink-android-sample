@@ -52,6 +52,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //Skylink connection manager object
     private SkylinkConnectionManager mSkylinkConnectionManager;
 
+    protected static SkylinkConnection getmSkylinkConnection() {
+        return mSkylinkConnection;
+    }
+
+    protected static void setmSkylinkConnection(SkylinkConnection mSkylinkConnection) {
+        SkylinkCommonService.mSkylinkConnection = mSkylinkConnection;
+    }
+
     //these variables need to be static for configuration change
     protected static SkylinkConnection mSkylinkConnection;
 
@@ -63,10 +71,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     public SkylinkCommonService(Context context) {
         this.mContext = context;
-        this.mSkylinkConnectionManager = new SkylinkConnectionManager(context);
+        this.mSkylinkConnectionManager = new SkylinkConnectionManager(this, context);
     }
 
-    public abstract void setListeners(SkylinkConnection skylinkConnection);
+    public abstract void setSkylinkListeners();
 
     public abstract SkylinkConfig getSkylinkConfig();
 
@@ -76,7 +84,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (isSuccessful) {
             String localPeerId = mSkylinkConnection.getPeerId();
 
-            log += "Connected to room " + getRoomRoomId(mRoomName) + " as " + mUserName + " ("+localPeerId+")";
+            log += "Connected to room " + getRoomRoomId(mRoomName) + " as " + mUserName + " (" + localPeerId + ")";
             toastLog(TAG, mContext, log);
 
             //init peers list and add self/local peer to list
@@ -318,7 +326,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         int numRemotePeers = mPeersList.size() - 1;
         if (numRemotePeers >= 0) {
-            String log = "Your Peer " + getPeerIdNick(remotePeerId, userInfo) + " ( "+remotePeerId+" ) left: " +
+            String log = "Your Peer " + getPeerIdNick(remotePeerId, userInfo) + " ( " + remotePeerId + " ) left: " +
                     message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
             toastLog(TAG, mContext, log);
         }
@@ -442,8 +450,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     public void connectToRoom(Constants.CONFIG_TYPE typeCall) {
-        mSkylinkConnectionManager.setService(this);
-        mSkylinkConnection = mSkylinkConnectionManager.connectToRoom(typeCall);
+        mSkylinkConnectionManager.connectToRoom(typeCall);
     }
 
     public void disconnectFromRoom() {
@@ -514,7 +521,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         String peerUserName = getUserDataString(peerIdShow);
 
-        return peerUserName+" ("+peerId+")";
+        return peerUserName + " (" + peerId + ")";
     }
 
     private String getUserDataString(String peerId) {
@@ -564,7 +571,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             roomId = mSkylinkConnection.getRoomId();
         }
 
-        return defaultName + "("+roomId+")";
+        return defaultName + "(" + roomId + ")";
     }
 
     public String getUserName(String peerId, String defaultName) {
@@ -604,7 +611,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             roomId = mSkylinkConnection.getRoomId();
         }
 
-        return roomName + "("+roomId+")";
+        return roomName + "(" + roomId + ")";
     }
 
     public String getPeerId() {

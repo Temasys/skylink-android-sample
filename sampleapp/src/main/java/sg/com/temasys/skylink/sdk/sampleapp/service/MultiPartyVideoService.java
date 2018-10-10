@@ -7,7 +7,6 @@ import org.webrtc.SurfaceViewRenderer;
 import java.util.Arrays;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
@@ -221,14 +220,14 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     @Override
-    public void setListeners(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection != null) {
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-            skylinkConnection.setMediaListener(this);
-            skylinkConnection.setOsListener(this);
-            skylinkConnection.setRecordingListener(this);
-            skylinkConnection.setStatsListener(this);
+    public void setSkylinkListeners() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setLifeCycleListener(this);
+            mSkylinkConnection.setRemotePeerListener(this);
+            mSkylinkConnection.setMediaListener(this);
+            mSkylinkConnection.setOsListener(this);
+            mSkylinkConnection.setRecordingListener(this);
+            mSkylinkConnection.setStatsListener(this);
         }
     }
 

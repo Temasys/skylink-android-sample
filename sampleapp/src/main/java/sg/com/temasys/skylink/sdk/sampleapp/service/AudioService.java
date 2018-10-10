@@ -3,7 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
@@ -49,12 +48,12 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
     }
 
     @Override
-    public void setListeners(SkylinkConnection skylinkConnection) {
-        if (skylinkConnection != null) {
-            skylinkConnection.setLifeCycleListener(this);
-            skylinkConnection.setRemotePeerListener(this);
-            skylinkConnection.setMediaListener(this);
-            skylinkConnection.setOsListener(this);
+    public void setSkylinkListeners() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setLifeCycleListener(this);
+            mSkylinkConnection.setRemotePeerListener(this);
+            mSkylinkConnection.setMediaListener(this);
+            mSkylinkConnection.setOsListener(this);
         }
     }
 
