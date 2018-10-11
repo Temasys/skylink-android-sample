@@ -25,7 +25,7 @@ public interface MultiPartyVideoCallContract {
         void onPresenterRequestDisplayVideoLinkInfo(String recordingId, String msg);
     }
 
-    interface Presenter{
+    interface Presenter {
 
         void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 

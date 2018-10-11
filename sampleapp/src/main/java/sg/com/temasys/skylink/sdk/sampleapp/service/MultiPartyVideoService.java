@@ -8,9 +8,9 @@ import java.util.Arrays;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
+import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
-import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
@@ -22,7 +22,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class MultiPartyVideoService extends SkylinkCommonService implements MultiPartyVideoCallContract.Service{
+public class MultiPartyVideoService extends SkylinkCommonService implements MultiPartyVideoCallContract.Service {
 
     private final String TAG = MultiPartyVideoService.class.getName();
 
@@ -70,7 +70,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
     }
 
-     /* Get list of remote peer id in room using SkylinkConnection API.
+    /* Get list of remote peer id in room using SkylinkConnection API.
      *
      * @param index 0 for self Peer, 1 onwards for remote Peer(s).
      * @return list of peerId or null if not available.
@@ -87,13 +87,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
     public void getInputVideoResolution() {
 
-        if(mSkylinkConnection != null){
+        if (mSkylinkConnection != null) {
             mSkylinkConnection.getInputVideoResolution();
         }
     }
 
     public boolean startRecording() {
-        if(mSkylinkConnection != null) {
+        if (mSkylinkConnection != null) {
             boolean success = mSkylinkConnection.startRecording();
             String log = "[SRS][SA] startRecording=" + success +
                     ", isRecording=" + mSkylinkConnection.isRecording() + ".";
@@ -105,34 +105,34 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     public boolean stopRecording() {
-        if(mSkylinkConnection != null) {
+        if (mSkylinkConnection != null) {
             boolean success = mSkylinkConnection.stopRecording();
             String log = "[SRS][SA] stopRecording=" + success +
                     ", isRecording=" + mSkylinkConnection.isRecording() + ".";
             toastLog(TAG, mContext, log);
             return success;
-            }
+        }
 
         return false;
     }
 
     public void getSentVideoResolution(int peerIndex) {
 
-        if(mSkylinkConnection != null){
+        if (mSkylinkConnection != null) {
             mSkylinkConnection.getSentVideoResolution(mPeersList.get(peerIndex).getPeerId());
         }
     }
 
     public void getReceivedVideoResolution(int peerIndex) {
 
-        if(mSkylinkConnection != null){
+        if (mSkylinkConnection != null) {
             mSkylinkConnection.getReceivedVideoResolution(mPeersList.get(peerIndex).getPeerId());
         }
     }
 
     public void getWebrtcStats(String peerId, int mediaDirection, int mediaType) {
 
-        if(mSkylinkConnection != null){
+        if (mSkylinkConnection != null) {
             mSkylinkConnection.getWebrtcStats(peerId, mediaDirection, mediaType);
         }
     }
@@ -141,17 +141,17 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
         String peerId = mPeersList.get(peerIndex).getPeerId();
 
-        if(peerId == null)
+        if (peerId == null)
             return;
 
-        if(mSkylinkConnection != null){
+        if (mSkylinkConnection != null) {
             mSkylinkConnection.getTransferSpeeds(peerId, mediaDirection, mediaType);
         }
     }
 
     public void refreshConnection(int peerIndex, boolean iceRestart) {
 
-        if(mSkylinkConnection == null)
+        if (mSkylinkConnection == null)
             return;
 
         String peerStr = "All peers ";
@@ -159,7 +159,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         //list of peers that are failed for refreshing
         String[] failedPeers = null;
 
-        if(peerIndex == -1){
+        if (peerIndex == -1) {
             failedPeers = mSkylinkConnection.refreshConnection(null, iceRestart);
         } else {
             SkylinkPeer peer = mPeersList.get(peerIndex);
@@ -189,7 +189,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
     public int getTotalInRoom() {
 
-        if(mPeersList != null)
+        if (mPeersList != null)
             return mPeersList.size();
 
         return 0;
@@ -200,7 +200,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     public SurfaceViewRenderer getVideoViewByIndex(int peerIndex) {
-        if(mSkylinkConnection != null && peerIndex < mPeersList.size()){
+        if (mSkylinkConnection != null && peerIndex < mPeersList.size()) {
             return mSkylinkConnection.getVideoView(mPeersList.get(peerIndex).getPeerId());
         }
 
@@ -208,10 +208,10 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     public int getPeerIndexByPeerId(String peerId) {
-        for(int i=0; i<mPeersList.size(); i++){
+        for (int i = 0; i < mPeersList.size(); i++) {
             SkylinkPeer peer = mPeersList.get(i);
 
-            if(peer.getPeerId().equals(peerId)){
+            if (peer.getPeerId().equals(peerId)) {
                 return i;
             }
         }
@@ -232,7 +232,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     @Override
-    public SkylinkConfig getSkylinkConfig(){
+    public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         // MultiPartyVideoCall config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO

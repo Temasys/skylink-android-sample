@@ -1,11 +1,11 @@
 package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
-import android.support.v7.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
@@ -327,7 +327,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
             popupMenu.getMenu().add(0, R.id.restart_ice, 0, R.string.restart_ice);
             popupMenu.getMenu().add(0, R.id.restart_all_ice, 0, R.string.restart_all_ice);
 
-            if(peerIndex < mPresenter.onViewRequestGetTotalInRoom())
+            if (peerIndex < mPresenter.onViewRequestGetTotalInRoom())
                 popupMenu.show();
         };
     }
@@ -414,7 +414,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private void shiftUpRemotePeers(int removedIndex) {
 
-        if(removedIndex < 0 || removedIndex >= remoteViewLayouts.length)
+        if (removedIndex < 0 || removedIndex >= remoteViewLayouts.length)
             return;
 
         //shift all video to new positions

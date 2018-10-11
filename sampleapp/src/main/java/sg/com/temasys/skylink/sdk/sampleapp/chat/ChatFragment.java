@@ -1,8 +1,8 @@
 package sg.com.temasys.skylink.sdk.sampleapp.chat;
 
-import android.support.v7.app.ActionBar;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,10 +16,10 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 
 /**
  * A simple {@link MultiPartyFragment} subclass.
@@ -110,7 +110,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     }
 
     @Override
-    public void onPresenterRequestRefreshChatCollection(){
+    public void onPresenterRequestRefreshChatCollection() {
 
         //refresh adapter and listview selection
         if (adapter != null) {
@@ -122,7 +122,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     }
 
     @Override
-    public void onPresenterRequestClearInput(){
+    public void onPresenterRequestClearInput() {
         editChatMessage.setText("");
     }
 
@@ -150,7 +150,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
-    private void getControlWidgets(View rootView){
+    private void getControlWidgets(View rootView) {
         listViewChats = rootView.findViewById(R.id.lv_messages);
 
         // [MultiParty]
@@ -168,7 +168,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         editChatMessage = rootView.findViewById(R.id.chatMessage);
     }
 
-    private void setActionBar(){
+    private void setActionBar() {
         ActionBar actionBar = ((ChatActivity) getActivity()).getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setHomeButtonEnabled(true);
@@ -177,7 +177,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         setHasOptionsMenu(true);
     }
 
-    private void initControls(){
+    private void initControls() {
 
         //Defining the ArrayAdapter to set items to ListView
         adapter = new ArrayAdapter<String>(context, R.layout.list_item, mPresenter.onViewRequestGetChatCollection());
@@ -191,8 +191,8 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
      * try to connect to room if not connected
      * try to update UI if connected to room
      */
-    private void requestViewLayout(){
-        if(mPresenter != null){
+    private void requestViewLayout() {
+        if (mPresenter != null) {
             mPresenter.onViewRequestLayout();
         }
     }
@@ -200,16 +200,16 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     /**
      * process sending message to server or directly
      */
-    private void processSendMessage(boolean isSentToServer){
+    private void processSendMessage(boolean isSentToServer) {
 
         // Pass null for remotePeerId to send message to all users in the room
         String remotePeerId = getPeerIdSelectedWithWarning();
         String message = editChatMessage.getText().toString();
 
         // Sends message using the signalling server or P2P directly
-        if(isSentToServer) {
+        if (isSentToServer) {
             mPresenter.onViewRequestSendServerMessage(remotePeerId, message);
-        } else{
+        } else {
             mPresenter.onViewRequestSendP2PMessage(remotePeerId, message);
         }
     }

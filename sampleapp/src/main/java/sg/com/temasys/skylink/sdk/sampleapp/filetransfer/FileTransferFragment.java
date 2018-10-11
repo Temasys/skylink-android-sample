@@ -14,19 +14,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.io.File;
 import java.util.List;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-
+import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
-import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * A simple {@link MultiPartyFragment} subclass.
@@ -183,19 +181,19 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
     @Override
     public void onPresenterRequestDisplayFilePreview(Uri imgUri) {
-        if(ivFilePreview != null)
+        if (ivFilePreview != null)
             ivFilePreview.setImageURI(imgUri);
     }
 
     @Override
-    public void onPresenterRequestDisplayFileReveicedInfo(String info){
-        if(tvFileTransferDetails != null)
+    public void onPresenterRequestDisplayFileReveicedInfo(String info) {
+        if (tvFileTransferDetails != null)
             tvFileTransferDetails.setText(info);
     }
 
     @Override
     public void onPresenterRequestUpdateUi(String roomDetails) {
-        if(tvRoomDetails != null)
+        if (tvRoomDetails != null)
             tvRoomDetails.setText(roomDetails);
     }
 
@@ -255,15 +253,16 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
      */
     private void prepFile(String filePath) {
         //show preview of file to transfer
-        if(ivFilePreview != null)
+        if (ivFilePreview != null)
             ivFilePreview.setImageURI(Uri.parse(filePath));
 
-        if(etSenderFilePath != null)
+        if (etSenderFilePath != null)
             etSenderFilePath.setText(filePath);
     }
 
 
-    /** Manual selection of file to send is now enabled.
+    /**
+     * Manual selection of file to send is now enabled.
      * After selecting Peer(s) to send to, click on file path (etSenderFilePath)
      * and enter desired file path.
      */
@@ -315,7 +314,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     // Set file to send based on selected Peer.
-    private void processSelectPeer(int checkedId){
+    private void processSelectPeer(int checkedId) {
 
         if (checkedId == R.id.radio_btn_peer_all) {
             // Prepare group file for transfer.
@@ -327,7 +326,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     // Send file to specific Peer.
-    private void processSendFilePrivate(){
+    private void processSendFilePrivate() {
         // [MultiParty]
         String remotePeerId = getPeerIdSelectedWithWarning();
         // Do not allow button actions if there are no Peers in the room.
@@ -341,7 +340,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     // Send file to all Peers in room, i.e. via public (AKA group) message.
-    private void processSendFileGroup(){
+    private void processSendFileGroup() {
 
         // Prepare group file for transfer.
         prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());

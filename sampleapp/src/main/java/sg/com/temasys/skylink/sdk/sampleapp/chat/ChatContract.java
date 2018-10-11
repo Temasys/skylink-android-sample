@@ -30,7 +30,7 @@ public interface ChatContract {
         void onPresenterRequestClearInput();
     }
 
-    interface Presenter{
+    interface Presenter {
 
         /**
          * process data to display on view

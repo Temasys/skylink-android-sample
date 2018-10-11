@@ -12,10 +12,10 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -164,7 +164,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public Boolean onViewRequestGetWebRtcStatsByPeerId(int peerIndex) {
 
-        if(peerIndex >= onViewRequestGetTotalInRoom())
+        if (peerIndex >= onViewRequestGetTotalInRoom())
             return false;
 
         String peerId = mMultiVideoCallService.getPeerIdByIndex(peerIndex);

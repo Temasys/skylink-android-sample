@@ -2,7 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
 import java.io.Serializable;
 
-public class SkylinkPeer implements Serializable{
+public class SkylinkPeer implements Serializable {
 
     private String peerId;
     private String peerName;

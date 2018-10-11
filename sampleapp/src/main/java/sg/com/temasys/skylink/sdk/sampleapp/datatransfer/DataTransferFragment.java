@@ -13,9 +13,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
-import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
@@ -136,12 +136,12 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     }
 
     @Override
-    public String onPresenterRequestGetPeerIdSelected(){
+    public String onPresenterRequestGetPeerIdSelected() {
         return getPeerIdSelected();
     }
 
     @Override
-    public void onPresenterRequestSetPeerAllSelected(boolean isSelected){
+    public void onPresenterRequestSetPeerAllSelected(boolean isSelected) {
         peerAll.setChecked(isSelected);
     }
 
@@ -177,7 +177,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         // Show info about data sizes that can be transferred.
         getDataTranfered();
 
-        transferStatus.setText("\n"+ String.format(getString(R.string.data_transfer_status),
+        transferStatus.setText("\n" + String.format(getString(R.string.data_transfer_status),
                 String.valueOf(dataPrivate.length), String.valueOf(dataGroup.length)));
 
     }

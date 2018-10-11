@@ -329,7 +329,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
     }
 
-    public void processSelectKeyOption(int pos){
+    public void processSelectKeyOption(int pos) {
         try {
             JSONObject selectedItem;
             boolean isSMR = ConfigKeyFragment.smrSelect;

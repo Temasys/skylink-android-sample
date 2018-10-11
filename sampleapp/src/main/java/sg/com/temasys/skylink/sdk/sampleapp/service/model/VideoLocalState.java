@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class VideoLocalState implements Serializable{
+public class VideoLocalState implements Serializable {
     private boolean audioMute;
     private boolean videoMute;
     private boolean cameraToggle;

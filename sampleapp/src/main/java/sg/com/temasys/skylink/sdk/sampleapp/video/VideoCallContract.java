@@ -6,7 +6,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 
 /**
@@ -70,7 +69,7 @@ public interface VideoCallContract {
 
     }
 
-    interface Presenter{
+    interface Presenter {
 
         /**
          * process data to display on view

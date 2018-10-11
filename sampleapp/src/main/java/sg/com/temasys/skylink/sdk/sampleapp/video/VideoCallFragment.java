@@ -20,17 +20,16 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.webrtc.SurfaceViewRenderer;
+
+import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-
-import org.webrtc.SurfaceViewRenderer;
-
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**

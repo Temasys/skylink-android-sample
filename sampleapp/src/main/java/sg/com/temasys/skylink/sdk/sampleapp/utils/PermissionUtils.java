@@ -12,8 +12,8 @@ import android.widget.TextView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.PermissionService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_AUDIO_MIC;
 import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_READ;
@@ -105,12 +105,12 @@ public class PermissionUtils {
      * and provide the chance to set the required permissions again.
      *
      * @param permRequesterInfo As given in OsListener method.
-     * @param tag                Tag string for logging.
-     * @param context            Current context.
-     * @param fragment           Current fragment.
+     * @param tag               Tag string for logging.
+     * @param context           Current context.
+     * @param fragment          Current fragment.
      */
     public void onPermissionRequiredHandler(PermRequesterInfo permRequesterInfo,
-                                                   final String tag, final Context context, final Fragment fragment) {
+                                            final String tag, final Context context, final Fragment fragment) {
 
         // Create a new PermRequesterInfo to represent this request.
         PermRequester permRequester = new PermRequester(permRequesterInfo,
@@ -133,8 +133,8 @@ public class PermissionUtils {
     }
 
     /**
-     * @param info As given in OsListener method.
-     * @param context  Current context to show AlertDialog.
+     * @param info    As given in OsListener method.
+     * @param context Current context to show AlertDialog.
      */
     public static void onPermissionDeniedHandler(PermRequesterInfo info, Context context) {
         // Create alert to inform user about the permission denied and resultant feature disabled.

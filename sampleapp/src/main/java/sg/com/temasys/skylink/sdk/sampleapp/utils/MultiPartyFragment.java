@@ -63,12 +63,12 @@ public class MultiPartyFragment extends Fragment {
      */
     public void removePeerRadioBtn(String peerId) {
 
-        if(mPeers == null)
+        if (mPeers == null)
             return;
 
         // Remove Peer from peerList
-        for (SkylinkPeer sp: mPeers) {
-            if(sp.getPeerId().equals(peerId)){
+        for (SkylinkPeer sp : mPeers) {
+            if (sp.getPeerId().equals(peerId)) {
                 mPeers.remove(sp);
                 break;
             }
@@ -114,7 +114,7 @@ public class MultiPartyFragment extends Fragment {
                 // Clear text and tag
                 rb.setText("");
                 rb.setTag("");
-                logTag =  "RadioButton " + i + " is invisible as there are only " +
+                logTag = "RadioButton " + i + " is invisible as there are only " +
                         totalPeerNum + " remote Peer(s).";
                 Log.d(TAG, logTag);
 
@@ -127,7 +127,7 @@ public class MultiPartyFragment extends Fragment {
                 String peerId = remotePeer.getPeerId();
                 String nick = remotePeer.getPeerName();
 
-                rb.setText(nick+" ("+peerId+")");
+                rb.setText(nick + " (" + peerId + ")");
                 rb.setTag(peerId);
                 logTag = "RadioButton " + i + " is visible as there are " +
                         totalPeerNum + " remote Peer(s).";
@@ -156,7 +156,7 @@ public class MultiPartyFragment extends Fragment {
             return null;
         }
 
-        RadioButton rb = (RadioButton)(getActivity().findViewById(selectedRB));
+        RadioButton rb = (RadioButton) (getActivity().findViewById(selectedRB));
         String peerId = rb.getTag().toString();
         return peerId;
     }

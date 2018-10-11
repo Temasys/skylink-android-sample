@@ -233,7 +233,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         }
     }
 
-    private void changeLayout(int orientation){
+    private void changeLayout(int orientation) {
 
         LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) llTool.getLayoutParams();
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {

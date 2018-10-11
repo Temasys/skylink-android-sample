@@ -27,7 +27,7 @@ public interface SettingContract {
         void onCameraBackSelected();
     }
 
-    interface Presenter{
+    interface Presenter {
 
         void onProcessAudioSpeaker(boolean isAudioSpeaker);
 

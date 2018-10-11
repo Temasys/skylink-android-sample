@@ -12,7 +12,7 @@ public class PermissionService {
         //
         SkylinkConnection skylinkConnection = SkylinkCommonService.getCurrentSkylinkConnection();
 
-        if(skylinkConnection != null){
+        if (skylinkConnection != null) {
             return skylinkConnection.processPermissionsResult(requestCode, permissions, grantResults);
         }
 

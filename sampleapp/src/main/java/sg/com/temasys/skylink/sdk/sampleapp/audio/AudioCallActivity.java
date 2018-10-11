@@ -37,7 +37,7 @@ public class AudioCallActivity extends AppCompatActivity {
         }
 
         //link view and presenter
-        if(mAudioCallFragment != null)
+        if (mAudioCallFragment != null)
             mAudioCallPresenter.setView(mAudioCallFragment);
     }
 

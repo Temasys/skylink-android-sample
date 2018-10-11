@@ -1,7 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.chat;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
@@ -36,7 +36,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        if(mChatFragment != null)
+        if (mChatFragment != null)
             mChatPresenter.setView(mChatFragment);
     }
 

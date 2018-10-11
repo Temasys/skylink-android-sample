@@ -18,7 +18,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class FileTransferService extends SkylinkCommonService implements FileTransferContract.Service{
+public class FileTransferService extends SkylinkCommonService implements FileTransferContract.Service {
 
     private final String TAG = FileTransferService.class.getName();
 
@@ -72,7 +72,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     }
 
     @Override
-    public SkylinkConfig getSkylinkConfig(){
+    public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         // FileTransfer config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO

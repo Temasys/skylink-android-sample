@@ -1,7 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
@@ -32,7 +32,7 @@ public class SettingActivity extends AppCompatActivity {
         }
 
         //link view and presenter
-        if(mSettingFragment != null)
+        if (mSettingFragment != null)
             mSettingPresenter.setView(mSettingFragment);
     }
 

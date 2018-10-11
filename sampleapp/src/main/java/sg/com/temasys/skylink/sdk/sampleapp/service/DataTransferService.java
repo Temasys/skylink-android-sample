@@ -49,7 +49,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
     }
 
     @Override
-    public SkylinkConfig getSkylinkConfig(){
+    public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
         // DataTransfer config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
