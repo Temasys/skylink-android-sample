@@ -5,34 +5,40 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_audio_room_details"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="@dimen/dp_10dp"
-        android:textSize="@dimen/sp_14sp"
-        android:textColor="@android:color/black"
-        android:text="You are not connected to any room"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textIsSelectable="true" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_audio_room_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="@dimen/dp_10dp"
+            android:text="You are not connected to any room"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/black"
+            android:textIsSelectable="true"
+            android:textSize="@dimen/sp_12" />
+    </ScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:orientation="vertical"
-        android:background="@color/cardview_shadow_start_color">
+        android:background="@color/cardview_shadow_start_color"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:gravity="center"
-            android:orientation="horizontal"
             android:layout_marginTop="@dimen/dp_110dp"
-            android:background="@color/cardview_light_background">
+            android:layout_weight="3"
+            android:background="@color/cardview_light_background"
+            android:gravity="center"
+            android:orientation="horizontal">
+
             <ImageView
                 android:id="@+id/img"
                 android:layout_width="@dimen/dp_120dp"
@@ -44,10 +50,10 @@
             android:id="@+id/ll_tool"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="7"
+            android:layout_marginBottom="@dimen/dp_50dp"
+            android:layout_weight="9"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/dp_50dp"
             android:visibility="visible">
 
             <ImageButton

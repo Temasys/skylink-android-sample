@@ -32,6 +32,8 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     }
 
     public void sendFile(String remotePeerId, File file) {
+        if(mSkylinkConnection == null)
+            return;
 
         // Send request to peer requesting permission for file transfer
         try {
@@ -53,6 +55,9 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     }
 
     public void sendFileTransferPermissionResponse(String remotePeerId, String downloadedFilePath, boolean isPermitted) {
+        if(mSkylinkConnection == null)
+            return;
+
         try {
             mSkylinkConnection.sendFileTransferPermissionResponse(remotePeerId, downloadedFilePath, isPermitted);
         } catch (SkylinkException e) {

@@ -244,7 +244,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewRequestLayout();
+            mPresenter.onViewRequestConnectedLayout();
         }
     }
 

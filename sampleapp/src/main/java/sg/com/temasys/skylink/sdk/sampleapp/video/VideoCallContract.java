@@ -57,7 +57,7 @@ public interface VideoCallContract {
 
         void onPresenterRequestUpdateResFpsInfo(int index, int fps);
 
-        void onPresenterRequestChangeSpeakerOuput(boolean isSpeakerOff);
+        void onPresenterRequestChangeAudioOuput(boolean isSpeakerOff);
 
         void onPresenterRequestChangeAudioUI(boolean isAudioMute);
 
@@ -74,7 +74,7 @@ public interface VideoCallContract {
         /**
          * process data to display on view
          */
-        void onViewRequestLayout();
+        void onViewRequestConnectedLayout();
 
         /**
          * process permission result

@@ -35,7 +35,7 @@ public interface ChatContract {
         /**
          * process data to display on view
          */
-        void onViewRequestLayout();
+        void onViewRequestConnectedLayout();
 
         /**
          * process send message through server to remote peer

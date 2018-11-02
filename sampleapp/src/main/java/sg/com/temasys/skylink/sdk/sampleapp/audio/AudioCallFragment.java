@@ -164,7 +164,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void onPresenterRequestChangeBtnAudioSpeaker(boolean isPeerJoined, boolean isSpeakerOn) {
+    public void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn) {
 
         //change the button background and icon
         Drawable backgroundSrcBtn = null;
@@ -215,7 +215,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewRequestLayout();
+            mPresenter.onViewRequestConnectedLayout();
         }
 
         //changing layout to fit with screen

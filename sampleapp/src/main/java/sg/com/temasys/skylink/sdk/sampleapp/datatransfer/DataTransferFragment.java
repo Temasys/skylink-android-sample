@@ -189,7 +189,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewRequestLayout();
+            mPresenter.onViewRequestConnectedLayout();
         }
     }
 

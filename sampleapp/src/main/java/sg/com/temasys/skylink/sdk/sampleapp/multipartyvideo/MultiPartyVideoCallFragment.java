@@ -339,7 +339,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewRequestLayout();
+            mPresenter.onViewRequestConnectedLayout();
         }
     }
 

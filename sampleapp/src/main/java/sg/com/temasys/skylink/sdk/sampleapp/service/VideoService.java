@@ -24,7 +24,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
 
     //this variable need to be static for configuration change
     private static VideoLocalState videoLocalState = new VideoLocalState();
-    private static boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
+    private static boolean currentAudioOuput = Utils.getDefaultVideoOuput();
 
     public VideoService(Context context) {
         super(context);
@@ -163,20 +163,20 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         }
     }
 
-    public void changeAudioOutput(boolean isAudioSpeaker) {
-        AudioRouter.changeAudioOutput(mContext, isAudioSpeaker);
+    public void changeAudioOutput(boolean isSpeakerOn) {
+        AudioRouter.changeAudioOutput(mContext, isSpeakerOn);
     }
 
     public void resumeAudioOutput() {
-        changeAudioOutput(currentVideoSpeaker);
+        changeAudioOutput(currentAudioOuput);
     }
 
-    public boolean getCurrentVideoSpeaker() {
-        return currentVideoSpeaker;
+    public boolean getCurrentVideoOutput() {
+        return currentAudioOuput;
     }
 
-    public void setCurrentVideoSpeaker(boolean isSpeakerOn) {
-        currentVideoSpeaker = isSpeakerOn;
+    public void setCurrentVideoOutput(boolean isSpeakerOn) {
+        currentAudioOuput = isSpeakerOn;
     }
 
     @Override

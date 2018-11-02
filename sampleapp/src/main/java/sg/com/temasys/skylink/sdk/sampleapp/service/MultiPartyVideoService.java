@@ -76,13 +76,11 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return list of peerId or null if not available.
      */
     public String[] getPeerIdList() {
-
-        if (mSkylinkConnection == null) {
-            return null;
+        if (mSkylinkConnection != null) {
+            return mSkylinkConnection.getPeerIdList();
         }
-        String[] peerIdList = mSkylinkConnection.getPeerIdList();
 
-        return peerIdList;
+        return null;
     }
 
     public void getInputVideoResolution() {

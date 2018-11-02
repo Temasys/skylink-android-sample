@@ -28,6 +28,9 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
     }
 
     public void sendData(String remotePeerId, byte[] data) {
+        if (mSkylinkConnection == null)
+            return;
+
         try {
             mSkylinkConnection.sendData(remotePeerId, data);
         } catch (SkylinkException e) {

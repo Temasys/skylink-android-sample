@@ -61,7 +61,7 @@ public interface MultiPartyVideoCallContract {
 
         SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int i);
 
-        void onViewRequestLayout();
+        void onViewRequestConnectedLayout();
     }
 
     interface Service extends BaseService<Presenter> {

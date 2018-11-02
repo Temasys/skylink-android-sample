@@ -23,7 +23,7 @@ public interface AudioCallContract {
          */
         void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn);
 
-        void onPresenterRequestChangeBtnAudioSpeaker(boolean isPeerJoined, boolean isSpeakerOn);
+        void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn);
     }
 
 
@@ -32,7 +32,7 @@ public interface AudioCallContract {
         /**
          * process data to display on view
          */
-        void onViewRequestLayout();
+        void onViewRequestConnectedLayout();
 
         /**
          * process permission result

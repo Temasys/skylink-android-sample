@@ -40,8 +40,7 @@
     <ScrollView
         android:id="@+id/scroll_peers"
         android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="5">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/lin_layout_peers"
@@ -63,35 +62,35 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/label_all_peers"
-                        android:visibility="invisible"/>
+                        android:visibility="gone"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible"/>
+                        android:visibility="gone"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible"/>
+                        android:visibility="gone"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible"/>
+                        android:visibility="gone"/>
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer4"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="invisible"/>
+                        android:visibility="gone"/>
 
                 </RadioGroup>
             </HorizontalScrollView>
@@ -102,7 +101,8 @@
         android:id="@+id/lin_layout_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/dp_5dp">
 
         <Button
             android:id="@+id/btn_send_server_message"

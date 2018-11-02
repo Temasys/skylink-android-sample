@@ -305,7 +305,7 @@ public class AudioRouter {
 
         if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO)) {
 
-            boolean isAudioSpeaker = Utils.getDefaultAudioSpeaker();
+            boolean isAudioSpeaker = Utils.getDefaultAudioOutput();
 
             //default audio is headset
             if (!isAudioSpeaker) {
@@ -315,7 +315,7 @@ public class AudioRouter {
             }
         } else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO) || mCallType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {
 
-            boolean isVideoSpeaker = Utils.getDefaultVideoSpeaker();
+            boolean isVideoSpeaker = Utils.getDefaultVideoOuput();
 
             //default audio is headset
             if (!isVideoSpeaker) {

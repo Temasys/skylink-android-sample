@@ -193,7 +193,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewRequestLayout();
+            mPresenter.onViewRequestConnectedLayout();
         }
     }
 

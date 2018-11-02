@@ -436,7 +436,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     @Override
-    public void onPresenterRequestChangeSpeakerOuput(boolean isSpeakerOn) {
+    public void onPresenterRequestChangeAudioOuput(boolean isSpeakerOn) {
         if (isSpeakerOn) {
             btnSpeaker.setImageResource(R.drawable.ic_audio_speaker);
             String log = getString(R.string.enable_speaker);
@@ -660,7 +660,7 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
-            mPresenter.onViewRequestLayout();
+            mPresenter.onViewRequestConnectedLayout();
         }
     }
 

@@ -42,7 +42,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * Try to update UI if connected to room after changing configuration
      */
     @Override
-    public void onViewRequestLayout() {
+    public void onViewRequestConnectedLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -97,7 +97,8 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
-        processUpdateUI();
+        if (isSuccessful)
+            processUpdateUI();
     }
 
     @Override

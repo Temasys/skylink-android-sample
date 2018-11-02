@@ -59,7 +59,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
      * Update info when rotating screen
      */
     @Override
-    public void onViewRequestLayout() {
+    public void onViewRequestConnectedLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -74,7 +74,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             mAudioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
             //set default for audio output
-            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
+            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioOutput());
 
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
@@ -93,7 +93,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
         //get default audio output settings and change UI
         isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
-        mAudioCallView.onPresenterRequestChangeBtnAudioSpeaker(mAudioCallService.isPeerJoin(), isSpeakerOn);
+        mAudioCallView.onPresenterRequestChangeAudioOutput(mAudioCallService.isPeerJoin(), isSpeakerOn);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         mAudioCallService.disconnectFromRoom();
 
         //reset default audio speaker
-        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
+        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioOutput());
 
         //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
     }
@@ -131,14 +131,15 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
+        if (isSuccessful) {
+            processUpdateUI(false);
 
-        processUpdateUI(false);
-
-        //start audio routing
-        SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.setPresenter(this);
-            AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.AUDIO);
+            //start audio routing
+            SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
+            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+                AudioRouter.setPresenter(this);
+                AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.AUDIO);
+            }
         }
     }
 
@@ -162,7 +163,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     @Override
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
         this.isSpeakerOn = isSpeakerOn;
-        mAudioCallView.onPresenterRequestChangeBtnAudioSpeaker(mAudioCallService.isPeerJoin(), isSpeakerOn);
+        mAudioCallView.onPresenterRequestChangeAudioOutput(mAudioCallService.isPeerJoin(), isSpeakerOn);
         mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
     }
 

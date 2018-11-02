@@ -93,7 +93,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     @Override
-    public void onViewRequestLayout() {
+    public void onViewRequestConnectedLayout() {
         Log.d(TAG, "onViewLayoutRequested");
 
         //start to connect to room when entering room
@@ -107,7 +107,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             processConnectToRoom();
 
             //default setting for video output
-            mVideoCallService.setCurrentVideoSpeaker(Utils.getDefaultVideoSpeaker());
+            mVideoCallService.setCurrentVideoOutput(Utils.getDefaultVideoOuput());
 
             //after connected to skylink SDK, UI will be updated latter on AudioService.onConnect
 
@@ -125,8 +125,8 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         }
 
         //get default audio output settings
-        isSpeakerOn = mVideoCallService.getCurrentVideoSpeaker();
-        mVideoCallView.onPresenterRequestChangeSpeakerOuput(isSpeakerOn);
+        isSpeakerOn = mVideoCallService.getCurrentVideoOutput();
+        mVideoCallView.onPresenterRequestChangeAudioOuput(isSpeakerOn);
 
     }
 
@@ -141,7 +141,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         mVideoCallService.disconnectFromRoom();
 
         //reset default audio speaker
-        mVideoCallService.setCurrentVideoSpeaker(Utils.getDefaultVideoSpeaker());
+        mVideoCallService.setCurrentVideoOutput(Utils.getDefaultVideoOuput());
 
         //after disconnected from skylink SDK, UI will be updated latter on AudioService.onDisconnect
     }
@@ -306,7 +306,6 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
-
             mVideoCallView.onPresenterRequestConnectedUIChange();
 
             //start audio routing
@@ -413,8 +412,8 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     @Override
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
         this.isSpeakerOn = isSpeakerOn;
-        mVideoCallView.onPresenterRequestChangeSpeakerOuput(isSpeakerOn);
-        mVideoCallService.setCurrentVideoSpeaker(isSpeakerOn);
+        mVideoCallView.onPresenterRequestChangeAudioOuput(isSpeakerOn);
+        mVideoCallService.setCurrentVideoOutput(isSpeakerOn);
     }
 
     //----------------------------------------------------------------------------------------------

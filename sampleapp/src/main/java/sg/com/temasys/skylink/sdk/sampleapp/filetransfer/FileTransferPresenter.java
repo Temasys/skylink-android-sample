@@ -60,7 +60,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * Try to update info when rotating screen
      */
     @Override
-    public void onViewRequestLayout() {
+    public void onViewRequestConnectedLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -152,7 +152,8 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
-        processUpdateUI();
+        if (isSuccessful)
+            processUpdateUI();
     }
 
     @Override

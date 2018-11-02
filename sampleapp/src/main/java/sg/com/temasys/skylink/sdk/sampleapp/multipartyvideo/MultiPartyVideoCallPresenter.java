@@ -54,7 +54,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onViewRequestLayout() {
+    public void onViewRequestConnectedLayout() {
         Log.d(TAG, "onViewLayoutRequested");
 
         //start to connect to room when entering room
@@ -213,12 +213,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
-
-        //start audio routing
-        SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.setPresenter(this);
-            AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
+        if (isSuccessful) {
+            //start audio routing
+            SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
+            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+                AudioRouter.setPresenter(this);
+                AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
+            }
         }
     }
 

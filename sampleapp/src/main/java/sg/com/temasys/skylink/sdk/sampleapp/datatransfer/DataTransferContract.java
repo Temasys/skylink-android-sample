@@ -42,7 +42,7 @@ public interface DataTransferContract {
         /**
          * process data to display on view
          */
-        void onViewRequestLayout();
+        void onViewRequestConnectedLayout();
 
         /**
          * process send data to remote Peer

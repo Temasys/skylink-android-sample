@@ -53,7 +53,7 @@ public interface FileTransferContract {
         /**
          * process data to display on view
          */
-        void onViewRequestLayout();
+        void onViewRequestConnectedLayout();
 
         /**
          * process permission result

@@ -29,11 +29,11 @@ public interface SettingContract {
 
     interface Presenter {
 
-        void onProcessAudioSpeaker(boolean isAudioSpeaker);
+        void onProcessAudioOutput(boolean isAudioSpeaker);
 
-        void onProcessVideoSpeaker(boolean isVideoSpeaker);
+        void onProcessVideoOutput(boolean isVideoSpeaker);
 
-        void onProcessCameraBack(boolean isCameraBack);
+        void onProcessCameraOutput(boolean isCameraBack);
 
         void onProcessVideoResolution(Config.VideoResolution videoResolution);
 

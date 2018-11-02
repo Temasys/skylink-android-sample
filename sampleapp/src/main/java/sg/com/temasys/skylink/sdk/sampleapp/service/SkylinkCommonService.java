@@ -52,14 +52,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //Skylink connection manager object
     private SkylinkConnectionManager mSkylinkConnectionManager;
 
-    protected static SkylinkConnection getmSkylinkConnection() {
-        return mSkylinkConnection;
-    }
-
-    protected static void setmSkylinkConnection(SkylinkConnection mSkylinkConnection) {
-        SkylinkCommonService.mSkylinkConnection = mSkylinkConnection;
-    }
-
     //these variables need to be static for configuration change
     protected static SkylinkConnection mSkylinkConnection;
 
@@ -72,6 +64,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public SkylinkCommonService(Context context) {
         this.mContext = context;
         this.mSkylinkConnectionManager = new SkylinkConnectionManager(this, context);
+    }
+
+    protected static void setmSkylinkConnection(SkylinkConnection mSkylinkConnection) {
+        SkylinkCommonService.mSkylinkConnection = mSkylinkConnection;
     }
 
     public abstract void setSkylinkListeners();
@@ -250,6 +246,13 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onRemotePeerJoin(String remotePeerId, Object userData, boolean hasDataChannel) {
         String logTag = "[SA][onRemotePeerJoin] ";
 
+        //not process if remote peer is MCU
+        //just fix for running app
+        //need to move to SDK
+//        if(remotePeerId.equals("MCU")){
+//            return;
+//        }
+
         // When remote peer joins room, keep track of user and update text-view to display details
         String remotePeerName = null;
         if (userData instanceof String) {
@@ -311,6 +314,13 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onRemotePeerLeave(String remotePeerId, String message, UserInfo userInfo) {
         Log.d(TAG, "[onRemotePeerLeave]");
+
+        //not process if remote peer is MCU
+        //just fix for running app
+        //need to move to SDK
+//        if(remotePeerId.equals("MCU")){
+//            return;
+//        }
 
         //remove remote peer and keep the index of remote peer for multi party video call function
         int removeIndex = -1;

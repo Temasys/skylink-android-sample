@@ -206,27 +206,27 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     private void processAudioHeadset() {
-        mPresenter.onProcessAudioSpeaker(false);
+        mPresenter.onProcessAudioOutput(false);
     }
 
     private void processAudioSpeaker() {
-        mPresenter.onProcessAudioSpeaker(true);
+        mPresenter.onProcessAudioOutput(true);
     }
 
     private void processVideoHeadset() {
-        mPresenter.onProcessVideoSpeaker(false);
+        mPresenter.onProcessVideoOutput(false);
     }
 
     private void processVideoSpeaker() {
-        mPresenter.onProcessVideoSpeaker(true);
+        mPresenter.onProcessVideoOutput(true);
     }
 
     private void processCameraFront() {
-        mPresenter.onProcessCameraBack(false);
+        mPresenter.onProcessCameraOutput(false);
     }
 
     private void processCameraBack() {
-        mPresenter.onProcessCameraBack(true);
+        mPresenter.onProcessCameraOutput(true);
     }
 
     private void processVideoResVGA() {

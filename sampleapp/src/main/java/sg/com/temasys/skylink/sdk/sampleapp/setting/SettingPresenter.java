@@ -35,7 +35,7 @@ public class SettingPresenter implements Presenter {
     @Override
     public void onViewLayoutRequested() {
 
-        boolean isAudioSpeaker = Utils.getDefaultAudioSpeaker();
+        boolean isAudioSpeaker = Utils.getDefaultAudioOutput();
         //default audio is headset
         if (!isAudioSpeaker) {
             mSettingView.onAudioHeadsetSelected();
@@ -43,7 +43,7 @@ public class SettingPresenter implements Presenter {
             mSettingView.onAudioSpeakerSelected();
         }
 
-        boolean isVideoSpeaker = Utils.getDefaultVideoSpeaker();
+        boolean isVideoSpeaker = Utils.getDefaultVideoOuput();
         //default video is headset
         if (!isVideoSpeaker) {
             mSettingView.onVideoHeadsetSelected();
@@ -76,21 +76,21 @@ public class SettingPresenter implements Presenter {
     }
 
     @Override
-    public void onProcessAudioSpeaker(boolean isAudioSpeaker) {
+    public void onProcessAudioOutput(boolean isAudioSpeaker) {
         //save default audio output to save sharePreference
         //value true is speaker, false is headset
         Config.setPrefBoolean(DEFAULT_AUDIO_OUTPUT, isAudioSpeaker, (SettingActivity) mContext);
     }
 
     @Override
-    public void onProcessVideoSpeaker(boolean isVideoSpeaker) {
+    public void onProcessVideoOutput(boolean isVideoSpeaker) {
         //save default video output to save sharePreference
         //value true is speaker, false is headset
         Config.setPrefBoolean(DEFAULT_VIDEO_OUTPUT, isVideoSpeaker, (SettingActivity) mContext);
     }
 
     @Override
-    public void onProcessCameraBack(boolean isCameraBack) {
+    public void onProcessCameraOutput(boolean isCameraBack) {
         //save default camera output to save sharePreference
         //value true is camera back, false is camera front
         Config.setPrefBoolean(DEFAULT_CAMERA_OUTPUT, isCameraBack, (SettingActivity) mContext);
