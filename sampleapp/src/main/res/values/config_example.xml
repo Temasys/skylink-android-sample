@@ -3,7 +3,7 @@
 <!-->
   Instructions for using the config_example.xml file.
   To use your own App Key and secret for this app:
-  MAKE A COPY of config_example.xml (do NOT edit config_example.xml for app usage)
+  MAKE A COPY of config_example.xml (recommended NOT to edit config_example.xml for app usage)
     and give it a name not used in this directory (res/value/), e.g. config.xml.
   Uncomment the xml elements in it.
   In the Sample App, keys with Skylink Media Relay (SMR) enabled and those without
@@ -13,25 +13,34 @@
   Note that an appropriate App key and its secret are required to connect to Skylink successfully.
   Populate the boolean value for is_app_key_smr with whether the app should start by selecting
     app_key_no_smr (false) or app_key_smr (true) as the App key to use.
-  Populate the values for app_key_no_smr and app_key_smr with the appropriate app keys.
-  Populate the values for app_key_secret_no_smr and app_key_secret_smr with the appropriate app secret.
-  Populate the values for app_key_desc_no_smr and app_key_desc_smr with the appropriate app description.
+  Populate the values for app_key_no_smr and/or app_key_smr with the appropriate app keys.
+  Populate the values for app_key_secret_no_smr and/or app_key_secret_smr with the appropriate app secret.
+  Populate the values for app_key_desc_no_smr and/or app_key_desc_smr with the appropriate app description.
+  References:
+  For more information regarding the SMR, please see:
+   - https://temasys.freshdesk.com/support/solutions/articles/12000047799-what-is-mcu-sfu-skylink-media-relay-
+   - https://temasys.freshdesk.com/support/solutions/articles/12000050877-why-do-i-get-an-error-404-app-id-is-invalid-
 <-->
 <resources>
 
-    <!--&lt;!&ndash; App Keys and secrets. &ndash;&gt;-->
+    <!-- App Keys and secrets. -->
 
-    <!--&lt;!&ndash;Uncomment in config.xml&ndash;&gt;-->
-    <!--<bool name="is_app_key_smr">false</bool>-->
+    <!-- Uncomment the following in config.xml -->
+    <!-- <bool name="is_app_key_smr">false</bool> -->
 
-    <!--&lt;!&ndash;Uncomment in config.xml&ndash;&gt;-->
-    <!--<string name="app_key_no_smr">"Enter app key with Skylink Media Relay disabled."</string>-->
-    <!--<string name="app_key_secret_no_smr">"Enter the corresponding app secret."</string>-->
-    <!--<string name="app_key_desc_no_smr">"Enter the corresponding key description."</string>-->
+    <!-- Uncomment the following in config.xml -->
+    <!-- <string name="app_key_no_smr">If desired, enter app key with SMR disabled.</string> -->
+    <!-- <string name="app_key_secret_no_smr">If desired, enter corresponding app secret.</string> -->
+    <!-- <string name="app_key_desc_no_smr">If desired, enter corresponding key description.</string> -->
 
-    <!--&lt;!&ndash;Uncomment in config.xml&ndash;&gt;-->
-    <!--<string name="app_key_smr">"Enter app key with Skylink Media Relay enabled."</string>-->
-    <!--<string name="app_key_secret_smr">"Enter the corresponding app secret."</string>-->
-    <!--<string name="app_key_desc_smr">"Enter the corresponding key description."</string>-->
+    <!-- Uncomment the following in config.xml -->
+    <!-- <string name="app_key_smr">If desired, enter app key with SMR enabled.</string> -->
+    <!-- <string name="app_key_secret_smr">If desired, enter corresponding app secret.</string> -->
+    <!-- <string name="app_key_desc_smr">If desired, enter corresponding key description.</string> -->
+
+    <!-- Example only, do NOT uncomment the following in config.xml -->
+    <!-- <string name="app_key_smr">12345678-abc3-def6-7h8i-asdfhjkl8888.</string> -->
+    <!-- <string name="app_key_secret_smr">88s3cr3tda68</string> -->
+    <!-- <string name="app_key_desc_smr">This is a dummy SMR key that serves only as an example.</string> -->
 
 </resources>
