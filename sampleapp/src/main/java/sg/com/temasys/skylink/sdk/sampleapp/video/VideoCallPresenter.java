@@ -66,17 +66,12 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     public VideoCallPresenter(Context context) {
         this.mContext = context;
+        initVideoResolutions();
 
         this.mVideoCallService = new VideoService(context);
+        this.mVideoCallService.setPresenter(this);
 
         this.mPermissionUtils = new PermissionUtils();
-
-        initialize();
-    }
-
-    private void initialize() {
-        this.mVideoCallService.setPresenter(this);
-        initVideoResolutions();
     }
 
     private void initVideoResolutions() {
@@ -433,7 +428,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      */
     private void processInputVideoResolutions(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
 
-        initVideoResolutions();
+        if (mVideoInput == null) {
+            return;
+        }
         mVideoInput.setWidth(width);
         mVideoInput.setHeight(height);
         mVideoInput.setFps(fps);
@@ -491,6 +488,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     private void processUpdateUiResStatsReceived(int width, int height, int fps) {
+        if (mVideoReceive == null) {
+            return;
+        }
         mVideoReceive.setWidth(width);
         mVideoReceive.setHeight(height);
         mVideoReceive.setFps(fps);
@@ -499,6 +499,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     private void processSetUiResTvStatsSent(int width, int height, int fps) {
+        if (mVideoSent == null) {
+            return;
+        }
         mVideoSent.setWidth(width);
         mVideoSent.setHeight(height);
         mVideoSent.setFps(fps);
