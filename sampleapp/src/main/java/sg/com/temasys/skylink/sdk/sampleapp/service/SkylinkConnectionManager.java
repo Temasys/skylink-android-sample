@@ -21,6 +21,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for managing connection with SkylinkSDK like connect, disconnect,...
  */
 
 public class SkylinkConnectionManager {
@@ -34,7 +35,7 @@ public class SkylinkConnectionManager {
     private SkylinkCommonService mSkylinkCommonService = null;
 
     /**
-     * Both {@link SkylinkCommonService} and {@link Context} are required for {@link SkylinkCommonService} functioning.
+     * Both {@link SkylinkCommonService} and {@link Context} are required for {@link SkylinkConnectionManager} functioning.
      *
      * @param skylinkCommonService
      * @param context
@@ -44,8 +45,12 @@ public class SkylinkConnectionManager {
         this.mContext = context;
     }
 
+    /**
+     * Initialize a SkylinkConnection object
+     */
     public SkylinkConnection initializeSkylinkConnection() {
 
+        //Get the user config for connection
         SkylinkConfig skylinkConfig = mSkylinkCommonService.getSkylinkConfig();
 
         if (skylinkConfig != null) {
@@ -61,8 +66,13 @@ public class SkylinkConnectionManager {
 
     }
 
+    /**
+     * Connects to a room using a SkylinkConnectionString that caller MUST ensure is URL safe.
+     *
+     * @param typeCall Specify which is current demo/call like audio/video/file/...
+     * @return SkylinkConnection
+     */
     public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall) {
-
         //check internet connection first
         if (!Utils.isInternetOn()) {
             String log = "Internet connection is off !";
@@ -73,8 +83,10 @@ public class SkylinkConnectionManager {
         // Initialize the skylink connection using SkylinkConnectionManager
         mSkylinkConnection = initializeSkylinkConnection();
 
+        // Set Skylink listeners necessary for current demo/call
         mSkylinkCommonService.setSkylinkListeners();
 
+        // Get room name and user name in setting
         String mRoomName = Utils.getRoomNameByType(typeCall);
         String mUserName = Utils.getUserNameByType(typeCall);
 
@@ -104,12 +116,22 @@ public class SkylinkConnectionManager {
         return mSkylinkConnection;
     }
 
+    /**
+     * Disconnects from the room we are currently in.
+     * Once disconnect is complete, {@link SkylinkCommonService#onDisconnect(int, String)}
+     * will be called.
+     */
     public void disconnectFromRoom() {
-
         if (mSkylinkConnection != null)
             mSkylinkConnection.disconnectFromRoom();
     }
 
+    /**
+     * Check the current {@link sg.com.temasys.skylink.sdk.rtc.SkylinkConnection.SkylinkState SkylinkState}
+     * of the current SkylinkConnection instance.
+     *
+     * @return true if connects to room, false if not or disconnects
+     */
     public boolean isConnectingOrConnected() {
         if (mSkylinkConnection == null) return false;
 

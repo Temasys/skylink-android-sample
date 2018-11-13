@@ -29,6 +29,7 @@ import static android.view.Gravity.CENTER;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for display UI
  */
 public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyVideoCallContract.View {
 
@@ -51,6 +52,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         this.mPresenter = presenter;
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Fragment life cycle methods
+    //----------------------------------------------------------------------------------------------
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -68,8 +73,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        Log.d(TAG, "[SA][MultiPartyVideo][onCreateView] ");
+        Log.d(TAG, "[SA][MultiPartyVideoCallFragment][onCreateView] ");
 
         View rootView = inflater.inflate(R.layout.fragment_video_multiparty, container, false);
 
@@ -77,6 +81,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
         setActionBar();
 
+        //request a connected to room view
         requestViewLayout();
 
         // Set OnClick actions for each Peer's UI.
@@ -86,7 +91,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                 // Show room and self info, plus give option to
                 // switch self view between different cameras (if any).
                 frameLayout.setOnClickListener(v -> {
-                    String name = mPresenter.onViewRequestGetRoomPeerIdNick();
+                    String name = mPresenter.onViewRequestGetRoomIdAndNickname();
 
                     TextView selfTV = new TextView(mContext);
                     selfTV.setText(name);
@@ -99,6 +104,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                     selfDialogBuilder.setPositiveButton("Input video resolution",
                             (dialog, which) -> mPresenter.onViewRequestGetInputVideoResolution());
 
+                    //allow to switch camera
                     selfDialogBuilder.setNegativeButton("Switch Camera",
                             (dialog, which) -> {
                                 mPresenter.onViewRequestSwitchCamera();
@@ -116,15 +122,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
     @Override
     public void onResume() {
-
         super.onResume();
 
+        // Toggle camera back to previous state if required.
         mPresenter.onViewRequestResume();
     }
 
     @Override
     public void onPause() {
-
         super.onPause();
 
         // Stop local video source only if not changing orientation
@@ -135,10 +140,14 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
     @Override
     public void onDetach() {
-
         super.onDetach();
+
+        // Exit from room only if not changing orientation
         if (!((MultiPartyVideoCallActivity) mContext).isChangingConfigurations()) {
+            //exit from room
             mPresenter.onViewRequestExit();
+
+            //remove all views
             processEmptyLayout();
         }
     }
@@ -149,19 +158,58 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods called from the Presenter to update UI
+    //----------------------------------------------------------------------------------------------
+
     @Override
     public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
-        addSelfView(videoView);
+        if (videoView == null) {
+            return;
+        }
+
+        // Remove video from previous parent, if any.
+        Utils.removeViewFromParent(videoView);
+
+        // Remove self view if its already added
+        remoteViewLayouts[0].removeAllViews();
+
+        // Add new local videoView to frame
+        setLayoutParams(videoView);
+        remoteViewLayouts[0].addView(videoView);
     }
 
+    /**
+     * Add or update remote Peer's VideoView into the app.
+     *
+     * @param peerIndex    index for display videoView
+     * @param remoteView   videoView of remoteView
+     */
     @Override
     public void onPresenterRequestAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
-        addRemoteView(peerIndex, remoteView);
+        if (remoteView == null || peerIndex < 1 || peerIndex > remoteViewLayouts.length)
+            return;
+
+        // Remove any existing Peer View at index.
+        // This may sometimes be the case, for e.g. in screen sharing.
+        removePeerView(peerIndex);
+
+        setLayoutParams(remoteView);
+        remoteViewLayouts[peerIndex].addView(remoteView);
     }
 
+    /**
+     * Remove a remote video view from UI and shift the other videos to new positions
+     *
+     * @param viewIndex index of removed peer
+     */
     @Override
     public void onPresenterRequestRemoveRemotePeer(int viewIndex) {
-        removeRemotePeer(viewIndex);
+        // Remove video view at viewIndex
+        removePeerView(viewIndex);
+
+        // Shift all other views from right to left
+        shiftUpRemotePeers(viewIndex);
     }
 
     @Override
@@ -300,14 +348,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                         }
                     };
             // Add room name to title
-            String title = mPresenter.onViewRequestGetRoomPeerIdNick();
+            String title = mPresenter.onViewRequestGetRoomIdAndNickname();
 
             PopupMenu popupMenu = new PopupMenu(mContext, v);
             popupMenu.setOnMenuItemClickListener(clickListener);
 
             popupMenu.getMenu().add(title);
             // Populate actions of Popup Menu.
-
             popupMenu.getMenu().add(0, R.id.vid_res_sent, 0, R.string.vid_res_sent);
             popupMenu.getMenu().add(0, R.id.vid_res_recv, 0, R.string.vid_res_recv);
 
@@ -335,7 +382,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     /**
      * request info to display from presenter
      * try to connect to room if not connected
-     * try to update UI if connnected
+     * try to update UI if connected
      */
     private void requestViewLayout() {
         if (mPresenter != null) {
@@ -343,69 +390,21 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         }
     }
 
-    private void addSelfView(SurfaceViewRenderer videoView) {
-        if (videoView == null) {
-            return;
-        }
-
-        // Remove video from previous parent, if any.
-        Utils.removeViewFromParent(videoView);
-
-        // Remove self view if its already added
-        remoteViewLayouts[0].removeAllViews();
-
-        setLayoutParams(videoView);
-        remoteViewLayouts[0].addView(videoView);
-    }
-
-
     private void refreshConnection(int peerIndex, boolean iceRestart) {
-        mPresenter.onViewRequestRefreshConnection(peerIndex, iceRestart);
-    }
-
-    /**
-     * Add or update remote Peer's VideoView into the app.
-     *
-     * @param index           index for display videoView
-     * @param remoteVideoView videoView of remoteView
-     */
-    private void addRemoteView(int index, SurfaceViewRenderer remoteVideoView) {
-
-        if (remoteVideoView == null || index < 1 || index > remoteViewLayouts.length)
-            return;
-
-        // Remove any existing Peer View at index.
-        // This may sometimes be the case, for e.g. in screen sharing.
-        removePeerView(index);
-
-
-        setLayoutParams(remoteVideoView);
-        remoteViewLayouts[index].addView(remoteVideoView);
+        if (mPresenter != null) {
+            mPresenter.onViewRequestRefreshConnection(peerIndex, iceRestart);
+        }
     }
 
     /**
      * Remove any existing VideoView of a Peer.
      *
      * @param viewIndex
-     * @return The index at which Peer was located, or a negative int if Peer Id was not found.
      */
     private void removePeerView(int viewIndex) {
-
-        // Remove view
+        // Remove all views at the viewIndex
         if (viewIndex < remoteViewLayouts.length && viewIndex > -1)
             remoteViewLayouts[viewIndex].removeAllViews();
-    }
-
-    /**
-     * Remove a remote video view from UI and shift the other videos to new positions
-     *
-     * @param removedIndex index of removed peer
-     */
-    private void removeRemotePeer(int removedIndex) {
-
-        removePeerView(removedIndex);
-
-        shiftUpRemotePeers(removedIndex);
     }
 
     /**
@@ -417,7 +416,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         if (removedIndex < 0 || removedIndex >= remoteViewLayouts.length)
             return;
 
-        //shift all video to new positions
+        //shift all video to new positions from right to left
         for (int i = removedIndex; i < remoteViewLayouts.length - 1; i++) {
 
             FrameLayout peerFrameLayout = remoteViewLayouts[i + 1];

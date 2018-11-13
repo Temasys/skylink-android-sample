@@ -9,9 +9,11 @@ import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This interface is responsible for specify behaviors of View, Presenter, Service
  */
 
 public interface MultiPartyVideoCallContract {
+
     interface View extends BaseView<Presenter> {
 
         void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView);
@@ -41,7 +43,7 @@ public interface MultiPartyVideoCallContract {
 
         boolean onViewRequestStopRecording();
 
-        String onViewRequestGetRoomPeerIdNick();
+        String onViewRequestGetRoomIdAndNickname();
 
         void onViewRequestGetInputVideoResolution();
 

@@ -138,7 +138,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         //reset default audio speaker
         mVideoCallService.setCurrentVideoOutput(Utils.getDefaultVideoOuput());
 
-        //after disconnected from skylink SDK, UI will be updated latter on AudioService.onDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on VideoService.onDisconnect
     }
 
     @Override
@@ -282,7 +282,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     @Override
     public String onViewRequestGetRoomPeerIdNick() {
-        return mVideoCallService.getRoomPeerIdNick(Constants.CONFIG_TYPE.VIDEO);
+        return mVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.VIDEO);
     }
 
     @Override
