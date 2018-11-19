@@ -182,8 +182,8 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     /**
      * Add or update remote Peer's VideoView into the app.
      *
-     * @param peerIndex    index for display videoView
-     * @param remoteView   videoView of remoteView
+     * @param peerIndex  index for display videoView
+     * @param remoteView videoView of remoteView
      */
     @Override
     public void onPresenterRequestAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {

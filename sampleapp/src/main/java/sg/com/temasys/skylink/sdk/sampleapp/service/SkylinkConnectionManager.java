@@ -3,6 +3,8 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 import android.util.Log;
 
+import org.webrtc.VideoCapturer;
+
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -69,19 +71,29 @@ public class SkylinkConnectionManager {
     /**
      * Connects to a room using a SkylinkConnectionString that caller MUST ensure is URL safe.
      *
-     * @param typeCall Specify which is current demo/call like audio/video/file/...
+     * @param typeCall      Specify which is current demo/call like audio/video/file/...
+     * @param videoCapturer Custom {@link VideoCapturer} if desired, null if not.
      * @return SkylinkConnection
      */
-    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall) {
+    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
         //check internet connection first
+        String logTag = "[SA][SCM][connectToRoom] ";
+        String log;
         if (!Utils.isInternetOn()) {
-            String log = "Internet connection is off !";
+            log = "Internet connection is off !";
             toastLog(TAG, mContext, log);
             return null;
         }
 
         // Initialize the skylink connection using SkylinkConnectionManager
         mSkylinkConnection = initializeSkylinkConnection();
+
+        // Set custom VideoCapturer if any.
+        if (videoCapturer != null) {
+            log = logTag + "With Custom VideoCapturer: " + videoCapturer + ".";
+            toastLog(TAG, mContext, log);
+            mSkylinkConnection.setCustomVideoCapturer(videoCapturer);
+        }
 
         // Set Skylink listeners necessary for current demo/call
         mSkylinkCommonService.setSkylinkListeners();
@@ -105,11 +117,11 @@ public class SkylinkConnectionManager {
         boolean connectFailed = !mSkylinkConnection.connectToRoom(skylinkConnectionString, mUserName);
 
         if (connectFailed) {
-            String log = "Unable to connect to room!";
+            log = logTag + "Unable to connect to room!";
             toastLog(TAG, mContext, log);
             return null;
         } else {
-            String log = "Connecting...";
+            log = logTag + "Connecting...";
             toastLog(TAG, mContext, log);
         }
 

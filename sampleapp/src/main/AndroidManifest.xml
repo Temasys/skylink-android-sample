@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="sg.com.temasys.skylink.sdk.sampleapp">
+<manifest package="sg.com.temasys.skylink.sdk.sampleapp"
+          xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.camera"/>
+    <uses-feature android:name="android.hardware.camera.autofocus"/>
     <uses-feature
         android:glEsVersion="0x00020000"
-        android:required="true" />
+        android:required="true"/>
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission
         android:name="android.permission.BLUETOOTH"
-        android:required="false" />
+        android:required="false"/>
 
     <application
         android:allowBackup="true"
@@ -27,34 +27,34 @@
             android:name=".MainActivity"
             android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
             android:name=".audio.AudioCallActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section1" />
+            android:label="@string/title_section1"/>
         <activity
             android:name=".chat.ChatActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section3" />
+            android:label="@string/title_section3"/>
         <activity
             android:name=".filetransfer.FileTransferActivity"
-            android:label="@string/title_section4" />
+            android:label="@string/title_section4"/>
         <activity
             android:name=".datatransfer.DataTransferActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section5" />
+            android:label="@string/title_section5"/>
         <activity
             android:name=".video.VideoCallActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section2" />
+            android:label="@string/title_section2"/>
         <activity
             android:name=".multipartyvideo.MultiPartyVideoCallActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section6" />
+            android:label="@string/title_section6"/>
 
         <activity
             android:name=".setting.SettingActivity"

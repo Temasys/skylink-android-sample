@@ -12,6 +12,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
@@ -31,7 +32,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     private TextView txt_room_setting_name, txt_key_setting_name;
     private RadioGroup rdGroupAudioOutput, rdGroupVideoOutput, rdGroupCameraOutput, rdGroupVideoResolution;
-    private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_front, camera_back, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
+    private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_custom, camera_front, camera_back, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
 
 
     private SettingContract.Presenter mPresenter;
@@ -108,6 +109,9 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
             case R.id.videoSpeaker:
                 processVideoSpeaker();
                 break;
+            case R.id.camera_custom:
+                processCameraCustom();
+                break;
             case R.id.camera_front:
                 processCameraFront();
                 break;
@@ -172,13 +176,22 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     @Override
+    public void onCameraCustomSelected() {
+        camera_custom.setChecked(true);
+        camera_front.setChecked(false);
+        camera_back.setChecked(false);
+    }
+
+    @Override
     public void onCameraFrontSelected() {
+        camera_custom.setChecked(false);
         camera_front.setChecked(true);
         camera_back.setChecked(false);
     }
 
     @Override
     public void onCameraBackSelected() {
+        camera_custom.setChecked(false);
         camera_front.setChecked(false);
         camera_back.setChecked(true);
     }
@@ -206,27 +219,31 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     private void processAudioHeadset() {
-        mPresenter.onProcessAudioOutput(false);
+        mPresenter.onProcessSpeakerAudio(false);
     }
 
     private void processAudioSpeaker() {
-        mPresenter.onProcessAudioOutput(true);
+        mPresenter.onProcessSpeakerAudio(true);
     }
 
     private void processVideoHeadset() {
-        mPresenter.onProcessVideoOutput(false);
+        mPresenter.onProcessSpeakerVideo(false);
     }
 
     private void processVideoSpeaker() {
-        mPresenter.onProcessVideoOutput(true);
+        mPresenter.onProcessSpeakerVideo(true);
+    }
+
+    private void processCameraCustom() {
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
     }
 
     private void processCameraFront() {
-        mPresenter.onProcessCameraOutput(false);
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
     }
 
     private void processCameraBack() {
-        mPresenter.onProcessCameraOutput(true);
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
     }
 
     private void processVideoResVGA() {
@@ -250,12 +267,13 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         txt_key_setting_name = rootView.findViewById(R.id.txt_key_setting_name);
         rdGroupAudioOutput = rootView.findViewById(R.id.rdGroupAudioOutput);
         rdGroupVideoOutput = rootView.findViewById(R.id.rdGroupVideoOutput);
-        rdGroupCameraOutput = rootView.findViewById(R.id.rdGroupCameraOutput);
+        rdGroupCameraOutput = rootView.findViewById(R.id.rdGroupVideoDevice);
         rdGroupVideoResolution = rootView.findViewById(R.id.rdGroupVideoResolution);
         audioHeadset = rootView.findViewById(R.id.audioHeadset);
         audioSpeaker = rootView.findViewById(R.id.audioSpeaker);
         videoHeadset = rootView.findViewById(R.id.videoHeadset);
         videoSpeaker = rootView.findViewById(R.id.videoSpeaker);
+        camera_custom = rootView.findViewById(R.id.camera_custom);
         camera_front = rootView.findViewById(R.id.camera_front);
         camera_back = rootView.findViewById(R.id.camera_back);
         rd_video_res_VGA = rootView.findViewById(R.id.rd_video_res_VGA);
@@ -284,6 +302,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         audioSpeaker.setOnClickListener(this);
         videoHeadset.setOnClickListener(this);
         videoSpeaker.setOnClickListener(this);
+        camera_custom.setOnClickListener(this);
         camera_front.setOnClickListener(this);
         camera_back.setOnClickListener(this);
         rd_video_res_VGA.setOnClickListener(this);

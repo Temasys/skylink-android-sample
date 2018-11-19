@@ -102,7 +102,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             processConnectToRoom();
 
             //default setting for video output
-            mVideoCallService.setCurrentVideoOutput(Utils.getDefaultVideoOuput());
+            mVideoCallService.setCurrentVideoOutput(Utils.getDefaultSpeakerVideo());
 
             //after connected to skylink SDK, UI will be updated latter on AudioService.onConnect
 
@@ -136,7 +136,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         mVideoCallService.disconnectFromRoom();
 
         //reset default audio speaker
-        mVideoCallService.setCurrentVideoOutput(Utils.getDefaultVideoOuput());
+        mVideoCallService.setCurrentVideoOutput(Utils.getDefaultSpeakerVideo());
 
         //after disconnected from skylink SDK, UI will be updated latter on VideoService.onDisconnect
     }
@@ -383,7 +383,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
+        toastLog(TAG, mContext, log);
     }
 
     @Override
@@ -827,6 +827,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     private boolean processUpdateInputVideoResolutions(SkylinkCaptureFormat format, int fpsNew) {
+        if (format == null) {
+            return false;
+        }
         int width = format.getWidth();
         int height = format.getHeight();
         if (width < 0 || height < 0 || fpsNew < 0) {

@@ -74,7 +74,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             mAudioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
             //set default for audio output
-            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioOutput());
+            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultSpeakerAudio());
 
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
@@ -111,7 +111,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         mAudioCallService.disconnectFromRoom();
 
         //reset default audio speaker
-        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioOutput());
+        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultSpeakerAudio());
 
         //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
     }

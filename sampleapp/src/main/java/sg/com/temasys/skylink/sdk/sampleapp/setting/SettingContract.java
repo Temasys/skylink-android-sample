@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 
 /**
@@ -22,6 +23,8 @@ public interface SettingContract {
 
         void onVideoResFHDSelected();
 
+        void onCameraCustomSelected();
+
         void onCameraFrontSelected();
 
         void onCameraBackSelected();
@@ -29,11 +32,11 @@ public interface SettingContract {
 
     interface Presenter {
 
-        void onProcessAudioOutput(boolean isAudioSpeaker);
+        void onProcessSpeakerAudio(boolean isAudioSpeaker);
 
-        void onProcessVideoOutput(boolean isVideoSpeaker);
+        void onProcessSpeakerVideo(boolean isVideoSpeaker);
 
-        void onProcessCameraOutput(boolean isCameraBack);
+        void onProcessVideoDevice(SkylinkConfig.VideoDevice videoDevice);
 
         void onProcessVideoResolution(Config.VideoResolution videoResolution);
 

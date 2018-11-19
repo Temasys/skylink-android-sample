@@ -2,12 +2,13 @@ package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
 import android.content.Context;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingContract.Presenter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_OUTPUT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_CAMERA_OUTPUT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_OUTPUT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_AUDIO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
@@ -35,7 +36,7 @@ public class SettingPresenter implements Presenter {
     @Override
     public void onViewLayoutRequested() {
 
-        boolean isAudioSpeaker = Utils.getDefaultAudioOutput();
+        boolean isAudioSpeaker = Utils.getDefaultSpeakerAudio();
         //default audio is headset
         if (!isAudioSpeaker) {
             mSettingView.onAudioHeadsetSelected();
@@ -43,7 +44,7 @@ public class SettingPresenter implements Presenter {
             mSettingView.onAudioSpeakerSelected();
         }
 
-        boolean isVideoSpeaker = Utils.getDefaultVideoOuput();
+        boolean isVideoSpeaker = Utils.getDefaultSpeakerVideo();
         //default video is headset
         if (!isVideoSpeaker) {
             mSettingView.onVideoHeadsetSelected();
@@ -51,12 +52,17 @@ public class SettingPresenter implements Presenter {
             mSettingView.onVideoSpeakerSelected();
         }
 
-        boolean isCameraBack = Utils.getDefaultCameraOutput();
-        //default camera is front
-        if (!isCameraBack) {
-            mSettingView.onCameraFrontSelected();
-        } else {
-            mSettingView.onCameraBackSelected();
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        switch (videoDevice) {
+            case CAMERA_FRONT:
+                mSettingView.onCameraFrontSelected();
+                break;
+            case CAMERA_BACK:
+                mSettingView.onCameraBackSelected();
+                break;
+            case CUSTOM_CAPTURER:
+                mSettingView.onCameraCustomSelected();
+                break;
         }
 
         String defaultVideoResolution = Utils.getDefaultVideoResolution();
@@ -76,24 +82,25 @@ public class SettingPresenter implements Presenter {
     }
 
     @Override
-    public void onProcessAudioOutput(boolean isAudioSpeaker) {
+    public void onProcessSpeakerAudio(boolean isAudioSpeaker) {
         //save default audio output to save sharePreference
         //value true is speaker, false is headset
-        Config.setPrefBoolean(DEFAULT_AUDIO_OUTPUT, isAudioSpeaker, (SettingActivity) mContext);
+        Config.setPrefBoolean(DEFAULT_SPEAKER_AUDIO, isAudioSpeaker, (SettingActivity) mContext);
     }
 
     @Override
-    public void onProcessVideoOutput(boolean isVideoSpeaker) {
+    public void onProcessSpeakerVideo(boolean isVideoSpeaker) {
         //save default video output to save sharePreference
         //value true is speaker, false is headset
-        Config.setPrefBoolean(DEFAULT_VIDEO_OUTPUT, isVideoSpeaker, (SettingActivity) mContext);
+        Config.setPrefBoolean(DEFAULT_SPEAKER_VIDEO, isVideoSpeaker, (SettingActivity) mContext);
     }
 
     @Override
-    public void onProcessCameraOutput(boolean isCameraBack) {
+    public void onProcessVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
         //save default camera output to save sharePreference
         //value true is camera back, false is camera front
-        Config.setPrefBoolean(DEFAULT_CAMERA_OUTPUT, isCameraBack, (SettingActivity) mContext);
+        // Config.setPrefBoolean(DEFAULT_VIDEO_DEVICE, isCameraBack, (SettingActivity) mContext);
+        Config.setPrefString(DEFAULT_VIDEO_DEVICE, videoDevice.name(), (SettingActivity) mContext);
     }
 
     @Override

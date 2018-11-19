@@ -68,15 +68,20 @@ public class Config {
     public static String USER_NAME_PARTY = USER_NAME_PARTY_DEFAULT;
     public static String USER_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
 
-    //constant for saving default settings of audio and video
-    public static String DEFAULT_AUDIO_OUTPUT = "DEFAULT_AUDIO_OUTPUT";
-    public static String DEFAULT_VIDEO_OUTPUT = "DEFAULT_VIDEO_OUTPUT";
-    public static String DEFAULT_CAMERA_OUTPUT = "DEFAULT_CAMERA_OUTPUT";
-    public static String DEFAULT_VIDEO_RESOLUTION = "DEFAULT_VIDEO_RESOLUTION";
+    // Constants for saving default settings of audio and video
+    // Is speaker mode the default for audio demo.
+    public static String DEFAULT_SPEAKER_AUDIO = "defaultSpeakerAudio";
+    // Is speaker mode the default for video demo.
+    public static String DEFAULT_SPEAKER_VIDEO = "defaultSpeakerVideo";
+    /**
+     * The default {@link sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice} for video demo.
+     */
+    public static String DEFAULT_VIDEO_DEVICE = "defaultVideoDevice";
+    public static String DEFAULT_VIDEO_RESOLUTION = "defaultVideoResolution";
 
-    public static String VIDEO_RESOLUTION_VGA = "VGA";
-    public static String VIDEO_RESOLUTION_HDR = "HDR";
-    public static String VIDEO_RESOLUTION_FHD = "FHD";
+    public static String VIDEO_RESOLUTION_VGA = "vga";
+    public static String VIDEO_RESOLUTION_HDR = "hdr";
+    public static String VIDEO_RESOLUTION_FHD = "fhd";
 
     public enum VideoResolution {
         VGA,
