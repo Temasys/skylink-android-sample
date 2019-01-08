@@ -7,7 +7,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 public interface BaseView<T> {
 
     /**
-     * set connection between presenter and view
+     * set connection between view and presenter
      */
     void setPresenter(T presenter);
 

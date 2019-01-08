@@ -21,6 +21,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for implementing file transfer logic.
  */
 
 public class FileTransferPresenter extends BasePresenter implements FileTransferContract.Presenter {
@@ -35,7 +36,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     //utils to process permission
     private PermissionUtils mPermissionUtils;
 
-    //fileName to download
+    //sample fileName to download
     private String fileNameDownloaded = "downloadFile.png";
 
 
@@ -92,27 +93,21 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
     @Override
     public void onViewRequestExit() {
-
         //process disconnect from room
         mFileTransferService.disconnectFromRoom();
-
     }
 
     @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+        // delegate to the PermissionUtils to process the permission
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
-    }
-
-    @Override
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mFileTransferView.onPresenterRequestGetFragmentInstance());
     }
 
     /**
      * Sends a file to a Peer or all Peers in room.
      *
      * @param remotePeerId Peer to send to. Use null to send to all in room.
-     * @param filePath
+     * @param filePath     the absolute file path
      */
     @Override
     public void onViewRequestSendFile(String remotePeerId, String filePath) {
@@ -138,17 +133,21 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
         File file = new File(filePath);
 
         if (file.isFile()) {
-
             mFileTransferView.onPresenterRequestDisplayFilePreview(Uri.parse(filePath));
-
         } else {
             String log = "Please enter a valid filename";
             toastLog(TAG, mContext, log);
             return;
         }
 
+        // use service layer to send the file
         mFileTransferService.sendFile(remotePeerId, file);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for service to call
+    // These methods are responsible for processing requests from service
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
@@ -179,8 +178,13 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     }
 
     @Override
-    public void onServiceRequestFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
+    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+        // delegate to the PermissionUtils to process the permission
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mFileTransferView.onPresenterRequestGetFragmentInstance());
+    }
 
+    @Override
+    public void onServiceRequestFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
         String log = "Received a file request";
         toastLogLong(TAG, mContext, log);
 
@@ -202,10 +206,15 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
         mFileTransferView.onPresenterRequestDisplayFileReveicedInfo(info);
     }
 
-    private void processUpdateUI() {
+    //----------------------------------------------------------------------------------------------
+    // private methods for internal process
+    //----------------------------------------------------------------------------------------------
 
+    private void processUpdateUI() {
+        // fill the list of peers to UI
         mFileTransferView.onPresenterRequestFillPeers(mFileTransferService.getPeersList());
 
+        // update the info about the room state
         processUpdateRoomDetails();
     }
 

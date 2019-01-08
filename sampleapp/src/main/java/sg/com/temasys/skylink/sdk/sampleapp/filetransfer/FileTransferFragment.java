@@ -28,14 +28,17 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * A simple {@link MultiPartyFragment} subclass.
+ * This class is responsible for display UI and get user interaction
  */
 public class FileTransferFragment extends MultiPartyFragment implements FileTransferContract.View {
 
     private final String TAG = FileTransferFragment.class.getName();
 
+    // sample file name to be transfered
     private final String FILENAME_PRIVATE = "FileTransferPrivate.png";
     private final String FILENAME_GROUP = "FileTransferGroup.png";
 
+    // presenter instance to implement app logic
     private FileTransferContract.Presenter mPresenter;
 
     //static variables for update UI when changing configuration
@@ -57,6 +60,10 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         this.mPresenter = presenter;
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Fragment life cycle methods
+    //----------------------------------------------------------------------------------------------
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -76,44 +83,40 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
         View rootView = inflater.inflate(R.layout.fragment_file_transfer, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
+        // init the UI controls
         initControls();
 
+        //request an initiative connection
         requestViewLayout();
 
         // Defining a click event listener for the edit text File path
         etSenderFilePath.setOnClickListener(v -> {
-
             processSetFilePath();
         });
 
         // Defining a click event listener for the radio group
         peerRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-
             processSelectPeer(checkedId);
-
         });
 
         // Defining a click event listener for the button SEND FILE
         sendFilePrivate.setOnClickListener(v -> {
-
             processSendFilePrivate();
-
         });
 
         // Defining a click event listener for the button SEND FILE [GROUP]
         sendFileGroup.setOnClickListener(v -> {
-
             processSendFileGroup();
-
         });
 
         return rootView;
     }
-
 
     @Override
     public void onDetach() {
@@ -144,53 +147,98 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     @Override
-    public Fragment onPresenterRequestGetFragmentInstance() {
-        return this;
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods called from the Presenter to update UI
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * Get the instance of the view for implementing runtime permission
+     */
+    @Override
+    public Fragment onPresenterRequestGetFragmentInstance() {
+        return this;
+    }
+
+    /**
+     * Display information about list of peers in room
+     *
+     * @param peersList
+     */
     @Override
     public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
         fillPeerRadioBtn(peersList);
     }
 
+    /**
+     * Display information about remote peer joining the room
+     *
+     * @param skylinkPeer remote peer joining the room
+     */
     @Override
     public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer skylinkPeer) {
         addPeerRadioBtn(skylinkPeer);
     }
 
+    /**
+     * Display information about remote peer leaves the room
+     *
+     * @param remotePeerId remote peer ID leaving the room
+     */
     @Override
     public void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId) {
         removePeerRadioBtn(remotePeerId);
     }
 
+    /**
+     * Get the selected peer id by the user
+     */
     @Override
     public String onPresenterRequestGetPeerIdSelected() {
         return getPeerIdSelected();
     }
 
+    /**
+     * Check/Uncheck the All peers option
+     *
+     * @param isSelected the checked state
+     */
     @Override
     public void onPresenterRequestSetPeerAllSelected(boolean isSelected) {
         peerAll.setChecked(isSelected);
     }
 
+    /**
+     * Display sample file preview to UI
+     *
+     * @param imgUri the URI of the sample file
+     */
     @Override
     public void onPresenterRequestDisplayFilePreview(Uri imgUri) {
         if (ivFilePreview != null)
             ivFilePreview.setImageURI(imgUri);
     }
 
+    /**
+     * Display information about received file name and file path
+     *
+     * @param info
+     */
     @Override
     public void onPresenterRequestDisplayFileReveicedInfo(String info) {
         if (tvFileTransferDetails != null)
             tvFileTransferDetails.setText(info);
     }
 
+    /**
+     * Display the update information about room details
+     *
+     * @param roomDetails
+     */
     @Override
     public void onPresenterRequestUpdateUi(String roomDetails) {
         if (tvRoomDetails != null)
@@ -202,7 +250,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        // [MultiParty]
+        // The controls from MultiPartyFragment
         peerRadioGroup = rootView.findViewById(R.id.radio_grp_peers);
         peerAll = rootView.findViewById(R.id.radio_btn_peer_all);
         peer1 = rootView.findViewById(R.id.radio_btn_peer1);
@@ -210,6 +258,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         peer3 = rootView.findViewById(R.id.radio_btn_peer3);
         peer4 = rootView.findViewById(R.id.radio_btn_peer4);
 
+        // The controls from the File transfer layout
         tvRoomDetails = rootView.findViewById(R.id.tv_file_room_details);
         etSenderFilePath = rootView.findViewById(R.id.et_file_path);
         ivFilePreview = rootView.findViewById(R.id.iv_file_preview);
@@ -249,7 +298,8 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     /**
-     * Prepare file before transfer. Sets file path in edit text. Sets file preview.
+     * Prepare file before transfer.
+     * Sets file path in edit text. Sets file preview.
      */
     private void prepFile(String filePath) {
         //show preview of file to transfer
@@ -260,9 +310,8 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
             etSenderFilePath.setText(filePath);
     }
 
-
     /**
-     * Manual selection of file to send is now enabled.
+     * Manual selection of file to send
      * After selecting Peer(s) to send to, click on file path (etSenderFilePath)
      * and enter desired file path.
      */
@@ -313,7 +362,11 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
                 });
     }
 
-    // Set file to send based on selected Peer.
+    /**
+     * Set file to send based on selected Peer
+     *
+     * @param checkedId
+     */
     private void processSelectPeer(int checkedId) {
 
         if (checkedId == R.id.radio_btn_peer_all) {
@@ -325,7 +378,9 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         }
     }
 
-    // Send file to specific Peer.
+    /**
+     * Send file to specific Peer with peerId
+     */
     private void processSendFilePrivate() {
         // [MultiParty]
         String remotePeerId = getPeerIdSelectedWithWarning();
@@ -340,6 +395,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     // Send file to all Peers in room, i.e. via public (AKA group) message.
+    // Pass null to peerId to send to all peers in group/room
     private void processSendFileGroup() {
 
         // Prepare group file for transfer.

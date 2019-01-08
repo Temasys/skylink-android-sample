@@ -13,7 +13,10 @@ public class DataTransferActivity extends AppCompatActivity {
 
     private final String DATA_TRANSFER_FRAGMENT_TAG = "DATA_TRANSFER_FRAGMENT";
 
+    // presenter instance
     private DataTransferPresenter mDataTransferPresenter;
+
+    // view instance
     private DataTransferFragment mDataTransferFragment;
 
     @Override
@@ -24,7 +27,9 @@ public class DataTransferActivity extends AppCompatActivity {
         //create presenter
         mDataTransferPresenter = new DataTransferPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance, just update it
         if (savedInstanceState == null) {
             mDataTransferFragment = DataTransferFragment.newInstance();
             getSupportFragmentManager()

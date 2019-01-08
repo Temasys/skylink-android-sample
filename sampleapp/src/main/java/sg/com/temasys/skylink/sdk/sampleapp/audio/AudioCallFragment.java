@@ -23,6 +23,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
  * A simple {@link Fragment} subclass.
+ * This class is responsible for display UI and get user interaction
  */
 public class AudioCallFragment extends Fragment implements AudioCallContract.View {
 
@@ -38,6 +39,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private ImageView img;
 
+    // presenter instance to implement app logic
     private AudioCallContract.Presenter mPresenter;
 
     public static AudioCallFragment newInstance() {
@@ -48,6 +50,10 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     public void setPresenter(AudioCallContract.Presenter presenter) {
         this.mPresenter = presenter;
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Fragment life cycle methods
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onAttach(Context context) {
@@ -69,10 +75,13 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
         View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
+        //request an initiative connection
         requestViewLayout();
 
         // Defining a click event listener for the button "Audio Speaker"
@@ -87,6 +96,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
+        // Inform presenter to implement the permission results
         mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
@@ -94,6 +104,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     public void onStop() {
         super.onStop();
 
+        // Inform the presenter to implement the pause state
         mPresenter.onViewRequestStop();
     }
 
@@ -101,6 +112,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     public void onResume() {
         super.onResume();
 
+        // Inform the presenter to implement the resume state
         mPresenter.onViewRequestResume();
     }
 
@@ -124,11 +136,21 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         changeLayout(newConfig.orientation);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods called from the Presenter to update UI
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * Get the instance of the view for implementing runtime permission
+     */
     @Override
     public Fragment onPresenterRequestGetFragmentInstance() {
         return this;
     }
 
+    /**
+     * Update UI when connected to room / remote peer joined / audio output state changed
+     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn) {
@@ -136,7 +158,7 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         //change room detail info
         tvRoomDetails.setText(roomDetails);
 
-        //change img animation
+        //change connection animation
         AnimationDrawable frameAnimation = null;
         if (isPeerJoined) {
             AnimationDrawable backgroundSrc = (AnimationDrawable) mContext.getResources().getDrawable(R.drawable.img_blink);
@@ -162,6 +184,9 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         }
     }
 
+    /**
+     * Update button and image when audio output state changed
+     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn) {
@@ -222,9 +247,12 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         changeLayout(getResources().getConfiguration().orientation);
     }
 
+    /**
+     * process closing the connection and activity when ending the audio call
+     */
     private void processEndAudio() {
 
-        //end connection
+        //// Inform the presenter to implement closing the connection
         mPresenter.onViewRequestExit();
 
         //close UI
@@ -233,8 +261,13 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         }
     }
 
+    /**
+     * changing the view layout when changing screen orientation
+     *
+     * @param orientation portrait or landscape mode
+     */
     private void changeLayout(int orientation) {
-
+        // Setting different bottom margins to different screen to have a better UI
         LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) llTool.getLayoutParams();
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_50dp);

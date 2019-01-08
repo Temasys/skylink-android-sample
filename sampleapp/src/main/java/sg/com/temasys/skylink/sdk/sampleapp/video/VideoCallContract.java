@@ -16,55 +16,118 @@ public interface VideoCallContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * Get instance of the fragment for processing permission
+         * Get instance of the fragment for processing audio/camera runtime permission
          */
         Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update UI details when changing state
+         * Update UI details when connecting to room
          */
         void onPresenterRequestConnectingUIChange();
 
+        /**
+         * Update UI details when connected to room
+         */
         void onPresenterRequestConnectedUIChange();
 
+        /**
+         * Update UI details when disconnected from room
+         */
         void onPresenterRequestDisconnectUIChange();
 
+        /**
+         * Update UI details when getting local input video resolution
+         */
         void onPresenterRequestUpdateUiResInput(VideoResolution videoInput);
 
+        /**
+         * Update UI details when getting local sent video resolution
+         */
         void onPresenterRequestUpdateUiResSent(VideoResolution videoSent);
 
+        /**
+         * Update UI details when getting remote received video resolution
+         */
         void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive);
 
+        /**
+         * Update text view info when changing video width and height
+         */
         boolean onPresenterRequestUpdateUiResDimInfo(int width, int height);
 
+        /**
+         * Update text view info details when changing video frame rate
+         */
         void onPresenterRequestUpdateUiResFpsInfo(int fps);
 
+        /**
+         * Update UI details when adding local video view
+         */
         void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView);
 
+        /**
+         * Update UI details when adding remote video view
+         */
         void onPresenterRequestAddRemoteView(SurfaceViewRenderer remoteVideoView);
 
+        /**
+         * Update UI details when removing remote video view
+         */
         void onPresenterRequestRemoveRemotePeer();
 
+        /**
+         * Update UI details when changing audio state (muted/on)
+         */
         void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast);
 
+        /**
+         * Update UI details when changing video state (muted/on)
+         */
         void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast);
 
+        /**
+         * Update UI details when changing max range of video width and height seekbar
+         */
         void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange);
 
+        /**
+         * Update UI details when changing max range of video frame rate seekbar
+         */
         void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange);
 
+        /**
+         * Update text view and seek bar info  when changing video width and height
+         */
         void onPresenterRequestUpdateResDimInfo(int index, int width, int height);
 
+        /**
+         * Update text view and seek bar info when changing video frame rate
+         */
         void onPresenterRequestUpdateResFpsInfo(int index, int fps);
 
+        /**
+         * Update UI details when changing speaker state (on/off)
+         */
         void onPresenterRequestChangeAudioOuput(boolean isSpeakerOff);
 
+        /**
+         * Update UI details when changing audio state (muted/on)
+         */
         void onPresenterRequestChangeAudioUI(boolean isAudioMute);
 
+        /**
+         * Update UI details when changing video state (muted/on)
+         */
         void onPresenterRequestChangeVideoUI(boolean isVideoMute);
 
+        /**
+         * Update UI details when changing camera state (muted/on)
+         */
         void onPresenterRequestChangeCameraUI(boolean isCameraMute);
 
+        /**
+         * Update UI details when changing screen configuration
+         */
         void onPresenterRequestchangeViewLayout();
 
     }
@@ -72,12 +135,12 @@ public interface VideoCallContract {
     interface Presenter {
 
         /**
-         * process data to display on view
+         * process data to display on view at initiative connection
          */
         void onViewRequestConnectedLayout();
 
         /**
-         * process permission result
+         * process runtime permission results
          */
         void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
@@ -122,7 +185,7 @@ public interface VideoCallContract {
         void onViewRequestSwitchCamera();
 
         /**
-         * get remote peer nick
+         * get remote peer nickname from SDK
          */
         String onViewRequestGetRoomPeerIdNick();
 

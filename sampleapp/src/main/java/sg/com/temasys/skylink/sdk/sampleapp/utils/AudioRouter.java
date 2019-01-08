@@ -42,6 +42,7 @@ public class AudioRouter {
                     int state = intent.getIntExtra("state", -1);
                     switch (state) {
                         case 0:
+                            // uncomment if you want to enable speaker on when disconnect from headset
 //                            processHeadsetPlug(false);
                             break;
                         case 1:
@@ -81,6 +82,7 @@ public class AudioRouter {
 
                     int currentAudioState = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
 
+                    // uncomment if you want to enable speaker on when disconnect from bluetooth
                     if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTED) {
 //                        processHeadsetBluetooth(false);
                     } else if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTING) {
@@ -305,7 +307,7 @@ public class AudioRouter {
 
         if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO)) {
 
-            boolean isAudioSpeaker = Utils.getDefaultAudioOutput();
+            boolean isAudioSpeaker = Utils.getDefaultAudioSpeaker();
 
             //default audio is headset
             if (!isAudioSpeaker) {
@@ -315,7 +317,7 @@ public class AudioRouter {
             }
         } else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO) || mCallType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {
 
-            boolean isVideoSpeaker = Utils.getDefaultVideoOuput();
+            boolean isVideoSpeaker = Utils.getDefaultVideoSpeaker();
 
             //default audio is headset
             if (!isVideoSpeaker) {

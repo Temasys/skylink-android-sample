@@ -14,7 +14,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 public class AudioService extends SkylinkCommonService implements AudioCallContract.Service {
 
-    private static boolean currentAudioSpeaker = Utils.getDefaultAudioOutput();
+    private static boolean currentAudioOutput = Utils.getDefaultAudioSpeaker();
 
     public AudioService(Context mContext) {
         super(mContext);
@@ -36,17 +36,21 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
     }
 
     public boolean getCurrentAudioSpeaker() {
-        return currentAudioSpeaker;
+        return currentAudioOutput;
     }
 
     public void setCurrenAudioSpeaker(boolean isSpeakerOn) {
-        currentAudioSpeaker = isSpeakerOn;
+        currentAudioOutput = isSpeakerOn;
     }
 
     public void resumeAudioOutput() {
-        changeAudioOutput(currentAudioSpeaker);
+        changeAudioOutput(currentAudioOutput);
     }
 
+    /**
+     * Sets the specified listeners for audio function
+     * Audio function needs to implement LifeCycleListener, RemotePeerListener, MediaListener, OsListener
+     */
     @Override
     public void setSkylinkListeners() {
         if (mSkylinkConnection != null) {
@@ -57,6 +61,10 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         }
     }
 
+    /**
+     * Get the config for audio function
+     * User can custom audio config by using SkylinkConfig
+     * */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();

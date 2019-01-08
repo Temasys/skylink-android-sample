@@ -14,6 +14,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for implementing message logic.
  */
 
 public class ChatPresenter extends BasePresenter implements ChatContract.Presenter {
@@ -25,6 +26,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     private ChatService mChatService;
 
     //this variable need to be static for configuration change
+    // when screen orientation changed, we need to maintain the message list
     private static List<String> chatMessageCollection = new ArrayList<String>();
 
     public ChatPresenter(Context context) {
@@ -36,6 +38,11 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         mChatView = view;
         mChatView.setPresenter(this);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for view to call
+    // These methods are responsible for processing requests from view
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Triggered when View request data to display to the user when entering room | rotating screen
@@ -79,10 +86,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void onViewRequestSendServerMessage(String remotePeerId, String message) {
 
-        //add message to listview for displaying
+        //add message to list view for displaying
         processAddSelfMessageToChatCollection(remotePeerId, false, message);
 
-        //send message to SDK
+        // using service to send message to remote peer through server
         mChatService.sendServerMessage(remotePeerId, message);
     }
 
@@ -94,8 +101,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         //remotePeerId = "" when not selecting any peer
         if (remotePeerId == null || !remotePeerId.equals("")) {
 
+            //add message to list view for displaying
             processAddSelfMessageToChatCollection(remotePeerId, true, message);
 
+            // using service to send message to remote peer directly P2P
             mChatService.sendP2PMessage(remotePeerId, message);
         }
     }
@@ -104,6 +113,11 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     public List<String> onViewRequestGetChatCollection() {
         return chatMessageCollection;
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for service to call
+    // These methods are responsible for processing requests from service
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
@@ -177,6 +191,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+    // private methods for internal process
+    //----------------------------------------------------------------------------------------------
+
     /**
      * Retrieves self message written in edit text and adds it to the chatMessageCollection.
      * Will refresh listView to display new chatMessageCollection.
@@ -206,12 +224,18 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         mChatView.onPresenterRequestClearInput();
     }
 
+    /*
+     * Update UI when changing app state
+     * */
     private void processUpdateUI() {
 
+        // reset the chat collection
         mChatView.onPresenterRequestRefreshChatCollection();
 
+        // re fill the peers
         mChatView.onPresenterRequestFillPeers(mChatService.getPeersList());
 
+        // update the display info
         processUpdateRoomDetails();
     }
 
@@ -220,6 +244,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         mChatView.onPresenterRequestUpdateUi(strRoomDetails);
     }
 
+    /*
+     * Get the info about room and app state to update the UI
+     * */
     private String processGetRoomDetails() {
         boolean isConnected = mChatService.isConnectingOrConnected();
         String roomName = mChatService.getRoomName(Config.ROOM_NAME_CHAT);
@@ -241,5 +268,4 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         return roomDetails;
     }
-
 }

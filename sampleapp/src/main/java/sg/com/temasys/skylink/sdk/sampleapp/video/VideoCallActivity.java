@@ -13,7 +13,10 @@ public class VideoCallActivity extends AppCompatActivity {
 
     private final String VIDEO_CALL_FRAGMENT_TAG = "VIDEO_CALL_FRAGMENT";
 
+    // presenter instance
     private VideoCallPresenter mVideoCallPresenter;
+
+    // view instance
     private VideoCallFragment videoCallFragment;
 
     @Override
@@ -24,7 +27,9 @@ public class VideoCallActivity extends AppCompatActivity {
         //create presenter
         mVideoCallPresenter = new VideoCallPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance, just update it
         if (savedInstanceState == null) {
             videoCallFragment = VideoCallFragment.newInstance();
             getSupportFragmentManager()
@@ -50,7 +55,7 @@ public class VideoCallActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, VIDEO_CALL_FRAGMENT_TAG, videoCallFragment);
     }
 }

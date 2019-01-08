@@ -20,16 +20,20 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for display UI and get user interaction
  */
 
 public class DataTransferFragment extends MultiPartyFragment implements DataTransferContract.View {
 
     private static final String TAG = DataTransferFragment.class.getName();
 
+    // presenter instance to implement app logic
     private DataTransferContract.Presenter mPresenter;
 
+    // sample data in byte array to be transfered
     private byte[] dataPrivate;
     private byte[] dataGroup;
+
     private TextView tvRoomDetails;
     private TextView transferStatus;
     private Button btnSendDataRoom;
@@ -43,6 +47,10 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     public void setPresenter(DataTransferContract.Presenter presenter) {
         this.mPresenter = presenter;
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Fragment life cycle methods
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onAttach(Context context) {
@@ -62,26 +70,26 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
 
         View rootView = inflater.inflate(R.layout.fragment_data_transfer, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
+        // init the UI controls
         initControls();
 
+        //request an initiative connection
         requestViewLayout();
 
         // Defining a click event listener for the button "SEND DATA"
         btnSendDataPeer.setOnClickListener(v -> {
-
             processSendDataToPeer();
-
         });
 
         // Defining a click event listener for the button "SEND DATA [GROUP]"
         btnSendDataRoom.setOnClickListener(v -> {
-
             processSendDataToGroup();
-
         });
 
         return rootView;
@@ -96,7 +104,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((DataTransferActivity) context).isChangingConfigurations()) {
-            //disconnect from room
+            // Inform the presenter to implement closing the connection
             mPresenter.onViewRequestExit();
 
             //clear all static variables to avoid memory leak
@@ -115,31 +123,63 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods called from the Presenter to update UI
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * Display information about list of peers in room
+     *
+     * @param peersList
+     */
     @Override
     public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
         fillPeerRadioBtn(peersList);
     }
 
+    /**
+     * Display information about remote peer joining the room
+     *
+     * @param skylinkPeer remote peer joining the room
+     */
     @Override
     public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer skylinkPeer) {
         addPeerRadioBtn(skylinkPeer);
     }
 
+    /**
+     * Display information about remote peer leaves the room
+     *
+     * @param remotePeerId remote peer ID leaving the room
+     */
     @Override
     public void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId) {
         removePeerRadioBtn(remotePeerId);
     }
 
+    /**
+     * Display information about updated room details
+     *
+     * @param roomDetails
+     */
     @Override
     public void onPresenterRequestUpdateUi(String roomDetails) {
         tvRoomDetails.setText(roomDetails);
     }
 
+    /**
+     * Get the selected peer id by the user
+     */
     @Override
     public String onPresenterRequestGetPeerIdSelected() {
         return getPeerIdSelected();
     }
 
+    /**
+     * Check/Uncheck the All peers option
+     *
+     * @param isSelected the checked state
+     */
     @Override
     public void onPresenterRequestSetPeerAllSelected(boolean isSelected) {
         peerAll.setChecked(isSelected);
@@ -150,6 +190,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
+        // These controls are from MultiPartyFragment
         peerRadioGroup = rootView.findViewById(R.id.radio_grp_peers);
         peerAll = rootView.findViewById(R.id.radio_btn_peer_all);
         peer1 = rootView.findViewById(R.id.radio_btn_peer1);
@@ -157,6 +198,7 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         peer3 = rootView.findViewById(R.id.radio_btn_peer3);
         peer4 = rootView.findViewById(R.id.radio_btn_peer4);
 
+        // These controls are from data transfer layout
         tvRoomDetails = rootView.findViewById(R.id.tv_data_room_details);
         transferStatus = rootView.findViewById(R.id.txt_data_transfer_status);
         btnSendDataRoom = rootView.findViewById(R.id.btn_send_data_to_room);
@@ -201,6 +243,10 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         dataGroup = Utils.getDataGroup();
     }
 
+    /**
+     * send data to specific peer with peer id
+     * or to all peers in room with null id
+     */
     private void processSendDataToPeer() {
         String remotePeerId = getPeerIdSelectedWithWarning();
         // Do not allow button actions if there are no Peers in the room.
@@ -218,9 +264,12 @@ public class DataTransferFragment extends MultiPartyFragment implements DataTran
         }
     }
 
+    /*
+    * send data to all peers
+    * */
     private void processSendDataToGroup() {
 
-        // Send dataGroup to all Peers
+        // Inform presenter to implement sending data to all peers
         mPresenter.onViewRequestSendData(null, dataGroup);
     }
 }

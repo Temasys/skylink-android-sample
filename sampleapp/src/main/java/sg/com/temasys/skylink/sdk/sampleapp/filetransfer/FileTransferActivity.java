@@ -13,7 +13,10 @@ public class FileTransferActivity extends AppCompatActivity {
 
     private final String FILE_TRANSFER_FRAGMENT_TAG = "FILE_TRANSFER_FRAGMENT";
 
+    // presenter instance
     private FileTransferPresenter mFileTransferPresenter;
+
+    // view instance
     private FileTransferFragment mFileTransferFragment;
 
     @Override
@@ -24,7 +27,9 @@ public class FileTransferActivity extends AppCompatActivity {
         //create presenter
         mFileTransferPresenter = new FileTransferPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance, just update it
         if (savedInstanceState == null) {
             mFileTransferFragment = FileTransferFragment.newInstance();
             getSupportFragmentManager()

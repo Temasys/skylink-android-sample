@@ -42,7 +42,11 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         mPresenter = (BasePresenter) presenter;
     }
 
-    // Set Skylink listener for the current demo/call
+    /**
+     * Sets the specified listeners for multi videos function
+     * Video call needs to implement LifeCycleListener, RemotePeerListener, MediaListener, OsListener,
+     * RecordingListener, StatsListener
+     */
     @Override
     public void setSkylinkListeners() {
         if (mSkylinkConnection != null) {
@@ -66,6 +70,10 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
     }
 
+    /**
+     * Get the config for multi videos function
+     * User can custom video config by using SkylinkConfig
+     */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();

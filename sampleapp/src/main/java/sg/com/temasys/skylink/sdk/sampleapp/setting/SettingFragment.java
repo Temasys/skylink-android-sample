@@ -64,12 +64,15 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
         View rootView = inflater.inflate(R.layout.fragment_setting, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
         initControls();
 
+        //request an initiative connection
         requestViewLayout();
 
         return rootView;

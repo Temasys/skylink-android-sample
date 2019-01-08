@@ -29,7 +29,7 @@ import static android.view.Gravity.CENTER;
 
 /**
  * Created by muoi.pham on 20/07/18.
- * This class is responsible for display UI
+ * This class is responsible for display UI and get user interaction
  */
 public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyVideoCallContract.View {
 
@@ -37,10 +37,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
     private Context mContext;
 
+    // presenter instance to implement app logic
     private MultiPartyVideoCallContract.Presenter mPresenter;
 
+    // layout for displaying local video view
     private FrameLayout selfViewLayout;
 
+    // layouts for displaying remote video views (3 remotes)
     private FrameLayout[] remoteViewLayouts;
 
     public static MultiPartyVideoCallFragment newInstance() {
@@ -77,11 +80,13 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
 
         View rootView = inflater.inflate(R.layout.fragment_video_multiparty, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
-        //request a connected to room view
+        //request an initiative connection
         requestViewLayout();
 
         // Set OnClick actions for each Peer's UI.
@@ -155,6 +160,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
+        // delegate to PermissionUtils to process the permissions
         mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
     }
 
@@ -162,6 +168,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     // Methods called from the Presenter to update UI
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * Add or update local video view
+     * The local view is always in the first position
+     *
+     * @param videoView videoView of remoteView
+     */
     @Override
     public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
         if (videoView == null) {
@@ -180,10 +192,10 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
     }
 
     /**
-     * Add or update remote Peer's VideoView into the app.
+     * Add or update remote Peer's VideoView
      *
-     * @param peerIndex    index for display videoView
-     * @param remoteView   videoView of remoteView
+     * @param peerIndex  index for display videoView
+     * @param remoteView videoView of remoteView
      */
     @Override
     public void onPresenterRequestAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
@@ -194,6 +206,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         // This may sometimes be the case, for e.g. in screen sharing.
         removePeerView(peerIndex);
 
+        // Add new remote videoView to frame at specific position
         setLayoutParams(remoteView);
         remoteViewLayouts[peerIndex].addView(remoteView);
     }
@@ -212,11 +225,20 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         shiftUpRemotePeers(viewIndex);
     }
 
+    /**
+     * Get the instance of the view for implementing runtime permission
+     */
     @Override
     public Fragment onPresenterRequestGetFragmentInstance() {
         return this;
     }
 
+    /**
+     * Display the video link after recording the video
+     *
+     * @param recordingId
+     * @param msg
+     */
     @Override
     public void onPresenterRequestDisplayVideoLinkInfo(String recordingId, String msg) {
         // Create a clickable video link.
@@ -292,7 +314,6 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
      */
     private OnClickListener showMenuRemote(final int peerIndex) {
 
-        // Get peerId
         return v -> {
 
             PopupMenu.OnMenuItemClickListener clickListener =
@@ -347,7 +368,7 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
                                 return false;
                         }
                     };
-            // Add room name to title
+            // Add room info to title
             String title = mPresenter.onViewRequestGetRoomIdAndNickname();
 
             PopupMenu popupMenu = new PopupMenu(mContext, v);
@@ -390,6 +411,12 @@ public class MultiPartyVideoCallFragment extends Fragment implements MultiPartyV
         }
     }
 
+    /**
+     * refresh the connection with the specific peer index
+     *
+     * @param peerIndex  the index of the peer to refresh with
+     * @param iceRestart the option to allow refresh the ICE connection of the peer
+     */
     private void refreshConnection(int peerIndex, boolean iceRestart) {
         if (mPresenter != null) {
             mPresenter.onViewRequestRefreshConnection(peerIndex, iceRestart);

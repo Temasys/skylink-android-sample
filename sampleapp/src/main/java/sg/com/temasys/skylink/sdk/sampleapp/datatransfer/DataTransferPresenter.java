@@ -14,6 +14,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for implementing data transfer logic.
  */
 
 public class DataTransferPresenter extends BasePresenter implements DataTransferContract.Presenter {
@@ -35,6 +36,11 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         mDataTransferView = view;
         mDataTransferView.setPresenter(this);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for view to call
+    // These methods are responsible for processing requests from view
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Triggered when View request data to display to the user when entering room | rotating screen
@@ -95,6 +101,11 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         mDataTransferService.sendData(remotePeerId, data);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for service to call
+    // These methods are responsible for processing requests from service
+    //----------------------------------------------------------------------------------------------
+
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful)
@@ -124,10 +135,15 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         }
     }
 
-    private void processUpdateUI() {
+    //----------------------------------------------------------------------------------------------
+    // private methods for internal process
+    //----------------------------------------------------------------------------------------------
 
+    private void processUpdateUI() {
+        // Re fill the peers
         mDataTransferView.onPresenterRequestFillPeers(mDataTransferService.getPeersList());
 
+        // Update the UI
         processUpdateRoomDetails();
     }
 

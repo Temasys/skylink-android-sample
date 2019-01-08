@@ -25,7 +25,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
- * This class is responsible for processing logic
+ * This class is responsible for processing multi videos call logic
  */
 public class MultiPartyVideoCallPresenter extends BasePresenter implements MultiPartyVideoCallContract.Presenter {
 
@@ -36,7 +36,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     // Service helps to work with SkylinkSDK
     private MultiPartyVideoService mMultiVideoCallService;
 
-    //Permission helps to process media permission
+    //Permission helps to process media runtime permission
     private PermissionUtils mPermissionUtils;
 
     private Context mContext;
@@ -128,6 +128,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+        // delegate to PermissionUtils to process the permissions
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
@@ -238,7 +239,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
-            //start audio routing
+            //start audio routing if has audio config
             SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
             if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
                 AudioRouter.setPresenter(this);
@@ -357,6 +358,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * Process connect to room on service layer and update UI accordingly
+     * */
     private void processConnectToRoom() {
 
         //connect to SkylinkSDK
@@ -367,6 +371,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         toastLog(TAG, mContext, log);
     }
 
+    /**
+     * Update UI into connected state
+     * */
     private void processUpdateConnectedUI() {
 
         // Toggle camera back to previous state if required.

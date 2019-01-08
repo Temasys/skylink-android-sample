@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.utils;
 public final class Constants {
     public static final int TIME_OUT = 30;
 
+    // default values for room and username setting
     public static final String ROOM_NAME_AUDIO_DEFAULT = "Room-audio";
     public static final String ROOM_NAME_CHAT_DEFAULT = "Room-chat";
     public static final String ROOM_NAME_DATA_DEFAULT = "Room-dataTransfer";

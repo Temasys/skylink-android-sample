@@ -23,9 +23,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
-public class MainActivity extends AppCompatActivity
-        implements View.OnClickListener {
-
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig;
     private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer;
     private ImageButton btnAudio, btnVideo, btnChat, btnFile, btnData, btnMultiVideo;
@@ -37,11 +35,12 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // get the UI controls from layout
         getControlWidgets();
 
         initComponents();
 
-        // Load selected App key details
+        // Load selected App key and Room User setting details
         Config.loadSelectedAppKey(this);
         Config.loadRoomUserNames(this);
 
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity
         tvData.setOnClickListener(this);
         tvMultiVideo.setOnClickListener(this);
 
-        //need check imgLogo incase of landscape orientation
+        //need check imgLogo in case of landscape orientation
         //because imgLogo is not available for landscape orientation
         if (imgLogo != null)
             imgLogo.setOnClickListener(this);

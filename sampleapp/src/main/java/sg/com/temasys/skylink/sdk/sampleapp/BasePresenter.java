@@ -23,33 +23,41 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * <p>
+ * A common abstract class for all presenters.
+ * This class defined all methods which responsible for updating GUI requested by the SDK.
+ * Some of those which do not need to be override in the concrete classes can be
+ * implemented in the BasePresenter (such as just displaying toast to inform changes to user)
  */
 
 public abstract class BasePresenter {
 
-    /**
-     * process update view when connected to Skylink SDK
-     */
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from LifeCycleListener need to be implemented for all functions
+    //----------------------------------------------------------------------------------------------
+
     public void onServiceRequestConnect(boolean isSuccessful) {
     }
 
-    /**
-     * process update view when disconnect from Skylink SDK
-     */
     public void onServiceRequestDisconnect() {
     }
 
-    /**
-     * process update view when remote peer joined the room
-     */
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from RemotePeerListener need to be implemented for all functions
+    //----------------------------------------------------------------------------------------------
+
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
     }
 
-    /**
-     * process update view when remote peer left the room
-     */
     public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
     }
+
+    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from MediaListener need to be implemented for audio and video functions
+    //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
     }
@@ -75,6 +83,10 @@ public abstract class BasePresenter {
         Log.d("VideoCall", peer + " got video size changed to: " + size.toString() + ".");
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from OsListener need to be implemented for audio, video, fileTransfer, multiVideo functions
+    //----------------------------------------------------------------------------------------------
+
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
     }
 
@@ -86,8 +98,9 @@ public abstract class BasePresenter {
         PermissionUtils.onPermissionDeniedHandler(info, context);
     }
 
-    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-    }
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from DataTransferListener need to be implemented for dataTransfer function
+    //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestDataReceive(Context context, String remotePeerId, byte[] data) {
         // Check if it is one of the data that we can send.
@@ -103,6 +116,10 @@ public abstract class BasePresenter {
             toastLogLong("DataTransfer", context, log);
         }
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from FileTransferListener need to be implemented for fileTransfer function
+    //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
     }
@@ -140,11 +157,19 @@ public abstract class BasePresenter {
         toastLog("FileTransfer", context, log);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from MessagesListener need to be implemented for chat/messaging function
+    //----------------------------------------------------------------------------------------------
+
     public void onServiceRequestServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
     }
 
     public void onServiceRequestP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from RecordingListener need to be implemented for recording (in Multi Video function)
+    //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestRecordingStart(Context context, boolean recording) {
         String log = "[SRS][SA] Recording Started! isRecording=" +
@@ -168,6 +193,10 @@ public abstract class BasePresenter {
         Log.e("MultiPartyVideoCall", log);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
+    //----------------------------------------------------------------------------------------------
+
     public void onServiceRequestTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed) {
         String direction = "Send";
         if (Info.MEDIA_DIRECTION_RECV == mediaDirection) {
@@ -188,6 +217,10 @@ public abstract class BasePresenter {
         }
         Log.d("MultiPartyVideoCall", log.toString());
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which is required from AudioRouter need to be implemented for audio/video functions
+    //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
     }

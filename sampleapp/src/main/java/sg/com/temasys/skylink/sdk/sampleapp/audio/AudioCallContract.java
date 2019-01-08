@@ -7,35 +7,35 @@ import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This interface is responsible for specify behaviors of View, Presenter, Service
  */
-public interface AudioCallContract {
 
+public interface AudioCallContract {
 
     interface View extends BaseView<Presenter> {
 
         /**
-         * Get instance of the fragment for processing permission
+         * Get instance of the fragment for processing runtime audio permission
          */
         Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update UI details when changing state
+         * Update UI details when changing states (connect/disconnect/peerJoin/peerLeave/speakerOn/Off)
          */
         void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn);
 
         void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn);
     }
 
-
     interface Presenter {
 
         /**
-         * process data to display on view
+         * process data to display on view at initiative connected
          */
         void onViewRequestConnectedLayout();
 
         /**
-         * process permission result
+         * process permission result (grant/deny)
          */
         void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
@@ -45,7 +45,7 @@ public interface AudioCallContract {
         void onViewRequestChangeAudioOuput();
 
         /**
-         * process change state when view paused
+         * process change state when view paused/stop
          */
         void onViewRequestStop();
 

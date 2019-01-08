@@ -13,7 +13,10 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
 
     private final String MULTI_PARTY_VIDEO_FRAGMENT_TAG = "MULTI_PARTY_VIDEO_FRAGMENT";
 
+    // presenter instance
     private MultiPartyVideoCallPresenter mMultiPartyVideoPresenter;
+
+    // view instance
     private MultiPartyVideoCallFragment mMultiPartyVideoFragment;
 
     @Override
@@ -24,7 +27,9 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         //create presenter
         mMultiPartyVideoPresenter = new MultiPartyVideoCallPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance, just update it
         if (savedInstanceState == null) {
             mMultiPartyVideoFragment = MultiPartyVideoCallFragment.newInstance();
             getSupportFragmentManager()
@@ -50,7 +55,7 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, MULTI_PARTY_VIDEO_FRAGMENT_TAG, mMultiPartyVideoFragment);
     }
 }

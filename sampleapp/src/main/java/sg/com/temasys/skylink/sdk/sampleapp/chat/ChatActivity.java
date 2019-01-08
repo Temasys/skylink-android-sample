@@ -12,7 +12,10 @@ public class ChatActivity extends AppCompatActivity {
 
     private final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
 
+    // presenter instance
     private ChatPresenter mChatPresenter;
+
+    // view instance
     private ChatFragment mChatFragment;
 
     @Override
@@ -23,7 +26,9 @@ public class ChatActivity extends AppCompatActivity {
         //create presenter
         mChatPresenter = new ChatPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance, just update it
         if (savedInstanceState == null) {
             mChatFragment = ChatFragment.newInstance();
             getSupportFragmentManager()

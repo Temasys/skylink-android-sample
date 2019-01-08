@@ -35,7 +35,7 @@ public class SettingPresenter implements Presenter {
     @Override
     public void onViewLayoutRequested() {
 
-        boolean isAudioSpeaker = Utils.getDefaultAudioOutput();
+        boolean isAudioSpeaker = Utils.getDefaultAudioSpeaker();
         //default audio is headset
         if (!isAudioSpeaker) {
             mSettingView.onAudioHeadsetSelected();
@@ -43,7 +43,7 @@ public class SettingPresenter implements Presenter {
             mSettingView.onAudioSpeakerSelected();
         }
 
-        boolean isVideoSpeaker = Utils.getDefaultVideoOuput();
+        boolean isVideoSpeaker = Utils.getDefaultVideoSpeaker();
         //default video is headset
         if (!isVideoSpeaker) {
             mSettingView.onVideoHeadsetSelected();

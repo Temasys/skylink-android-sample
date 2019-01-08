@@ -620,11 +620,11 @@ public class Utils {
     }
 
 
-    public static boolean getDefaultAudioOutput() {
+    public static boolean getDefaultAudioSpeaker() {
         return sharedPref.getBoolean(DEFAULT_AUDIO_OUTPUT, false);
     }
 
-    public static boolean getDefaultVideoOuput() {
+    public static boolean getDefaultVideoSpeaker() {
         return sharedPref.getBoolean(DEFAULT_VIDEO_OUTPUT, false);
     }
 

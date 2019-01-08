@@ -23,11 +23,13 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 
 /**
  * A simple {@link MultiPartyFragment} subclass.
+ * This class is responsible for display UI and get user interaction
  */
 public class ChatFragment extends MultiPartyFragment implements ChatContract.View {
 
     private final String TAG = ChatFragment.class.getName();
 
+    // presenter instance to implement app logic
     private ChatContract.Presenter mPresenter;
 
     private Button btnSendServerMessage;
@@ -45,6 +47,10 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     public void setPresenter(ChatContract.Presenter presenter) {
         this.mPresenter = presenter;
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Fragment life cycle methods
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onAttach(Context context) {
@@ -65,12 +71,16 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
 
         View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
+        // init the UI controls
         initControls();
 
+        //request an initiative connection
         requestViewLayout();
 
         //Defining a click event listener for the button "Send Server Message"
@@ -95,6 +105,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((ChatActivity) context).isChangingConfigurations()) {
+            // Inform the presenter to implement closing the connection
             mPresenter.onViewRequestExit();
 
             //clear all static variables to avoid memory leak
@@ -109,9 +120,15 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods called from the Presenter to update UI
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * Clear the chat collection to start a new conversation
+     */
     @Override
     public void onPresenterRequestRefreshChatCollection() {
-
         //refresh adapter and listview selection
         if (adapter != null) {
             adapter.notifyDataSetChanged();
@@ -121,26 +138,49 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         }
     }
 
+    /**
+     * Clear the input from edit text
+     */
     @Override
     public void onPresenterRequestClearInput() {
         editChatMessage.setText("");
     }
 
+    /**
+     * Display information about remote peer joining the room
+     *
+     * @param newPeer remote peer joining the room
+     */
     @Override
     public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer) {
         addPeerRadioBtn(newPeer);
     }
 
+    /**
+     * Display information about remote peer leaves the room
+     *
+     * @param remotePeerId remote peer ID leaving the room
+     */
     @Override
     public void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId) {
         removePeerRadioBtn(remotePeerId);
     }
 
+    /**
+     * Display information about list of peers in room
+     *
+     * @param peersList
+     */
     @Override
     public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
         fillPeerRadioBtn(peersList);
     }
 
+    /**
+     * Display information about updated room details
+     *
+     * @param roomDetails
+     */
     @Override
     public void onPresenterRequestUpdateUi(String roomDetails) {
         tvRoomDetails.setText(roomDetails);
@@ -153,7 +193,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
     private void getControlWidgets(View rootView) {
         listViewChats = rootView.findViewById(R.id.lv_messages);
 
-        // [MultiParty]
+        // The controls from MultiPartyFragment
         peerRadioGroup = rootView.findViewById(R.id.radio_grp_peers);
         peerAll = rootView.findViewById(R.id.radio_btn_peer_all);
         peer1 = rootView.findViewById(R.id.radio_btn_peer1);
@@ -161,6 +201,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         peer3 = rootView.findViewById(R.id.radio_btn_peer3);
         peer4 = rootView.findViewById(R.id.radio_btn_peer4);
 
+        // The controls from chat layout
         btnSendServerMessage = rootView.findViewById(R.id.btn_send_server_message);
         btnSendP2PMessage = rootView.findViewById(R.id.btn_send_p2p_message);
         tvRoomDetails = rootView.findViewById(R.id.tv_chat_room_details);
@@ -207,6 +248,7 @@ public class ChatFragment extends MultiPartyFragment implements ChatContract.Vie
         String message = editChatMessage.getText().toString();
 
         // Sends message using the signalling server or P2P directly
+        // Inform the presenter to implement sending message
         if (isSentToServer) {
             mPresenter.onViewRequestSendServerMessage(remotePeerId, message);
         } else {

@@ -26,12 +26,28 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         mPresenter = (BasePresenter) presenter;
     }
 
+    /**
+     * Sends a user defined message to a specific remote peer or to all remote peers via a server.
+     *
+     * @param remotePeerId Id of the remote peer to whom we will send a message. Use 'null' if the
+     *                     message is to be broadcast to all remote peers in the room.
+     * @param message      User defined data
+     */
     public void sendServerMessage(String remotePeerId, String message) {
         if (mSkylinkConnection != null) {
             mSkylinkConnection.sendServerMessage(remotePeerId, message);
         }
     }
 
+    /**
+     * Sends a user defined message to a specific remote peer or to all remote peers in a direct
+     * peer to peer manner.
+     *
+     * @param remotePeerId Id of the remote peer to whom we will send a message. Use 'null' if the
+     *                     message is to be sent to all our remote peers in the room.
+     * @param message      User defined data
+     * @throws SkylinkException if the system was unable to send the message.
+     */
     public void sendP2PMessage(String remotePeerId, String message) {
         if (mSkylinkConnection != null) {
             try {
@@ -42,6 +58,10 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         }
     }
 
+    /**
+     * Sets the specified listeners for message function
+     * Message function needs to implement LifeCycleListener, RemotePeerListener, MessagesListener
+     */
     @Override
     public void setSkylinkListeners() {
         if (mSkylinkConnection != null) {
@@ -51,6 +71,10 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         }
     }
 
+    /**
+     * Get the config for message function
+     * User can custom message config by using SkylinkConfig
+     * */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();

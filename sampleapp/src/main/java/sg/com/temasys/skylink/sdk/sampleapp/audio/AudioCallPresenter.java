@@ -19,6 +19,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for implementing audio logic.
  */
 
 public class AudioCallPresenter extends BasePresenter implements AudioCallContract.Presenter {
@@ -53,6 +54,11 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         mAudioCallView.setPresenter(this);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for view to call
+    // These methods are responsible for processing requests from view
+    //----------------------------------------------------------------------------------------------
+
     /**
      * Triggered when View request data to display to the user when entering room | rotating screen
      * Try to connect to room when entering room
@@ -61,7 +67,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     @Override
     public void onViewRequestConnectedLayout() {
 
-        Log.d(TAG, "onViewLayoutRequested");
+        Log.d(TAG, "[onViewRequestConnectedLayout]");
 
         //start to connect to room when entering room
         //if not being connected, then connect
@@ -74,7 +80,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             mAudioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
             //set default for audio output
-            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioOutput());
+            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
 
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
@@ -111,30 +117,39 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         mAudioCallService.disconnectFromRoom();
 
         //reset default audio speaker
-        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioOutput());
+        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
 
         //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
     }
 
     @Override
     public void onViewRequestChangeAudioOuput() {
-        //check current speakerOn
+        //change current speakerOn
         isSpeakerOn = !isSpeakerOn;
 
+        // change button UI
         mAudioCallService.changeAudioOutput(isSpeakerOn);
     }
 
     @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+        // delegate to PermissionUtils to process the permissions
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Override methods from BasePresenter for service to call
+    // These methods are responsible for processing requests from service
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
+
+            // change UI to connected to room, but not connected to any peer
             processUpdateUI(false);
 
-            //start audio routing
+            //start audio routing if has audio config
             SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
             if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
                 AudioRouter.setPresenter(this);
@@ -145,25 +160,31 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+        // delegate to PermissionUtils to process the permissions require
         mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
     }
 
     @Override
     public void onServiceRequestDisconnect() {
-
         //stop audio routing
         SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
             AudioRouter.stopAudioRouting(mContext);
         }
 
+        // update UI
         processUpdateUI(false);
     }
 
     @Override
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
+        // change the current speaker state
         this.isSpeakerOn = isSpeakerOn;
+
+        // change button UI
         mAudioCallView.onPresenterRequestChangeAudioOutput(mAudioCallService.isPeerJoin(), isSpeakerOn);
+
+        // change speaker state in service layer
         mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
     }
 
@@ -189,11 +210,21 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         processUpdateUI(false);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // private methods for internal process
+    //----------------------------------------------------------------------------------------------
+
+    /*
+     * Update UI when changing app state
+     * */
     private void processUpdateUI(boolean isPeerJoined) {
         String strRoomDetails = processGetRoomDetails();
         mAudioCallView.onPresenterRequestUpdateUI(strRoomDetails, isPeerJoined, isSpeakerOn);
     }
 
+    /*
+     * Get the info about room and app state to update the UI
+     * */
     private String processGetRoomDetails() {
         boolean isConnected = mAudioCallService.isConnectingOrConnected();
         String roomName = mAudioCallService.getRoomName(Config.ROOM_NAME_AUDIO);
@@ -204,6 +235,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
         String roomDetails = "You are not connected to any room";
 
+        // Change room UI base on the room state
         if (isConnected) {
             roomDetails = "Now connected to Room named : " + roomName
                     + "\n\nYou are signed in as : " + userName + "\n";

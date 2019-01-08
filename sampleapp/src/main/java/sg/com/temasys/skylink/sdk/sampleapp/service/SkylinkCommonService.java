@@ -37,8 +37,9 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
- * This class is responsible for implementing all SkylinkListeners for common use of all demos/calls
- * And directly works with SkylinkSDK
+ * This class is responsible for implementing all SkylinkListeners for common use of all demos/functions
+ * And directly works with SkylinkSDK.
+ * In case user does not want to implement a specific demo/function, no need to implement correspond listener(s).
  */
 
 public abstract class SkylinkCommonService implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener, MessagesListener,
@@ -62,7 +63,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //this variable need to be static for configuration change
     protected static List<SkylinkPeer> mPeersList;
 
-    //room name and user name for each demo/call
+    //room name and user name for each demo/function
     protected String mRoomName;
     protected String mUserName;
 
@@ -75,7 +76,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         SkylinkCommonService.mSkylinkConnection = mSkylinkConnection;
     }
 
-    //abstract methods can be implemented in each demo/call like AudioService, VideoService,...
+    //abstract methods need to be implemented in each demo/function like AudioService, VideoService,...
     public abstract void setSkylinkListeners();
 
     public abstract SkylinkConfig getSkylinkConfig();
@@ -83,6 +84,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //----------------------------------------------------------------------------------------------
     // Override methods from SkylinkListeners
     // These methods are responsible to inform user the results from SkylinkSDK
+    //----------------------------------------------------------------------------------------------
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from LifeCycleListener need to be implemented for all functions
     //----------------------------------------------------------------------------------------------
 
     /**
@@ -162,6 +167,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onWarning(int errorCode, String message) {
         Utils.handleSkylinkWarning(errorCode, message, mContext, TAG);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from MediaListener need to be implemented for audio and video functions
+    //----------------------------------------------------------------------------------------------
 
     /**
      * This is triggered from SkylinkSDK when successfully captures the local device's camera input.
@@ -320,6 +329,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         mPresenter.onServiceRequestVideoSizeChange(peerId, size);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from OsListener need to be implemented for audio, video, fileTransfer, multiVideo functions
+    //----------------------------------------------------------------------------------------------
+
     /**
      * This is triggered from SkylinkSDK when Android Runtime permission is required to use
      * devices to perform media functions like audio, camera, file transfer,...
@@ -389,6 +402,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         mPresenter.onServiceRequestPermissionDenied(mContext, info);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from RemotePeerListener need to be implemented for all functions
+    //----------------------------------------------------------------------------------------------
+
     /**
      * This is triggered when a remote peer joins the room.
      * It will be triggered before onRemotePeerMediaReceive is triggered
@@ -422,6 +439,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         logTag += "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
         toastLog(TAG, mContext, logTag);
+
+
     }
 
     /**
@@ -514,6 +533,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from DataTransferListener need to be implemented for dataTransfer function
+    //----------------------------------------------------------------------------------------------
+
     /**
      * This is triggered when data is received
      *
@@ -526,6 +549,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         mPresenter.onServiceRequestDataReceive(mContext, remotePeerId, data);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from FileTransferListener need to be implemented for fileTransfer function
+    //----------------------------------------------------------------------------------------------
 
     /**
      * This is triggered upon receiving a file transfer request from a peer.
@@ -627,6 +654,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         mPresenter.onServiceRequestFileReceiveProgress(mContext, remotePeerId, fileName, percentage);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from MessagesListener need to be implemented for chat/messaging function
+    //----------------------------------------------------------------------------------------------
+
     /**
      * This is triggered when a broadcast or private message is received from a remote peer via a
      * server.
@@ -660,6 +691,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         mPresenter.onServiceRequestP2PMessageReceive(remotePeerId, message, isPrivate);
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from RecordingListener need to be implemented for recording (in Multi Video function)
+    //----------------------------------------------------------------------------------------------
 
     /**
      * This is triggered to indicate that recording has started for this room.
@@ -714,6 +749,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         mPresenter.onServiceRequestRecordingError(mContext, recordingId, errorCode, description);
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
+    //----------------------------------------------------------------------------------------------
+
     /**
      * This is triggered when the instantaneous transfer speed of a media stream,
      * at the moment of request, is available.
@@ -746,7 +785,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     //----------------------------------------------------------------------------------------------
-    // Methods helps to work with SkylinkSDK
+    // Public methods helps to work with SkylinkSDK
     //----------------------------------------------------------------------------------------------
 
     public boolean isConnectingOrConnected() {
@@ -829,6 +868,100 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     /**
+     * Provides the room ID combined with default room name of the room currently connected to.
+     */
+    public String getRoomName(String defaultName) {
+        //in case of display room Name and room Id
+        String roomId = "";
+        if (mSkylinkConnection != null) {
+            roomId = mSkylinkConnection.getRoomId();
+        }
+
+        return defaultName + "(" + roomId + ")";
+    }
+
+    public String getUserName(String peerId, String defaultName) {
+        if (mSkylinkConnection == null) {
+            return defaultName;
+        }
+        return getPeerIdNick(peerId);
+    }
+
+    public String getPeerNameById(String peerId) {
+        if (mSkylinkConnection != null) {
+            return getPeerIdNick(peerId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the room name with room id combined with local peer name and peer id for a specific demo/function
+     */
+    public String getRoomIdAndNickname(Constants.CONFIG_TYPE typeCall) {
+        if (mSkylinkConnection == null) {
+            return null;
+        }
+
+        String roomName = Utils.getRoomNameByType(typeCall);
+
+        String title = "Room: " + getRoomIdAndNickname(roomName);
+        title += "\r\n" + getPeerIdNick(getPeerId());
+        return title;
+
+    }
+
+    /**
+     * Get the room name with room id
+     */
+    public String getRoomIdAndNickname(String roomName) {
+        //in case of display room Name and room Id
+        String roomId = "";
+        if (mSkylinkConnection != null) {
+            roomId = mSkylinkConnection.getRoomId();
+        }
+
+        return roomName + "(" + roomId + ")";
+    }
+
+    /**
+     * Get local/self PeerId, or return null if not available.
+     */
+    public String getPeerId() {
+        if (mSkylinkConnection != null) {
+            return mSkylinkConnection.getPeerId();
+        }
+
+        return null;
+    }
+
+    public List<SkylinkPeer> getPeersList() {
+        return mPeersList;
+    }
+
+    /**
+     * Get total number of peers in room
+     */
+    public int getTotalPeersInRoom() {
+        if (mPeersList == null)
+            return 0;
+
+        return mPeersList.size();
+    }
+
+    public void setRoomName(String roomName) {
+        mRoomName = roomName;
+    }
+
+    public void setUserName(String userName) {
+        mUserName = userName;
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // Private methods for internal processing
+    //----------------------------------------------------------------------------------------------
+
+    /**
      * Retrieves the user defined data object of a peer.
      *
      * @param peerId The PeerId of the peer whose UserData is to be retrieved, or NULL for self.
@@ -873,92 +1006,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             return mSkylinkConnection.getUserInfo(userId);
         }
         return null;
-    }
-
-    /**
-     * Provides the room ID combined with default room name of the room currently connected to.
-     */
-    public String getRoomName(String defaultName) {
-        //in case of display room Name and room Id
-        String roomId = "";
-        if (mSkylinkConnection != null) {
-            roomId = mSkylinkConnection.getRoomId();
-        }
-
-        return defaultName + "(" + roomId + ")";
-    }
-
-    public String getUserName(String peerId, String defaultName) {
-        if (mSkylinkConnection == null) {
-            return defaultName;
-        }
-        return getPeerIdNick(peerId);
-    }
-
-    public String getPeerNameById(String peerId) {
-        if (mSkylinkConnection != null) {
-            return getPeerIdNick(peerId);
-        }
-
-        return null;
-    }
-
-    public String getRoomIdAndNickname(Constants.CONFIG_TYPE typeCall) {
-        if (mSkylinkConnection == null) {
-            return null;
-        }
-
-        String roomName = Utils.getRoomNameByType(typeCall);
-
-        String title = "Room: " + getRoomIdAndNickname(roomName);
-        // Add PeerId to title if a Peer occupies clicked location.
-        title += "\r\n" + getPeerIdNick(getPeerId());
-        return title;
-
-    }
-
-    public String getRoomIdAndNickname(String roomName) {
-
-        //in case of display room Name and room Id
-        String roomId = "";
-        if (mSkylinkConnection != null) {
-            roomId = mSkylinkConnection.getRoomId();
-        }
-
-        return roomName + "(" + roomId + ")";
-    }
-
-    /**
-     * Get local PeerId, or return null if not available.
-     */
-    public String getPeerId() {
-        if (mSkylinkConnection != null) {
-            return mSkylinkConnection.getPeerId();
-        }
-
-        return null;
-    }
-
-    public List<SkylinkPeer> getPeersList() {
-        return mPeersList;
-    }
-
-    /**
-     * Get total number of peers in room
-     */
-    public int getTotalPeersInRoom() {
-        if (mPeersList == null)
-            return 0;
-
-        return mPeersList.size();
-    }
-
-    public void setRoomName(String roomName) {
-        mRoomName = roomName;
-    }
-
-    public void setUserName(String userName) {
-        mUserName = userName;
     }
 
 }

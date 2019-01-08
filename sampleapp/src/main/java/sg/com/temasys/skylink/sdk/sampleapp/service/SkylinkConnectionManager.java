@@ -70,7 +70,7 @@ public class SkylinkConnectionManager {
      * Connects to a room using a SkylinkConnectionString that caller MUST ensure is URL safe.
      *
      * @param typeCall Specify which is current demo/call like audio/video/file/...
-     * @return SkylinkConnection
+     * @return SkylinkConnection the instance of SkylinkConnection
      */
     public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall) {
         //check internet connection first

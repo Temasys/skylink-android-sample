@@ -23,6 +23,7 @@ import static sg.com.temasys.skylink.sdk.rtc.Info.getInfoString;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is used to process the runtime permission required by media usage
  */
 
 public class PermissionUtils {

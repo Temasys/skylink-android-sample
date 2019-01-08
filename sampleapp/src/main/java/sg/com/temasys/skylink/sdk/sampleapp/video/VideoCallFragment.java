@@ -34,11 +34,13 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * A simple {@link Fragment} subclass.
+ * This class is responsible for display UI and get user interaction
  */
 public class VideoCallFragment extends Fragment implements VideoCallContract.View {
 
     private final String TAG = VideoCallFragment.class.getName();
 
+    // presenter instance to implement app logic
     private VideoCallContract.Presenter mPresenter;
 
     private Context mContext;
@@ -72,6 +74,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         this.mPresenter = presenter;
     }
 
+    //----------------------------------------------------------------------------------------------
+    // Fragment life cycle methods
+    //----------------------------------------------------------------------------------------------
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -92,14 +98,19 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
         View rootView = inflater.inflate(R.layout.fragment_video_call, container, false);
 
+        // get the UI controls from layout
         getControlWidgets(rootView);
 
+        // setup the action bar
         setActionBar();
 
+        // init the UI controls
         initComponents(rootView);
 
+        //request an initiative connection
         requestViewLayout();
 
+        // define the actions for the buttons clicks
         btnSpeaker.setOnClickListener(v -> {
             mPresenter.onViewRequestChangeAudioOutput();
         });
@@ -117,11 +128,8 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         });
 
         btnDisconnect.setOnClickListener(v -> {
-
             mPresenter.onViewRequestDisconnectFromRoom();
-
             toastLog(TAG, mContext, "Clicked Disconnect!");
-
             onPresenterRequestDisconnectUIChange();
         });
 
@@ -160,12 +168,17 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
+        // Changing video custom buttons position when screen orientation changed
         if (newConfig.orientation == ORIENTATION_PORTRAIT) {
             changeFloatingButtons(false);
         } else {
             changeFloatingButtons(true);
         }
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Methods called from the Presenter to update UI
+    //----------------------------------------------------------------------------------------------
 
     /**
      * Change certain UI elements when trying to connect to room, but not connected
@@ -224,35 +237,50 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update the value of TextView for local input video resolution
+     */
     @Override
     public void onPresenterRequestUpdateUiResInput(VideoResolution videoInput) {
         setUiResTvStats(videoInput, tvResInput);
     }
 
+    /**
+     * Update the value of TextView for local sent video resolution
+     */
     @Override
     public void onPresenterRequestUpdateUiResSent(VideoResolution videoSent) {
         setUiResTvStats(videoSent, tvResSent);
     }
 
+    /**
+     * Update the value of TextView for remote received video resolution
+     */
     @Override
     public void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive) {
         setUiResTvStats(videoReceive, tvResRecv);
     }
 
+    /**
+     * Update the value of TextView when changing video resolution width x height Seek bar
+     */
     @Override
     public boolean onPresenterRequestUpdateUiResDimInfo(int width, int height) {
         return setUiResTvDim(width, height);
     }
 
+    /**
+     * Update the value of TextView when changing video resolution frame rate Seek bar
+     */
     @Override
     public void onPresenterRequestUpdateUiResFpsInfo(int fps) {
         setUiResTvFps(fps);
     }
 
     /**
-     * Add or update our self VideoView into the app.
+     * Add or update our self VideoView into the view layout.
      *
-     * @param videoView
+     * @param videoView local video view
      */
     @Override
     public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
@@ -327,7 +355,9 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     /**
-     * Add or update remote Peer's VideoView into the app.
+     * Add or update remote Peer's VideoView into the view layout.
+     *
+     * @param remoteVideoView
      */
     @Override
     public void onPresenterRequestAddRemoteView(SurfaceViewRenderer remoteVideoView) {
@@ -365,6 +395,11 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
 
     }
 
+    /**
+     * Remove remote video view
+     * <p>
+     * Change layout orientation to Vertical when there is only 1 local video view
+     */
     @Override
     public void onPresenterRequestRemoveRemotePeer() {
         View peerView = linearLayout.findViewWithTag("peer");
@@ -374,11 +409,20 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         linearLayout.setOrientation(LinearLayout.VERTICAL);
     }
 
+    /**
+     * Get the instance of the view for implementing runtime permission
+     */
     @Override
     public Fragment onPresenterRequestGetFragmentInstance() {
         return this;
     }
 
+    /**
+     * Update UI (display toast info) about remote audio state
+     *
+     * @param isAudioMuted remote audio state
+     * @param isToast      display toast or not
+     */
     @Override
     public void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast) {
         if (isAudioMuted) {
@@ -394,6 +438,12 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update UI (display toast info) about remote video state
+     *
+     * @param isVideoMuted remote video state
+     * @param isToast      display toast or not
+     */
     @Override
     public void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast) {
         if (isVideoMuted) {
@@ -409,16 +459,30 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update the max range of the width x height resolution seek bar
+     *
+     * @param maxDimRange
+     */
     @Override
     public void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange) {
         seekBarResDim.setMax(maxDimRange);
     }
 
+    /**
+     * Update the max range of the frame rate resolution seek bar
+     *
+     * @param maxFpsRange
+     */
     @Override
     public void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange) {
         seekBarResFps.setMax(maxFpsRange);
     }
 
+    /**
+     * Update the UI when changing width x height video resolution.
+     * Update on both the seek bar and the text view
+     */
     @Override
     public void onPresenterRequestUpdateResDimInfo(int index, int width, int height) {
         // Set the SeekBar
@@ -427,6 +491,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         setUiResTvDim(width, height);
     }
 
+    /**
+     * Update the UI when changing frame rate video resolution.
+     * Update on both the seek bar and the text view
+     */
     @Override
     public void onPresenterRequestUpdateResFpsInfo(int index, int fps) {
         // Set the SeekBar
@@ -435,6 +503,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         setUiResTvFps(fps);
     }
 
+    /**
+     * Update the audio output button when being requested from presenter
+     * For example: when the phone connects to a bluetooth headset, the speaker is automatically off
+     */
     @Override
     public void onPresenterRequestChangeAudioOuput(boolean isSpeakerOn) {
         if (isSpeakerOn) {
@@ -449,6 +521,9 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update the audio button UI when changing audio state
+     */
     @Override
     public void onPresenterRequestChangeAudioUI(boolean isAudioMute) {
         if (isAudioMute) {
@@ -459,6 +534,9 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update the video button UI when changing video state
+     */
     @Override
     public void onPresenterRequestChangeVideoUI(boolean isVideoMute) {
         if (isVideoMute) {
@@ -469,6 +547,9 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update the camera button UI when changing camera state
+     */
     @Override
     public void onPresenterRequestChangeCameraUI(boolean isCameraMute) {
         if (isCameraMute) {
@@ -479,9 +560,13 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /**
+     * Update the view layout when changing screen orientation.
+     * <p>
+     * Change the custom floating buttons position
+     */
     @Override
     public void onPresenterRequestchangeViewLayout() {
-        //make floating buttons
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             changeFloatingButtons(false);
         } else {
@@ -537,7 +622,8 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         //can not edit room name
         tvRoomName.setEnabled(false);
 
-        //make floating buttons
+        // make floating buttons
+        // changing button positions base on the screen orientation
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             changeFloatingButtons(false);
         } else {
@@ -626,7 +712,6 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
     }
 
     private void setUiResControlsVisibility(int visibility) {
-
         tvInput.setVisibility(visibility);
         tvSent.setVisibility(visibility);
         tvRecv.setVisibility(visibility);
@@ -755,6 +840,9 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /*
+     * Changing view layout base on the screen orientation
+     * */
     private void changeFloatingButtons(boolean isLandscapeMode) {
         if (!isLandscapeMode) {
             linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -802,6 +890,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         }
     }
 
+    /*
+     * Changing floating buttons position in Portrait mode
+     * All floating buttons will be located in the right of the layout
+     * */
     private void changeFloatingButtonPortrait(FloatingActionButton btn) {
         int landWidth = (int) mContext.getResources().getDimension(R.dimen.floating_btn_size);
         int margin = (int) mContext.getResources().getDimension(R.dimen.dp_10dp);
@@ -817,19 +909,29 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         Drawable backgroundSrc = null;
         if (btn == btnDisconnect) {
             params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_call_end, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_call_end, null);
+            }
         } else if (btn == btnCameraToggle) {
             params.addRule(RelativeLayout.ABOVE, R.id.disconnect);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_camera_active, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_camera_active, null);
+            }
         } else if (btn == btnVideoMute) {
             params.addRule(RelativeLayout.ABOVE, R.id.toggle_camera);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_video_active, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_video_active, null);
+            }
         } else if (btn == btnAudioMute) {
             params.addRule(RelativeLayout.ABOVE, R.id.toggle_video);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_audio_active, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_audio_active, null);
+            }
         } else if (btn == btnSpeaker) {
             params.addRule(RelativeLayout.ABOVE, R.id.toggle_audio);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
+            }
         }
 
         btn.setLayoutParams(params);
@@ -838,6 +940,10 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
             btn.setBackgroundDrawable(backgroundSrc);
     }
 
+    /*
+     * Changing floating buttons position in Landscape mode
+     * All floating buttons will be located in the left of the layout / on the local video side
+     * */
     private void changeFloatingButtonLandscape(FloatingActionButton btn) {
         int landWidth = (int) mContext.getResources().getDimension(R.dimen.floating_btn_size_land);
         int margin = (int) mContext.getResources().getDimension(R.dimen.dp_10dp);
@@ -853,19 +959,29 @@ public class VideoCallFragment extends Fragment implements VideoCallContract.Vie
         Drawable backgroundSrc = null;
         if (btn == btnDisconnect) {
             params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_call_end, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_call_end, null);
+            }
         } else if (btn == btnCameraToggle) {
             params.addRule(RelativeLayout.ABOVE, R.id.disconnect);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_camera_active, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_camera_active, null);
+            }
         } else if (btn == btnVideoMute) {
             params.addRule(RelativeLayout.ABOVE, R.id.toggle_camera);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_video_active, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_video_active, null);
+            }
         } else if (btn == btnAudioMute) {
             params.addRule(RelativeLayout.ABOVE, R.id.toggle_video);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_audio_active, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.icon_audio_active, null);
+            }
         } else if (btn == btnSpeaker) {
             params.addRule(RelativeLayout.ABOVE, R.id.toggle_audio);
-            backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrc = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
+            }
         }
 
         btn.setLayoutParams(params);

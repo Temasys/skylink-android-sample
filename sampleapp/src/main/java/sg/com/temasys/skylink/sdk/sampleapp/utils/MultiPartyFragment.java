@@ -16,12 +16,15 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by xiangrong on 16/2/16.
+ *
+ * This class is commonly used for display multi peers in room
  */
 public class MultiPartyFragment extends Fragment {
 
     private static final String TAG = MultiPartyFragment.class.getName();
 
     // RadioGroup and RadioButtons for selection of Peer(s)
+    // default is 4 peers
     protected static RadioGroup peerRadioGroup;
     protected static RadioButton peerAll;
     protected static RadioButton peer1;

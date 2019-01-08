@@ -13,18 +13,24 @@ public class AudioCallActivity extends AppCompatActivity {
 
     private final String AUDIO_CALL_FRAGMENT_TAG = "AUDIO_CALL_FRAGMENT";
 
+    // presenter instance
     private AudioCallPresenter mAudioCallPresenter;
+
+    // view instance
     private AudioCallFragment mAudioCallFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audio_call);
 
-        //create presenter
+        // create presenter
         mAudioCallPresenter = new AudioCallPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance, just update it
         if (savedInstanceState == null) {
             mAudioCallFragment = AudioCallFragment.newInstance();
             getSupportFragmentManager()
@@ -36,7 +42,7 @@ public class AudioCallActivity extends AppCompatActivity {
                     .findFragmentByTag(AUDIO_CALL_FRAGMENT_TAG);
         }
 
-        //link view and presenter
+        //link between view and presenter
         if (mAudioCallFragment != null)
             mAudioCallPresenter.setView(mAudioCallFragment);
     }
