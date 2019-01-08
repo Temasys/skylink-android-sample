@@ -6,7 +6,12 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.Camera1Enumerator;
+import org.webrtc.Camera2Enumerator;
+import org.webrtc.CameraEnumerator;
+import org.webrtc.CameraVideoCapturer;
 import org.webrtc.SurfaceViewRenderer;
+import org.webrtc.VideoCapturer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -792,9 +797,168 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         return mSkylinkConnectionManager.isConnectingOrConnected();
     }
 
+    /**
+     * Connect to room using a {@link SkylinkConfig.VideoDevice} that:
+     * - Is appropriate for the {@link SkylinkConfig}, and
+     * - Takes into account the default {@link SkylinkConfig.VideoDevice} set in SA Config.
+     *
+     * @param typeCall
+     */
     public void connectToRoom(Constants.CONFIG_TYPE typeCall) {
-        mSkylinkConnectionManager.connectToRoom(typeCall);
+        // Check if custom VideoCapturer is required.
+        boolean useCustomCapturer = false;
+        switch (typeCall) {
+            case AUDIO:
+            case CHAT:
+            case DATA:
+            case FILE:
+                break;
+            case VIDEO:
+            case MULTI_PARTY_VIDEO:
+                useCustomCapturer = true;
+                break;
+        }
+
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        if (videoDevice != SkylinkConfig.VideoDevice.CUSTOM_CAPTURER) {
+            useCustomCapturer = false;
+        }
+        VideoCapturer customCapturer = null;
+        if (useCustomCapturer) {
+            customCapturer = createCameraVideoCapturer();
+        }
+
+        mSkylinkConnectionManager.connectToRoom(typeCall, customCapturer);
     }
+
+    /**
+     * Create a {@link CameraVideoCapturer}.
+     *
+     * @return Null if unable to create capturer.
+     */
+    private VideoCapturer createCameraVideoCapturer() {
+        String logTag = "";
+        String log;
+        CameraEnumerator cameraEnumerator = getCameraEnumerator();
+        if (cameraEnumerator == null) {
+            log = logTag + "Unable to create cameraVideoCapturer as we could not get a CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+        String[] cameraNames = cameraEnumerator.getDeviceNames();
+        if (cameraNames == null || cameraNames.length < 1) {
+            log = logTag + "Unable to create cameraVideoCapturer as no camera was detected!";
+            Log.d(TAG, log);
+            return null;
+        }
+        // Start with the first named camera.
+        String cameraName = cameraNames[0];
+        CameraVideoCapturer.CameraEventsHandler cameraEventsHandler =
+                new CameraVideoCapturer.CameraEventsHandler() {
+                    String logTag = "[SA][CustomCapturer] ";
+                    String log;
+
+                    @Override
+                    public void onCameraError(String errorDescription) {
+                        log = logTag + "Camera had an error! Error: " + errorDescription;
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraDisconnected() {
+                        log = logTag + "Camera disconnected.";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraFreezed(String errorDescription) {
+                        log = logTag + "Camera frozed! Error: " + errorDescription;
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraOpening(String cameraName) {
+                        log = logTag + "Camera opened: Camera name: " + cameraName + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onFirstFrameAvailable() {
+                        log = logTag + "Camera first frame available.";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraClosed() {
+                        log = logTag + "Camera closed.";
+                        Log.d(TAG, log);
+                    }
+                };
+        VideoCapturer cameraVideoCapturer =
+                cameraEnumerator.createCapturer(cameraName, cameraEventsHandler);
+        log = logTag + "Created CameraVideoCapturer: " + cameraVideoCapturer;
+        Log.d(TAG, log);
+        return cameraVideoCapturer;
+    }
+
+    /**
+     * Get the CameraEnumerator to use.
+     * If Camera2 is supported, use Camera2Enumerator.
+     * Otherwise use Camera1Enumerator.
+     *
+     * @return
+     */
+    private CameraEnumerator getCameraEnumerator() {
+        String logTag = "[SMS][getCamEnum] ";
+        String log = logTag;
+
+        Context context = mContext.getApplicationContext();
+        if (context == null) {
+            log = logTag + "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean canUseCamera2 = isUseCamera2();
+        if (canUseCamera2 == null) {
+            log += "Unable to get CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        CameraEnumerator enumerator;
+        if (canUseCamera2) {
+            enumerator = new Camera2Enumerator(context);
+            Log.d(TAG, "Using camera2 enumerator.");
+        } else {
+            enumerator = new Camera1Enumerator();
+            Log.d(TAG, "Using camera1 enumerator.");
+        }
+        return enumerator;
+    }
+
+    /**
+     * Check if able to use android.hardware.camera2 (Lollipop and above).
+     *
+     * @return null if unable to perform check, e.g. if context is null.
+     */
+    private Boolean isUseCamera2() {
+        String logTag = "[SMS][isUseCam2] ";
+        String log = logTag;
+
+        Context context = mContext.getApplicationContext();
+        if (context == null) {
+            log += "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean result = Camera2Enumerator.isSupported(context);
+        log += "Camera2 is supported: " + result + ".";
+        Log.d(TAG, log);
+        return result;
+    }
+
 
     public void disconnectFromRoom() {
         mSkylinkConnectionManager.disconnectFromRoom();

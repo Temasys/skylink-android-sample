@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ll_audio_call"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+                android:id="@+id/ll_audio_call"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/black"
             android:textIsSelectable="true"
-            android:textSize="@dimen/sp_12" />
+            android:textSize="@dimen/sp_12"/>
     </ScrollView>
 
     <LinearLayout
@@ -62,14 +62,14 @@
                 android:layout_height="@dimen/dp_50dp"
                 android:layout_marginRight="@dimen/dp_30dp"
                 android:background="@drawable/button_circle"
-                android:src="@drawable/ic_audio_speaker" />
+                android:src="@drawable/ic_audio_speaker"/>
 
             <ImageButton
                 android:id="@+id/btnAudioEnd"
                 android:layout_width="@dimen/dp_50dp"
                 android:layout_height="@dimen/dp_50dp"
                 android:background="@drawable/button_circle_call_end"
-                android:src="@drawable/ic_audio_call_end" />
+                android:src="@drawable/ic_audio_call_end"/>
         </LinearLayout>
     </LinearLayout>
 

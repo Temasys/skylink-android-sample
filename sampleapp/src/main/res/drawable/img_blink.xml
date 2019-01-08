@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<animation-list xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/selected" android:oneshot="false">
-    <item android:drawable="@drawable/connecting_0" android:duration="400" />
-    <item android:drawable="@drawable/connecting_1" android:duration="400" />
-    <item android:drawable="@drawable/connecting_2" android:duration="400" />
-    <item android:drawable="@drawable/connecting_3" android:duration="400" />
-    <item android:drawable="@drawable/connecting" android:duration="400" />
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/selected"
+                android:oneshot="false">
+    <item
+        android:drawable="@drawable/connecting_0"
+        android:duration="400"/>
+    <item
+        android:drawable="@drawable/connecting_1"
+        android:duration="400"/>
+    <item
+        android:drawable="@drawable/connecting_2"
+        android:duration="400"/>
+    <item
+        android:drawable="@drawable/connecting_3"
+        android:duration="400"/>
+    <item
+        android:drawable="@drawable/connecting"
+        android:duration="400"/>
 </animation-list>

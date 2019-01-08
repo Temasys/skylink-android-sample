@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SampleApp 0.11.1</string>
+    <string name="app_name">SampleApp 0.11.0</string>
     <string name="label_all_peers">All Peer(s)</string>
     <string name="title_section1"> Audio Call </string>
     <string name="title_section2"> Video Call </string>
@@ -60,6 +60,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="default_audio_output">Default audio output for audio</string>
     <string name="default_video_output">Default audio output for video</string>
+    <string name="camera_custom">Camera Custom</string>
     <string name="camera_front">Camera front</string>
     <string name="camera_back">Camera back</string>
     <string name="radio_headset">Headset</string>
@@ -74,6 +75,5 @@
     <string name="speaker_on">Speaker</string>
     <string name="enable_speaker">Enabled Speaker</string>
     <string name="enable_headset">Enabled Headset</string>
-
 
 </resources>

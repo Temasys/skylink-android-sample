@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/contentContainer"
@@ -34,7 +34,7 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:gravity="center_vertical"
-                        android:src="@drawable/ic_audio_icon" />
+                        android:src="@drawable/ic_audio_icon"/>
 
                     <TextView
                         android:id="@+id/tvAudio"
@@ -42,7 +42,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/btnAudioCall"
                         android:gravity="center_horizontal"
-                        android:text="@string/audio" />
+                        android:text="@string/audio"/>
 
                 </RelativeLayout>
             </LinearLayout>
@@ -67,7 +67,7 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:gravity="center_vertical"
-                        android:src="@drawable/ic_video_icon" />
+                        android:src="@drawable/ic_video_icon"/>
 
                     <TextView
                         android:id="@+id/tvVideo"
@@ -75,7 +75,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/btnVideoCall"
                         android:gravity="center_horizontal"
-                        android:text="@string/video" />
+                        android:text="@string/video"/>
 
                 </RelativeLayout>
             </LinearLayout>
@@ -99,7 +99,7 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:gravity="center_vertical"
-                        android:src="@drawable/ic_chat_icon" />
+                        android:src="@drawable/ic_chat_icon"/>
 
                     <TextView
                         android:id="@+id/tvChat"
@@ -107,7 +107,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/btnChat"
                         android:gravity="center_horizontal"
-                        android:text="@string/chat" />
+                        android:text="@string/chat"/>
 
                 </RelativeLayout>
             </LinearLayout>
@@ -131,7 +131,7 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:gravity="center_vertical"
-                        android:src="@drawable/ic_file_transfer_icon" />
+                        android:src="@drawable/ic_file_transfer_icon"/>
 
                     <TextView
                         android:id="@+id/tvFileTransfer"
@@ -139,7 +139,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/btnFileTransfer"
                         android:gravity="center_horizontal"
-                        android:text="@string/fileTransfer" />
+                        android:text="@string/fileTransfer"/>
 
                 </RelativeLayout>
             </LinearLayout>
@@ -164,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:gravity="center_vertical"
-                        android:src="@drawable/ic_data_transfer_icon" />
+                        android:src="@drawable/ic_data_transfer_icon"/>
 
                     <TextView
                         android:id="@+id/tvDataTransfer"
@@ -172,7 +172,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/btnDataTransfer"
                         android:gravity="center_horizontal"
-                        android:text="@string/dataTransfer" />
+                        android:text="@string/dataTransfer"/>
 
                 </RelativeLayout>
             </LinearLayout>
@@ -196,7 +196,7 @@
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
                         android:gravity="center_vertical"
-                        android:src="@drawable/ic_multi_video_call_icon" />
+                        android:src="@drawable/ic_multi_video_call_icon"/>
 
                     <TextView
                         android:id="@+id/tvMultiVideoCall"
@@ -204,7 +204,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/btnMultiVideoCall"
                         android:gravity="center_horizontal"
-                        android:text="@string/multiVideo" />
+                        android:text="@string/multiVideo"/>
 
                 </RelativeLayout>
             </LinearLayout>

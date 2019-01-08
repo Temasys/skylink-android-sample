@@ -42,7 +42,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
      * @param file     The file that is to be shared.
      */
     public void sendFile(String remotePeerId, File file) {
-        if(mSkylinkConnection == null)
+        if (mSkylinkConnection == null)
             return;
 
         // Send request to peer requesting permission for file transfer
@@ -72,7 +72,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
      * @param isPermitted  Whether permission was granted for the file share to proceed.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId, String downloadedFilePath, boolean isPermitted) {
-        if(mSkylinkConnection == null)
+        if (mSkylinkConnection == null)
             return;
 
         try {

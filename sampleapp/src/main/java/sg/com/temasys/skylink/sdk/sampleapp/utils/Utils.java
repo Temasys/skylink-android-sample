@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaScannerConnection;
@@ -43,9 +44,9 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
 import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_OUTPUT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_CAMERA_OUTPUT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_OUTPUT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_AUDIO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREFERENCES_NAME;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
@@ -245,9 +246,14 @@ public class Utils {
         skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
 */
 /*
-        // To enable logs from Skylink SDK (e.g. during debugging),
-        // Uncomment the following. Do not enable logs for production apps!
+        // To enable logs from Skylink SDK (e.g. during debugging):
+        // Do not enable logs for production apps!
         skylinkConfig.setEnableLogs(true);
+*/
+/*
+        // To force TURN:
+        skylinkConfig.setAllowHost(false);
+        skylinkConfig.setAllowStun(false);
 */
         skylinkConfig.setTimeout(Constants.TIME_OUT);
 
@@ -621,15 +627,50 @@ public class Utils {
 
 
     public static boolean getDefaultAudioSpeaker() {
-        return sharedPref.getBoolean(DEFAULT_AUDIO_OUTPUT, false);
+        return sharedPref.getBoolean(DEFAULT_SPEAKER_AUDIO, false);
     }
 
     public static boolean getDefaultVideoSpeaker() {
-        return sharedPref.getBoolean(DEFAULT_VIDEO_OUTPUT, false);
+        return sharedPref.getBoolean(DEFAULT_SPEAKER_VIDEO, false);
     }
 
-    public static boolean getDefaultCameraOutput() {
-        return sharedPref.getBoolean(DEFAULT_CAMERA_OUTPUT, false);
+    /**
+     * Get the default {@link SkylinkConfig.VideoDevice} that is used.
+     * {@link SkylinkConfig.VideoDevice#CAMERA_FRONT} is set and used if none are set.
+     *
+     * @return
+     */
+    public static SkylinkConfig.VideoDevice getDefaultVideoDevice() {
+        String logTag = "[Utils][getDefaultCameraOutput] ";
+        String log = logTag + "The value in Shared Preference is not set!";
+        /** Default VideoDevice is {@link SkylinkConfig.VideoDevice#CAMERA_FRONT} */
+        final SkylinkConfig.VideoDevice cameraFront = SkylinkConfig.VideoDevice.CAMERA_FRONT;
+        SkylinkConfig.VideoDevice defaultVideoDevice = null;
+
+        // Get string value saved in sharePref.
+        String savedValue = sharedPref.getString(DEFAULT_VIDEO_DEVICE, null);
+        if (savedValue != null) {
+            try {
+                defaultVideoDevice = SkylinkConfig.VideoDevice.valueOf(savedValue);
+            } catch (IllegalArgumentException e) {
+                log = logTag + "The value in Shared Preference is invalid!";
+            }
+        }
+
+        /** If defaultVideoDevice is not set in sharedPref, set it to {@link cameraFront} */
+        if (defaultVideoDevice == null) {
+            Log.d(TAG, log);
+            defaultVideoDevice = cameraFront;
+            Config.setPrefString(DEFAULT_VIDEO_DEVICE,
+                    cameraFront.name(), (Activity) mContext);
+            log = logTag + "Set Shared Preference to " + defaultVideoDevice + ".";
+            Log.d(TAG, log);
+        }
+
+        log = logTag + "Shared Preference value: " + defaultVideoDevice + ".";
+        Log.d(TAG, log);
+
+        return defaultVideoDevice;
     }
 
     public static String getDefaultVideoResolution() {

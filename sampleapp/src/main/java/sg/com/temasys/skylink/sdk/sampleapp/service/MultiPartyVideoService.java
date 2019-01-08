@@ -92,10 +92,18 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 
         // Set default camera setting
-        if (Utils.getDefaultCameraOutput())
-            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-        else
-            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        switch (videoDevice) {
+            case CAMERA_FRONT:
+                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+                break;
+            case CAMERA_BACK:
+                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+                break;
+            case CUSTOM_CAPTURER:
+                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
+                break;
+        }
 
         //Set default video resolution setting
         String videoResolution = Utils.getDefaultVideoResolution();
@@ -150,12 +158,12 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
     /**
      * Stop or restart the local camera based on the parameter |isToggle|,
-     *
+     * <p>
      * Trigger {@link SkylinkCommonService#onWarning(int, String)} if an error occurs, for e.g. with:
      * errorCode {@link sg.com.temasys.skylink.sdk.rtc.Errors#VIDEO_UNABLE_TO_SWITCH_CAMERA_ERROR}
      * if local video source is not available.
      *
-     * @param  isToggle true if restart camera, false if stop camera
+     * @param isToggle true if restart camera, false if stop camera
      * @return True if camera state had changed, false if not.
      */
     public boolean toggleCamera(boolean isToggle) {
@@ -395,7 +403,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return Video View of Peer or null if none present.
      */
     public SurfaceViewRenderer getVideoViewByIndex(int peerIndex) {
-        if(peerIndex == -1){
+        if (peerIndex == -1) {
             return mSkylinkConnection.getVideoView(null);
         }
 
@@ -419,7 +427,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     /**
-     *  Get list of remote peer id in room using SkylinkConnection API.
+     * Get list of remote peer id in room using SkylinkConnection API.
      *
      * @return list of peerId or null if not available.
      */

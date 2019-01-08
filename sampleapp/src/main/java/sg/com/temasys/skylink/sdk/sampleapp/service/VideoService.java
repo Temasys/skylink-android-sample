@@ -336,10 +336,18 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 
         // Set default camera setting
-        if (Utils.getDefaultCameraOutput())
-            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-        else
-            skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        switch (videoDevice) {
+            case CAMERA_FRONT:
+                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+                break;
+            case CAMERA_BACK:
+                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+                break;
+            case CUSTOM_CAPTURER:
+                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
+                break;
+        }
 
         //Set default video resolution setting
         String videoResolution = Utils.getDefaultVideoResolution();
