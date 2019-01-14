@@ -206,7 +206,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
         processUpdateUI(false);
     }
 

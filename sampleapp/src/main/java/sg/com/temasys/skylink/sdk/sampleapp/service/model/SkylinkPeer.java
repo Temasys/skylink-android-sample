@@ -34,4 +34,9 @@ public class SkylinkPeer implements Serializable {
     public void setPeerName(String peerName) {
         this.peerName = peerName;
     }
+
+    @Override
+    public String toString() {
+        return peerName + "(" + peerId + ")";
+    }
 }

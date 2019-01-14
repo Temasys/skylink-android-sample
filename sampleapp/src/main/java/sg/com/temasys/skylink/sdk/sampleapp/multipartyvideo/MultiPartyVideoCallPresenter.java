@@ -309,9 +309,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
 
-        isGettingWebrtcStats.remove(remotePeerId);
+        isGettingWebrtcStats.remove(remotePeer.getPeerId());
 
         mMultiVideoCallView.onPresenterRequestRemoveRemotePeer(removeIndex);
     }

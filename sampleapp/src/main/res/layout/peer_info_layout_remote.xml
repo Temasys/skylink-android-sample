@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/dp_20dp"
+    android:paddingBottom="@dimen/dp_20dp">
+
+    <Button
+        android:id="@+id/btnPeerInfoAvatar"
+        android:layout_width="@dimen/dp_100dp"
+        android:layout_height="@dimen/dp_100dp"
+        android:background="@drawable/button_circle_avatar_chat"
+        android:text="R"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/sp_26" />
+
+    <TextView
+        android:id="@+id/txtPeerInfoUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_15dp"
+        android:text="Remote Peer"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/sp_20sp" />
+
+    <TextView
+        android:id="@+id/txtPeerInfoId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_10dp"
+        android:text="Remote Peer Id _ bfsdn"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/sp_16" />
+
+</LinearLayout>

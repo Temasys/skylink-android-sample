@@ -49,7 +49,7 @@ public abstract class BasePresenter {
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
     }
 
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
     }
 
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {

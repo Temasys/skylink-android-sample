@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dp_55dp"
+    android:background="@android:color/transparent">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="@dimen/dp_40dp"
+            android:layout_height="@dimen/dp_40dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/icon_back_40dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/dp_10dp">
+
+            <TextView
+                android:id="@+id/txtRoomName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Room Name"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/sp_14sp" />
+
+            <TextView
+                android:id="@+id/txtRoomId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Room Id"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/sp_7sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/txtPaticipants"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="@dimen/dp_5dp"
+            android:text="Paticipants"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/sp_9sp" />
+
+        <Button
+            android:id="@+id/btnLocalPeer"
+            android:layout_width="@dimen/dp_25dp"
+            android:layout_height="@dimen/dp_25dp"
+            android:layout_below="@id/txtPaticipants"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_marginBottom="@dimen/dp_5dp"
+            android:background="@drawable/button_circle_avatar_local"
+            android:text="L"
+            android:textColor="@android:color/white"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnRemotePeer1"
+            android:layout_width="@dimen/dp_25dp"
+            android:layout_height="@dimen/dp_25dp"
+            android:layout_below="@id/txtPaticipants"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_toLeftOf="@id/btnLocalPeer"
+            android:background="@drawable/button_circle_avatar"
+            android:text="R1"
+            android:textColor="@android:color/black"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnRemotePeer2"
+            android:layout_width="@dimen/dp_25dp"
+            android:layout_height="@dimen/dp_25dp"
+            android:layout_below="@id/txtPaticipants"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_toLeftOf="@id/btnRemotePeer1"
+            android:background="@drawable/button_circle_avatar"
+            android:text="R2"
+            android:textColor="@android:color/black"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnRemotePeer3"
+            android:layout_width="@dimen/dp_25dp"
+            android:layout_height="@dimen/dp_25dp"
+            android:layout_below="@id/txtPaticipants"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_toLeftOf="@id/btnRemotePeer2"
+            android:background="@drawable/button_circle_avatar"
+            android:text="R3"
+            android:textColor="@android:color/black"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

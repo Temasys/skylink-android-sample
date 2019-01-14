@@ -167,9 +167,9 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
         // Remove remote peer
-        mFileTransferView.onPresenterRequestChangeUiRemotePeerLeave(remotePeerId);
+        mFileTransferView.onPresenterRequestChangeUiRemotePeerLeave(remotePeer.getPeerId());
 
         // Update textview to show room status when last remote peer has left
         if (mFileTransferService.getTotalPeersInRoom() == 1) {

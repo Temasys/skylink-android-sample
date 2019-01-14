@@ -33,5 +33,13 @@
     <dimen name="sp_12">12sp</dimen>
     <dimen name="sp_9sp">9sp</dimen>
     <dimen name="sp_16">16sp</dimen>
+    <dimen name="dp_7dp">7dp</dimen>
+    <dimen name="dp_25dp">25dp</dimen>
+    <dimen name="dp_55dp">55dp</dimen>
+    <dimen name="sp_26">26sp</dimen>
+    <dimen name="sp_20sp">20sp</dimen>
+    <dimen name="dp_15dp">15dp</dimen>
+    <dimen name="sp_16sp">16sp</dimen>
+    <dimen name="sp_10sp">10sp</dimen>
 
 </resources>

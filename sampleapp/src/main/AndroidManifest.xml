@@ -20,7 +20,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher_app"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
@@ -39,7 +39,8 @@
         <activity
             android:name=".chat.ChatActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section3"/>
+            android:label="@string/title_section3"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".filetransfer.FileTransferActivity"
             android:label="@string/title_section4"/>

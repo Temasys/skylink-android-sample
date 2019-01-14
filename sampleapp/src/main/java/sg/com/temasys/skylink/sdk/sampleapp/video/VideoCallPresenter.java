@@ -11,6 +11,7 @@ import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.VideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
@@ -331,7 +332,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
         mVideoCallView.onPresenterRequestRemoveRemotePeer();
     }
 

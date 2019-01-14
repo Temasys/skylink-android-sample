@@ -125,9 +125,9 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
         // Remove remote peer
-        mDataTransferView.onPresenterRequestChangeUiRemotePeerLeave(remotePeerId);
+        mDataTransferView.onPresenterRequestChangeUiRemotePeerLeave(remotePeer.getPeerId());
 
         // Update textview to show room status when last remote peer has left
         if (mDataTransferService.getTotalPeersInRoom() == 1) {

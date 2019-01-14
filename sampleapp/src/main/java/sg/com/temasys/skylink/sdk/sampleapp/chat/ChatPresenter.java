@@ -29,6 +29,18 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     // when screen orientation changed, we need to maintain the message list
     private static List<String> chatMessageCollection = new ArrayList<String>();
 
+    // the index of the peer on the action bar that user selected to send message privately
+    private static int selectedPeerIndex = 0;
+
+    //
+    private static MESSAGE_TYPE messageType = MESSAGE_TYPE.TYPE_SERVER;
+
+    enum MESSAGE_TYPE {
+        TYPE_SERVER,
+        TYPE_P2P
+    }
+
+
     public ChatPresenter(Context context) {
         mChatService = new ChatService(context);
         this.mChatService.setPresenter(this);
@@ -109,9 +121,80 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         }
     }
 
+    /**
+     * Process sending message
+     * Base on the selected state of remotePeer button and message type button
+     * to send message privately to peer or to all peers in group
+     * to send message via server or P2P directly
+     * default value is send to all peers in group and send via server if user do not selected
+     */
+    @Override
+    public void onViewRequestSendMessage(String message) {
+        // Check remote peer to send message to
+        // if User did not select the specific peer to send message to,
+        // then default is send to all peers in room
+        if (selectedPeerIndex == 0) {
+            //add message to list view for displaying
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+                processAddSelfMessageToChatCollection(null, false, message);
+
+                // using service to send message to remote peer(s) via signaling server
+                mChatService.sendServerMessage(null, message);
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+                processAddSelfMessageToChatCollection(null, true, message);
+
+                // using service to send message to remote peer(s) directly P2P
+                mChatService.sendP2PMessage(null, message);
+            }
+        } else {
+            // get the selected peer to send message to
+            SkylinkPeer selectedPeer = mChatService.getPeerByIndex(selectedPeerIndex);
+
+            // send message to the selected peer
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+                processAddSelfMessageToChatCollection(selectedPeer.getPeerId(), false, message);
+
+                // using service to send message to remote peer(s) via signaling server
+                mChatService.sendServerMessage(selectedPeer.getPeerId(), message);
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+                processAddSelfMessageToChatCollection(selectedPeer.getPeerId(), true, message);
+
+                // using service to send message to remote peer(s) directly P2P
+                mChatService.sendP2PMessage(selectedPeer.getPeerId(), message);
+            }
+        }
+    }
+
     @Override
     public List<String> onViewRequestGetChatCollection() {
         return chatMessageCollection;
+    }
+
+    @Override
+    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+        return mChatService.getPeerByIndex(index);
+    }
+
+    @Override
+    public void onViewRequestSelectedRemotePeer(int index) {
+        // check the selected index with the current selectedPeerIndex
+        // if it is equal which means user in selects the peer
+        if (this.selectedPeerIndex == index) {
+            this.selectedPeerIndex = 0;
+        } else {
+            this.selectedPeerIndex = index;
+        }
+    }
+
+    @Override
+    public int onViewRequestGetCurrentSelectedPeer() {
+        return this.selectedPeerIndex;
+    }
+
+
+    @Override
+    public void onViewRequestSelectedMessageType(ChatPresenter.MESSAGE_TYPE message_type) {
+        this.messageType = message_type;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -121,8 +204,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
-        if (isSuccessful)
+        if (isSuccessful) {
             processUpdateUI();
+            processUpdateUIConnected();
+        }
     }
 
     @Override
@@ -142,17 +227,41 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         if (mChatService.getTotalPeersInRoom() == 2) {
             processUpdateRoomDetails();
         }
+
+        // Update remote peer info
+        // Fill the new peer in button in custom bar
+        processAddNewPeer(newPeer, mChatService.getTotalPeersInRoom() - 1);
+
+        // Adding info to message collection
+        chatMessageCollection.add("[Metadata]:" + newPeer.toString() + " joined the room.");
+
+        mChatView.onPresenterRequestUpdateChatCollection();
+
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(String remotePeerId, int removeIndex) {
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer removePeer, int removeIndex) {
+        // do not process if the left peer is local peer
+        if (removeIndex == -1)
+            return;
+
+        // Adding info to message collection
+        chatMessageCollection.add("[Metadata]:" + removePeer.getPeerName() +
+                "(" + removePeer.getPeerId() + ")" + " left the room.");
+
+        mChatView.onPresenterRequestUpdateChatCollection();
+
         // Remove remote peer
-        mChatView.onPresenterRequestChangeUiRemotePeerLeave(remotePeerId);
+        mChatView.onPresenterRequestChangeUiRemotePeerLeave(removePeer.getPeerId());
 
         // Update textview to show room status when last remote peer has left
         if (mChatService.getTotalPeersInRoom() == 1) {
             processUpdateRoomDetails();
         }
+
+        // Update remote peer info
+        // Remove the peer in button in custom bar
+        processRemoveRemotePeer();
     }
 
     @Override
@@ -169,7 +278,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         if (message instanceof String) {
             String remotePeerName = mChatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onPresenterRequestRefreshChatCollection();
+            mChatView.onPresenterRequestUpdateChatCollection();
         }
     }
 
@@ -187,19 +296,38 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         if (message instanceof String) {
             String remotePeerName = mChatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onPresenterRequestRefreshChatCollection();
+            mChatView.onPresenterRequestUpdateChatCollection();
         }
     }
+
 
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     /**
+     * Add new peer on UI when new peer joined in room in specific index
+     *
+     * @param newPeer the new peer joined in room
+     * @param index   the index of the new peer to add
+     */
+    private void processAddNewPeer(SkylinkPeer newPeer, int index) {
+        mChatView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
+    }
+
+    /**
+     * Remove a remote peer by re-fill total remote peer left in the room
+     * to make sure the left peers are displayed correctly
+     */
+    private void processRemoveRemotePeer() {
+        mChatView.onPresenterRequestFillPeers(mChatService.getPeersList());
+    }
+
+    /**
      * Retrieves self message written in edit text and adds it to the chatMessageCollection.
      * Will refresh listView to display new chatMessageCollection.
      *
-     * @param remotePeerId remote peer id to send msg
+     * @param remotePeerId remote peer id to send msg, null value if sending to all peers in room
      * @param isP2P        is send P2P msg or server msg
      * @param message      msg to be sent
      */
@@ -213,13 +341,16 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             isPrivateMessage = false;
         }
 
-        String prefix = "You : ";
+        // adding prefix to the message
+        String localPeerId = mChatService.getPeerId();
+        String prefix = "You---" + Config.USER_NAME_CHAT + " (" + localPeerId + ")" + " : ";
+
         prefix += isPrivateMessage ? "[PTE]" : "[GRP]";
         prefix += isP2P ? "[P2P] " : "[SIG] ";
 
         chatMessageCollection.add(prefix + message);
 
-        mChatView.onPresenterRequestRefreshChatCollection();
+        mChatView.onPresenterRequestUpdateChatCollection();
 
         mChatView.onPresenterRequestClearInput();
     }
@@ -230,18 +361,46 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     private void processUpdateUI() {
 
         // reset the chat collection
-        mChatView.onPresenterRequestRefreshChatCollection();
+        mChatView.onPresenterRequestUpdateChatCollection();
 
         // re fill the peers
         mChatView.onPresenterRequestFillPeers(mChatService.getPeersList());
 
-        // update the display info
-        processUpdateRoomDetails();
+        // update the display info about the room
+        processUpdateRoomInfo();
+    }
+
+    /*
+     * Update UI when connected to room
+     * */
+    private void processUpdateUIConnected() {
+        // Update the room info
+        mChatView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+
+        // Update the local peer info
+        mChatView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_CHAT);
+
+        // Adding info to message collection
+        chatMessageCollection.add("[Metadata]:You (" + Config.USER_NAME_CHAT + "_" +
+                mChatService.getPeerId() + ") joined the room.");
+
+        mChatView.onPresenterRequestUpdateChatCollection();
+
+//        chatMessageCollection.add("[Metadata]:" + newPeer.toString() + " joined the room.");
+    }
+
+    private void processUpdateRoomInfo() {
+//        String strRoomDetails = processGetRoomDetails();
+//        mChatView.onPresenterRequestUpdateUi(strRoomDetails);
+
+        mChatView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
     }
 
     private void processUpdateRoomDetails() {
         String strRoomDetails = processGetRoomDetails();
         mChatView.onPresenterRequestUpdateUi(strRoomDetails);
+
+//        mChatView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
     }
 
     /*
@@ -268,4 +427,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         return roomDetails;
     }
+
+    private String processGetRoomId() {
+        return mChatService.getRoomId();
+    }
+
+
 }

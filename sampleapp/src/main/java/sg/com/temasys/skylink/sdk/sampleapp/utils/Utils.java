@@ -676,4 +676,17 @@ public class Utils {
     public static String getDefaultVideoResolution() {
         return sharedPref.getString(DEFAULT_VIDEO_RESOLUTION, VIDEO_RESOLUTION_VGA);
     }
+
+    /**
+     * Returns the date in ISO time format
+     *
+     * @param date
+     * @return ISO timestamp
+     */
+    public static String getISOTimeStamp2(Date date) {
+        TimeZone tz = TimeZone.getTimeZone(TIME_ZONE_UTC);
+        DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
+        df.setTimeZone(tz);
+        return df.format(date);
+    }
 }

@@ -56,7 +56,7 @@ public class MultiPartyFragment extends Fragment {
 
         Log.d(TAG, logTag);
 
-        fillPeerRadioBtn(mPeers);
+//        fillPeerRadioBtn(mPeers);
     }
 
     /**

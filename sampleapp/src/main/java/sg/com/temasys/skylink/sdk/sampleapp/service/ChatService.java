@@ -7,6 +7,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
@@ -74,7 +75,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     /**
      * Get the config for message function
      * User can custom message config by using SkylinkConfig
-     * */
+     */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -89,4 +90,10 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         return skylinkConfig;
     }
 
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
+    }
 }

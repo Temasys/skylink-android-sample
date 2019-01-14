@@ -1,9 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_margin="@dimen/dp_10dp"
-              android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:padding="@dimen/dp_5dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btnLocalPeer"
+            android:layout_width="@dimen/dp_40dp"
+            android:layout_height="@dimen/dp_40dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_marginRight="@dimen/dp_5dp"
+            android:background="@drawable/button_circle_avatar_local"
+            android:text="L"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnRemotePeer1"
+            android:layout_width="@dimen/dp_40dp"
+            android:layout_height="@dimen/dp_40dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_toLeftOf="@id/btnLocalPeer"
+            android:background="@drawable/button_circle_avatar"
+            android:text="R1"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnRemotePeer2"
+            android:layout_width="@dimen/dp_40dp"
+            android:layout_height="@dimen/dp_40dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_toLeftOf="@id/btnRemotePeer1"
+            android:background="@drawable/button_circle_avatar"
+            android:text="R2"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnRemotePeer3"
+            android:layout_width="@dimen/dp_40dp"
+            android:layout_height="@dimen/dp_40dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_toLeftOf="@id/btnRemotePeer2"
+            android:background="@drawable/button_circle_avatar"
+            android:text="R3"
+            android:textColor="@android:color/white" />
+
+    </RelativeLayout>
+
 
     <ScrollView
         android:id="@+id/scroll_room"
@@ -11,7 +61,8 @@
         android:layout_height="0dp"
         android:layout_weight="3"
         android:focusable="true"
-        android:focusableInTouchMode="true">
+        android:focusableInTouchMode="true"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/tv_chat_room_details"
@@ -19,28 +70,34 @@
             android:layout_height="match_parent"
             android:text=""
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textIsSelectable="true"/>
+            android:textIsSelectable="true" />
     </ScrollView>
 
     <ListView
         android:id="@+id/lv_messages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_margin="@dimen/dp_10dp"
         android:layout_weight="8"
+        android:divider="@null"
+        android:dividerHeight="0dp"
         android:focusable="true"
-        android:focusableInTouchMode="true"></ListView>
+        android:focusableInTouchMode="true"
+        android:visibility="visible"></ListView>
 
 
     <EditText
         android:id="@+id/chatMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter a Message"/>
+        android:hint="Enter a Message"
+        android:visibility="gone" />
 
     <ScrollView
         android:id="@+id/scroll_peers"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:visibility="gone">
 
         <LinearLayout
             android:id="@+id/lin_layout_peers"
@@ -62,35 +119,35 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/label_all_peers"
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                     <RadioButton
                         android:id="@+id/radio_btn_peer4"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                 </RadioGroup>
             </HorizontalScrollView>
@@ -101,25 +158,99 @@
         android:id="@+id/lin_layout_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_5dp"
         android:orientation="horizontal"
-        android:layout_marginTop="@dimen/dp_5dp">
+        android:visibility="gone">
 
         <Button
             android:id="@+id/btn_send_server_message"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Server Msg"
             android:layout_marginRight="@dimen/dp_10dp"
-            android:background="@drawable/button_corner_ripple"/>
+            android:layout_weight="1"
+            android:background="@drawable/button_corner_ripple"
+            android:text="Server Msg" />
 
         <Button
             android:id="@+id/btn_send_p2p_message"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="P2P Msg"
-            android:background="@drawable/button_corner_ripple"/>
+            android:background="@drawable/button_corner_ripple"
+            android:text="P2P Msg" />
     </LinearLayout>
+
+    <!--input text-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_55dp"
+        android:background="@android:color/white"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_0.5dp"
+            android:background="@color/cardview_shadow_start_color"
+            android:translationZ="@dimen/dp_0.5dp"></View>
+
+        <LinearLayout
+            android:id="@+id/messageTypeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnServerMsg"
+                android:layout_width="@dimen/dp_50dp"
+                android:layout_height="@dimen/dp_20dp"
+                android:layout_margin="@dimen/dp_5dp"
+                android:background="@drawable/button_message_type"
+                android:stateListAnimator="@null"
+                android:text="Server"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/sp_11sp" />
+
+            <Button
+                android:id="@+id/btnP2PMsg"
+                android:layout_width="@dimen/dp_50dp"
+                android:layout_height="@dimen/dp_20dp"
+                android:layout_marginLeft="@dimen/dp_5dp"
+                android:layout_marginBottom="@dimen/dp_10dp"
+                android:background="@drawable/button_message_type"
+                android:stateListAnimator="@null"
+                android:text="P2P"
+                android:textSize="@dimen/sp_11sp" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/editMsg"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/dp_5dp"
+            android:layout_toRightOf="@id/messageTypeLayout"
+            android:background="@android:color/transparent"
+            android:hint="Enter message"
+            android:maxLines="3"
+            android:paddingRight="@dimen/dp_50dp" />
+
+        <View
+            android:layout_width="@dimen/dp_0.5dp"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@id/btnSendMsg"
+            android:background="@color/cardview_shadow_start_color">
+
+        </View>
+
+        <ImageButton
+            android:id="@+id/btnSendMsg"
+            android:layout_width="@dimen/dp_50dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/button_msg_send"
+            android:src="@drawable/ic_send_32dp" />
+
+
+    </RelativeLayout>
 
 </LinearLayout>

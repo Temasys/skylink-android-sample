@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="@dimen/dp_5dp">
+
+    <Button
+        android:id="@+id/btnChatUser"
+        android:layout_width="@dimen/dp_50dp"
+        android:layout_height="@dimen/dp_50dp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/button_circle_avatar_chat"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/txtRemotePeerChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="peerId1234"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:textSize="@dimen/sp_9sp"
+            android:layout_weight="5"
+            android:layout_marginBottom="@dimen/dp_3dp"/>
+        <TextView
+            android:id="@+id/txtChatContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_corner_chat_content"
+            android:padding="@dimen/dp_7dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:gravity="center_vertical"
+            android:text="fdsjfnsdjfnsdmvnmv"
+            android:layout_weight="2"
+            />
+    </LinearLayout>
+
+
+</LinearLayout>
