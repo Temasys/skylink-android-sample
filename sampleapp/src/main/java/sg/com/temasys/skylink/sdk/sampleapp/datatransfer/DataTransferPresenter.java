@@ -3,14 +3,18 @@ package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 import android.content.Context;
 import android.util.Log;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.DataTransferService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -25,11 +29,18 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
     private DataTransferContract.View mDataTransferView;
     private DataTransferService mDataTransferService;
+    //utils to process permission
+    private PermissionUtils mPermissionUtils;
+
+    // the index of the peer on the action bar that user selected to send message privately
+    // default is 0 - send message to all peers
+    private static int selectedPeerIndex = 0;
 
     public DataTransferPresenter(Context context) {
         this.mContext = context;
         this.mDataTransferService = new DataTransferService(context);
         this.mDataTransferService.setPresenter(this);
+        this.mPermissionUtils = new PermissionUtils();
     }
 
     public void setView(DataTransferContract.View view) {
@@ -66,9 +77,98 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         } else {
 
             //update UI into connected state
-            processUpdateUI();
+            processUpdateUIConnected();
 
             Log.d(TAG, "Try to update UI when changing configuration");
+        }
+    }
+
+    /**
+     * process file permission that comes from the app
+     * when user first choose browsing file from device, permission request dialog will be display
+     */
+    @Override
+    public boolean onViewRequestFilePermission() {
+        return mPermissionUtils.requestFilePermission(mContext, mDataTransferView.onPresenterRequestGetFragmentInstance());
+    }
+
+    /**
+     * display a warning if user deny the file permission
+     */
+    @Override
+    public void onViewRequestPermissionDeny() {
+        mPermissionUtils.displayFilePermissionWarning(mContext);
+    }
+
+    /**
+     * process result of permission that comes from SDK
+     */
+    @Override
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+        // delegate to the PermissionUtils to process the permission
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+    }
+
+    /**
+     * Save the current index of the selected peer
+     */
+    @Override
+    public void onViewRequestSelectedRemotePeer(int index) {
+        // check the selected index with the current selectedPeerIndex
+        // if it is equal which means user in selects the peer
+        if (this.selectedPeerIndex == index) {
+            this.selectedPeerIndex = 0;
+        } else {
+            this.selectedPeerIndex = index;
+        }
+    }
+
+    /**
+     * Get the current index of selected peer
+     */
+    @Override
+    public int onViewRequestGetCurrentSelectedPeer() {
+        return this.selectedPeerIndex;
+    }
+
+    /**
+     * Get the specific peer object according to the index
+     */
+    @Override
+    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+        return mDataTransferService.getPeerByIndex(index);
+    }
+
+    @Override
+    public void onViewRequestSendData(byte[] data) {
+        // Do not allow button actions if there are no remote Peers in the room.
+        if (mDataTransferService.getTotalPeersInRoom() < 2) {
+            String log = mContext.getString(R.string.warn_no_peer_message);
+            toastLog(TAG, mContext, log);
+            return;
+        }
+
+        // send data to all peers in room if user do not select any specific peer
+        // send data to specific peer id if user choose the peer
+        String remotePeerId = null;
+        if (selectedPeerIndex != 0) {
+            remotePeerId = mDataTransferService.getPeerByIndex(selectedPeerIndex).getPeerId();
+        }
+
+        // delegate to service layer to implement sending data
+        String error = null;
+        try {
+            mDataTransferService.sendData(remotePeerId, data);
+        } catch (SkylinkException e) {
+            error = e.getMessage();
+        } catch (UnsupportedOperationException e) {
+            error = e.getMessage();
+        }
+
+        if (error != null) {
+            toastLogLong(TAG, mContext, error);
+        } else {
+            toastLog(TAG, mContext, "You have sent an array of data");
         }
     }
 
@@ -79,28 +179,6 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         mDataTransferService.disconnectFromRoom();
     }
 
-    @Override
-    public void onViewRequestSendData(String remotePeerId, byte[] data) {
-        // Do not allow button actions if there are no remote Peers in the room.
-        if (mDataTransferService.getTotalPeersInRoom() < 2) {
-            String log = mContext.getString(R.string.warn_no_peer_message);
-            toastLog(TAG, mContext, log);
-            return;
-        }
-
-        if (remotePeerId == null) {
-            // Select All Peers RadioButton if not already selected
-            String remotePeer = mDataTransferView.onPresenterRequestGetPeerIdSelected();
-
-            //force to select radio button peerAll
-            if (remotePeer != null) {
-                mDataTransferView.onPresenterRequestSetPeerAllSelected(true);
-            }
-        }
-
-        mDataTransferService.sendData(remotePeerId, data);
-    }
-
     //----------------------------------------------------------------------------------------------
     // Override methods from BasePresenter for service to call
     // These methods are responsible for processing requests from service
@@ -109,69 +187,66 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful)
-            processUpdateUI();
+            processUpdateUIConnected();
     }
 
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
-
-        //add new remote peer
-        mDataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer);
-
-        // Update textview to show room status when first remote peer has joined with self peer
-        if (mDataTransferService.getTotalPeersInRoom() == 2) {
-            processUpdateRoomDetails();
-        }
+        // Fill the new peer in button in custom bar
+        mDataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
+                mDataTransferService.getTotalPeersInRoom() - 1);
     }
 
     @Override
     public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
-        // Remove remote peer
-        mDataTransferView.onPresenterRequestChangeUiRemotePeerLeave(remotePeer.getPeerId());
+        // do not process if the left peer is local peer
+        if (removeIndex == -1)
+            return;
 
-        // Update textview to show room status when last remote peer has left
-        if (mDataTransferService.getTotalPeersInRoom() == 1) {
-            processUpdateRoomDetails();
-        }
+        // Remove the peer in button in custom bar
+        mDataTransferView.onPresenterRequestChangeUiRemotePeerLeft(mDataTransferService.getPeersList());
     }
+
+    /**
+     * process SDK permission
+     */
+    @Override
+    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+        // delegate to the PermissionUtils to process the permission
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mDataTransferView.onPresenterRequestGetFragmentInstance());
+    }
+
+    @Override
+    public void onServiceRequestDataReceive(Context context, String remotePeerId, byte[] data) {
+        SkylinkPeer remotePeer = mDataTransferService.getPeerById(remotePeerId);
+        mDataTransferView.onPresenterRequestChangeUIReceivedData(remotePeer, data);
+
+        toastLog("DataTransfer", mContext, "You have received an array of data");
+    }
+
 
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
-    private void processUpdateUI() {
-        // Re fill the peers
-        mDataTransferView.onPresenterRequestFillPeers(mDataTransferService.getPeersList());
 
-        // Update the UI
-        processUpdateRoomDetails();
+    /**
+     * Update UI when connected to room
+     */
+    private void processUpdateUIConnected() {
+        // Update the room id in the action bar
+        mDataTransferView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+
+        // Update the local peer info in the local peer button in action bar
+        mDataTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_CHAT);
     }
 
-    private void processUpdateRoomDetails() {
-        String strRoomDetails = processGetRoomDetails();
-        mDataTransferView.onPresenterRequestUpdateUi(strRoomDetails);
-    }
 
-    private String processGetRoomDetails() {
-        boolean isConnected = mDataTransferService.isConnectingOrConnected();
-        String roomName = mDataTransferService.getRoomName(Config.ROOM_NAME_DATA);
-        String userName = mDataTransferService.getUserName(null, Config.USER_NAME_DATA);
-
-        boolean isPeerJoined = mDataTransferService.isPeerJoin();
-
-        String roomDetails = "You are not connected to any room";
-
-        if (isConnected) {
-            roomDetails = "Now connected to Room named : " + roomName
-                    + "\n\nYou are signed in as : " + userName + "\n";
-            if (isPeerJoined) {
-                roomDetails += "\nPeer(s) are in the room";
-            } else {
-                roomDetails += "\nYou are alone in this room";
-            }
-        }
-
-        return roomDetails;
+    /**
+     * Get the room id info
+     */
+    private String processGetRoomId() {
+        return mDataTransferService.getRoomId();
     }
 }
 

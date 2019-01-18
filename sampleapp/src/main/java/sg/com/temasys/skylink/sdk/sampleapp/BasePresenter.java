@@ -8,11 +8,13 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatPresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -103,18 +105,6 @@ public abstract class BasePresenter {
     //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestDataReceive(Context context, String remotePeerId, byte[] data) {
-        // Check if it is one of the data that we can send.
-        if (Arrays.equals(data, Utils.getDataPrivate()) || Arrays.equals(data, Utils.getDataGroup())) {
-            String log = String.format(Utils.getString(R.string.data_transfer_received_expected),
-                    String.valueOf(data.length));
-            toastLog("DataTransfer", context, log);
-        } else {
-            // Received some unexpected data that could be from other apps
-            // or perhaps different due to so some problems somewhere.
-            String log = String.format(Utils.getString(R.string.data_transfer_received_unexpected),
-                    String.valueOf(data.length));
-            toastLogLong("DataTransfer", context, log);
-        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -140,21 +130,15 @@ public abstract class BasePresenter {
     }
 
     public void onServiceRequestFileSendComplete(Context context, String remotePeerId, String fileName) {
-        String log = "Your file has been sent";
-        toastLog("FileTransfer", context, log);
     }
 
     public void onServiceRequestFileReceiveComplete(String remotePeerId, String fileName) {
     }
 
     public void onServiceRequestFileSendProgress(Context context, String remotePeerId, String fileName, double percentage) {
-        String log = "Uploading... " + percentage;
-        toastLog("FileTransfer", context, log);
     }
 
     public void onServiceRequestFileReceiveProgress(Context context, String remotePeerId, String fileName, double percentage) {
-        String log = "Downloading... " + percentage;
-        toastLog("FileTransfer", context, log);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -224,4 +208,5 @@ public abstract class BasePresenter {
 
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
     }
+
 }

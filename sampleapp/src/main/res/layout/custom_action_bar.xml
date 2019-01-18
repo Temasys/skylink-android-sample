@@ -37,7 +37,7 @@
                 android:id="@+id/txtRoomId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Room Id"
+                android:text="@string/init_room_id"
                 android:textColor="@android:color/white"
                 android:textSize="@dimen/sp_7sp" />
         </LinearLayout>
@@ -46,9 +46,9 @@
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true">
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/txtPaticipants"
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginBottom="@dimen/dp_5dp"
+            android:layout_marginBottom="@dimen/margin_bottom_paticipants"
             android:text="Paticipants"
             android:textColor="@android:color/white"
             android:textSize="@dimen/sp_9sp" />

@@ -1,97 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_margin="@dimen/dp_10dp"
-              android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/tv_data_room_details"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textIsSelectable="true"/>
-
-    <TextView
-        android:id="@+id/txt_data_transfer_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <RadioGroup
-            android:id="@+id/radio_grp_peers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer_all"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/label_all_peers"
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-            <RadioButton
-                android:id="@+id/radio_btn_peer4"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:visibility="invisible"/>
-
-        </RadioGroup>
-    </HorizontalScrollView>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_file_transfer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_black"
+    android:gravity="fill_horizontal|fill_vertical"
+    android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/lin_layout_buttons"
+        android:id="@+id/data_preview_container"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/file_preview"
+        android:layout_centerInParent="true"
+        android:background="@color/color_white"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/img_data_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_data_upload_150" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txt_data_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                android:textColor="@color/primary"
+                android:textSize="@dimen/sp_20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" bytes"
+                android:textColor="@color/primary"
+                android:textSize="@dimen/sp_20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtDataPathInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dp_5dp"
+        android:text="Data source path to send : "
+        android:textColor="@color/color_white"
+        android:textSize="@dimen/sp_11sp" />
+
+    <EditText
+        android:id="@+id/editDataPath"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp_10dp"
+        android:layout_marginTop="@dimen/dp_30dp"
+        android:layout_marginRight="@dimen/dp_10dp"
+        android:textColor="@color/color_white"
+        android:textSize="@dimen/sp_16" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btn_send_data_to_peer"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/send_data_peer"
-            android:background="@drawable/button_corner_ripple"
-            android:layout_marginRight="@dimen/dp_10dp"/>
+        <ImageButton
+            android:id="@+id/btnDataChoose"
+            android:layout_width="@dimen/dp_60dp"
+            android:layout_height="@dimen/dp_60dp"
+            android:layout_margin="@dimen/bottom_margin"
+            android:background="@drawable/button_circle_avatar"
+            android:src="@drawable/ic_add" />
 
-        <Button
-            android:id="@+id/btn_send_data_to_room"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/send_data_room"
-            android:background="@drawable/button_corner_ripple"/>
+        <ImageButton
+            android:id="@+id/btnDataSend"
+            android:layout_width="@dimen/dp_60dp"
+            android:layout_height="@dimen/dp_60dp"
+            android:layout_margin="@dimen/bottom_margin"
+            android:background="@drawable/button_circle_avatar"
+            android:src="@drawable/ic_send_32dp" />
 
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

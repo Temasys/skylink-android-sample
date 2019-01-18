@@ -4,7 +4,7 @@
     <dimen name="dp_30dp">30dp</dimen>
     <dimen name="dp_150dp">150dp</dimen>
     <dimen name="dp_3dp">3dp</dimen>
-    <dimen name="dp_0.5dp">0.5dp</dimen>
+    <dimen name="dp_0_5dp">0.5dp</dimen>
     <dimen name="dp_40dp">40dp</dimen>
     <dimen name="dp_36dp">36dp</dimen>
     <dimen name="dp_50dp">50dp</dimen>
@@ -33,7 +33,7 @@
     <dimen name="sp_12">12sp</dimen>
     <dimen name="sp_9sp">9sp</dimen>
     <dimen name="sp_16">16sp</dimen>
-    <dimen name="dp_7dp">7dp</dimen>
+    <dimen name="dp_7">7dp</dimen>
     <dimen name="dp_25dp">25dp</dimen>
     <dimen name="dp_55dp">55dp</dimen>
     <dimen name="sp_26">26sp</dimen>
@@ -41,5 +41,14 @@
     <dimen name="dp_15dp">15dp</dimen>
     <dimen name="sp_16sp">16sp</dimen>
     <dimen name="sp_10sp">10sp</dimen>
+    <dimen name="sp_15sp">15sp</dimen>
+
+    <dimen name="margin_bottom_paticipants">5dp</dimen>
+    <dimen name="file_preview">300dp</dimen>
+    <dimen name="bottom_margin">20dp</dimen>
+
+    <!--landscape dimen-->
+    <dimen name="file_preview_land">150dp</dimen>
+    <dimen name="bottom_margin_land">10dp</dimen>
 
 </resources>

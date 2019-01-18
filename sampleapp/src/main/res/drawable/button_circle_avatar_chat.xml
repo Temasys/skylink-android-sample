@@ -3,7 +3,7 @@
     <item>
         <shape android:shape="oval">
             <solid android:color="@color/cardview_dark_background" />
-            <stroke android:width="@dimen/dp_0.5dp" android:color="@color/cardview_shadow_start_color" />
+            <stroke android:width="@dimen/dp_0_5dp" android:color="@color/cardview_shadow_start_color" />
             <corners android:radius="@dimen/dp_3dp"></corners>
         </shape>
     </item>

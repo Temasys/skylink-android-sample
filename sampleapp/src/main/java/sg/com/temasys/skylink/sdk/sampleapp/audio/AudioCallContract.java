@@ -2,8 +2,11 @@ package sg.com.temasys.skylink.sdk.sampleapp.audio;
 
 import android.support.v4.app.Fragment;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -20,11 +23,29 @@ public interface AudioCallContract {
         Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update UI details when changing states (connect/disconnect/peerJoin/peerLeave/speakerOn/Off)
-         */
-        void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn);
-
+         * Update audio output button UI
+         * */
         void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn);
+
+        /**
+         * Update info about the connected room {roomId}
+         */
+        void onPresenterRequestUpdateRoomInfo(String s);
+
+        /**
+         * Update info about the local peer in action bar
+         */
+        void onPresenterRequestUpdateUIConnected(String userNameChat);
+
+        /**
+         * Update UI when remote peer join the room
+         * */
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+
+        /**
+         * Update UI details when peers are in room
+         */
+        void onPresenterRequestChangeUIRemotePeerLeft(List<SkylinkPeer> peersList);
     }
 
     interface Presenter {
@@ -45,19 +66,14 @@ public interface AudioCallContract {
         void onViewRequestChangeAudioOuput();
 
         /**
-         * process change state when view paused/stop
-         */
-        void onViewRequestStop();
-
-        /**
-         * process change state when view resumed
-         */
-        void onViewRequestResume();
-
-        /**
          * process change state when view exit/closed
          */
         void onViewRequestExit();
+
+        /**
+         * process get peer info at specific index
+         */
+        SkylinkPeer onViewRequestGetPeerByIndex(int index);
 
     }
 

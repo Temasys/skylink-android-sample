@@ -298,6 +298,14 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
+    /**
+     * Get the specific peer object according to the index
+     */
+    @Override
+    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+        return mVideoCallService.getPeerByIndex(index);
+    }
+
     //----------------------------------------------------------------------------------------------
     // Override methods from BasePresenter for service to call
     // These methods are responsible for processing requests from service
@@ -307,6 +315,8 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
             mVideoCallView.onPresenterRequestConnectedUIChange();
+
+            processUpdateUIConnected();
 
             //start audio routing if has audio config
             SkylinkConfig skylinkConfig = mVideoCallService.getSkylinkConfig();
@@ -329,11 +339,6 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
             AudioRouter.stopAudioRouting(mContext);
         }
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
-        mVideoCallView.onPresenterRequestRemoveRemotePeer();
     }
 
     @Override
@@ -417,13 +422,29 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         mVideoCallService.setCurrentVideoSpeaker(isSpeakerOn);
     }
 
+    @Override
+    public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
+        // Fill the new peer in button in custom bar
+        processAddNewPeer(remotePeer, mVideoCallService.getTotalPeersInRoom() - 1);
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+        // do not process if the left peer is local peer
+        if (removeIndex == -1)
+            return;
+
+        // Remove the peer in button in custom bar
+        processRemoveRemotePeer();
+    }
+
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     /**
      * Init the video input, video sent and video received state
-     * */
+     */
     private void initVideoResolutions() {
         if (mVideoInput == null || mVideoSent == null || mVideoReceive == null) {
             mVideoInput = new VideoResolution();
@@ -434,7 +455,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Process connect to room on service layer and update UI accordingly
-     * */
+     */
     private void processConnectToRoom() {
 
         //connect to SDK
@@ -455,7 +476,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Update UI into connected state
-     * */
+     */
     private void processUpdateConnectedUI() {
         // update the audio state
         if (mVideoCallService.isAudioMute()) {
@@ -488,7 +509,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Update UI into disconnected state
-     * */
+     */
     private void processDisconnectUIChange() {
         // reset the video resolution state
         mVideoInput = null;
@@ -611,7 +632,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     /**
      * Set the received video resolution from remote peer
      * and Update UI accordingly
-     * */
+     */
     private void processReceivedVideoResolutions(int width, int height, int fps) {
         if (mVideoReceive == null) {
             return;
@@ -626,7 +647,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     /**
      * Set the sent video resolution from local peer to remote peer
      * and Update UI accordingly
-     * */
+     */
     private void processSentVideoResolutions(int width, int height, int fps) {
         if (mVideoSent == null) {
             return;
@@ -640,7 +661,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Get video view by remote peer id
-     * */
+     */
     private SurfaceViewRenderer processGetVideoView(String remotePeerId) {
         return mVideoCallService.getVideoView(remotePeerId);
     }
@@ -649,7 +670,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      * Get the remote video view from peer id
      * the local peer is always at index 0 and
      * the remote peer is at index 1 because we just have 2 peers in the room
-     * */
+     */
     private SurfaceViewRenderer processGetRemoteView() {
         SurfaceViewRenderer videoView;
         String remotePeerId = mVideoCallService.getPeerId(1);
@@ -665,14 +686,14 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Add local video view into the layout
-     * */
+     */
     private void processAddSelfView(SurfaceViewRenderer videoView) {
         mVideoCallView.onPresenterRequestAddSelfView(videoView);
     }
 
     /**
      * Add remote video view into the layout
-     * */
+     */
     private void processAddRemoteView() {
 
         SurfaceViewRenderer videoView = processGetRemoteView();
@@ -683,7 +704,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Get the selected value of width x height seek bar
-     * */
+     */
     private SkylinkCaptureFormat processGetSelectedValueDim(int progress, SkylinkCaptureFormat[] captureFormats) {
         if (!Utils.isCaptureFormatsValid(captureFormats) || progress >= captureFormats.length) {
             return null;
@@ -694,7 +715,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Get the selected value of frame rate seek bar
-     * */
+     */
     private int processGetSelectedValueFps(int progress, SkylinkCaptureFormat format) {
         if (!Utils.isCaptureFormatValid(format)) {
             return -1;
@@ -900,7 +921,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Change the video resolution state and UI when local input video resolution changed
-     * */
+     */
     private boolean processUpdateInputVideoResolutions(SkylinkCaptureFormat format, int fpsNew) {
         if (format == null) {
             return false;
@@ -937,5 +958,46 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             return false;
         }
         return true;
+    }
+
+    /**
+     * Update UI when connected to room
+     */
+    private void processUpdateUIConnected() {
+        // Update the room id in the action bar
+        mVideoCallView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+
+        // Update the local peer info in the local peer button in action bar
+        mVideoCallView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_AUDIO);
+
+    }
+
+    /**
+     * Get the room id info
+     */
+    private String processGetRoomId() {
+        return mVideoCallService.getRoomId();
+    }
+
+    /**
+     * Add new peer on UI when new peer joined in room in specific index
+     *
+     * @param newPeer the new peer joined in room
+     * @param index   the index of the new peer to add
+     */
+    private void processAddNewPeer(SkylinkPeer newPeer, int index) {
+        mVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
+    }
+
+    /**
+     * Remove a remote peer by re-fill total remote peer left in the room
+     * to make sure the left peers are displayed correctly
+     */
+    private void processRemoveRemotePeer() {
+        // update peer button in action bar
+        mVideoCallView.onPresenterRequestFillPeers(mVideoCallService.getPeersList());
+
+        // remove the remote peer video view
+        mVideoCallView.onPresenterRequestRemoveRemotePeer();
     }
 }

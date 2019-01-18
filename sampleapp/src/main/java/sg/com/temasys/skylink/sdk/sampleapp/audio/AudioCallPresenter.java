@@ -92,7 +92,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             mPermissionUtils.permQResume(mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
 
             //update UI into connected state
-            processUpdateUI(mAudioCallService.isPeerJoin());
+            processUpdateUIConnected();
 
             Log.d(TAG, "Try to update UI when changing configuration");
         }
@@ -100,26 +100,6 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         //get default audio output settings and change UI
         isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
         mAudioCallView.onPresenterRequestChangeAudioOutput(mAudioCallService.isPeerJoin(), isSpeakerOn);
-    }
-
-    @Override
-    public void onViewRequestStop() {
-    }
-
-    @Override
-    public void onViewRequestResume() {
-    }
-
-    @Override
-    public void onViewRequestExit() {
-
-        //process disconnect from room
-        mAudioCallService.disconnectFromRoom();
-
-        //reset default audio speaker
-        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
-
-        //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
     }
 
     @Override
@@ -137,6 +117,26 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
     }
 
+    /**
+     * Get the specific peer object according to the index
+     */
+    @Override
+    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+        return mAudioCallService.getPeerByIndex(index);
+    }
+
+    @Override
+    public void onViewRequestExit() {
+
+        //process disconnect from room
+        mAudioCallService.disconnectFromRoom();
+
+        //reset default audio speaker
+        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
+
+        //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
+    }
+
     //----------------------------------------------------------------------------------------------
     // Override methods from BasePresenter for service to call
     // These methods are responsible for processing requests from service
@@ -147,7 +147,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         if (isSuccessful) {
 
             // change UI to connected to room, but not connected to any peer
-            processUpdateUI(false);
+            processUpdateUIConnected();
 
             //start audio routing if has audio config
             SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
@@ -162,18 +162,6 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         // delegate to PermissionUtils to process the permissions require
         mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
-    }
-
-    @Override
-    public void onServiceRequestDisconnect() {
-        //stop audio routing
-        SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(mContext);
-        }
-
-        // update UI
-        processUpdateUI(false);
     }
 
     @Override
@@ -202,50 +190,67 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
-        processUpdateUI(true);
+        // Fill the new peer in button in custom bar
+        processAddNewPeer(remotePeer, mAudioCallService.getTotalPeersInRoom() - 1);
     }
 
     @Override
     public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
-        processUpdateUI(false);
+        // do not process if the left peer is local peer
+        if (removeIndex == -1)
+            return;
+
+        // Remove the peer in button in custom bar
+        processRemoveRemotePeer();
+    }
+
+    @Override
+    public void onServiceRequestDisconnect() {
+        //stop audio routing
+        SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.stopAudioRouting(mContext);
+        }
     }
 
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
-    /*
-     * Update UI when changing app state
-     * */
-    private void processUpdateUI(boolean isPeerJoined) {
-        String strRoomDetails = processGetRoomDetails();
-        mAudioCallView.onPresenterRequestUpdateUI(strRoomDetails, isPeerJoined, isSpeakerOn);
+    /**
+     * Update UI when connected to room
+     */
+    private void processUpdateUIConnected() {
+        // Update the room id in the action bar
+        mAudioCallView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+
+        // Update the local peer info in the local peer button in action bar
+        mAudioCallView.onPresenterRequestUpdateUIConnected(Config.USER_NAME_AUDIO);
+
     }
 
-    /*
-     * Get the info about room and app state to update the UI
-     * */
-    private String processGetRoomDetails() {
-        boolean isConnected = mAudioCallService.isConnectingOrConnected();
-        String roomName = mAudioCallService.getRoomName(Config.ROOM_NAME_AUDIO);
-        String userName = mAudioCallService.getUserName(null, Config.USER_NAME_AUDIO);
-        String remotePeerName = mAudioCallService.getRemotePeerName();
+    /**
+     * Get the room id info
+     */
+    private String processGetRoomId() {
+        return mAudioCallService.getRoomId();
+    }
 
-        boolean isPeerJoined = mAudioCallService.isPeerJoin();
+    /**
+     * Add new peer on UI when new peer joined in room in specific index
+     *
+     * @param newPeer the new peer joined in room
+     * @param index   the index of the new peer to add
+     */
+    private void processAddNewPeer(SkylinkPeer newPeer, int index) {
+        mAudioCallView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
+    }
 
-        String roomDetails = "You are not connected to any room";
-
-        // Change room UI base on the room state
-        if (isConnected) {
-            roomDetails = "Now connected to Room named : " + roomName
-                    + "\n\nYou are signed in as : " + userName + "\n";
-            if (isPeerJoined) {
-                roomDetails += "\nPeer(s) are in the room : " + remotePeerName;
-            } else {
-                roomDetails += "\nYou are alone in this room";
-            }
-        }
-
-        return roomDetails;
+    /**
+     * Remove a remote peer by re-fill total remote peer left in the room
+     * to make sure the left peers are displayed correctly
+     */
+    private void processRemoveRemotePeer() {
+        mAudioCallView.onPresenterRequestChangeUIRemotePeerLeft(mAudioCallService.getPeersList());
     }
 }

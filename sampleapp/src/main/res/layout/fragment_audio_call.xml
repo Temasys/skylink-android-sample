@@ -1,39 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/ll_audio_call"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/tv_audio_room_details"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_margin="@dimen/dp_10dp"
-            android:text="You are not connected to any room"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/black"
-            android:textIsSelectable="true"
-            android:textSize="@dimen/sp_12"/>
-    </ScrollView>
+    android:id="@+id/ll_audio_call"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:background="@color/cardview_shadow_start_color"
+        android:background="@color/color_white"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/dp_110dp"
             android:layout_weight="3"
             android:background="@color/cardview_light_background"
             android:gravity="center"
@@ -41,8 +22,8 @@
 
             <ImageView
                 android:id="@+id/img"
-                android:layout_width="@dimen/dp_120dp"
-                android:layout_height="@dimen/dp_120dp"
+                android:layout_width="@dimen/dp_150dp"
+                android:layout_height="@dimen/dp_150dp"
                 android:src="@drawable/img_blink"></ImageView>
         </LinearLayout>
 
@@ -62,14 +43,14 @@
                 android:layout_height="@dimen/dp_50dp"
                 android:layout_marginRight="@dimen/dp_30dp"
                 android:background="@drawable/button_circle"
-                android:src="@drawable/ic_audio_speaker"/>
+                android:src="@drawable/ic_audio_speaker" />
 
             <ImageButton
                 android:id="@+id/btnAudioEnd"
                 android:layout_width="@dimen/dp_50dp"
                 android:layout_height="@dimen/dp_50dp"
                 android:background="@drawable/button_circle_call_end"
-                android:src="@drawable/ic_audio_call_end"/>
+                android:src="@drawable/ic_audio_call_end" />
         </LinearLayout>
     </LinearLayout>
 

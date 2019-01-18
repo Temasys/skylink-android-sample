@@ -9,6 +9,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -39,7 +40,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
      *
      * @param remotePeerId The id of the remote peer to send the file to. Use 'null' if the file is
      *                     to be sent to all our remote peers in the room.
-     * @param file     The file that is to be shared.
+     * @param file         The file that is to be shared.
      */
     public void sendFile(String remotePeerId, File file) {
         if (mSkylinkConnection == null)
@@ -67,9 +68,9 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     /**
      * Call this method to accept or reject the file share request from a remote peer.
      *
-     * @param remotePeerId The id of the remote peer that requested to share with us a file.
-     * @param downloadedFilePath     The absolute path of the file where we want it to be saved.
-     * @param isPermitted  Whether permission was granted for the file share to proceed.
+     * @param remotePeerId       The id of the remote peer that requested to share with us a file.
+     * @param downloadedFilePath The absolute path of the file where we want it to be saved.
+     * @param isPermitted        Whether permission was granted for the file share to proceed.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId, String downloadedFilePath, boolean isPermitted) {
         if (mSkylinkConnection == null)
@@ -101,7 +102,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     /**
      * Get the config for file transfer function
      * User can custom file transfer config by using SkylinkConfig
-     * */
+     */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -116,4 +117,10 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
         return skylinkConfig;
     }
 
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
+    }
 }

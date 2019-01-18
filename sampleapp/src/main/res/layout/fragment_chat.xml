@@ -77,7 +77,6 @@
         android:id="@+id/lv_messages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="@dimen/dp_10dp"
         android:layout_weight="8"
         android:divider="@null"
         android:dividerHeight="0dp"
@@ -190,9 +189,9 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_0.5dp"
+            android:layout_height="@dimen/dp_0_5dp"
             android:background="@color/cardview_shadow_start_color"
-            android:translationZ="@dimen/dp_0.5dp"></View>
+            android:translationZ="@dimen/dp_0_5dp"></View>
 
         <LinearLayout
             android:id="@+id/messageTypeLayout"
@@ -235,7 +234,7 @@
             android:paddingRight="@dimen/dp_50dp" />
 
         <View
-            android:layout_width="@dimen/dp_0.5dp"
+            android:layout_width="@dimen/dp_0_5dp"
             android:layout_height="match_parent"
             android:layout_toLeftOf="@id/btnSendMsg"
             android:background="@color/cardview_shadow_start_color">

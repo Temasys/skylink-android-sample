@@ -1,17 +1,33 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Fragment;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -20,6 +36,9 @@ import org.json.JSONObject;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +58,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 
@@ -58,6 +78,13 @@ public class Utils {
     private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static final String EXTERNAL_STORAGE = "ExternalStorage";
+
+    // sample file name to be transfered
+    public static String SAMPLE_FILE_NAME = "FileTransfer.png";
+    public static String SAMPLE_DATA_NAME = "DataTransfer.png";
+
+    // maximum data size to be transfered
+    public static final int MAX_TRANSFER_SIZE = 65456;
 
     private static Context mContext;
     private static SharedPreferences sharedPref;
@@ -382,6 +409,36 @@ public class Utils {
     }
 
     /**
+     * @return Location to save the downloaded file on the file system
+     */
+    public static String getDownloadedFilePath() {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        return path.getAbsolutePath() + File.separator + SAMPLE_FILE_NAME;
+    }
+
+    /**
+     * Creates a dummy file from the apk's asset folder to the device's filepath so that there is a
+     * default file to transfer
+     */
+    public static void createExternalStoragePrivatePicture(String fileNameSent) {
+        // Create a path where we will place our pictures in our own private
+        // pictures directory.  Note that we don't really need to place a
+        // picture in DIRECTORY_PICTURES, since the media scanner will see
+        // all media in these directories; this may be useful with other
+        // media types such as DIRECTORY_MUSIC however to help it classify
+        // your media for display to the user.
+
+        // Files to be created on device...
+        File fileCopy = getFileToTransfer(fileNameSent);
+
+        // ...copied from resource files here:
+        int fileIn = R.raw.logo_icon;
+
+        // Copy resource files into files on Device's directory.
+        copyFile(fileIn, fileCopy);
+    }
+
+    /**
      * Return a localized string from the application's package's
      * default string table.
      *
@@ -483,12 +540,31 @@ public class Utils {
     }
 
     /**
+     * Set dataGroup to contain 2 of dataPrivate.
+     * Will get dataPrivate if dataGroup and dataPrivate are null.
+     */
+    public static byte[] getDataSample() {
+        byte[] data = null;
+
+        InputStream inputStream = mContext.getResources().openRawResource(R.raw.logo_icon);
+        try {
+            data = new byte[inputStream.available()];
+            inputStream.read(data);
+            inputStream.close();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        return data;
+    }
+
+    /**
      * Read an image to a byte array and put in dataPrivate
      */
     public static byte[] getDataPrivate() {
         byte[] dataPrivate = null;
 
-        InputStream inputStream = mContext.getResources().openRawResource(R.raw.icon);
+        InputStream inputStream = mContext.getResources().openRawResource(R.raw.logo_icon);
         try {
             dataPrivate = new byte[inputStream.available()];
             inputStream.read(dataPrivate);
@@ -498,31 +574,6 @@ public class Utils {
         }
 
         return dataPrivate;
-    }
-
-    /**
-     * Creates a dummy file from the apk's asset folder to the device's filepath so that there is a
-     * default file to transfer
-     */
-    public static void createExternalStoragePrivatePicture(String filenamePrivate, String filenameGroup) {
-        // Create a path where we will place our pictures in our own private
-        // pictures directory.  Note that we don't really need to place a
-        // picture in DIRECTORY_PICTURES, since the media scanner will see
-        // all media in these directories; this may be useful with other
-        // media types such as DIRECTORY_MUSIC however to help it classify
-        // your media for display to the user.
-
-        // Files to be created on device...
-        File fileCopy1 = getFileToTransfer(filenamePrivate);
-        File fileCopy2 = getFileToTransfer(filenameGroup);
-
-        // ...copied from resource files here:
-        int fileIn1 = R.raw.icon;
-        int fileIn2 = R.raw.icon_group;
-
-        // Copy resource files into files on Device's directory.
-        copyFile(fileIn1, fileCopy1);
-        copyFile(fileIn2, fileCopy2);
     }
 
     /**
@@ -678,15 +729,116 @@ public class Utils {
     }
 
     /**
-     * Returns the date in ISO time format
-     *
-     * @param date
-     * @return ISO timestamp
+     * Get the file path from Uri
      */
-    public static String getISOTimeStamp2(Date date) {
-        TimeZone tz = TimeZone.getTimeZone(TIME_ZONE_UTC);
-        DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
-        df.setTimeZone(tz);
-        return df.format(date);
+    @SuppressLint("NewApi")
+    public static String getFilePath(Context context, Uri uri) {
+        String selection = null;
+        String[] selectionArgs = null;
+        // Uri is different in versions after KITKAT (Android 4.4), we need to
+        if (Build.VERSION.SDK_INT >= 19 && DocumentsContract.isDocumentUri(context.getApplicationContext(), uri)) {
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
+            } else if (isDownloadsDocument(uri)) {
+                final String id = DocumentsContract.getDocumentId(uri);
+                if (id.split(":").length > 1) {
+                    return id.split(":")[1];
+                } else {
+                    uri = ContentUris.withAppendedId(
+                            Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                }
+            } else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                if ("image".equals(type)) {
+                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+                selection = "_id=?";
+                selectionArgs = new String[]{
+                        split[1]
+                };
+            }
+        }
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            String[] projection = {
+                    MediaStore.Images.Media.DATA
+            };
+            Cursor cursor = null;
+            try {
+                cursor = context.getContentResolver()
+                        .query(uri, projection, selection, selectionArgs, null);
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(column_index);
+                }
+            } catch (Exception e) {
+            }
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+        return uri.toString();
     }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    public static boolean isImageFile(String filePath) {
+        //image file end with {"jpg", "png", "gif","jpeg"}
+        if (filePath != null && (filePath.toLowerCase().endsWith(".png") ||
+                (filePath.toLowerCase().endsWith(".jpg")) ||
+                (filePath.toLowerCase().endsWith(".jpeg")) ||
+                (filePath.toLowerCase().endsWith(".gif")))) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Get the bitmap from Uri
+     */
+    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        ParcelFileDescriptor parcelFileDescriptor =
+                mContext.getContentResolver().openFileDescriptor(uri, "r");
+        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+        parcelFileDescriptor.close();
+        return image;
+    }
+
+    /**
+     * Get the data array of the file
+     */
+    public static byte[] getDataFromFile(File file) throws FileNotFoundException {
+        byte[] data = null;
+
+        InputStream inputStream = new FileInputStream(file);
+        try {
+            data = new byte[inputStream.available()];
+            inputStream.read(data);
+            inputStream.close();
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        return data;
+    }
+
 }

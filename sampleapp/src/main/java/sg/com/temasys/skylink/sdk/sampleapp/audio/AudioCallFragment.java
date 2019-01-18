@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
@@ -17,26 +16,27 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
- * A simple {@link Fragment} subclass.
+ * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
  */
-public class AudioCallFragment extends Fragment implements AudioCallContract.View {
+public class AudioCallFragment extends CustomActionBar implements AudioCallContract.View, View.OnClickListener {
 
     private final String TAG = AudioCallFragment.class.getName();
 
-    private Context mContext;
-
+    // The view widgets
     private LinearLayout llTool;
-
-    private TextView tvRoomDetails;
-
     private ImageButton btnAudioSpeaker, btnAudioEnd;
-
     private ImageView img;
 
     // presenter instance to implement app logic
@@ -58,14 +58,14 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        this.mContext = context;
+        super.context = context;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Allow volume to be controlled using volume keys
-        ((AudioCallActivity) mContext).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        ((AudioCallActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
@@ -81,14 +81,11 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // setup the action bar
         setActionBar();
 
+        // init values for view controls
+        initControls();
+
         //request an initiative connection
         requestViewLayout();
-
-        // Defining a click event listener for the button "Audio Speaker"
-        btnAudioSpeaker.setOnClickListener(view -> mPresenter.onViewRequestChangeAudioOuput());
-
-        // Defining a click event listener for the button "End call"
-        btnAudioEnd.setOnClickListener(view -> processEndAudio());
 
         return rootView;
     }
@@ -101,19 +98,39 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
 
-        // Inform the presenter to implement the pause state
-        mPresenter.onViewRequestStop();
+        //when changing configuration, do change layout view to fit with screen
+        changeLayout(newConfig.orientation);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        // Inform the presenter to implement the resume state
-        mPresenter.onViewRequestResume();
+    public void onClick(View view) {
+        //Defining a click event listener for the buttons in the action bar.
+        switch (view.getId()) {
+            case R.id.btnBack:
+                processBack();
+                break;
+            case R.id.btnLocalPeer:
+                displayPeerInfo(0);
+                break;
+            case R.id.btnRemotePeer1:
+                displayPeerInfo(1);
+                break;
+            case R.id.btnRemotePeer2:
+                displayPeerInfo(2);
+                break;
+            case R.id.btnRemotePeer3:
+                displayPeerInfo(3);
+                break;
+            case R.id.btnAudioSpeaker:
+                mPresenter.onViewRequestChangeAudioOuput();
+                break;
+            case R.id.btnAudioEnd:
+                processEndAudio();
+                break;
+        }
     }
 
     @Override
@@ -123,17 +140,9 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
-        if (!((AudioCallActivity) mContext).isChangingConfigurations()) {
+        if (!((AudioCallActivity) context).isChangingConfigurations()) {
             mPresenter.onViewRequestExit();
         }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        //when changing configuration, do change layout view to fit with screen
-        changeLayout(newConfig.orientation);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -149,67 +158,87 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     /**
-     * Update UI when connected to room / remote peer joined / audio output state changed
+     * Update information about room id on the action bar
+     *
+     * @param roomId
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void onPresenterRequestUpdateRoomInfo(String roomId) {
+        updateRoomInfo(roomId);
+    }
+
+    /**
+     * Show local peer button and display local avatar by the first character of the local username
+     */
     @Override
-    public void onPresenterRequestUpdateUI(String roomDetails, boolean isPeerJoined, boolean isSpeakerOn) {
+    public void onPresenterRequestUpdateUIConnected(String localUserName) {
+        // update the local peer button in the action bar
+        updateUILocalPeer(localUserName);
 
-        //change room detail info
-        tvRoomDetails.setText(roomDetails);
+        // update the image to show local peer in the room
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            img.setImageDrawable(context.getDrawable(R.drawable.ic_local_32));
+        }
+    }
 
-        //change connection animation
-        AnimationDrawable frameAnimation = null;
-        if (isPeerJoined) {
-            AnimationDrawable backgroundSrc = (AnimationDrawable) mContext.getResources().getDrawable(R.drawable.img_blink);
-            if (backgroundSrc != null) {
-                img.setImageDrawable(backgroundSrc);
+    /**
+     * Update information about new remote peer joining the room at a specific index
+     *
+     * @param newPeer remote peer joining the room
+     * @param index   specific index
+     */
+    @Override
+    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
+        //add new remote peer button in the action bar
+        updateUiRemotePeerJoin(newPeer, index);
 
-                frameAnimation = (AnimationDrawable) img.getDrawable();
-                if (frameAnimation != null)
-                    frameAnimation.start();
-            }
-        } else {
-            if (frameAnimation != null)
-                frameAnimation.stop();
+        // update the image to show peers in the room
+        // there are 2 peers in room (including local peer) according to the config
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            img.setImageDrawable(context.getDrawable(R.drawable.ic_peers_32));
+        }
+    }
 
-            Drawable backgroundSrc = null;
-            if (isSpeakerOn)
-                backgroundSrc = mContext.getResources().getDrawable(R.drawable.speaker_image, null);
-            else
-                backgroundSrc = mContext.getResources().getDrawable(R.drawable.headset_image, null);
+    /**
+     * Display information about list of peers in room on the action bar
+     *
+     * @param peersList
+     */
+    @Override
+    public void onPresenterRequestChangeUIRemotePeerLeft(List<SkylinkPeer> peersList) {
+        // re fill the peers buttons in the action bar to show the peer correctly order
+        processFillPeers(peersList);
 
-            if (backgroundSrc != null)
-                img.setImageDrawable(backgroundSrc);
+        // update the image to show only local peer left in the room
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            img.setImageDrawable(context.getDrawable(R.drawable.ic_local_32));
         }
     }
 
     /**
      * Update button and image when audio output state changed
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn) {
 
         //change the button background and icon
         Drawable backgroundSrcBtn = null;
-        Drawable backgroundSrcImg = null;
 
         if (isSpeakerOn) {
-            btnAudioSpeaker.setBackground(mContext.getResources().getDrawable(R.drawable.button_circle_press));
-            backgroundSrcBtn = mContext.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
-            backgroundSrcImg = mContext.getResources().getDrawable(R.drawable.speaker_image, null);
+            btnAudioSpeaker.setBackground(context.getResources().getDrawable(R.drawable.button_circle_press));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrcBtn = context.getResources().getDrawable(R.drawable.ic_audio_speaker, null);
+                toastLog(TAG, context, "Speaker is turned ON");
+            }
         } else {
-            btnAudioSpeaker.setBackground(mContext.getResources().getDrawable(R.drawable.button_circle));
-            backgroundSrcBtn = mContext.getResources().getDrawable(R.drawable.icon_speaker_mute, null);
-            backgroundSrcImg = mContext.getResources().getDrawable(R.drawable.headset_image, null);
+            btnAudioSpeaker.setBackground(context.getResources().getDrawable(R.drawable.button_circle));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                backgroundSrcBtn = context.getResources().getDrawable(R.drawable.icon_speaker_mute, null);
+                toastLog(TAG, context, "Speaker is turned OFF");
+            }
         }
 
         if (backgroundSrcBtn != null)
             btnAudioSpeaker.setImageDrawable(backgroundSrcBtn);
-
-        if (backgroundSrcImg != null && !isPeerJoined)
-            img.setImageDrawable(backgroundSrcImg);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -218,19 +247,57 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
 
     private void getControlWidgets(View rootView) {
         llTool = rootView.findViewById(R.id.ll_tool);
-        tvRoomDetails = rootView.findViewById(R.id.tv_audio_room_details);
         btnAudioSpeaker = rootView.findViewById(R.id.btnAudioSpeaker);
         btnAudioEnd = rootView.findViewById(R.id.btnAudioEnd);
         img = rootView.findViewById(R.id.img);
     }
 
+    /**
+     * Setup the custom action bar
+     * And get the view widgets in the action bar
+     */
     private void setActionBar() {
         ActionBar actionBar = ((AudioCallActivity) getActivity()).getSupportActionBar();
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
-        setHasOptionsMenu(true);
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setCustomView(R.layout.custom_action_bar);
+        View customBar = actionBar.getCustomView();
+
+        // get the view controls in custom action bar by id
+        btnBack = customBar.findViewById(R.id.btnBack);
+        txtRoomName = customBar.findViewById(R.id.txtRoomName);
+        txtRoomId = customBar.findViewById(R.id.txtRoomId);
+        btnLocalPeer = customBar.findViewById(R.id.btnLocalPeer);
+        btnRemotePeer1 = customBar.findViewById(R.id.btnRemotePeer1);
+        btnRemotePeer2 = customBar.findViewById(R.id.btnRemotePeer2);
+        btnRemotePeer3 = customBar.findViewById(R.id.btnRemotePeer3);
+    }
+
+    /**
+     * Init the view widgets for the fragment
+     */
+    private void initControls() {
+        // init setting value for room name in action bar
+        txtRoomName.setText(Config.ROOM_NAME_AUDIO);
+
+        // set onClick event for buttons in layout
+        btnBack.setOnClickListener(this);
+        btnLocalPeer.setOnClickListener(this);
+        btnRemotePeer1.setOnClickListener(this);
+        btnRemotePeer2.setOnClickListener(this);
+        btnRemotePeer3.setOnClickListener(this);
+        btnAudioSpeaker.setOnClickListener(this);
+        btnAudioEnd.setOnClickListener(this);
+
+        // show the connecting animation
+        AnimationDrawable backgroundSrc = (AnimationDrawable) context.getResources().getDrawable(R.drawable.img_blink);
+        if (backgroundSrc != null) {
+            img.setImageDrawable(backgroundSrc);
+
+            AnimationDrawable frameAnimation = (AnimationDrawable) img.getDrawable();
+            if (frameAnimation != null)
+                frameAnimation.start();
+        }
     }
 
     /**
@@ -248,20 +315,6 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
     }
 
     /**
-     * process closing the connection and activity when ending the audio call
-     */
-    private void processEndAudio() {
-
-        //// Inform the presenter to implement closing the connection
-        mPresenter.onViewRequestExit();
-
-        //close UI
-        if (getActivity() != null) {
-            getActivity().finish();
-        }
-    }
-
-    /**
      * changing the view layout when changing screen orientation
      *
      * @param orientation portrait or landscape mode
@@ -270,12 +323,38 @@ public class AudioCallFragment extends Fragment implements AudioCallContract.Vie
         // Setting different bottom margins to different screen to have a better UI
         LinearLayout.LayoutParams llParams = (LinearLayout.LayoutParams) llTool.getLayoutParams();
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_50dp);
+            llParams.bottomMargin = (int) context.getResources().getDimension(R.dimen.dp_50dp);
         } else {
-            llParams.bottomMargin = (int) mContext.getResources().getDimension(R.dimen.dp_5dp);
+            llParams.bottomMargin = (int) context.getResources().getDimension(R.dimen.dp_5dp);
         }
 
         llTool.setLayoutParams(llParams);
+    }
 
+    /**
+     * Display the dialog of peer info including peer username and peer id
+     * when the user click into the peer button in action bar
+     */
+    private void displayPeerInfo(int index) {
+        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        if (index == 0) {
+            processDisplayLocalPeer(peer);
+        } else {
+            processDisplayRemotePeer(peer);
+        }
+    }
+
+    /**
+     * process closing the connection and activity when ending the audio call
+     */
+    private void processEndAudio() {
+
+        // Inform the presenter to implement closing the connection
+        mPresenter.onViewRequestExit();
+
+        //close UI
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
     }
 }

@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 
+import android.support.v4.app.Fragment;
+
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
@@ -16,48 +18,77 @@ public interface DataTransferContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * Update UI details when peers are in room
+         * Get instance of the fragment for processing runtime permission
          */
-        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
+        Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update UI details when remote peer joins the room
+         * Update info about the connected room {roomId}
          */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer);
+        void onPresenterRequestUpdateRoomInfo(String roomInfo);
 
         /**
-         * Update UI details when remote peer leaves the room
+         * Update info about the local peer in action bar
          */
-        void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId);
+        void onPresenterRequestUpdateLocalPeer(String localUserName);
 
         /**
-         * Update UI details with room information
+         * Update UI details when new remote peer joins at a specific index the room
          */
-        void onPresenterRequestUpdateUi(String roomDetails);
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
 
         /**
-         * get selected remote peer to send data
+         * Update UI details when remote peer left the room
          */
-        String onPresenterRequestGetPeerIdSelected();
+        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
 
         /**
-         * set button Select all checked
-         */
-        void onPresenterRequestSetPeerAllSelected(boolean isSelected);
-
+         * Update UI when received data from remote peer
+         * */
+        void onPresenterRequestChangeUIReceivedData(SkylinkPeer remotePeer, byte[] data);
     }
 
     interface Presenter {
 
         /**
-         * process data to display on view
+         * request a init connection
          */
         void onViewRequestConnectedLayout();
 
         /**
-         * process send data to remote Peer
+         * request runtime permission for read internal storage
          */
-        void onViewRequestSendData(String remotePeerId, byte[] data);
+        boolean onViewRequestFilePermission();
+
+        /**
+         * process runtime file permission result
+         */
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+
+        /**
+         * process logic when user deny the permission
+         */
+        void onViewRequestPermissionDeny();
+
+        /**
+         * process selecting the specific remote peer to send message to
+         */
+        void onViewRequestSelectedRemotePeer(int index);
+
+        /**
+         * process get current selected peer index
+         */
+        int onViewRequestGetCurrentSelectedPeer();
+
+        /**
+         * process get peer info at specific index
+         */
+        SkylinkPeer onViewRequestGetPeerByIndex(int index);
+
+        /**
+         * process send file to remote peer
+         */
+        void onViewRequestSendData(byte[] data);
 
         /**
          * process change state when view exit/closed

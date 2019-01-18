@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -30,6 +31,10 @@ public class PermissionUtils {
 
     private static final String TAG = PermissionUtils.class.getName();
 
+    // request code for permission for file browser from file transfer in the app
+    // this permission is not from the SDK
+    public static final int APP_PERMISSIONS_READ_EXTERNAL_STORAGE = 11;
+
     // Queue of Permission requesting objects.
     //these variables need to be static for all type call and configuration change
     private static Deque<PermRequester> permQ = new ArrayDeque<>();
@@ -57,6 +62,7 @@ public class PermissionUtils {
      * @param permissions  As given in Android method.
      * @param grantResults As given in Android method.
      * @param tag          Tag string for logging.
+     * @return wasAppRequest variable to check the permission is from SDK or from the app
      */
     public void onRequestPermissionsResultHandler(
             int requestCode, String[] permissions, int[] grantResults,
@@ -75,7 +81,6 @@ public class PermissionUtils {
         }
         if (!"".equals(error)) {
             Log.e(tag, error);
-            return;
         }
 
         String permission = permissions[0];
@@ -86,14 +91,14 @@ public class PermissionUtils {
         boolean wasSkylinkRequest = PermissionService.processPermissionsResult(requestCode, permissions, grantResults);
 
         if (wasSkylinkRequest) {
-            log += "originates ";
+            log += "originates from the Skylink SDK.";
+            Log.d(tag, log);
         } else {
-            log += "does NOT originate ";
+            log += "does NOT originate from the Skylink SDK.";
+            Log.d(tag, log);
             // If result is false, process the results in the app
             // (permission request was not from SDK).
         }
-        log += "from the Skylink SDK.";
-        Log.d(tag, log);
     }
 
     /**
@@ -516,5 +521,56 @@ public class PermissionUtils {
             fragment.requestPermissions(requester.getPermissions(), requester.getRequestCode());
             return;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // These methods to process the permission from the app
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * display the read file permission dialog for the user
+     *
+     * @param context
+     * @param fragmentInstance the view instance
+     * @return true if the permission already grant before
+     */
+    public static boolean requestFilePermission(Context context, Fragment fragmentInstance) {
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            fragmentInstance.requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    APP_PERMISSIONS_READ_EXTERNAL_STORAGE);
+
+            return false;
+        }
+        return true;
+    }
+
+    public static void displayFilePermissionWarning(Context context) {
+        String alertText = "Android permission to read from device storage was denied. " +
+                "We are now NOT able to browse for file in device";
+
+        alertText += "\r\nTo enable feature, restart this feature and grant the permission(s) " +
+                "required. Alternatively, go to Android's Settings -> \"Apps\", select this App, " +
+                "go to \"Permissions\", grant required permission(s), and restart this feature.";
+
+        // Create AlertDialog to warn user of consequences of permission denied.
+        AlertDialog.Builder permissionDeniedDialogBuilder =
+                new AlertDialog.Builder(context);
+        permissionDeniedDialogBuilder.setTitle("Warning! Feature(s) unavailable " +
+                "due to Permission(s) denied.");
+
+        // Create TextView for permission alert.
+        final TextView msgTxtView = new TextView(context);
+        msgTxtView.setText(alertText);
+        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+        permissionDeniedDialogBuilder.setView(msgTxtView);
+        permissionDeniedDialogBuilder.setPositiveButton("Ok", null);
+
+        alertText = "[SA][onPermDenied] " + alertText;
+        Log.d("PermissionUtils", alertText);
+        permissionDeniedDialogBuilder.show();
     }
 }

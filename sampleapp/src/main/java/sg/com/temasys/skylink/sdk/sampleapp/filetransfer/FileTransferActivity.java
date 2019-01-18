@@ -42,7 +42,8 @@ public class FileTransferActivity extends AppCompatActivity {
         }
 
         //link between view and presenter
-        mFileTransferPresenter.setView(mFileTransferFragment);
+        if (mFileTransferFragment != null)
+            mFileTransferPresenter.setView(mFileTransferFragment);
     }
 
     @Override

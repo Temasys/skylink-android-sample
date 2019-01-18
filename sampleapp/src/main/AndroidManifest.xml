@@ -43,11 +43,14 @@
             android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".filetransfer.FileTransferActivity"
-            android:label="@string/title_section4"/>
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_section4"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".datatransfer.DataTransferActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_section5"/>
+            android:label="@string/title_section5"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".video.VideoCallActivity"
             android:configChanges="orientation|screenSize"

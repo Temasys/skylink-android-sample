@@ -1,19 +1,27 @@
 package sg.com.temasys.skylink.sdk.sampleapp.filetransfer;
 
-import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.File;
@@ -21,35 +29,40 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.CurvedTextView;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.SAMPLE_FILE_NAME;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
- * A simple {@link MultiPartyFragment} subclass.
  * This class is responsible for display UI and get user interaction
  */
-public class FileTransferFragment extends MultiPartyFragment implements FileTransferContract.View {
+public class FileTransferFragment extends CustomActionBar implements FileTransferContract.View,
+        View.OnClickListener, View.OnLongClickListener {
 
     private final String TAG = FileTransferFragment.class.getName();
 
-    // sample file name to be transfered
-    private final String FILENAME_PRIVATE = "FileTransferPrivate.png";
-    private final String FILENAME_GROUP = "FileTransferGroup.png";
+    // The request code for file browser
+    private static final int CHOOSE_FILE_REQUEST_CODE = 10;
 
     // presenter instance to implement app logic
     private FileTransferContract.Presenter mPresenter;
 
-    //static variables for update UI when changing configuration
-    //because we use different layout for landscape mode
-    private static TextView tvRoomDetails;
-    private static EditText etSenderFilePath;
-    private static TextView tvFileTransferDetails;
-    private static ImageView ivFilePreview;
-
-    private Button sendFilePrivate;
-    private Button sendFileGroup;
+    // view widgets
+    private TextView txtFilePathInfo;
+    private EditText editFilePath;
+    private ImageView imgView;
+    private ImageButton btnChooseFile;
+    private ImageButton btnSendFile;
+    private ProgressBar spinnerBackground;
+    private ProgressBar spinnerForeground;
+    private CurvedTextView txtProgressInfo;
+    private TextView txtPercentage;
+    private LinearLayout filePreviewContainer;
 
     public static FileTransferFragment newInstance() {
         return new FileTransferFragment();
@@ -67,7 +80,7 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        this.context = context;
+        super.context = context;
     }
 
     @Override
@@ -95,26 +108,6 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         //request an initiative connection
         requestViewLayout();
 
-        // Defining a click event listener for the edit text File path
-        etSenderFilePath.setOnClickListener(v -> {
-            processSetFilePath();
-        });
-
-        // Defining a click event listener for the radio group
-        peerRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            processSelectPeer(checkedId);
-        });
-
-        // Defining a click event listener for the button SEND FILE
-        sendFilePrivate.setOnClickListener(v -> {
-            processSendFilePrivate();
-        });
-
-        // Defining a click event listener for the button SEND FILE [GROUP]
-        sendFileGroup.setOnClickListener(v -> {
-            processSendFileGroup();
-        });
-
         return rootView;
     }
 
@@ -128,32 +121,135 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
         if (!((FileTransferActivity) context).isChangingConfigurations()) {
             //disconnect from room
             mPresenter.onViewRequestExit();
-
-            //clear all static variables to avoid memory leak
-            peerRadioGroup = null;
-            peerAll = null;
-            peer1 = null;
-            peer2 = null;
-            peer3 = null;
-            peer4 = null;
-
-            mPeers = null;
-
-            tvRoomDetails = null;
-            etSenderFilePath = null;
-            tvFileTransferDetails = null;
-            ivFilePreview = null;
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+    public void onClick(View view) {
+        //Defining a click event listener for the buttons in the action bar.
+        switch (view.getId()) {
+            case R.id.btnBack:
+                processBack();
+                break;
+            case R.id.btnLocalPeer:
+                processSelectPeer(0);
+                break;
+            case R.id.btnRemotePeer1:
+                processSelectPeer(1);
+                break;
+            case R.id.btnRemotePeer2:
+                processSelectPeer(2);
+                break;
+            case R.id.btnRemotePeer3:
+                processSelectPeer(3);
+                break;
+            case R.id.btnChoose:
+                requestPermission();
+                break;
+            case R.id.btnSend:
+                processSendFile();
+                break;
+        }
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        //Defining a long click event listener for the peer buttons in the action bar.
+        switch (view.getId()) {
+            case R.id.btnLocalPeer:
+                displayPeerInfo(0);
+                break;
+            case R.id.btnRemotePeer1:
+                displayPeerInfo(1);
+                break;
+            case R.id.btnRemotePeer2:
+                displayPeerInfo(2);
+                break;
+            case R.id.btnRemotePeer3:
+                displayPeerInfo(3);
+                break;
+        }
+
+        return true;
+    }
+
+    /**
+     * Process permission result from user choice
+     * There are 2 permission types: from app and from SDK
+     * if permission comes from SDK, the app should use the SDK request code
+     * if permission comes from the app, the app need to implement itself
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        // permission results from app
+        if (requestCode == PermissionUtils.APP_PERMISSIONS_READ_EXTERNAL_STORAGE) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // show the file picker for user to choose file
+                showFilePicker();
+            } else {
+                // permission denied, warning the user
+                mPresenter.onViewRequestPermissionDeny();
+            }
+        } else { // permission results from SDK
+            mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults, TAG);
+        }
+    }
+
+    /**
+     * Get the file that user choose from browser and then display on UI properly
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
+        // CHOOSE_FILE_REQUEST_CODE.
+        if (requestCode == CHOOSE_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // update file info
+            // check for select remote peer or un select it
+            boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+            if (unSelected) {
+                txtFilePathInfo.setText("File path to send to all peers : ");
+            } else {
+                int index = mPresenter.onViewRequestGetCurrentSelectedPeer();
+                SkylinkPeer selectedPeer = mPresenter.onViewRequestGetPeerByIndex(index);
+                txtFilePathInfo.setText("File path to send to " + selectedPeer.toString() + " : ");
+            }
+
+            Uri uri = null;
+            if (resultData != null) {
+                uri = resultData.getData();
+                Log.i(TAG, "Uri: " + uri.toString());
+
+                // update the edit text with file path from Uri
+                String filePath = Utils.getFilePath(context, uri);
+                editFilePath.setText(filePath);
+                // move cursor to the end of edit text
+                editFilePath.setSelection(editFilePath.getText().length());
+
+                // update the image preview
+                if (Utils.isImageFile(filePath)) {
+                    imgView.setImageURI(uri);
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        imgView.setImageDrawable(context.getDrawable(R.drawable.ic_file_common));
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // change screen orientation in case of portrait/landscape mode
+        changeScreenOrientation(newConfig.orientation);
+
+        super.onConfigurationChanged(newConfig);
     }
 
     //----------------------------------------------------------------------------------------------
-    // Methods called from the Presenter to update UI
+    // Methods called from the Presenter to update UI on view
     //----------------------------------------------------------------------------------------------
 
     /**
@@ -165,125 +261,190 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
     }
 
     /**
-     * Display information about list of peers in room
+     * Update information about room id on the action bar when connected to room
      *
-     * @param peersList
+     * @param roomId room ID generated by SDK
      */
-    @Override
-    public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
-        fillPeerRadioBtn(peersList);
+    public void onPresenterRequestUpdateRoomInfo(String roomId) {
+        // display roomId
+        updateRoomInfo(roomId);
     }
 
     /**
-     * Display information about remote peer joining the room
-     *
-     * @param skylinkPeer remote peer joining the room
+     * Show local peer button and display local avatar
+     * Peer avatar will be the first character of the peer username
      */
     @Override
-    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer skylinkPeer) {
-        addPeerRadioBtn(skylinkPeer);
+    public void onPresenterRequestUpdateLocalPeer(String localUserName) {
+        btnLocalPeer.setVisibility(View.VISIBLE);
+        btnLocalPeer.setText(localUserName.charAt(0) + "");
     }
 
     /**
-     * Display information about remote peer leaves the room
+     * Update information when new remote peer joining the room at a specific index
      *
-     * @param remotePeerId remote peer ID leaving the room
+     * @param newPeer remote peer joining the room
+     * @param index   specific index
      */
     @Override
-    public void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId) {
-        removePeerRadioBtn(remotePeerId);
+    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
+        updateUiRemotePeerJoin(newPeer, index);
     }
 
     /**
-     * Get the selected peer id by the user
+     * Update information when remote peer left the room
+     * We need to re-fill all peers to display correctly peers order
+     *
+     * @param peersList list of left peers in room
      */
     @Override
-    public String onPresenterRequestGetPeerIdSelected() {
-        return getPeerIdSelected();
+    public void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList) {
+        processFillPeers(peersList);
     }
 
     /**
-     * Check/Uncheck the All peers option
+     * Update the file preview when the user manual input file path to send
      *
-     * @param isSelected the checked state
+     * @param filePath the path of file to be sent
      */
     @Override
-    public void onPresenterRequestSetPeerAllSelected(boolean isSelected) {
-        peerAll.setChecked(isSelected);
+    public void onPresenterRequestDisplayFilePreview(String filePath) {
+        updateFilePreview(filePath);
     }
 
     /**
-     * Display sample file preview to UI
-     *
-     * @param imgUri the URI of the sample file
+     * Update UI when complete sending file to remote peer(s)
      */
     @Override
-    public void onPresenterRequestDisplayFilePreview(Uri imgUri) {
-        if (ivFilePreview != null)
-            ivFilePreview.setImageURI(imgUri);
+    public void onPresenterRequestFileSent() {
+        showHideProgressBar(false);
+        String log = "Your file has been sent.";
+        toastLog(TAG, context, log);
     }
 
     /**
-     * Display information about received file name and file path
-     *
-     * @param info
+     * Update UI when complete receiving file from remote peer
      */
     @Override
-    public void onPresenterRequestDisplayFileReveicedInfo(String info) {
-        if (tvFileTransferDetails != null)
-            tvFileTransferDetails.setText(info);
+    public void onPresenterRequestFileReceived(SkylinkPeer remotePeer, String filePath) {
+        // Update edit text file path
+        txtFilePathInfo.setText("File path received from " + remotePeer.toString() + " : ");
+        editFilePath.setText(filePath);
+        // move cursor to the end of edit text
+        editFilePath.setSelection(editFilePath.getText().length());
+
+        // update the file preview according to the received file
+        updateFilePreview(filePath);
+
+        // hide the progress bar
+        showHideProgressBar(false);
+
+        String log = "You has received a file.";
+        toastLog(TAG, context, log);
     }
 
     /**
-     * Display the update information about room details
+     * Update UI while sending file to remote peer(s)
      *
-     * @param roomDetails
+     * @param percentage the sending file progress
      */
     @Override
-    public void onPresenterRequestUpdateUi(String roomDetails) {
-        if (tvRoomDetails != null)
-            tvRoomDetails.setText(roomDetails);
+    public void onPresenterRequestFileSendProgress(int percentage) {
+        showHideProgressBar(true);
+        spinnerForeground.setProgress(percentage);
+        txtProgressInfo.setText("Sending");
+        txtPercentage.setText(percentage + "%");
+    }
+
+    /**
+     * Update UI while receiving file from remote peer.
+     *
+     * @param percentage the receiving file progress
+     */
+    @Override
+    public void onPresenterRequestFileReceiveProgress(int percentage) {
+        showHideProgressBar(true);
+        spinnerForeground.setProgress(percentage);
+        txtProgressInfo.setText("Receiving");
+        txtPercentage.setText(percentage + "%");
     }
 
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * Get the view widgets from layout
+     */
     private void getControlWidgets(View rootView) {
-        // The controls from MultiPartyFragment
-        peerRadioGroup = rootView.findViewById(R.id.radio_grp_peers);
-        peerAll = rootView.findViewById(R.id.radio_btn_peer_all);
-        peer1 = rootView.findViewById(R.id.radio_btn_peer1);
-        peer2 = rootView.findViewById(R.id.radio_btn_peer2);
-        peer3 = rootView.findViewById(R.id.radio_btn_peer3);
-        peer4 = rootView.findViewById(R.id.radio_btn_peer4);
+        txtFilePathInfo = rootView.findViewById(R.id.txtFilePathInfo);
+        editFilePath = rootView.findViewById(R.id.editFilePath);
+        imgView = rootView.findViewById(R.id.img_preview);
+        btnChooseFile = rootView.findViewById(R.id.btnChoose);
+        btnSendFile = rootView.findViewById(R.id.btnSend);
+        spinnerBackground = rootView.findViewById(R.id.progressBarSendingBackground);
+        spinnerForeground = rootView.findViewById(R.id.progressBarSendingForeGround);
+        txtProgressInfo = rootView.findViewById(R.id.progress_info);
+        txtPercentage = rootView.findViewById(R.id.txtPercentage);
 
-        // The controls from the File transfer layout
-        tvRoomDetails = rootView.findViewById(R.id.tv_file_room_details);
-        etSenderFilePath = rootView.findViewById(R.id.et_file_path);
-        ivFilePreview = rootView.findViewById(R.id.iv_file_preview);
-        tvFileTransferDetails = rootView.findViewById(R.id.tv_file_transfer_details);
-
-        sendFilePrivate = rootView.findViewById(R.id.btn_send_file_pte);
-        sendFileGroup = rootView.findViewById(R.id.btn_send_file_grp);
+        filePreviewContainer = rootView.findViewById(R.id.file_preview_container);
     }
 
+    /**
+     * Setup the custom action bar
+     * And get the view widgets in the action bar
+     */
     private void setActionBar() {
         ActionBar actionBar = ((FileTransferActivity) getActivity()).getSupportActionBar();
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
-        setHasOptionsMenu(true);
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setCustomView(R.layout.custom_action_bar);
+        View customBar = actionBar.getCustomView();
+
+        // get the view controls in custom action bar by id
+        btnBack = customBar.findViewById(R.id.btnBack);
+        txtRoomName = customBar.findViewById(R.id.txtRoomName);
+        txtRoomId = customBar.findViewById(R.id.txtRoomId);
+        btnLocalPeer = customBar.findViewById(R.id.btnLocalPeer);
+        btnRemotePeer1 = customBar.findViewById(R.id.btnRemotePeer1);
+        btnRemotePeer2 = customBar.findViewById(R.id.btnRemotePeer2);
+        btnRemotePeer3 = customBar.findViewById(R.id.btnRemotePeer3);
     }
 
+    /**
+     * Setup the init value for the view controls
+     */
     private void initControls() {
+        // init setting value for room name in action bar
+        txtRoomName.setText(Config.ROOM_NAME_FILE);
+        // default sending file option
+        txtFilePathInfo.setText("File path to send to all peers : ");
 
         // Prepare default file for transfer and set UI.
-        prepFile(Utils.getFileToTransfer(FILENAME_PRIVATE).getAbsolutePath());
+        prepFile(Utils.getFileToTransfer(SAMPLE_FILE_NAME).getAbsolutePath());
 
-        // Copy files raw/R.raw.icon and raw/R.raw.icon_group to the device's file system
-        Utils.createExternalStoragePrivatePicture(FILENAME_PRIVATE, FILENAME_GROUP);
+        // Copy files raw/R.raw.logo_icon to the device's file system
+        Utils.createExternalStoragePrivatePicture(SAMPLE_FILE_NAME);
+
+        // move cursor to the end of edit text
+        editFilePath.requestFocus();
+
+        // set onClick and LongClick event for view widgets
+        btnBack.setOnClickListener(this);
+        btnLocalPeer.setOnClickListener(this);
+        btnRemotePeer1.setOnClickListener(this);
+        btnRemotePeer2.setOnClickListener(this);
+        btnRemotePeer3.setOnClickListener(this);
+        btnChooseFile.setOnClickListener(this);
+        btnSendFile.setOnClickListener(this);
+
+        btnLocalPeer.setOnLongClickListener(this);
+        btnRemotePeer1.setOnLongClickListener(this);
+        btnRemotePeer2.setOnLongClickListener(this);
+        btnRemotePeer3.setOnLongClickListener(this);
+
+        // change screen orientation in case of landscape mode
+        changeScreenOrientation(context.getResources().getConfiguration().orientation);
     }
 
     /**
@@ -299,111 +460,149 @@ public class FileTransferFragment extends MultiPartyFragment implements FileTran
 
     /**
      * Prepare file before transfer.
-     * Sets file path in edit text. Sets file preview.
+     * Sets file path in edit text by default
      */
     private void prepFile(String filePath) {
-        //show preview of file to transfer
-        if (ivFilePreview != null)
-            ivFilePreview.setImageURI(Uri.parse(filePath));
-
-        if (etSenderFilePath != null)
-            etSenderFilePath.setText(filePath);
+        editFilePath.setText(filePath);
     }
 
     /**
-     * Manual selection of file to send
-     * After selecting Peer(s) to send to, click on file path (etSenderFilePath)
-     * and enter desired file path.
+     * process select the peer button in action bar in specific index
+     * when the user click into the peer button.
      */
-    private void processSetFilePath() {
-        // Create Dialog to change file path.
-        // File path will be validated to be a file before change is accepted.
-        AlertDialog.Builder changePathDialogBuilder =
-                new AlertDialog.Builder(getContext());
-        changePathDialogBuilder.setTitle("Set the path to the file to be transferred.");
+    private void processSelectPeer(int index) {
+        // inform the presenter layer about the selection
+        mPresenter.onViewRequestSelectedRemotePeer(index);
 
-        // Create EditText for file path in Dialog.
-        final EditText filePathEdtTxt = new EditText(getContext());
-        filePathEdtTxt.setText(etSenderFilePath.getText());
-        filePathEdtTxt.setMovementMethod(LinkMovementMethod.getInstance());
-        changePathDialogBuilder.setView(filePathEdtTxt);
-
-        // Create a Positive button but this will be overridden later.
-        changePathDialogBuilder.setPositiveButton("Ok",
-                (dialog, which) -> {
-                    // Do nothing here as this will be overridden later.
-                });
-
-        // Negative button to cancel setting of file path.
-        changePathDialogBuilder.setNegativeButton("Cancel", null);
-        final AlertDialog changePathDialog = changePathDialogBuilder.create();
-        changePathDialog.show();
-
-        // Override the handler to prevent changePathDialog from auto closing
-        // after clicking button.
-        // Note: Has to be after show() is called.
-        changePathDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
-                v1 -> {
-                    // Close changePathDialog only if file exists at path provided.
-                    final String filePathNew = filePathEdtTxt.getText().toString();
-
-                    File file = new File(filePathNew);
-                    if (file.isFile()) {
-                        // Set file to be transferred to this path.
-                        prepFile(filePathNew);
-                        changePathDialog.dismiss();
-                    } else {
-                        // Else changePathDialog stays open.
-                        String log = "[SA] File does not exist at newly provided path. "
-                                + "Please make corrections or cancel operation.";
-                        toastLog(TAG, context, log);
-                        Log.e(TAG, log);
-                    }
-                });
-    }
-
-    /**
-     * Set file to send based on selected Peer
-     *
-     * @param checkedId
-     */
-    private void processSelectPeer(int checkedId) {
-
-        if (checkedId == R.id.radio_btn_peer_all) {
-            // Prepare group file for transfer.
-            prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
+        // check for select remote peer or un select it
+        boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+        if (unSelected) {
+            txtFilePathInfo.setText("File path to send to all peers : ");
         } else {
-            // Prepare private file for transfer.
-            prepFile(Utils.getFileToTransfer(FILENAME_PRIVATE).getAbsolutePath());
+            SkylinkPeer selectedPeer = mPresenter.onViewRequestGetPeerByIndex(index);
+            txtFilePathInfo.setText("File path to send to " + selectedPeer.toString() + " : ");
+        }
+
+        // update the UI of the peer buttons
+        updateUISelectRemotePeer(index, unSelected);
+    }
+
+    /**
+     * Display the dialog of peer info including peer username and peer id
+     * when the user long click into the peer button in action bar
+     */
+    private void displayPeerInfo(int index) {
+        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        if (index == 0) {
+            processDisplayLocalPeer(peer);
+        } else {
+            processDisplayRemotePeer(peer);
         }
     }
 
     /**
-     * Send file to specific Peer with peerId
+     * request permission for file browser
      */
-    private void processSendFilePrivate() {
-        // [MultiParty]
-        String remotePeerId = getPeerIdSelectedWithWarning();
-        // Do not allow button actions if there are no Peers in the room.
-        if ("".equals(remotePeerId)) {
-            return;
+    private void requestPermission() {
+        if (mPresenter.onViewRequestFilePermission()) {
+            // Permission has already been granted
+            showFilePicker();
         }
-
-        String filePath = etSenderFilePath.getText().toString();
-
-        mPresenter.onViewRequestSendFile(remotePeerId, filePath);
     }
 
-    // Send file to all Peers in room, i.e. via public (AKA group) message.
-    // Pass null to peerId to send to all peers in group/room
-    private void processSendFileGroup() {
+    /**
+     * Show the file browser for user to choose
+     */
+    private void showFilePicker() {
+        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file browser.
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 
-        // Prepare group file for transfer.
-        prepFile(Utils.getFileToTransfer(FILENAME_GROUP).getAbsolutePath());
+        // Filter to only show results that can be "opened", such as a
+        // file (as opposed to a list of contacts or timezones)
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
 
-        String filePath = etSenderFilePath.getText().toString();
+        // Filter to show only images, using the image MIME data type.
+        // If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
+        // To search for all documents available via installed storage providers,
+        // it would be "*/*".
+        intent.setType("*/*");
 
-        mPresenter.onViewRequestSendFile(null, filePath);
+        startActivityForResult(intent, CHOOSE_FILE_REQUEST_CODE);
+    }
 
+    /**
+     * Send the file to remote peer(s)
+     */
+    private void processSendFile() {
+        // display file preview correctly to input edit text
+        // in case the user manual input the file path
+        String filePath = editFilePath.getText().toString();
+        File file = new File(filePath);
+
+        if (file.isFile()) {
+            // Delegate sending file to presenter layer
+            mPresenter.onViewRequestSendFile(file);
+
+            // Update image preview in case of user manual input the file path
+            updateFilePreview(file.getAbsolutePath());
+        } else {
+            toastLog(TAG, context, "Please input correct file path");
+        }
+    }
+
+    /**
+     * show/hide the progress bar when sending/receiving process
+     */
+    private void showHideProgressBar(boolean isShow) {
+        if (isShow) {
+            spinnerBackground.setVisibility(View.VISIBLE);
+            spinnerForeground.setVisibility(View.VISIBLE);
+            txtProgressInfo.setVisibility(View.VISIBLE);
+            txtPercentage.setVisibility(View.VISIBLE);
+        } else {
+            spinnerBackground.setVisibility(View.GONE);
+            spinnerForeground.setVisibility(View.GONE);
+            txtProgressInfo.setVisibility(View.GONE);
+            txtPercentage.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Update the file preview when user choose file from browser /manual input file path /
+     * receive file from remote peer
+     */
+    private void updateFilePreview(String filePath) {
+        // Update image preview
+        File file = new File(filePath);
+        if (file.isFile()) {
+            // update the image preview
+            if (Utils.isImageFile(filePath)) {
+                Bitmap myBitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                imgView.setImageBitmap(myBitmap);
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    imgView.setImageDrawable(context.getDrawable(R.drawable.ic_file_common));
+                }
+            }
+        }
+    }
+
+    /**
+     * change screen layout to fit with screen width and height
+     * in case of changing screen configuration
+     *
+     * @param orientation the screen orientation
+     */
+    private void changeScreenOrientation(int orientation) {
+        // change the image preview height to fit with the portrait/landscape screen size
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) filePreviewContainer.getLayoutParams();
+
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            params.height = (int) context.getResources().getDimension(R.dimen.file_preview);
+        } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            params.height = (int) context.getResources().getDimension(R.dimen.file_preview_land);
+        }
+
+        filePreviewContainer.setLayoutParams(params);
     }
 }

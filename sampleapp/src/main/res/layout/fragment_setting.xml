@@ -23,7 +23,7 @@
         <View
             android:id="@+id/div1"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_0.5dp"
+            android:layout_height="@dimen/dp_0_5dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:layout_marginRight="@dimen/dp_10dp"
             android:background="@color/cardview_dark_background"/>
@@ -41,7 +41,7 @@
         <View
             android:id="@+id/div2"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_0.5dp"
+            android:layout_height="@dimen/dp_0_5dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:layout_marginRight="@dimen/dp_10dp"
             android:background="@color/cardview_dark_background"/>
@@ -93,7 +93,7 @@
         <View
             android:id="@+id/div3"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_0.5dp"
+            android:layout_height="@dimen/dp_0_5dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:layout_marginRight="@dimen/dp_10dp"
             android:background="@color/cardview_dark_background"/>
@@ -145,7 +145,7 @@
         <View
             android:id="@+id/div4"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_0.5dp"
+            android:layout_height="@dimen/dp_0_5dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:layout_marginRight="@dimen/dp_10dp"
             android:background="@color/cardview_dark_background"/>
@@ -203,7 +203,7 @@
         <View
             android:id="@+id/div5"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_0.5dp"
+            android:layout_height="@dimen/dp_0_5dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:layout_marginRight="@dimen/dp_10dp"
             android:background="@color/cardview_dark_background"/>

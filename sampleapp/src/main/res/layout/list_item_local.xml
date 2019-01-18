@@ -4,11 +4,13 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="@dimen/dp_5dp">
+
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dp_10dp">
 
         <TextView
             android:id="@+id/txtRemotePeerChat"
@@ -29,7 +31,7 @@
             android:layout_alignParentRight="true"
             android:background="@drawable/button_corner_chat_content_local"
             android:gravity="center_vertical"
-            android:padding="@dimen/dp_7dp"
+            android:padding="@dimen/dp_7"
             android:textColor="@android:color/white" />
     </RelativeLayout>
 

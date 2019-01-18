@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="white">#ffffff</color>
-    <color name="black">#000000</color>
-    <color name="call_end">#ffff4444</color>
     <color name="primary">#4AA6A3</color>
     <color name="primary_dark">#32706e</color>
+    <color name="color_white">#FFFFFF</color>
+    <color name="color_black">#000000</color>
+    <color name="call_end">#ffff4444</color>
+    <color name="light_gray">#ABBAC2</color>
 </resources>

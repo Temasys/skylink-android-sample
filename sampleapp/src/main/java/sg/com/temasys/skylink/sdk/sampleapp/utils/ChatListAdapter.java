@@ -78,10 +78,10 @@ public class ChatListAdapter extends ArrayAdapter<String> {
             }
         } else {
             TextView txtMetadata = listItem.findViewById(R.id.txtMetadataChat);
-            txtMetadata.setText(chatContent.split(":")[1]);
+            txtMetadata.setText(chatContent.split("\n")[0].split(":")[1]);
 
             TextView txtDateTime = listItem.findViewById(R.id.txtChatDateTime);
-            txtDateTime.setText(Utils.getISOTimeStamp(new Date()));
+            txtDateTime.setText(chatContent.split("\n")[1]);
         }
 
         return listItem;

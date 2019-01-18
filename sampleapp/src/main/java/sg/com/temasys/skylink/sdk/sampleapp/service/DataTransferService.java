@@ -6,6 +6,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
@@ -39,19 +40,19 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
      * @param data         Array of bytes
      * @throws SkylinkException When byte array is not of a size allowed.
      */
-    public void sendData(String remotePeerId, byte[] data) {
+    public void sendData(String remotePeerId, byte[] data) throws SkylinkException{
         if (mSkylinkConnection == null)
             return;
 
-        try {
+//        try {
             mSkylinkConnection.sendData(remotePeerId, data);
-        } catch (SkylinkException e) {
-            String log = e.getMessage();
-            toastLogLong(TAG, mContext, log);
-        } catch (UnsupportedOperationException e) {
-            String log = e.getMessage();
-            toastLogLong(TAG, mContext, log);
-        }
+//        } catch (SkylinkException e) {
+//            String log = e.getMessage();
+//            toastLogLong(TAG, mContext, log);
+//        } catch (UnsupportedOperationException e) {
+//            String log = e.getMessage();
+//            toastLogLong(TAG, mContext, log);
+//        }
     }
 
     /**
@@ -85,4 +86,10 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
         return skylinkConfig;
     }
 
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
+    }
 }

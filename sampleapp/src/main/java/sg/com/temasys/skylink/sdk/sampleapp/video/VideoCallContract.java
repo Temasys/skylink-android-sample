@@ -4,8 +4,11 @@ import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 
 /**
@@ -130,6 +133,26 @@ public interface VideoCallContract {
          */
         void onPresenterRequestchangeViewLayout();
 
+        /**
+         * Update info about the connected room {roomId}
+         */
+        void onPresenterRequestUpdateRoomInfo(String roomInfo);
+
+        /**
+         * Update info about the local peer in action bar
+         */
+        void onPresenterRequestUpdateLocalPeer(String localUserName);
+
+        /**
+         * Update UI details when peers are in room
+         */
+        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
+
+        /**
+         * Update UI details when new remote peer joins at a specific index the room
+         */
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+
     }
 
     interface Presenter {
@@ -200,6 +223,11 @@ public interface VideoCallContract {
         void onViewRequestExit();
 
         void onViewRequestDisconnectFromRoom();
+
+        /**
+         * process get peer info at specific index
+         */
+        SkylinkPeer onViewRequestGetPeerByIndex(int index);
     }
 
     interface Service extends BaseService<Presenter> {

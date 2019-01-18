@@ -1199,6 +1199,4 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
         return null;
     }
-
-
 }

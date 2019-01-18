@@ -1,8 +1,8 @@
 package sg.com.temasys.skylink.sdk.sampleapp.filetransfer;
 
-import android.net.Uri;
 import android.support.v4.app.Fragment;
 
+import java.io.File;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
@@ -19,57 +19,67 @@ public interface FileTransferContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * Get instance of the fragment for processing permission
+         * Get instance of the fragment for processing runtime permission
          */
         Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update UI details when remote peer joins the room
+         * Update info about the connected room {roomId}
          */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer);
+        void onPresenterRequestUpdateRoomInfo(String roomInfo);
 
         /**
-         * Update UI details when remote peer leaves the room
+         * Update info about the local peer in action bar
          */
-        void onPresenterRequestChangeUiRemotePeerLeave(String remotePeerId);
+        void onPresenterRequestUpdateLocalPeer(String localUserName);
 
         /**
-         * Update UI details when peers are in room
+         * Update UI details when new remote peer joins at a specific index the room
          */
-        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
 
         /**
-         * Update UI details when need to display the file sent.
+         * Update UI details when remote peer left the room
          */
-        void onPresenterRequestDisplayFilePreview(Uri imgUri);
+        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
 
         /**
-         * Update UI details when need to display the file transfered information.
+         * Update UI details when complete sending file to remote peer
          */
-        void onPresenterRequestDisplayFileReveicedInfo(String info);
+        void onPresenterRequestFileSent();
 
         /**
-         * Update UI details with room information
+         * Update UI when complete receiving file from remote peer
          */
-        void onPresenterRequestUpdateUi(String roomDetails);
+        void onPresenterRequestFileReceived(SkylinkPeer remotePeer, String filePath);
 
         /**
-         * get selected remote peer to send file
+         * Update UI while sending file to remote peer
          */
-        String onPresenterRequestGetPeerIdSelected();
+        void onPresenterRequestFileSendProgress(int percentage);
 
         /**
-         * set radio button Select All checked
+         * Update UI while receiving file from remote peer
          */
-        void onPresenterRequestSetPeerAllSelected(boolean isSelected);
+        void onPresenterRequestFileReceiveProgress(int percentage);
+
+        /**
+         * Update file preview with file path
+         */
+        void onPresenterRequestDisplayFilePreview(String filePath);
     }
 
     interface Presenter {
 
         /**
-         * process data to display on view
+         * request a init connection
          */
         void onViewRequestConnectedLayout();
+
+        /**
+         * request runtime permission for read internal storage
+         */
+        boolean onViewRequestFilePermission();
 
         /**
          * process runtime file permission result
@@ -77,15 +87,34 @@ public interface FileTransferContract {
         void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
 
         /**
+         * process logic when user deny the permission
+         */
+        void onViewRequestPermissionDeny();
+
+        /**
+         * process selecting the specific remote peer to send message to
+         */
+        void onViewRequestSelectedRemotePeer(int index);
+
+        /**
+         * process get current selected peer index
+         */
+        int onViewRequestGetCurrentSelectedPeer();
+
+        /**
+         * process get peer info at specific index
+         */
+        SkylinkPeer onViewRequestGetPeerByIndex(int index);
+
+        /**
          * process send file to remote peer
          */
-        void onViewRequestSendFile(String remotePeerId, String filePath);
+        void onViewRequestSendFile(File file);
 
         /**
          * process change state when view exit/closed
          */
         void onViewRequestExit();
-
     }
 
     interface Service extends BaseService<Presenter> {

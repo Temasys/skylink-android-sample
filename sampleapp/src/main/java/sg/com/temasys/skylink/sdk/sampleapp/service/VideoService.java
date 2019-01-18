@@ -7,6 +7,7 @@ import org.webrtc.SurfaceViewRenderer;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -363,5 +364,12 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         }
 
         return skylinkConfig;
+    }
+
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
     }
 }

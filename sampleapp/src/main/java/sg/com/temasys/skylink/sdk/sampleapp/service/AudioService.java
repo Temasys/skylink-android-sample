@@ -5,6 +5,7 @@ import android.content.Context;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -81,5 +82,12 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
+    }
+
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
     }
 }

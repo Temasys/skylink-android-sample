@@ -10,6 +10,7 @@
     <string name="title_section5"> Data Transfer </string>
     <string name="title_section6"> Multi-Party Video Call </string>
     <string name="action_configuration"> Configuration </string>
+    <string name="init_room_id">(Room_id) is being generated...</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_build_info">Build information</string>
@@ -36,7 +37,7 @@
     <string name="toggle_camera">Toggle Camera</string>
     <string name="disconnect">Disconnect</string>
 
-    <string name="warn_no_peer_message">There is no peer in the room to send a message to.</string>
+    <string name="warn_no_peer_message">There is no peer in the room to send data to.</string>
     <string name="warn_no_sel_message">You have not selected a Peer to send a message to.</string>
     <string name="restart_all_ice">Restart all (ICE)</string>
     <string name="restart_ice">Restart (ICE)</string>
