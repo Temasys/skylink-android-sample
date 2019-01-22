@@ -25,10 +25,10 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
 
     //this variable need to be static for configuration changed
     // the state of local video {audio, video, camera}
-    private static VideoLocalState videoLocalState = new VideoLocalState();
+    private VideoLocalState videoLocalState = new VideoLocalState();
 
     // the current speaker output {speaker/headset}
-    private static boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
+    private boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
 
     public VideoService(Context context) {
         super(context);

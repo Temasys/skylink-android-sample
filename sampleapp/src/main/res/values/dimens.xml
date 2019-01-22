@@ -50,5 +50,12 @@
     <!--landscape dimen-->
     <dimen name="file_preview_land">150dp</dimen>
     <dimen name="bottom_margin_land">10dp</dimen>
+    <dimen name="dp_140dp">140dp</dimen>
+    <dimen name="dp_160dp">160dp</dimen>
+    <dimen name="dp_170dp">170dp</dimen>
+    <dimen name="dp_200dp">200dp</dimen>
+    <dimen name="dp_210dp">210dp</dimen>
+    <dimen name="dp_165dp">165dp</dimen>
+    <dimen name="dp_255dp">255dp</dimen>
 
 </resources>

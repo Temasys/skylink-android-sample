@@ -34,7 +34,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
     // the index of the peer on the action bar that user selected to send message privately
     // default is 0 - send message to all peers
-    private static int selectedPeerIndex = 0;
+    private int selectedPeerIndex = 0;
 
     public DataTransferPresenter(Context context) {
         this.mContext = context;
@@ -238,7 +238,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         mDataTransferView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
 
         // Update the local peer info in the local peer button in action bar
-        mDataTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_CHAT);
+        mDataTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_DATA);
     }
 
 

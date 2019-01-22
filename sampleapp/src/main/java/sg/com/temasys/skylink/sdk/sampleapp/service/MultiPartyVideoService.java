@@ -31,7 +31,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
     //model to keep current video state
     //this model need to be static to avoid value reset when configuration changing
-    private static VideoLocalState videoLocalState = new VideoLocalState();
+    private VideoLocalState videoLocalState = new VideoLocalState();
 
     public MultiPartyVideoService(Context context) {
         super(context);
@@ -472,6 +472,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
 
         return null;
+    }
+
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
     }
 
 }

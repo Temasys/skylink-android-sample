@@ -49,6 +49,8 @@
     <string name="vid_res_sent">Video Res: Sent</string>
     <string name="vid_res_recv">Video Res: Recv</string>
     <string name="webrtc_stats">WebRTC Stats</string>
+    <string name="webrtc_stats_off">WebRTC Stats (OFF)</string>
+    <string name="webrtc_stats_on">WebRTC Stats (ON)</string>
 
     <string name="audio">Audio</string>
     <string name="video">Video</string>

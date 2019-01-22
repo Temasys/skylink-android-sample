@@ -30,14 +30,14 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     //this variable need to be static for configuration change.
 
     // when screen orientation changed, we need to maintain the message list
-    private static List<String> chatMessageCollection = new ArrayList<String>();
+    private List<String> chatMessageCollection = new ArrayList<String>();
 
     // the index of the peer on the action bar that user selected to send message privately
     // default is 0 - send message to all peers
-    private static int selectedPeerIndex = 0;
+    private int selectedPeerIndex = 0;
 
     // message type to be sent
-    private static MESSAGE_TYPE messageType = MESSAGE_TYPE.TYPE_SERVER;
+    private MESSAGE_TYPE messageType = MESSAGE_TYPE.TYPE_SERVER;
 
     public enum MESSAGE_TYPE {
         TYPE_SERVER,
@@ -205,7 +205,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      */
     @Override
     public void onServiceRequestDisconnect() {
-        // Reset static values
         chatMessageCollection.clear();
         selectedPeerIndex = 0;
         messageType = MESSAGE_TYPE.TYPE_SERVER;

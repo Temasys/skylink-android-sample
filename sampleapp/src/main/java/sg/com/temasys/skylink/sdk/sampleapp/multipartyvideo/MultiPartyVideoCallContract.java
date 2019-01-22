@@ -4,8 +4,11 @@ import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -15,6 +18,26 @@ import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 public interface MultiPartyVideoCallContract {
 
     interface View extends BaseView<Presenter> {
+
+        /**
+         * Update info about the connected room {roomId}
+         */
+        void onPresenterRequestUpdateRoomInfo(String s);
+
+        /**
+         * Update info about the local peer in action bar
+         */
+        void onPresenterRequestUpdateUIConnected(String userNameChat);
+
+        /**
+         * Update UI when remote peer join the room
+         * */
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+
+        /**
+         * Update UI details when peers are in room
+         */
+        void onPresenterRequestChangeUIRemotePeerLeft(int peerIndex, List<SkylinkPeer> peersList);
 
         /**
          * Update UI details when need to add local video view
@@ -133,6 +156,8 @@ public interface MultiPartyVideoCallContract {
          * process data to display on view at initiative connection
          */
         void onViewRequestConnectedLayout();
+
+        SkylinkPeer onViewRequestGetPeerByIndex(int index);
     }
 
     interface Service extends BaseService<Presenter> {

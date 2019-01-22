@@ -42,13 +42,13 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     private PermissionUtils mPermissionUtils;
 
     // Video resolution from local camera input.
-    private static VideoResolution mVideoInput;
+    private VideoResolution mVideoInput;
 
     // Video resolution from camera sent out to Peer.
-    private static VideoResolution mVideoSent;
+    private VideoResolution mVideoSent;
 
     // Video resolution received from Peer.
-    private static VideoResolution mVideoReceive;
+    private VideoResolution mVideoReceive;
 
     // The current VideoDevice.
     private SkylinkConfig.VideoDevice mCurrentVideoDevice = null;
@@ -57,13 +57,13 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     private String mCurrentCameraName = null;
 
     // The array of SkylinkCaptureFormats support by the current camera.
-    private static SkylinkCaptureFormat[] mCaptureFormats;
+    private SkylinkCaptureFormat[] mCaptureFormats;
 
     // The selected SkylinkCaptureFormat on UI,
-    private static SkylinkCaptureFormat mCurrentCaptureFormat = null;
+    private SkylinkCaptureFormat mCurrentCaptureFormat = null;
 
     // The selected frame rate (fps) on UI,
-    private static int mCurrentFps = -1;
+    private int mCurrentFps = -1;
 
     //current speaker output (on/off)
     private boolean isSpeakerOn;
@@ -968,7 +968,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         mVideoCallView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
 
         // Update the local peer info in the local peer button in action bar
-        mVideoCallView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_AUDIO);
+        mVideoCallView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_VIDEO);
 
     }
 

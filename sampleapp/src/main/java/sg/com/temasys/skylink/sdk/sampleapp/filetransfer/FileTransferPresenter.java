@@ -40,7 +40,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
     // the index of the peer on the action bar that user selected to send message privately
     // default is 0 - send message to all peers
-    private static int selectedPeerIndex = 0;
+    private int selectedPeerIndex = 0;
 
     public FileTransferPresenter(Context context) {
         this.mContext = context;
@@ -243,7 +243,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
         mFileTransferView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
 
         // Update the local peer info in the local peer button in action bar
-        mFileTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_CHAT);
+        mFileTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_FILE);
     }
 
     /**

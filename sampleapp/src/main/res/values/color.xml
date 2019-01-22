@@ -6,4 +6,5 @@
     <color name="color_black">#000000</color>
     <color name="call_end">#ffff4444</color>
     <color name="light_gray">#ABBAC2</color>
+    <color name="color_white_trans_50">#80FFFFFF</color>
 </resources>

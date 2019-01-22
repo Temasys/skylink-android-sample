@@ -1,58 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout android:id="@+id/root_layout"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:weightSum="2">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="2">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:weightSum="2">
+        android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/self_video"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"></FrameLayout>
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
-        <FrameLayout
-            android:id="@+id/peer_1"
+
+            <FrameLayout
+                android:id="@+id/self_video"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"></FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/peer_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"></FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"></FrameLayout>
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <FrameLayout
+                android:id="@+id/peer_2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"></FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/peer_3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"></FrameLayout>
+
+
+        </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:weightSum="2">
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
+        android:id="@+id/btnLocalPeerMenu"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_marginLeft="@dimen/dp_165dp"
+        android:background="@drawable/button_circle_menu_option"
+        android:visibility="gone"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
-        <FrameLayout
-            android:id="@+id/peer_2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"></FrameLayout>
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
+        android:id="@+id/btnPeer1Menu"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/button_circle_menu_option"
+        android:visibility="gone"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
-        <FrameLayout
-            android:id="@+id/peer_3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"></FrameLayout>
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
+        android:id="@+id/btnPeer2Menu"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/dp_165dp"
+        android:layout_marginBottom="@dimen/dp_255dp"
+        android:background="@drawable/button_circle_menu_option"
+        android:visibility="gone"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
+        android:id="@+id/btnPeer3Menu"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/dp_165dp"
+        android:layout_marginBottom="@dimen/dp_255dp"
+        android:background="@drawable/button_circle_menu_option"
+        android:visibility="gone"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
-    </LinearLayout>
-
-
-</LinearLayout>
+</RelativeLayout>
 

@@ -15,7 +15,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 public class AudioService extends SkylinkCommonService implements AudioCallContract.Service {
 
-    private static boolean currentAudioOutput = Utils.getDefaultAudioSpeaker();
+    private boolean currentAudioOutput = Utils.getDefaultAudioSpeaker();
 
     public AudioService(Context mContext) {
         super(mContext);

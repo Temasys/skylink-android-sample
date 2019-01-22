@@ -9,15 +9,13 @@ import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
-
 /**
  * Created by muoi.pham on 20/07/18.
  */
 
 public class DataTransferService extends SkylinkCommonService implements DataTransferContract.Service {
 
-    private static final String TAG = DataTransferService.class.getName();
+    private final String TAG = DataTransferService.class.getName();
 
     public DataTransferService(Context context) {
         super(context);

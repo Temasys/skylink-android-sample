@@ -43,7 +43,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     // Map with PeerId as key for boolean state
     // that indicates if currently getting WebRTC stats for Peer.
-    private static ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
+    private ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
             new ConcurrentHashMap<String, Boolean>();
 
     public MultiPartyVideoCallPresenter(Context context) {
@@ -231,6 +231,14 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         return mMultiVideoCallService.getVideoViewByIndex(index);
     }
 
+    /**
+     * Get the specific peer object according to the index
+     */
+    @Override
+    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+        return mMultiVideoCallService.getPeerByIndex(index);
+    }
+
     //----------------------------------------------------------------------------------------------
     // Override methods from BasePresenter for service to call
     // These methods are responsible for processing requests from service
@@ -245,6 +253,12 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
                 AudioRouter.setPresenter(this);
                 AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
             }
+
+            // Update the room id in the action bar
+            mMultiVideoCallView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+
+            // Update the local peer info in the local peer button in action bar
+            mMultiVideoCallView.onPresenterRequestUpdateUIConnected(Config.USER_NAME_PARTY);
         }
     }
 
@@ -302,17 +316,29 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
 
+        // add new peer button in action bar
+        mMultiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, mMultiVideoCallService.getTotalPeersInRoom() - 1);
+
+        // add new webRTCStats for peer
         isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
 
+        // add remote peer video view
         processAddRemoteView(skylinkPeer.getPeerId());
-
     }
 
     @Override
     public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+        // do not process if the left peer is local peer
+        if (removeIndex == -1)
+            return;
 
+        // Remove the peer in button in custom bar
+        mMultiVideoCallView.onPresenterRequestChangeUIRemotePeerLeft(removeIndex, mMultiVideoCallService.getPeersList());
+
+        // remove the   webRtStats of the peer
         isGettingWebrtcStats.remove(remotePeer.getPeerId());
 
+        // remote the remote peer video view
         mMultiVideoCallView.onPresenterRequestRemoveRemotePeer(removeIndex);
     }
 
@@ -360,7 +386,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     /**
      * Process connect to room on service layer and update UI accordingly
-     * */
+     */
     private void processConnectToRoom() {
 
         //connect to SkylinkSDK
@@ -373,7 +399,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     /**
      * Update UI into connected state
-     * */
+     */
     private void processUpdateConnectedUI() {
 
         // Toggle camera back to previous state if required.
@@ -464,5 +490,12 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     private SurfaceViewRenderer processGetVideoView(String remotePeerId) {
         return mMultiVideoCallService.getVideoView(remotePeerId);
+    }
+
+    /**
+     * Get the room id info
+     */
+    private String processGetRoomId() {
+        return mMultiVideoCallService.getRoomId();
     }
 }
