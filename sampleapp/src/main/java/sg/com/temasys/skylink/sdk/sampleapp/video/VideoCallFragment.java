@@ -516,13 +516,8 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     public void onPresenterRequestChangeAudioOuput(boolean isSpeakerOn) {
         if (isSpeakerOn) {
             btnSpeaker.setImageResource(R.drawable.ic_audio_speaker);
-            String log = getString(R.string.enable_speaker);
-            toastLog(TAG, context, log);
-
         } else {
             btnSpeaker.setImageResource(R.drawable.icon_speaker_mute);
-            String log = getString(R.string.enable_headset);
-            toastLog(TAG, context, log);
         }
     }
 

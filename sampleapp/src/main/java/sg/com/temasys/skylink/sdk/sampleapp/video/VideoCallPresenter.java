@@ -9,6 +9,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
+import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.VideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -411,6 +412,14 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         this.isSpeakerOn = isSpeakerOn;
         mVideoCallView.onPresenterRequestChangeAudioOuput(isSpeakerOn);
         mVideoCallService.setCurrentVideoSpeaker(isSpeakerOn);
+
+        if (isSpeakerOn) {
+            String log = mContext.getString(R.string.enable_speaker);
+            toastLog(TAG, mContext, log);
+        } else {
+            String log = mContext.getString(R.string.enable_headset);
+            toastLog(TAG, mContext, log);
+        }
     }
 
     @Override
@@ -459,10 +468,6 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         mVideoCallService.setAudioMute(false);
         mVideoCallService.setVideoMute(false);
         mVideoCallService.setCamToggle(true);
-
-        //get roomName from setting
-        String log = "Entering video room \"" + Config.ROOM_NAME_VIDEO + "\".";
-        toastLog(TAG, mContext, log);
     }
 
     /**

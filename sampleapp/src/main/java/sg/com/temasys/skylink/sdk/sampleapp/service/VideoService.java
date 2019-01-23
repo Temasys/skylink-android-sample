@@ -23,7 +23,6 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTI
 
 public class VideoService extends SkylinkCommonService implements VideoCallContract.Service {
 
-    //this variable need to be static for configuration changed
     // the state of local video {audio, video, camera}
     private VideoLocalState videoLocalState = new VideoLocalState();
 

@@ -27,8 +27,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     private ChatService mChatService;
 
-    //this variable need to be static for configuration change.
-
     // when screen orientation changed, we need to maintain the message list
     private List<String> chatMessageCollection = new ArrayList<String>();
 

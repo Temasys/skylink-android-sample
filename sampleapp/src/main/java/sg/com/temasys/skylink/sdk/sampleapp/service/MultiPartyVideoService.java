@@ -30,7 +30,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     private final String TAG = MultiPartyVideoService.class.getName();
 
     //model to keep current video state
-    //this model need to be static to avoid value reset when configuration changing
     private VideoLocalState videoLocalState = new VideoLocalState();
 
     public MultiPartyVideoService(Context context) {
