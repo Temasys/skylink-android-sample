@@ -138,11 +138,6 @@ public interface MultiPartyVideoCallContract {
         void onViewRequestRefreshConnection(int peerIndex, boolean iceRestart);
 
         /**
-         * process getting info about WebRTC stats from specific peer
-         */
-        Boolean onViewRequestGetWebRtcStatsByPeerId(int peerIndex);
-
-        /**
          * process getting total number of peers in the current room
          */
         int onViewRequestGetTotalInRoom();
@@ -158,6 +153,8 @@ public interface MultiPartyVideoCallContract {
         void onViewRequestConnectedLayout();
 
         SkylinkPeer onViewRequestGetPeerByIndex(int index);
+
+        Boolean onViewRequestGetWebRtcStatsState(int peerIndex);
     }
 
     interface Service extends BaseService<Presenter> {

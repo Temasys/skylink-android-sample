@@ -9,7 +9,10 @@ public class SettingActivity extends AppCompatActivity {
 
     private final String SETTING_FRAGMENT_TAG = "SETTING_FRAGMENT_TAG";
 
+    // presenter instance
     private SettingPresenter mSettingPresenter;
+
+    // view instance
     private SettingFragment mSettingFragment;
 
     @Override
@@ -17,9 +20,12 @@ public class SettingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
+        //create presenter
         mSettingPresenter = new SettingPresenter(this);
 
-        //check previous state in case of screen rotation
+        // check previous state in case of screen rotation
+        // if it is new state, then create view instance
+        // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
             mSettingFragment = SettingFragment.newInstance();
             getSupportFragmentManager()
@@ -46,7 +52,7 @@ public class SettingActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the fragment's instance
+        //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, SETTING_FRAGMENT_TAG, mSettingFragment);
     }
 }

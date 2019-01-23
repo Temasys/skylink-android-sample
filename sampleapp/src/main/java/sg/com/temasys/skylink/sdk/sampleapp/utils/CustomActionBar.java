@@ -21,6 +21,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 /**
  * Created by muoi.pham on 14/01/19
  * A simple {@link Fragment} subclass.
+ * This class is for displaying UI about peer(s) in room in action bar
  */
 public class CustomActionBar extends Fragment {
 
@@ -99,15 +100,16 @@ public class CustomActionBar extends Fragment {
     }
 
     /**
-     * Display information about list of peers in room
+     * Display information about list of remote peers in the room
+     * The local peer is already displayed in updateUILocalPeer method
      *
      * @param peersList
      */
     protected void processFillPeers(List<SkylinkPeer> peersList) {
         // reset the peers first
-        resetPeers();
+        resetRemotePeers();
 
-        // re-fill all peers
+        // re-fill all peers, except local peer
         for (int index = 0; index < peersList.size(); index++) {
             SkylinkPeer peer = peersList.get(index);
 
@@ -224,7 +226,7 @@ public class CustomActionBar extends Fragment {
      * Refresh the UI of all remote peers in room
      * by hiding all peers
      */
-    private void resetPeers() {
+    private void resetRemotePeers() {
         btnRemotePeer1.setVisibility(View.GONE);
         btnRemotePeer2.setVisibility(View.GONE);
         btnRemotePeer3.setVisibility(View.GONE);

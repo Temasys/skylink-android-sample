@@ -62,10 +62,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     // the index of current selected peer
     private int currentSelectIndex = 0;
 
-    // the flag to check WebRTC Stats is currently on or off
-    // then we will display corresponding remote menu items
-    private Map<Integer, Boolean> gettingStats = null;
-
     public static MultiPartyVideoCallFragment newInstance() {
         return new MultiPartyVideoCallFragment();
     }
@@ -196,7 +192,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
                 break;
             case R.id.webRtcStats:
                 mPresenter.onViewRequestWebrtcStatsToggle(currentSelectIndex);
-                gettingStats.put(currentSelectIndex, mPresenter.onViewRequestGetWebRtcStatsByPeerId(currentSelectIndex));
                 break;
             case R.id.transferSpeed:
                 mPresenter.onViewRequestGetTransferSpeeds(currentSelectIndex, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
@@ -278,8 +273,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
         //add new remote peer button in the action bar
         updateUiRemotePeerJoin(newPeer, index);
-
-        gettingStats.put(index, false);
     }
 
     /**
@@ -291,8 +284,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onPresenterRequestChangeUIRemotePeerLeft(int peerIndex, List<SkylinkPeer> peersList) {
         // re fill the peers buttons in the action bar to show the peer correctly order
         processFillPeers(peersList);
-
-        gettingStats.put(peerIndex, false);
     }
 
     /**
@@ -454,9 +445,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
         // display context menu button for each peer in correct position
         locateMenuButtons();
-
-        // init the WebRTC Stats options of total 4 peers
-        gettingStats = new HashMap<Integer, Boolean>(4);
     }
 
     /**
@@ -616,7 +604,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
         // need to check the current WebRTC Stats to display correct title for WebRTC Stats menu item
         // using different menu layouts for menu option WebRTC Stats
-        if (gettingStats.get(peerIndex)) {
+        Boolean startOn = mPresenter.onViewRequestGetWebRtcStatsState(peerIndex);
+        if (startOn != null && startOn) {
             popup.inflate(R.menu.remote_option_menu_on);
         } else {
             popup.inflate(R.menu.remote_option_menu_off);

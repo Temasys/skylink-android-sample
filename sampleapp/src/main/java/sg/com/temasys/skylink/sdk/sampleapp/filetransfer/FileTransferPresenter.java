@@ -78,15 +78,6 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
             Log.d(TAG, "Try to connect when entering room");
 
-        } else {
-
-            //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mFileTransferView.onPresenterRequestGetFragmentInstance());
-
-            //update UI into connected state
-            processUpdateUIConnected();
-
-            Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
@@ -228,14 +219,6 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Get the room id info
-     */
-    private String processGetRoomId() {
-        return mFileTransferService.getRoomId();
-    }
-
-
-    /**
      * Update UI when connected to room
      */
     private void processUpdateUIConnected() {
@@ -244,6 +227,13 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
         // Update the local peer info in the local peer button in action bar
         mFileTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_FILE);
+    }
+
+    /**
+     * Get the room id info
+     */
+    private String processGetRoomId() {
+        return mFileTransferService.getRoomId();
     }
 
     /**

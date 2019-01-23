@@ -146,7 +146,7 @@ public interface VideoCallContract {
         /**
          * Update UI details when peers are in room
          */
-        void onPresenterRequestFillPeers(List<SkylinkPeer> peersList);
+        void onPresenterRequestRemotePeerLeft(List<SkylinkPeer> peersList);
 
         /**
          * Update UI details when new remote peer joins at a specific index the room

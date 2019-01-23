@@ -107,9 +107,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             log += "Connected to room " + getRoomIdAndNickname(mRoomName) + " as " + mUserName + " (" + localPeerId + ")";
             toastLog(TAG, mContext, log);
 
-            //init peers list and add self/local peer to list
+            //init/reset peers list and add self/local peer to list
             if (mPeersList == null) {
                 mPeersList = new ArrayList<SkylinkPeer>();
+            } else {
+                mPeersList.clear();
             }
 
             //add self peer as a peer in list
@@ -971,32 +973,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         return mSkylinkConnection;
     }
 
-    /**
-     * Check remote peers exist in room
-     * if no remote peer, then local peer is alone in the room
-     */
-    public boolean isPeerJoin() {
-
-        if (mPeersList != null) {
-            int totalPeersInRoom = mPeersList.size();
-
-            //check remote peer(s) in room
-            if (totalPeersInRoom > 1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Get peerId of a Peer by its index using SkylinkConnection API.
+     * We can also get a specific peer by mPeersList
      *
      * @param index 0 for self Peer, 1 onwards for remote Peer(s).
      * @return Desired peerId or null if not available.
      */
     public String getPeerId(int index) {
-
         if (mSkylinkConnection == null) {
             return null;
         }
@@ -1006,6 +991,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             return null;
         }
         return peerIdList[index];
+//        return mPeersList.get(index).getPeerId();
     }
 
     /**
@@ -1038,27 +1024,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      *
      * @param peerId id of the peer need to search
      * @return SkylinkPeer
-     * */
-    public SkylinkPeer getPeerById(String peerId){
-        for(int i=0; i<mPeersList.size(); i++){
-            if(mPeersList.get(i).getPeerId().equals(peerId))
+     */
+    public SkylinkPeer getPeerById(String peerId) {
+        for (int i = 0; i < mPeersList.size(); i++) {
+            if (mPeersList.get(i).getPeerId().equals(peerId))
                 return mPeersList.get(i);
         }
 
         return null;
-    }
-
-    /**
-     * Provides the room ID combined with default room name of the room currently connected to.
-     */
-    public String getRoomName(String defaultName) {
-        //in case of display room Name and room Id
-        String roomId = "";
-        if (mSkylinkConnection != null) {
-            roomId = mSkylinkConnection.getRoomId();
-        }
-
-        return defaultName + "(" + roomId + ")";
     }
 
     /**
@@ -1072,13 +1045,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         return null;
     }
 
-    public String getUserName(String peerId, String defaultName) {
-        if (mSkylinkConnection == null) {
-            return defaultName;
-        }
-        return getPeerIdNick(peerId);
-    }
-
     public String getPeerNameById(String peerId) {
         if (mSkylinkConnection != null) {
             return getPeerIdNick(peerId);
@@ -1088,7 +1054,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     /**
-     * Get the room name with room id combined with local peer name and peer id for a specific demo/function
+     * Get the room name with room id combined with local peer name and peer id
+     * for a specific demo/function
      */
     public String getRoomIdAndNickname(Constants.CONFIG_TYPE typeCall) {
         if (mSkylinkConnection == null) {

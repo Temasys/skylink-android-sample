@@ -31,7 +31,7 @@
             android:layout_alignParentRight="true"
             android:background="@drawable/button_corner_chat_content_local"
             android:gravity="center_vertical"
-            android:padding="@dimen/dp_7"
+            android:padding="@dimen/dp_7dp"
             android:textColor="@android:color/white" />
     </RelativeLayout>
 

@@ -23,7 +23,7 @@ public interface ChatContract {
         /**
          * Update info about the local peer in action bar
          */
-        void onPresenterRequestUpdateUIConnected(String localUserName);
+        void onPresenterRequestUpdateLocalPeer(String localUserName);
 
         /**
          * Update UI details when new remote peer joins at a specific index the room
@@ -31,17 +31,17 @@ public interface ChatContract {
         void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
 
         /**
-         * Update UI details when peers are in room
+         * Update UI details when remote peer left the room
          */
         void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
 
         /**
-         * Update UI details when need to clear the input
+         * Update UI details when need to clear the input chat
          */
         void onPresenterRequestClearInput();
 
         /**
-         * Update UI details when we need to update the messages list
+         * Update UI details when we need to update the messages list when new message is sent/received
          */
         void onPresenterRequestUpdateChatCollection();
     }
@@ -69,14 +69,14 @@ public interface ChatContract {
         SkylinkPeer onViewRequestGetPeerByIndex(int index);
 
         /**
+         * process get current selected peer index
+         */
+        int onViewRequestGetCurrentSelectedPeer();
+
+        /**
          * process selecting the specific remote peer to send message to
          */
         void onViewRequestSelectedRemotePeer(int index);
-
-        /**
-         * process sending message
-         */
-        void onViewRequestSendMessage(String message);
 
         /**
          * process selecting message type: server or P2P
@@ -84,9 +84,9 @@ public interface ChatContract {
         void onViewRequestSelectedMessageType(ChatPresenter.MESSAGE_TYPE message_type);
 
         /**
-         * process get current selected peer index
+         * process sending message
          */
-        int onViewRequestGetCurrentSelectedPeer();
+        void onViewRequestSendMessage(String message);
     }
 
     interface Service extends BaseService<Presenter> {

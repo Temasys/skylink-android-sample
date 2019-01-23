@@ -10,7 +10,7 @@
     <LinearLayout
         android:id="@+id/data_preview_container"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/file_preview"
+        android:layout_height="@dimen/dp_300dp"
         android:layout_centerInParent="true"
         android:background="@color/color_white"
         android:gravity="center"
@@ -63,7 +63,7 @@
         android:layout_marginTop="@dimen/dp_30dp"
         android:layout_marginRight="@dimen/dp_10dp"
         android:textColor="@color/color_white"
-        android:textSize="@dimen/sp_16" />
+        android:textSize="@dimen/sp_16sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -76,7 +76,7 @@
             android:id="@+id/btnDataChoose"
             android:layout_width="@dimen/dp_60dp"
             android:layout_height="@dimen/dp_60dp"
-            android:layout_margin="@dimen/bottom_margin"
+            android:layout_margin="@dimen/dp_20dp"
             android:background="@drawable/button_circle_avatar"
             android:src="@drawable/ic_add" />
 
@@ -84,7 +84,7 @@
             android:id="@+id/btnDataSend"
             android:layout_width="@dimen/dp_60dp"
             android:layout_height="@dimen/dp_60dp"
-            android:layout_margin="@dimen/bottom_margin"
+            android:layout_margin="@dimen/dp_20dp"
             android:background="@drawable/button_circle_avatar"
             android:src="@drawable/ic_send_32dp" />
 

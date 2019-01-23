@@ -108,15 +108,6 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
             Log.d(TAG, "Try to connect when entering room");
 
-        } else {
-
-            //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mVideoCallView.onPresenterRequestGetFragmentInstance());
-
-            //update UI into connected
-            processUpdateConnectedUI();
-
-            Log.d(TAG, "Try to update UI when changing configuration");
         }
 
         //get default audio output settings
@@ -995,7 +986,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      */
     private void processRemoveRemotePeer() {
         // update peer button in action bar
-        mVideoCallView.onPresenterRequestFillPeers(mVideoCallService.getPeersList());
+        mVideoCallView.onPresenterRequestRemotePeerLeft(mVideoCallService.getPeersList());
 
         // remove the remote peer video view
         mVideoCallView.onPresenterRequestRemoveRemotePeer();

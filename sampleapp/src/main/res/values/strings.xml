@@ -11,47 +11,18 @@
     <string name="title_section6"> Multi-Party Video Call </string>
     <string name="action_configuration"> Configuration </string>
     <string name="init_room_id">(Room_id) is being generated...</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="action_build_info">Build information</string>
     <string name="enter_room_name">Enter Room Name</string>
-    <string name="enter_room">Submit</string>
-    <string name="send_data_peer">Send Data</string>
-    <string name="send_data_room">Send Data [Group]</string>
-    <string name="no_peer">No Peer in the room.</string>
-    <string name="data_transfer_status">Transfer %1$s bytes for Private and %2$s bytes for Group.</string>
-    <string name="data_transfer_received_expected">Received data %s bytes</string>
-    <string name="data_transfer_received_unexpected">Warning! Received %s bytes not from the Skylink Android sample app!</string>
-    <string name="peer_count">Peer count is %d</string>
-
-    <string name="mute_audio">Mute Audio</string>
     <string name="muted_audio">Muted Audio</string>
-    <string name="enable_audio">Enable Audio</string>
     <string name="enabled_audio">Enabled Audio</string>
-
-    <string name="mute_video">Mute Video</string>
     <string name="muted_video">Muted Video</string>
-    <string name="enable_video">Enable Video</string>
     <string name="enabled_video">Enabled Video</string>
-
     <string name="toggle_camera">Toggle Camera</string>
     <string name="disconnect">Disconnect</string>
-
     <string name="warn_no_peer_message">There is no peer in the room to send data to.</string>
     <string name="warn_no_sel_message">You have not selected a Peer to send a message to.</string>
-    <string name="restart_all_ice">Restart all (ICE)</string>
-    <string name="restart_ice">Restart (ICE)</string>
-    <string name="restart_all">Restart all</string>
     <string name="restart">Restart</string>
-    <string name="recording_stop">Recording stop</string>
-    <string name="recording_start">Recording start</string>
-    <string name="transfer_speed">Transfer speed</string>
-    <string name="vid_res_sent">Video Res: Sent</string>
-    <string name="vid_res_recv">Video Res: Recv</string>
-    <string name="webrtc_stats">WebRTC Stats</string>
     <string name="webrtc_stats_off">WebRTC Stats (OFF)</string>
     <string name="webrtc_stats_on">WebRTC Stats (ON)</string>
-
     <string name="audio">Audio</string>
     <string name="video">Video</string>
     <string name="chat">Chat</string>
@@ -59,8 +30,6 @@
     <string name="dataTransfer">Data Transfer</string>
     <string name="multiVideo">Multi Videos</string>
     <string name="settings">Settings</string>
-
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="default_audio_output">Default audio output for audio</string>
     <string name="default_video_output">Default audio output for video</string>
     <string name="camera_custom">Camera Custom</string>
@@ -75,7 +44,6 @@
     <string name="video_res_FHD">FHD (1920x1080)</string>
     <string name="room_setting">Room setting</string>
     <string name="key_setting">Key setting</string>
-    <string name="speaker_on">Speaker</string>
     <string name="enable_speaker">Enabled Speaker</string>
     <string name="enable_headset">Enabled Headset</string>
 

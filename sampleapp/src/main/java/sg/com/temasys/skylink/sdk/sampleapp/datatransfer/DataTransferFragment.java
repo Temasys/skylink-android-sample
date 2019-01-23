@@ -512,13 +512,13 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) dataPreviewContainer.getLayoutParams();
 
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            params.height = (int) context.getResources().getDimension(R.dimen.file_preview);
+            params.height = (int) context.getResources().getDimension(R.dimen.dp_300dp);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 imgPreview.setImageDrawable(context.getDrawable(R.drawable.ic_data_upload_150));
             }
 
         } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            params.height = (int) context.getResources().getDimension(R.dimen.file_preview_land);
+            params.height = (int) context.getResources().getDimension(R.dimen.dp_150dp);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 imgPreview.setImageDrawable(context.getDrawable(R.drawable.ic_data_upload_70));
             }

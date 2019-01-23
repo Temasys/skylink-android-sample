@@ -598,9 +598,9 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) filePreviewContainer.getLayoutParams();
 
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            params.height = (int) context.getResources().getDimension(R.dimen.file_preview);
+            params.height = (int) context.getResources().getDimension(R.dimen.dp_300dp);
         } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            params.height = (int) context.getResources().getDimension(R.dimen.file_preview_land);
+            params.height = (int) context.getResources().getDimension(R.dimen.dp_150dp);
         }
 
         filePreviewContainer.setLayoutParams(params);

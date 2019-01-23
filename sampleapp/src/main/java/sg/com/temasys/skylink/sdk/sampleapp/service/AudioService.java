@@ -30,12 +30,6 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         AudioRouter.changeAudioOutput(mContext, isAudioSpeaker);
     }
 
-    public String getRemotePeerName() {
-        if (mPeersList != null && mPeersList.size() > 1)
-            return mPeersList.get(1).getPeerName() + "(" + mPeersList.get(1).getPeerId() + ")";
-        return "";
-    }
-
     public boolean getCurrentAudioSpeaker() {
         return currentAudioOutput;
     }
@@ -44,8 +38,11 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         currentAudioOutput = isSpeakerOn;
     }
 
-    public void resumeAudioOutput() {
-        changeAudioOutput(currentAudioOutput);
+    /**
+     * Get the info of a peer in specific index
+     */
+    public SkylinkPeer getPeerByIndex(int index) {
+        return mPeersList.get(index);
     }
 
     /**
@@ -65,7 +62,7 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
     /**
      * Get the config for audio function
      * User can custom audio config by using SkylinkConfig
-     * */
+     */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
@@ -82,12 +79,5 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
-    }
-
-    /**
-     * Get the info of a peer in specific index
-     */
-    public SkylinkPeer getPeerByIndex(int index) {
-        return mPeersList.get(index);
     }
 }

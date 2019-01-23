@@ -365,7 +365,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         mChatView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
 
         // Update the local peer info in the local peer button in action bar
-        mChatView.onPresenterRequestUpdateUIConnected(Config.USER_NAME_CHAT);
+        mChatView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_CHAT);
 
         // This message is metadata message to inform the user is connected to the room
         chatMessageCollection.add("[Metadata]:You (" + Config.USER_NAME_CHAT + "_" +

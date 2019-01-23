@@ -82,14 +82,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
             Log.d(TAG, "Try to connect when entering room");
 
-        } else {
-            //if it already connected to room, then resume permission
-            mPermissionUtils.permQResume(mContext, mMultiVideoCallView.onPresenterRequestGetFragmentInstance());
-
-            //update UI into connected state
-            processUpdateConnectedUI();
-
-            Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
@@ -205,16 +197,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public Boolean onViewRequestGetWebRtcStatsByPeerId(int peerIndex) {
-        if (peerIndex >= onViewRequestGetTotalInRoom())
-            return false;
-
-        String peerId = mMultiVideoCallService.getPeerIdByIndex(peerIndex);
-
-        return isGettingWebrtcStats.get(peerId);
-    }
-
-    @Override
     public String onViewRequestGetRoomIdAndNickname() {
         //get id and nickname of the room by SkylinkSDK
         return mMultiVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
@@ -237,6 +219,14 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
         return mMultiVideoCallService.getPeerByIndex(index);
+    }
+
+    @Override
+    public Boolean onViewRequestGetWebRtcStatsState(int peerIndex) {
+        SkylinkPeer peer = onViewRequestGetPeerByIndex(peerIndex);
+        if(peer != null)
+            return isGettingWebrtcStats.get(peer.getPeerId());
+        return null;
     }
 
     //----------------------------------------------------------------------------------------------

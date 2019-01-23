@@ -17,7 +17,7 @@
     <LinearLayout
         android:id="@+id/ll_video_res_info"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/ll_video_res_height"
+        android:layout_height="@dimen/dp_48dp"
         android:layout_marginLeft="@dimen/dp_10dp"
         android:layout_marginTop="@dimen/dp_10dp"
         android:layout_marginBottom="@dimen/dp_10dp"
@@ -179,8 +179,8 @@
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/disconnect"
-        android:layout_width="@dimen/floating_btn_size"
-        android:layout_height="@dimen/floating_btn_size"
+        android:layout_width="@dimen/dp_60dp"
+        android:layout_height="@dimen/dp_60dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="@dimen/dp_20dp"
@@ -190,5 +190,13 @@
         android:text="@string/disconnect"
         android:visibility="visible"
         android:scaleType="center"/>
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
+        android:id="@+id/btnLocalPeerOption"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="@dimen/dp_70dp"
+        android:background="@drawable/button_circle_menu_option"
+        android:visibility="visible"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
 </RelativeLayout>

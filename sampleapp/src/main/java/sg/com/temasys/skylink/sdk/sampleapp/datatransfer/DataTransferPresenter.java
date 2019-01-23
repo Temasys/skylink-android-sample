@@ -56,7 +56,6 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     /**
      * Triggered when View request data to display to the user when entering room | rotating screen
      * Try to connect to room when entering room
-     * Try to update UI if connected to room after changing configuration
      */
     @Override
     public void onViewRequestConnectedLayout() {
@@ -74,12 +73,6 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
             Log.d(TAG, "Try to connect when entering room");
 
-        } else {
-
-            //update UI into connected state
-            processUpdateUIConnected();
-
-            Log.d(TAG, "Try to update UI when changing configuration");
         }
     }
 
@@ -89,7 +82,8 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      */
     @Override
     public boolean onViewRequestFilePermission() {
-        return mPermissionUtils.requestFilePermission(mContext, mDataTransferView.onPresenterRequestGetFragmentInstance());
+        return mPermissionUtils.requestFilePermission(mContext,
+                mDataTransferView.onPresenterRequestGetFragmentInstance());
     }
 
     /**
@@ -213,7 +207,8 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         // delegate to the PermissionUtils to process the permission
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mDataTransferView.onPresenterRequestGetFragmentInstance());
+        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext,
+                mDataTransferView.onPresenterRequestGetFragmentInstance());
     }
 
     @Override

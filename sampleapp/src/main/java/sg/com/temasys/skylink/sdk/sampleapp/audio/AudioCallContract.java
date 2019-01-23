@@ -24,26 +24,26 @@ public interface AudioCallContract {
 
         /**
          * Update audio output button UI
-         * */
-        void onPresenterRequestChangeAudioOutput(boolean isPeerJoined, boolean isSpeakerOn);
+         */
+        void onPresenterRequestChangeAudioOutput(boolean isSpeakerOn);
 
         /**
          * Update info about the connected room {roomId}
          */
-        void onPresenterRequestUpdateRoomInfo(String s);
+        void onPresenterRequestUpdateRoomInfo(String roomId);
 
         /**
          * Update info about the local peer in action bar
          */
-        void onPresenterRequestUpdateUIConnected(String userNameChat);
+        void onPresenterRequestUpdateUIConnected(String localUserName);
 
         /**
          * Update UI when remote peer join the room
-         * */
+         */
         void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
 
         /**
-         * Update UI details when peers are in room
+         * Update UI details when remote peer left the room
          */
         void onPresenterRequestChangeUIRemotePeerLeft(List<SkylinkPeer> peersList);
     }
@@ -58,7 +58,7 @@ public interface AudioCallContract {
         /**
          * process permission result (grant/deny)
          */
-        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
         /**
          * process change audio output between headset and speaker

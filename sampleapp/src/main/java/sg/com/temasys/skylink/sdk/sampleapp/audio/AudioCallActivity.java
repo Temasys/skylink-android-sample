@@ -30,7 +30,7 @@ public class AudioCallActivity extends AppCompatActivity {
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
-        // otherwise reuse the view instance, just update it
+        // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
             mAudioCallFragment = AudioCallFragment.newInstance();
             getSupportFragmentManager()

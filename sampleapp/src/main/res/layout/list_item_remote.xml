@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/button_corner_chat_content"
-            android:padding="@dimen/dp_7"
+            android:padding="@dimen/dp_7dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:gravity="center_vertical"
             android:text="fdsjfnsdjfnsdmvnmv"

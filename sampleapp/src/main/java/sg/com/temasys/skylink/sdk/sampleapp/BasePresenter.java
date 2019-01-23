@@ -6,19 +6,15 @@ import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatPresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;

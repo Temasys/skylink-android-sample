@@ -28,7 +28,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
  * A simple {@link MultiPartyFragment} subclass.
  * This class is responsible for display UI and get user interaction
  */
-public class ChatFragment extends CustomActionBar implements ChatContract.View {
+public class ChatFragment extends CustomActionBar implements ChatContract.View, View.OnClickListener,
+        View.OnLongClickListener {
 
     private final String TAG = ChatFragment.class.getName();
 
@@ -87,72 +88,59 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View {
         //request an initiative connection
         requestViewLayout();
 
-        //Defining a click event listener for the button "<" in action bar
-        btnBack.setOnClickListener(v -> {
-            processBack();
-        });
-
-        //Defining a click event listener for the button local peer in action bar
-        btnLocalPeer.setOnClickListener(v -> {
-                    processSelectPeer(0);
-                }
-        );
-
-        //Defining a click event listener for the button remote peer 1 in action bar
-        btnRemotePeer1.setOnClickListener(v -> {
-            processSelectPeer(1);
-        });
-
-        //Defining a click event listener for the button remote peer 2 in action bar
-        btnRemotePeer2.setOnClickListener(v -> {
-            processSelectPeer(2);
-        });
-
-        //Defining a click event listener for the button remote peer 3 in action bar
-        btnRemotePeer3.setOnClickListener(v -> {
-            processSelectPeer(3);
-        });
-
-        //Defining a long click event listener for the button local peer in action bar
-        btnLocalPeer.setOnLongClickListener(v -> {
-            displayPeerInfo(0);
-            return true;
-        });
-
-        //Defining a long click event listener for the button local peer 1 in action bar
-        btnRemotePeer1.setOnLongClickListener(v -> {
-            displayPeerInfo(1);
-            return true;
-        });
-
-        //Defining a long click event listener for the button local peer 2 in action bar
-        btnRemotePeer2.setOnLongClickListener(v -> {
-            displayPeerInfo(2);
-            return true;
-        });
-
-        //Defining a long click event listener for the button local peer 3 in action bar
-        btnRemotePeer3.setOnLongClickListener(v -> {
-            displayPeerInfo(3);
-            return true;
-        });
-
-        //Defining a click event listener for the button "Send Server Message"
-        btnSendServerMessage.setOnClickListener(v -> {
-            processSelectMessageType(ChatPresenter.MESSAGE_TYPE.TYPE_SERVER);
-        });
-
-        //Defining a click event listener for the button "Send Private Message"
-        btnSendP2PMessage.setOnClickListener(v -> {
-            processSelectMessageType(ChatPresenter.MESSAGE_TYPE.TYPE_P2P);
-        });
-
-        //Defining a click event listener for the button "Send"
-        btnSend.setOnClickListener(v -> {
-            processSendMessage();
-        });
-
         return rootView;
+    }
+
+    @Override
+    public void onClick(View view) {
+        //Defining a click event listener for the buttons in the layout
+        switch (view.getId()) {
+            case R.id.btnBack:
+                processBack();
+                break;
+            case R.id.btnLocalPeer:
+                processSelectPeer(0);
+                break;
+            case R.id.btnRemotePeer1:
+                processSelectPeer(1);
+                break;
+            case R.id.btnRemotePeer2:
+                processSelectPeer(2);
+                break;
+            case R.id.btnRemotePeer3:
+                processSelectPeer(3);
+                break;
+            case R.id.btnServerMsg:
+                processSelectMessageType(ChatPresenter.MESSAGE_TYPE.TYPE_SERVER);
+                break;
+            case R.id.btnP2PMsg:
+                processSelectMessageType(ChatPresenter.MESSAGE_TYPE.TYPE_P2P);
+                break;
+            case R.id.btnSendMsg:
+                processSendMessage();
+                break;
+        }
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        //Defining a long click event listener for the peer buttons in the action bar.
+        switch (view.getId()) {
+            case R.id.btnLocalPeer:
+                displayPeerInfo(0);
+                break;
+            case R.id.btnRemotePeer1:
+                displayPeerInfo(1);
+                break;
+            case R.id.btnRemotePeer2:
+                displayPeerInfo(2);
+                break;
+            case R.id.btnRemotePeer3:
+                displayPeerInfo(3);
+                break;
+        }
+
+        return true;
     }
 
     @Override
@@ -178,7 +166,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View {
      */
     @Override
     public void onPresenterRequestUpdateChatCollection() {
-        //notify adapter and update listview selection
+        //notify adapter and update list view selection
         if (adapter != null) {
             adapter.notifyDataSetChanged();
             if (adapter != null) {
@@ -199,7 +187,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View {
      * Show local peer button and display local avatar by the first character of the local username
      */
     @Override
-    public void onPresenterRequestUpdateUIConnected(String localUserName) {
+    public void onPresenterRequestUpdateLocalPeer(String localUserName) {
         updateUILocalPeer(localUserName);
     }
 
@@ -273,6 +261,21 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View {
      * Init the view widgets for the fragment
      */
     private void initControls() {
+        // set onClick and LongClick event for view widgets
+        btnBack.setOnClickListener(this);
+        btnLocalPeer.setOnClickListener(this);
+        btnRemotePeer1.setOnClickListener(this);
+        btnRemotePeer2.setOnClickListener(this);
+        btnRemotePeer3.setOnClickListener(this);
+        btnSendServerMessage.setOnClickListener(this);
+        btnSendP2PMessage.setOnClickListener(this);
+        btnSend.setOnClickListener(this);
+
+        btnLocalPeer.setOnLongClickListener(this);
+        btnRemotePeer1.setOnLongClickListener(this);
+        btnRemotePeer2.setOnLongClickListener(this);
+        btnRemotePeer3.setOnLongClickListener(this);
+
         // init setting value for room name in action bar
         txtRoomName.setText(Config.ROOM_NAME_CHAT);
 

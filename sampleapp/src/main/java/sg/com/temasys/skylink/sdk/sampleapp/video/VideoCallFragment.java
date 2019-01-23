@@ -1,6 +1,5 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -13,9 +12,12 @@ import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -31,16 +33,18 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * A simple {@link Fragment} subclass.
  * This class is responsible for display UI and get user interaction
  */
-public class VideoCallFragment extends CustomActionBar implements VideoCallContract.View {
+public class VideoCallFragment extends CustomActionBar implements VideoCallContract.View, View.OnClickListener,
+        PopupMenu.OnMenuItemClickListener {
 
     private final String TAG = VideoCallFragment.class.getName();
 
@@ -48,24 +52,12 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     private VideoCallContract.Presenter mPresenter;
 
     private LinearLayout linearLayout, ll_video_res_input, ll_video_res_sent, ll_video_res_receive, ll_video_res_info;
-    private FloatingActionButton btnDisconnect;
-    private FloatingActionButton btnAudioMute;
-    private FloatingActionButton btnVideoMute;
-    private FloatingActionButton btnCameraToggle;
-    private FloatingActionButton btnSpeaker;
-    private TextView tvRoomName;
-    private TextView tvInput;
-    private TextView tvResInput;
-    private TextView tvSent;
-    private TextView tvResSent;
-    private TextView tvRecv;
-    private TextView tvResRecv;
-    private SeekBar seekBarResDim;
-    private SeekBar seekBarResFps;
-    private TextView tvResDim;
-    private TextView tvResFps;
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim;
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResFps;
+    private FloatingActionButton btnDisconnect, btnAudioMute, btnVideoMute, btnCameraToggle, btnSpeaker;
+    private TextView tvRoomName, tvInput, tvResInput, tvSent, tvResSent, tvRecv, tvResRecv;
+    private SeekBar seekBarResDim, seekBarResFps;
+    private TextView tvResDim, tvResFps;
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim, seekBarChangeListenerResFps;
+    private Button btnLocalOption;
 
     public static VideoCallFragment newInstance() {
         return new VideoCallFragment();
@@ -112,69 +104,18 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         //request an initiative connection
         requestViewLayout();
 
-        //Defining a click event listener for the button "<" in action bar
-        btnBack.setOnClickListener(v -> {
-            processBack();
-        });
-
-        //Defining a click event listener for the button local peer in action bar
-        btnLocalPeer.setOnClickListener(v -> {
-                    displayPeerInfo(0);
-                }
-        );
-
-        //Defining a click event listener for the button remote peer 1 in action bar
-        btnRemotePeer1.setOnClickListener(v -> {
-            displayPeerInfo(1);
-        });
-
-        //Defining a click event listener for the button remote peer 2 in action bar
-        btnRemotePeer2.setOnClickListener(v -> {
-            displayPeerInfo(2);
-        });
-
-        //Defining a click event listener for the button remote peer 3 in action bar
-        btnRemotePeer3.setOnClickListener(v -> {
-            displayPeerInfo(3);
-        });
-
-        // define the actions for the buttons clicks
-        btnSpeaker.setOnClickListener(v -> {
-            mPresenter.onViewRequestChangeAudioOutput();
-        });
-
-        btnAudioMute.setOnClickListener(v -> {
-            mPresenter.onViewRequestChangeAudioState();
-        });
-
-        btnVideoMute.setOnClickListener(v -> {
-            mPresenter.onViewRequestChangeVideoState();
-        });
-
-        btnCameraToggle.setOnClickListener(v -> {
-            mPresenter.onViewRequestChangeCameraState();
-        });
-
-        btnDisconnect.setOnClickListener(v -> {
-            mPresenter.onViewRequestDisconnectFromRoom();
-            toastLog(TAG, context, "Clicked Disconnect!");
-            onPresenterRequestDisconnectUIChange();
-        });
-
         return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         mPresenter.onViewRequestResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
         mPresenter.onViewRequestPause();
     }
 
@@ -204,6 +145,66 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         }
     }
 
+    @Override
+    public void onClick(View view) {
+        //Defining a click event listener for the buttons in the layout
+        switch (view.getId()) {
+            case R.id.btnBack:
+                processBack();
+                break;
+            case R.id.btnLocalPeer:
+                displayPeerInfo(0);
+                break;
+            case R.id.btnRemotePeer1:
+                displayPeerInfo(1);
+                break;
+            case R.id.btnRemotePeer2:
+                displayPeerInfo(2);
+                break;
+            case R.id.btnRemotePeer3:
+                displayPeerInfo(3);
+                break;
+            case R.id.toggle_speaker:
+                mPresenter.onViewRequestChangeAudioOutput();
+                break;
+            case R.id.toggle_audio:
+                mPresenter.onViewRequestChangeAudioState();
+                break;
+            case R.id.toggle_video:
+                mPresenter.onViewRequestChangeVideoState();
+                break;
+            case R.id.toggle_camera:
+                mPresenter.onViewRequestChangeCameraState();
+                break;
+            case R.id.disconnect:
+                mPresenter.onViewRequestDisconnectFromRoom();
+                onPresenterRequestDisconnectUIChange();
+                break;
+            case R.id.btnLocalPeerOption:
+                onMenuOptionLocalPeer(btnLocalOption);
+                break;
+        }
+    }
+
+    /**
+     * define the action for each menu items for local peer
+     */
+    @Override
+    public boolean onMenuItemClick(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.switch_camera:
+                mPresenter.onViewRequestSwitchCamera();
+                break;
+            case R.id.video_resolution:
+                mPresenter.onViewRequestGetVideoResolutions();
+                break;
+            default:
+                Log.e(TAG, "Unknown menu option: " + menuItem.getItemId() + "!");
+                return false;
+        }
+        return true;
+    }
+
     //----------------------------------------------------------------------------------------------
     // Methods called from the Presenter to update UI
     //----------------------------------------------------------------------------------------------
@@ -221,7 +222,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     }
 
     /**
-     * Change certain UI elements once connected to room or when Peer(s) join or leave.
+     * Change certain UI elements once connected to room
      */
     @Override
     public void onPresenterRequestConnectedUIChange() {
@@ -282,7 +283,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     }
 
     /**
-     * Update the value of TextView for remote received video resolution
+     * Update the value of TextView for received remote video resolution
      */
     @Override
     public void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive) {
@@ -324,30 +325,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
             // Tag new video as self and add onClickListener.
             videoView.setTag("self");
-            // Show room and self info, plus give option to
-            // switch self view between different cameras (if any).
-            videoView.setOnClickListener(v -> {
-                String name = mPresenter.onViewRequestGetRoomPeerIdNick();
-
-                name += "\r\nClick outside dialog to return.";
-                TextView selfTV = new TextView(context);
-                selfTV.setText(name);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    selfTV.setTextIsSelectable(true);
-                }
-                AlertDialog.Builder selfDialogBuilder =
-                        new AlertDialog.Builder(context);
-                selfDialogBuilder.setView(selfTV);
-                // Get the available video resolutions.
-                selfDialogBuilder.setPositiveButton("Video resolutions",
-                        (dialog, which) -> mPresenter.onViewRequestGetVideoResolutions());
-                // Switch camera if possible.
-                selfDialogBuilder.setNegativeButton("Switch Camera",
-                        (dialog, which) -> {
-                            mPresenter.onViewRequestSwitchCamera();
-                        });
-                selfDialogBuilder.show();
-            });
 
             // If peer video exists, remove it first.
             View peer = linearLayout.findViewWithTag("peer");
@@ -622,12 +599,12 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     }
 
     /**
-     * Display information about list of peers in room on the action bar
+     * Update information about remote peer left the room
      *
-     * @param peersList
+     * @param peersList the list of left peer(s) in the room
      */
     @Override
-    public void onPresenterRequestFillPeers(List<SkylinkPeer> peersList) {
+    public void onPresenterRequestRemotePeerLeft(List<SkylinkPeer> peersList) {
         processFillPeers(peersList);
     }
 
@@ -664,6 +641,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         tvResRecv = rootView.findViewById(R.id.textViewResRecv);
         tvResDim = rootView.findViewById(R.id.textViewDim);
         tvResFps = rootView.findViewById(R.id.textViewFps);
+        btnLocalOption = rootView.findViewById(R.id.btnLocalPeerOption);
     }
 
     /**
@@ -688,6 +666,19 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     }
 
     private void initComponents(View rootView) {
+        // set onClick event for buttons in layout
+        btnBack.setOnClickListener(this);
+        btnLocalPeer.setOnClickListener(this);
+        btnRemotePeer1.setOnClickListener(this);
+        btnRemotePeer2.setOnClickListener(this);
+        btnRemotePeer3.setOnClickListener(this);
+        btnLocalOption.setOnClickListener(this);
+        btnSpeaker.setOnClickListener(this);
+        btnAudioMute.setOnClickListener(this);
+        btnVideoMute.setOnClickListener(this);
+        btnCameraToggle.setOnClickListener(this);
+        btnDisconnect.setOnClickListener(this);
+
         // init setting value for room name in action bar
         txtRoomName.setText(Config.ROOM_NAME_VIDEO);
 
@@ -930,7 +921,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
             ll_video_res_sent.setOrientation(LinearLayout.VERTICAL);
             ll_video_res_receive.setOrientation(LinearLayout.VERTICAL);
 
-            int llHeight = (int) context.getResources().getDimension(R.dimen.ll_video_res_height);
+            int llHeight = (int) context.getResources().getDimension(R.dimen.dp_48dp);
 
             RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
             llParams.height = llHeight;
@@ -955,7 +946,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
             ll_video_res_sent.setOrientation(LinearLayout.HORIZONTAL);
             ll_video_res_receive.setOrientation(LinearLayout.HORIZONTAL);
 
-            int llHeight = (int) context.getResources().getDimension(R.dimen.ll_video_res_height_land);
+            int llHeight = (int) context.getResources().getDimension(R.dimen.dp_35dp);
 
             RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
             llParams.height = llHeight;
@@ -975,7 +966,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      * All floating buttons will be located in the right of the layout
      * */
     private void changeFloatingButtonPortrait(FloatingActionButton btn) {
-        int landWidth = (int) context.getResources().getDimension(R.dimen.floating_btn_size);
+        int landWidth = (int) context.getResources().getDimension(R.dimen.dp_60dp);
         int margin = (int) context.getResources().getDimension(R.dimen.dp_10dp);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(landWidth, landWidth);
@@ -1025,7 +1016,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      * All floating buttons will be located in the left of the layout / on the local video side
      * */
     private void changeFloatingButtonLandscape(FloatingActionButton btn) {
-        int landWidth = (int) context.getResources().getDimension(R.dimen.floating_btn_size_land);
+        int landWidth = (int) context.getResources().getDimension(R.dimen.dp_45dp);
         int margin = (int) context.getResources().getDimension(R.dimen.dp_10dp);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(landWidth, landWidth);
@@ -1083,4 +1074,13 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         }
     }
 
+    /**
+     * Display local peer menu option
+     */
+    private void onMenuOptionLocalPeer(View view) {
+        PopupMenu popup = new PopupMenu(context, view);
+        popup.setOnMenuItemClickListener(this);
+        popup.inflate(R.menu.local_option_menu_video);
+        popup.show();
+    }
 }

@@ -55,14 +55,13 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     }
 
     //----------------------------------------------------------------------------------------------
-    // Override methods from BasePresenter for view to call
+    // Override methods from AudioCallContract.Presenter for view to call
     // These methods are responsible for processing requests from view
     //----------------------------------------------------------------------------------------------
 
     /**
      * Triggered when View request data to display to the user when entering room | rotating screen
      * Try to connect to room when entering room
-     * Update info when rotating screen
      */
     @Override
     public void onViewRequestConnectedLayout() {
@@ -85,21 +84,11 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
 
             Log.d(TAG, "Try to connect when entering room");
-
-        } else {
-
-            //if it already connected to room, then resume state
-            mPermissionUtils.permQResume(mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
-
-            //update UI into connected state
-            processUpdateUIConnected();
-
-            Log.d(TAG, "Try to update UI when changing configuration");
         }
 
         //get default audio output settings and change UI
         isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
-        mAudioCallView.onPresenterRequestChangeAudioOutput(mAudioCallService.isPeerJoin(), isSpeakerOn);
+        mAudioCallView.onPresenterRequestChangeAudioOutput(isSpeakerOn);
     }
 
     @Override
@@ -112,9 +101,9 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     }
 
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     /**
@@ -170,10 +159,29 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         this.isSpeakerOn = isSpeakerOn;
 
         // change button UI
-        mAudioCallView.onPresenterRequestChangeAudioOutput(mAudioCallService.isPeerJoin(), isSpeakerOn);
+        mAudioCallView.onPresenterRequestChangeAudioOutput(isSpeakerOn);
+
+        if (isSpeakerOn) {
+            toastLog(TAG, mContext, "Speaker is turned ON");
+        } else {
+            toastLog(TAG, mContext, "Speaker is turned OFF");
+        }
 
         // change speaker state in service layer
         mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
+    }
+
+    /**
+     * Add new peer on UI when new peer joined in room
+     *
+     * @param remotePeer the new peer joined in room
+     */
+    @Override
+    public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
+        // Fill the new peer in button in custom bar
+        // Display new peer at most right location in action bar
+        mAudioCallView.onPresenterRequestChangeUiRemotePeerJoin(remotePeer,
+                mAudioCallService.getTotalPeersInRoom() - 1);
     }
 
     @Override
@@ -189,19 +197,15 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     }
 
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
-        // Fill the new peer in button in custom bar
-        processAddNewPeer(remotePeer, mAudioCallService.getTotalPeersInRoom() - 1);
-    }
-
-    @Override
     public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1)
             return;
 
         // Remove the peer in button in custom bar
-        processRemoveRemotePeer();
+        // Remove a remote peer by re-fill total remote peer left in the room
+        // to make sure the left peers are displayed correctly
+        mAudioCallView.onPresenterRequestChangeUIRemotePeerLeft(mAudioCallService.getPeersList());
     }
 
     @Override
@@ -226,31 +230,12 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
         // Update the local peer info in the local peer button in action bar
         mAudioCallView.onPresenterRequestUpdateUIConnected(Config.USER_NAME_AUDIO);
-
     }
 
     /**
-     * Get the room id info
+     * Get the room id info from SDK
      */
     private String processGetRoomId() {
         return mAudioCallService.getRoomId();
-    }
-
-    /**
-     * Add new peer on UI when new peer joined in room in specific index
-     *
-     * @param newPeer the new peer joined in room
-     * @param index   the index of the new peer to add
-     */
-    private void processAddNewPeer(SkylinkPeer newPeer, int index) {
-        mAudioCallView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
-    }
-
-    /**
-     * Remove a remote peer by re-fill total remote peer left in the room
-     * to make sure the left peers are displayed correctly
-     */
-    private void processRemoveRemotePeer() {
-        mAudioCallView.onPresenterRequestChangeUIRemotePeerLeft(mAudioCallService.getPeersList());
     }
 }

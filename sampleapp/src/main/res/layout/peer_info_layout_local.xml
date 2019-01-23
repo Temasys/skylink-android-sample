@@ -15,7 +15,7 @@
         android:background="@drawable/button_circle_avatar_local"
         android:text="L"
         android:textColor="@android:color/white"
-        android:textSize="@dimen/sp_26" />
+        android:textSize="@dimen/sp_26sp" />
 
     <TextView
         android:id="@+id/txtPeerInfoUserName"
@@ -33,6 +33,6 @@
         android:layout_marginTop="@dimen/dp_10dp"
         android:text="Local Peer Id _ bfsdn"
         android:textColor="@android:color/black"
-        android:textSize="@dimen/sp_16" />
+        android:textSize="@dimen/sp_16sp" />
 
 </LinearLayout>
