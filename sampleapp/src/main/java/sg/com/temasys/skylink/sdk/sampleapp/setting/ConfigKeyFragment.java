@@ -32,6 +32,7 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.RecyclerViewAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -47,7 +48,7 @@ public class ConfigKeyFragment extends Fragment {
 
     private static final String TAG = ConfigKeyFragment.class.getName();
     public static final String APP_KEY_LIST_SMR = "appKeyListSmr";
-    private static final String APP_KEY_LIST_NO_SMR = "appKeyListNoSmr";
+    public static final String APP_KEY_LIST_NO_SMR = "appKeyListNoSmr";
     private KeyInfo keyInfoSmrDefault;
     private KeyInfo keyInfoNoSmrDefault;
 
@@ -76,10 +77,10 @@ public class ConfigKeyFragment extends Fragment {
     final private String PREFS_NAME = "KeyInfo";
 
     List keyInfoList = new ArrayList();
-    static boolean smrSelect = Boolean.parseBoolean(null);
+    public static boolean smrSelect = Boolean.parseBoolean(null);
 
-    static JSONArray appKeyListNoSmr = new JSONArray();
-    static JSONArray appKeyListSmr = new JSONArray();
+    public static JSONArray appKeyListNoSmr = new JSONArray();
+    public static JSONArray appKeyListSmr = new JSONArray();
 
     public ConfigKeyFragment() {
         // Required empty public constructor

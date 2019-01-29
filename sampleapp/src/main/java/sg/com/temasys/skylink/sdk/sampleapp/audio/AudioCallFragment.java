@@ -187,7 +187,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
      * @param index   specific index
      */
     @Override
-    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
+    public void onPresenterRequestChangeUIRemotePeerJoin(SkylinkPeer newPeer, int index) {
         //add new remote peer button in the action bar
         updateUiRemotePeerJoin(newPeer, index);
 

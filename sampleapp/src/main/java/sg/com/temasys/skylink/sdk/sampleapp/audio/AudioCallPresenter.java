@@ -28,7 +28,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     private Context mContext;
 
-    //AudioCallFragment object
+    //view object
     private AudioCallContract.View mAudioCallView;
 
     //service object
@@ -180,7 +180,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
         // Fill the new peer in button in custom bar
         // Display new peer at most right location in action bar
-        mAudioCallView.onPresenterRequestChangeUiRemotePeerJoin(remotePeer,
+        mAudioCallView.onPresenterRequestChangeUIRemotePeerJoin(remotePeer,
                 mAudioCallService.getTotalPeersInRoom() - 1);
     }
 

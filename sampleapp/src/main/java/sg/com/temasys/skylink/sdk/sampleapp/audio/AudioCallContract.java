@@ -40,7 +40,7 @@ public interface AudioCallContract {
         /**
          * Update UI when remote peer join the room
          */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+        void onPresenterRequestChangeUIRemotePeerJoin(SkylinkPeer newPeer, int index);
 
         /**
          * Update UI details when remote peer left the room

@@ -54,7 +54,7 @@ public abstract class BasePresenter {
     }
 
     //----------------------------------------------------------------------------------------------
-    // Methods which are from MediaListener need to be implemented for audio and video functions
+    // Methods which are from MediaListener need to be implemented for audio and video
     //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
@@ -138,7 +138,7 @@ public abstract class BasePresenter {
     }
 
     //----------------------------------------------------------------------------------------------
-    // Methods which are from MessagesListener need to be implemented for chat/messaging function
+    // Methods which are from MessagesListener need to be implemented for chat function
     //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
@@ -199,7 +199,7 @@ public abstract class BasePresenter {
     }
 
     //----------------------------------------------------------------------------------------------
-    // Methods which is required from AudioRouter need to be implemented for audio/video functions
+    // Methods which is required from AudioRouter need to be implemented for audio/video
     //----------------------------------------------------------------------------------------------
 
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {

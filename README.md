@@ -1,6 +1,14 @@
 # Temasys SDK for Android - Sample Application
 
-## How to run the sample project 
+Sample Application(SA) is a sample application using the Temasys SDK, provide embedded real time communication in a easiest way
+In SA, there are simple demos on:
+  + Audio
+  + Video
+  + Chat/Message
+  + DataTransfer
+  + FileTransfer
+
+## How to run the sample project
 
 ### Step-by-step guide for Android Studio
 
@@ -9,6 +17,18 @@
 1. Create config.xml under res/values and add values for app_key and app_secret. See [config_example.xml](https://github.com/Temasys/skylink-android-sample/blob/master/sampleapp/src/main/res/values/config_example.xml) for more details
 1. Build the project
 1. Run the sampleapp module
+
+## Sample App structure
+The architecture of Sample app is the way we organize the code to have a clear structure. We try to separate between the application layer and the SDK usage layer.
+With the separated parts, the user can easily change each part without changing the others and extend the functionality of the application.
+For example, the user can using different view components to display GUI of the application while keeping the same logics which using the SDK.
+
+The MVP (Model - View - Presenter) architecture used in the Sample App mainly divided into three main parts: View - Presenter - Service
+    + View: responsible for displaying GUI and getting user events.
+    + Presenter: responsible for processing app logic and implementing callbacks sent from the SkylinkSDK
+    + Service: responsible for sending requests to SkylinkSDK, using SkylinkConnection instance to communicate with the Skylink SDK, the service part also contain the models (M) of the application.
+
+For more details in Sample app's architecture, please refer to (https://github.com/Temasys/skylink-android-sample/blob/master/sampleapp/SAArch.md)
 
 # Temasys SDK for Android
 

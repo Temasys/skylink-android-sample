@@ -20,12 +20,11 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.MultiPartyFragment;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
- * A simple {@link MultiPartyFragment} subclass.
+ * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
  */
 public class ChatFragment extends CustomActionBar implements ChatContract.View, View.OnClickListener,

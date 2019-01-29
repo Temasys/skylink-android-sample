@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.setting;
+package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -29,7 +29,8 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigKeyFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigKeyFragment.appKeyListNoSmr;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigKeyFragment.appKeyListSmr;
@@ -217,9 +218,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     // Update the keyInfoList currently on display.
                     configKeyFragment.setRbAppKeyListSmr(isSmr);
                     if (isSmr) {
-                        keyInfoListConfig = Utils.convertJSONArrayToKeyInfoList(appKeyListSmr);
+                        keyInfoListConfig = Utils.convertJSONArrayToKeyInfoList(ConfigKeyFragment.appKeyListSmr);
                     } else {
-                        keyInfoListConfig = Utils.convertJSONArrayToKeyInfoList(appKeyListNoSmr);
+                        keyInfoListConfig = Utils.convertJSONArrayToKeyInfoList(ConfigKeyFragment.appKeyListNoSmr);
                     }
 
                     // Update the UI for changes to keyInfo.

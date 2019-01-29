@@ -439,16 +439,6 @@ public class Utils {
     }
 
     /**
-     * Return a localized string from the application's package's
-     * default string table.
-     *
-     * @param resId Resource id for the string
-     */
-    public static final String getString(@StringRes int resId) {
-        return mContext.getResources().getString(resId);
-    }
-
-    /**
      * Checks if given {@link SkylinkCaptureFormat SkylinkCaptureFormat[]} is valid for using.
      * To be valid, it cannot be null or empty.
      *
@@ -526,23 +516,6 @@ public class Utils {
      * Set dataGroup to contain 2 of dataPrivate.
      * Will get dataPrivate if dataGroup and dataPrivate are null.
      */
-    public static byte[] getDataGroup() {
-        byte[] dataGroup = null;
-
-        byte[] dataPrivate = getDataPrivate();
-
-        int len = dataPrivate.length;
-        dataGroup = new byte[2 * len];
-        System.arraycopy(dataPrivate, 0, dataGroup, 0, len);
-        System.arraycopy(dataPrivate, 0, dataGroup, len, len);
-
-        return dataGroup;
-    }
-
-    /**
-     * Set dataGroup to contain 2 of dataPrivate.
-     * Will get dataPrivate if dataGroup and dataPrivate are null.
-     */
     public static byte[] getDataSample() {
         byte[] data = null;
 
@@ -556,24 +529,6 @@ public class Utils {
         }
 
         return data;
-    }
-
-    /**
-     * Read an image to a byte array and put in dataPrivate
-     */
-    public static byte[] getDataPrivate() {
-        byte[] dataPrivate = null;
-
-        InputStream inputStream = mContext.getResources().openRawResource(R.raw.logo_icon);
-        try {
-            dataPrivate = new byte[inputStream.available()];
-            inputStream.read(dataPrivate);
-            inputStream.close();
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        return dataPrivate;
     }
 
     /**
