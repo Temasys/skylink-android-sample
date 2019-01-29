@@ -38,6 +38,7 @@ For more details in Sample app's architecture, please refer to (https://github.c
 ## SDK documentation
 
 For more information on the usage of the Temasys SDK for Android, please refer to the following:
+
  - [Temasys SDK for Android Readme](https://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/readme.md)
  - [Getting started with SkylinkSDK using Android Studio](https://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/SkylinkSDK_Android_Studio_Setup.md)
  - [Android SDK version required](https://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/Android_SDK_Version_Required.md)
