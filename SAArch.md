@@ -7,7 +7,7 @@ The MVP (Model - View - Presenter) architecture used in the Sample App mainly di
     - Service: responsible for sending requests to SkylinkSDK, using SkylinkConnection instance to communicate with the Skylink SDK, the service part also contain the models (M) of the application.
 
 ## Class diagram:
-https://github.com/Temasys/skylink-android-sample/blob/master/sampleapp/SA_MVP_Class_Diagram.png
+https://github.com/Temasys/skylink-android-sample/blob/master/SA_MVP_Class_Diagram.png
 
 ## App structure:
     - Put related classes into package for clearer design: audio, chat, data transfer, file transfer, multi party videos, video, service, setting, utils

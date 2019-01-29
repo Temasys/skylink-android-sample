@@ -3,11 +3,12 @@
 Sample Application(SA) is a sample application using the Temasys SDK, provide embedded real time communication in a easiest way.
 
 In SA, there are simple demos on:
-  + Audio
-  + Video
-  + Chat/Message
-  + DataTransfer
-  + FileTransfers
+
+  - Audio
+  - Video
+  - Chat/Message
+  - DataTransfer
+  - FileTransfers
 
 ## How to run the sample project
 
@@ -30,7 +31,7 @@ The MVP (Model - View - Presenter) architecture used in the Sample App mainly di
     + Presenter: responsible for processing app logic and implementing callbacks sent from the SkylinkSDK
     + Service: responsible for sending requests to SkylinkSDK, using SkylinkConnection instance to communicate with the Skylink SDK, the service part also contain the models (M) of the application.
 
-For more details in Sample app's architecture, please refer to (https://github.com/Temasys/skylink-android-sample/blob/master/sampleapp/SAArch.md)
+For more details in Sample app's architecture, please refer to (https://github.com/Temasys/skylink-android-sample/blob/master/SAArch.md)
 
 # Temasys SDK for Android
 
