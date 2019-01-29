@@ -1,12 +1,13 @@
 # Temasys SDK for Android - Sample Application
 
-Sample Application(SA) is a sample application using the Temasys SDK, provide embedded real time communication in a easiest way
+Sample Application(SA) is a sample application using the Temasys SDK, provide embedded real time communication in a easiest way.
+
 In SA, there are simple demos on:
   + Audio
   + Video
   + Chat/Message
   + DataTransfer
-  + FileTransfer
+  + FileTransfers
 
 ## How to run the sample project
 
@@ -24,6 +25,7 @@ With the separated parts, the user can easily change each part without changing 
 For example, the user can using different view components to display GUI of the application while keeping the same logics which using the SDK.
 
 The MVP (Model - View - Presenter) architecture used in the Sample App mainly divided into three main parts: View - Presenter - Service
+
     + View: responsible for displaying GUI and getting user events.
     + Presenter: responsible for processing app logic and implementing callbacks sent from the SkylinkSDK
     + Service: responsible for sending requests to SkylinkSDK, using SkylinkConnection instance to communicate with the Skylink SDK, the service part also contain the models (M) of the application.
