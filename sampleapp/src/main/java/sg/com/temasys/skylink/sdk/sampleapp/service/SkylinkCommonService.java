@@ -505,7 +505,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onOpenDataConnection(String remotePeerId) {
-        Log.d(TAG, "onOpenDataConnection");
+        Log.d(TAG, "[SA][onOpenDataConnection] " + remotePeerId + ".");
     }
 
     /**
@@ -835,6 +835,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         mSkylinkConnectionManager.connectToRoom(typeCall, customCapturer);
     }
 
+    enum CameraState {
+        CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
+    }
+
     /**
      * Create a {@link CameraVideoCapturer}.
      *
@@ -862,42 +866,95 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                     String logTag = "[SA][CustomCapturer] ";
                     String log;
 
+
+                    CameraState cameraState = CameraState.CAMERA_CLOSED;
+                    final String cameraNameNone = "No camera opened.";
+                    String cameraNameCurrent = cameraNameNone;
+                    String cameraNamePrevious = cameraNameNone;
+
                     @Override
                     public void onCameraError(String errorDescription) {
-                        log = logTag + "Camera had an error! Error: " + errorDescription;
+                        log = logTag + "Camera had an error! Error: " + errorDescription
+                                + " from State: " + cameraState.name() + ".";
                         Log.d(TAG, log);
                     }
 
                     @Override
                     public void onCameraDisconnected() {
-                        log = logTag + "Camera disconnected.";
+                        log = logTag + "Camera disconnected"
+                                + " from State: " + cameraState.name() + ".";
                         Log.d(TAG, log);
                     }
 
                     @Override
                     public void onCameraFreezed(String errorDescription) {
-                        log = logTag + "Camera frozed! Error: " + errorDescription;
+                        log = logTag + "Camera frozed! Error: " + errorDescription
+                                + " from State: " + cameraState.name() + ".";
                         Log.d(TAG, log);
                     }
 
                     @Override
                     public void onCameraOpening(String cameraName) {
-                        log = logTag + "Camera opened: Camera name: " + cameraName + ".";
+                        log = logTag + "Camera was ";
+                        switch (cameraState) {
+
+                            case CAMERA_OPENED:
+                                // Camera opened from an opened state => Switched camera.
+                                cameraState = CameraState.CAMERA_SWITCHED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraName;
+                                log += "switched from: " + cameraNamePrevious +
+                                        " to: " + cameraNameCurrent + ".";
+                                break;
+                            case CAMERA_CLOSED:
+                                // Camera opened from a closed state => New camera just opened.
+                                cameraState = CameraState.CAMERA_OPENED;
+                                cameraNameCurrent = cameraName;
+                                log += "just opened to: " + cameraNameCurrent + ".";
+                                break;
+                            case CAMERA_SWITCHED:
+                                cameraState = CameraState.CAMERA_OPENED;
+                                log += "opened from State:" + CameraState.CAMERA_SWITCHED.name()
+                                        + " to: " + cameraName + " => Error!";
+                                break;
+                        }
+
                         Log.d(TAG, log);
                     }
 
                     @Override
                     public void onFirstFrameAvailable() {
-                        log = logTag + "Camera first frame available.";
+                        log = logTag + "Camera (" + cameraNameCurrent + ") first frame available,"
+                                + " from State: " + cameraState.name() + ".";
                         Log.d(TAG, log);
                     }
 
                     @Override
                     public void onCameraClosed() {
-                        log = logTag + "Camera closed.";
+                        log = logTag;
+                        switch (cameraState) {
+                            case CAMERA_OPENED:
+                                cameraState = CameraState.CAMERA_CLOSED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraNameNone;
+                                log += "Closing all cameras. Last active ";
+                                break;
+                            case CAMERA_CLOSED:
+                                cameraState = CameraState.CAMERA_CLOSED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraNameNone;
+                                log += "Error! From State: " + cameraState.name() + ", ";
+                                break;
+                            case CAMERA_SWITCHED:
+                                cameraState = CameraState.CAMERA_OPENED;
+                                log += "Switch is complete. Previous ";
+                                break;
+                        }
+                        log += "camera (" + cameraNamePrevious + ") was just closed.";
                         Log.d(TAG, log);
                     }
                 };
+
         VideoCapturer cameraVideoCapturer =
                 cameraEnumerator.createCapturer(cameraName, cameraEventsHandler);
         log = logTag + "Created CameraVideoCapturer: " + cameraVideoCapturer;

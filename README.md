@@ -27,9 +27,9 @@ For example, the user can using different view components to display GUI of the 
 
 The MVP (Model - View - Presenter) architecture used in the Sample App mainly divided into three main parts: View - Presenter - Service
 
-    + View: responsible for displaying GUI and getting user events.
-    + Presenter: responsible for processing app logic and implementing callbacks sent from the SkylinkSDK
-    + Service: responsible for sending requests to SkylinkSDK, using SkylinkConnection instance to communicate with the Skylink SDK, the service part also contain the models (M) of the application.
+   - View: responsible for displaying GUI and getting user events.
+   - Presenter: responsible for processing app logic and implementing callbacks sent from the SkylinkSDK
+   - Service: responsible for sending requests to SkylinkSDK, using SkylinkConnection instance to communicate with the Skylink SDK, the service part also contain the models (M) of the application.
 
 For more details in Sample app's architecture, please refer to (https://github.com/Temasys/skylink-android-sample/blob/master/SAArch.md)
 
