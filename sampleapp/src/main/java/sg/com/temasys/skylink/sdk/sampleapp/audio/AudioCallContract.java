@@ -28,14 +28,9 @@ public interface AudioCallContract {
         void onPresenterRequestChangeAudioOutput(boolean isSpeakerOn);
 
         /**
-         * Update info about the connected room {roomId}
+         * Update UI into connected state
          */
-        void onPresenterRequestUpdateRoomInfo(String roomId);
-
-        /**
-         * Update info about the local peer in action bar
-         */
-        void onPresenterRequestUpdateUIConnected(String localUserName);
+        void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
          * Update UI when remote peer join the room

@@ -31,6 +31,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     private final String TAG = MultiPartyVideoCallPresenter.class.getName();
 
+    // view instance
     public MultiPartyVideoCallContract.View mMultiVideoCallView;
 
     // Service helps to work with SkylinkSDK
@@ -69,7 +70,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        //if it is already connected, then update UI to connected state (in case of changing configuration)
         if (!mMultiVideoCallService.isConnectingOrConnected()) {
 
             //reset permission request states.
@@ -78,7 +78,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             //connect to room on Skylink connection
             processConnectToRoom();
 
-            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect(boolean isSuccessful)
+            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -89,9 +89,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onViewRequestExit() {
         //process disconnect from room
         mMultiVideoCallService.disconnectFromRoom();
-
-        // after disconnected to Skylink SDK sucessfully,
-        // UI will be updated later on onServiceRequestDisconnect()
+        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
     @Override
@@ -119,9 +117,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
@@ -244,11 +242,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
                 AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
             }
 
-            // Update the room id in the action bar
-            mMultiVideoCallView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
-
-            // Update the local peer info in the local peer button in action bar
-            mMultiVideoCallView.onPresenterRequestUpdateUIConnected(Config.USER_NAME_PARTY);
+            mMultiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
         }
     }
 
@@ -388,48 +382,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     /**
-     * Update UI into connected state
-     */
-    private void processUpdateConnectedUI() {
-
-        // Toggle camera back to previous state if required.
-        if (mMultiVideoCallService.isCameraToggle()) {
-            processCameraToggle();
-        }
-
-        //update UI: get local video view and add to self view
-        mMultiVideoCallView.onPresenterRequestAddSelfView(processGetVideoView(null));
-
-        //update UI: get remote views and add to frame
-        String[] remotePeerIds = mMultiVideoCallService.getPeerIdList();
-
-        for (int i = 0; i < remotePeerIds.length; i++) {
-            processAddRemoteView(remotePeerIds[i]);
-        }
-    }
-
-    // If camera is active, stop camera and if camera is stopped, then enable it
-    private void processCameraToggle() {
-        //display instruction log
-        String log12 = "Toggled camera ";
-        if (processGetVideoView(null) != null) {
-            if (mMultiVideoCallService.toggleCamera()) {
-                log12 += "to restarted!";
-
-                //change state of camera toggle
-                mMultiVideoCallService.setCamToggle(false);
-            } else {
-                log12 += "to stopped!";
-
-                mMultiVideoCallService.setCamToggle(true);
-            }
-        } else {
-            log12 += "but failed as local video is not available!";
-        }
-        toastLog(TAG, mContext, log12);
-    }
-
-    /**
      * Trigger processGetWebrtcStats for specific Peer in a loop if current state allows.
      * To stop loop, set {@link #isGettingWebrtcStats} to false.
      *
@@ -476,10 +428,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         SurfaceViewRenderer videoView = mMultiVideoCallService.getVideoView(remotePeerId);
 
         mMultiVideoCallView.onPresenterRequestAddRemoteView(index, videoView);
-    }
-
-    private SurfaceViewRenderer processGetVideoView(String remotePeerId) {
-        return mMultiVideoCallService.getVideoView(remotePeerId);
     }
 
     /**

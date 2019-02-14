@@ -202,6 +202,14 @@ public abstract class BasePresenter {
     // Methods which is required from AudioRouter need to be implemented for audio/video
     //----------------------------------------------------------------------------------------------
 
+    /**
+     * Update UI with the audio output state changed
+     * User can manually change audio output in the UI or change the default setting
+     * in case of changing the state in default setting, the UI need to update corresponding
+     * with the setting state.
+     *
+     * @param isSpeakerOn the state of audio speaker on/off
+     * */
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
     }
 

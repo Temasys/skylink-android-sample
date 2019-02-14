@@ -23,7 +23,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
 
     @Override
     public void setPresenter(DataTransferContract.Presenter presenter) {
-        mPresenter = (BasePresenter) presenter;
+        this.presenter = (BasePresenter) presenter;
     }
 
     /**

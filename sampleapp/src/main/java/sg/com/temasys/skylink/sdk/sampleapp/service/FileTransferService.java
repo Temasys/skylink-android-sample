@@ -29,7 +29,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
 
     @Override
     public void setPresenter(FileTransferContract.Presenter presenter) {
-        mPresenter = (BasePresenter) presenter;
+        this.presenter = (BasePresenter) presenter;
     }
 
     /**

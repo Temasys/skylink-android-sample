@@ -16,14 +16,9 @@ public interface ChatContract {
     interface View extends BaseView<Presenter> {
 
         /**
-         * Update info about the connected room {roomId}
+         * Update UI into connected state
          */
-        void onPresenterRequestUpdateRoomInfo(String roomInfo);
-
-        /**
-         * Update info about the local peer in action bar
-         */
-        void onPresenterRequestUpdateLocalPeer(String localUserName);
+        void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
          * Update UI details when new remote peer joins at a specific index the room

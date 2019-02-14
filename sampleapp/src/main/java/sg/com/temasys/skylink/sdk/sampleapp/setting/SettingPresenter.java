@@ -23,7 +23,6 @@ public class SettingPresenter implements Presenter {
 
     //constructor
     public SettingPresenter(Context context) {
-
         this.mContext = context;
     }
 

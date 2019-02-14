@@ -23,14 +23,9 @@ public interface DataTransferContract {
         Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update info about the connected room {roomId}
+         * Update UI into connected state
          */
-        void onPresenterRequestUpdateRoomInfo(String roomInfo);
-
-        /**
-         * Update info about the local peer in action bar
-         */
-        void onPresenterRequestUpdateLocalPeer(String localUserName);
+        void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
          * Update UI details when new remote peer joins at a specific index the room
@@ -63,7 +58,7 @@ public interface DataTransferContract {
         /**
          * process runtime file permission result
          */
-        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
         /**
          * process logic when user deny the permission

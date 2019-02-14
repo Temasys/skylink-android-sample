@@ -134,25 +134,19 @@ public interface VideoCallContract {
         void onPresenterRequestchangeViewLayout();
 
         /**
-         * Update info about the connected room {roomId}
+         * Update UI into connected state
          */
-        void onPresenterRequestUpdateRoomInfo(String roomInfo);
-
-        /**
-         * Update info about the local peer in action bar
-         */
-        void onPresenterRequestUpdateLocalPeer(String localUserName);
-
-        /**
-         * Update UI details when peers are in room
-         */
-        void onPresenterRequestRemotePeerLeft(List<SkylinkPeer> peersList);
+        void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
          * Update UI details when new remote peer joins at a specific index the room
          */
         void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
 
+        /**
+         * Update UI details when peers are in room
+         */
+        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
     }
 
     interface Presenter {
@@ -165,7 +159,7 @@ public interface VideoCallContract {
         /**
          * process runtime permission results
          */
-        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag);
+        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
         /**
          * process change audio output between headset and speaker
@@ -222,6 +216,9 @@ public interface VideoCallContract {
          */
         void onViewRequestExit();
 
+        /**
+         * process change state when disconnect from the room
+         */
         void onViewRequestDisconnectFromRoom();
 
         /**

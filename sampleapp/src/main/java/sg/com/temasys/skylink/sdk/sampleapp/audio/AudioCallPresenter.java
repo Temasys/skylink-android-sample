@@ -9,7 +9,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -60,7 +59,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Triggered when View request data to display to the user when entering room | rotating screen
+     * Triggered when View request data to display to the user when entering room
      * Try to connect to room when entering room
      */
     @Override
@@ -81,7 +80,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             //set default for audio output
             mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
 
-            //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
+            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
         }
@@ -116,14 +115,9 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     @Override
     public void onViewRequestExit() {
-
         //process disconnect from room
         mAudioCallService.disconnectFromRoom();
-
-        //reset default audio speaker
-        mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
-
-        //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
+        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
     //----------------------------------------------------------------------------------------------
@@ -136,7 +130,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         if (isSuccessful) {
 
             // change UI to connected to room, but not connected to any peer
-            processUpdateUIConnected();
+            processUpdateStateConnected();
 
             //start audio routing if has audio config
             SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
@@ -224,12 +218,10 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     /**
      * Update UI when connected to room
      */
-    private void processUpdateUIConnected() {
-        // Update the room id in the action bar
-        mAudioCallView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+    private void processUpdateStateConnected() {
 
-        // Update the local peer info in the local peer button in action bar
-        mAudioCallView.onPresenterRequestUpdateUIConnected(Config.USER_NAME_AUDIO);
+        // Update the view into connected state
+        mAudioCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
     }
 
     /**

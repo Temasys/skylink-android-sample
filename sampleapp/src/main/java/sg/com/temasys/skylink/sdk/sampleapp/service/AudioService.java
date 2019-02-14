@@ -23,7 +23,7 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
 
     @Override
     public void setPresenter(AudioCallContract.Presenter presenter) {
-        mPresenter = (BasePresenter) presenter;
+        this.presenter = (BasePresenter) presenter;
     }
 
     public void changeAudioOutput(boolean isAudioSpeaker) {

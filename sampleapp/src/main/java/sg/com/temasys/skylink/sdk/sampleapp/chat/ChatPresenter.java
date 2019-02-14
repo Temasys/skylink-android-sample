@@ -62,7 +62,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Triggered when View request data to display to the user when entering room | rotating screen
+     * Triggered when View request data to display to the user when entering room
      * Try to connect to room when entering room
      */
     @Override
@@ -77,7 +77,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             //connect to room on Skylink connection
             mChatService.connectToRoom(Constants.CONFIG_TYPE.CHAT);
 
-            //after connected to skylink SDK, UI will be updated later on ChatService.onConnect
+            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
         }
@@ -85,11 +85,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     @Override
     public void onViewRequestExit() {
-
         //process disconnect from room
         mChatService.disconnectFromRoom();
-
-        //after disconnected from skylink SDK, UI will be updated later on onDisconnect()
+        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
     /**
@@ -194,7 +192,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
-            processUpdateUIConnected();
+            processUpdateStateConnected();
         }
     }
 
@@ -358,12 +356,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     /**
      * Update UI when connected to room
      */
-    private void processUpdateUIConnected() {
-        // Update the room id in the action bar
-        mChatView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+    private void processUpdateStateConnected() {
 
-        // Update the local peer info in the local peer button in action bar
-        mChatView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_CHAT);
+        // Update the view into connected state
+        mChatView.onPresenterRequestUpdateUIConnected(processGetRoomId());
 
         // This message is metadata message to inform the user is connected to the room
         chatMessageCollection.add("[Metadata]:You (" + Config.USER_NAME_CHAT + "_" +

@@ -4,16 +4,6 @@
                 android:layout_height="match_parent"
                 xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:id="@+id/tv_room_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/dp_10dp"
-        android:hint="@string/enter_room_name"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:visibility="gone"/>
-
     <LinearLayout
         android:id="@+id/ll_video_res_info"
         android:layout_width="match_parent"

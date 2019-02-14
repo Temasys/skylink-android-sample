@@ -1,6 +1,3 @@
-/*
- * 
- */
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.Context;
@@ -13,7 +10,7 @@ import android.util.AttributeSet;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
- * CurvedTextView
+ * A custom text view for displaying the sending/receiving progress
  */
 public class CurvedTextView extends android.support.v7.widget.AppCompatTextView {
 

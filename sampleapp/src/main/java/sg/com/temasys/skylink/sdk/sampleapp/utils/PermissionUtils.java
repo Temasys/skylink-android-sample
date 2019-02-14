@@ -528,7 +528,7 @@ public class PermissionUtils {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * display the read file permission dialog for the user
+     * display the access file permission dialog for the user
      *
      * @param context
      * @param fragmentInstance the view instance

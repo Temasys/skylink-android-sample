@@ -44,7 +44,6 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
  * Created by phyo.pwint on 29/7/16.
  */
 
-
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.rvViewHolder> {
 
     final private String TAG = RecyclerViewAdapter.class.getName();

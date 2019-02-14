@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,22 @@ public class CustomActionBar extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return null;
+    }
+
+    protected void setActionBar(ActionBar actionBar){
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setCustomView(R.layout.custom_action_bar);
+        View customBar = actionBar.getCustomView();
+
+        // get the view controls in custom action bar by id
+        btnBack = customBar.findViewById(R.id.btnBack);
+        txtRoomName = customBar.findViewById(R.id.txtRoomName);
+        txtRoomId = customBar.findViewById(R.id.txtRoomId);
+        btnLocalPeer = customBar.findViewById(R.id.btnLocalPeer);
+        btnRemotePeer1 = customBar.findViewById(R.id.btnRemotePeer1);
+        btnRemotePeer2 = customBar.findViewById(R.id.btnRemotePeer2);
+        btnRemotePeer3 = customBar.findViewById(R.id.btnRemotePeer3);
     }
 
     /**

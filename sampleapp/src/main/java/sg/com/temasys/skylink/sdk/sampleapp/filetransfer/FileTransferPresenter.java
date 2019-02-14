@@ -10,7 +10,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.FileTransferService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -55,9 +54,8 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     }
 
     /**
-     * Triggered when View request data to display to the user when entering room | rotating screen
+     * Triggered when View request data to display to the user when entering room
      * Try to connect to room when entering room
-     * Try to update info when changing configuration
      */
     @Override
     public void onViewRequestConnectedLayout() {
@@ -74,7 +72,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
             //connect to room on Skylink connection
             mFileTransferService.connectToRoom(Constants.CONFIG_TYPE.FILE);
 
-            //after connected to skylink SDK, UI will be updated later on AudioService.onConnect
+            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -102,9 +100,9 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * process result of permission that comes from SDK
      */
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to the PermissionUtils to process the permission
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     /**
@@ -143,6 +141,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     public void onViewRequestExit() {
         //process disconnect from room
         mFileTransferService.disconnectFromRoom();
+        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
     //----------------------------------------------------------------------------------------------
@@ -153,7 +152,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
-            processUpdateUIConnected();
+            processUpdateStateConnected();
         }
     }
 
@@ -221,12 +220,9 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     /**
      * Update UI when connected to room
      */
-    private void processUpdateUIConnected() {
-        // Update the room id in the action bar
-        mFileTransferView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
-
-        // Update the local peer info in the local peer button in action bar
-        mFileTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_FILE);
+    private void processUpdateStateConnected() {
+        // Update the view into connected state
+        mFileTransferView.onPresenterRequestUpdateUIConnected(processGetRoomId());
     }
 
     /**

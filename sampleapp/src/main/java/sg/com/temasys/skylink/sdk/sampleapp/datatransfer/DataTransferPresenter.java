@@ -9,7 +9,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.DataTransferService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
@@ -54,7 +53,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     //----------------------------------------------------------------------------------------------
 
     /**
-     * Triggered when View request data to display to the user when entering room | rotating screen
+     * Triggered when View request data to display to the user when entering room
      * Try to connect to room when entering room
      */
     @Override
@@ -69,7 +68,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
             //connect to room on Skylink connection
             mDataTransferService.connectToRoom(Constants.CONFIG_TYPE.DATA);
 
-            //after connected to skylink SDK, UI will be updated later on ChatService.onConnect
+            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -98,9 +97,9 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * process result of permission that comes from SDK
      */
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults, String tag) {
+    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to the PermissionUtils to process the permission
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, tag);
+        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     /**
@@ -168,9 +167,9 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
     @Override
     public void onViewRequestExit() {
-
         //process disconnect from room
         mDataTransferService.disconnectFromRoom();
+        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
     //----------------------------------------------------------------------------------------------
@@ -181,7 +180,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful)
-            processUpdateUIConnected();
+            processUpdateStateConnected();
     }
 
     @Override
@@ -228,12 +227,10 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     /**
      * Update UI when connected to room
      */
-    private void processUpdateUIConnected() {
-        // Update the room id in the action bar
-        mDataTransferView.onPresenterRequestUpdateRoomInfo(processGetRoomId());
+    private void processUpdateStateConnected() {
 
-        // Update the local peer info in the local peer button in action bar
-        mDataTransferView.onPresenterRequestUpdateLocalPeer(Config.USER_NAME_DATA);
+        // Update the view into connected state
+        mDataTransferView.onPresenterRequestUpdateUIConnected(processGetRoomId());
     }
 
 

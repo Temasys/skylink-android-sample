@@ -24,7 +24,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
 
     @Override
     public void setPresenter(ChatContract.Presenter presenter) {
-        mPresenter = (BasePresenter) presenter;
+        this.presenter = (BasePresenter) presenter;
     }
 
     /**

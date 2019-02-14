@@ -38,7 +38,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
     @Override
     public void setPresenter(MultiPartyVideoCallContract.Presenter presenter) {
-        mPresenter = (BasePresenter) presenter;
+        this.presenter = (BasePresenter) presenter;
     }
 
     /**
@@ -126,7 +126,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return true if camera is active, false if camera is stopped
      */
     public boolean isCameraToggle() {
-        return videoLocalState.isCameraToggle();
+        return videoLocalState.isCameraMute();
     }
 
     /**
@@ -135,7 +135,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @param isCamToggle true if camera is active, false if camera is stopped
      */
     public void setCamToggle(boolean isCamToggle) {
-        videoLocalState.setCameraToggle(isCamToggle);
+        videoLocalState.setCameraMute(isCamToggle);
     }
 
     /**

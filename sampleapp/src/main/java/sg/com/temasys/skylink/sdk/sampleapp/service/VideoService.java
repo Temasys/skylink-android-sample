@@ -9,6 +9,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
@@ -19,15 +20,29 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTI
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * The service class is responsible for invoking the SDK API by using SkylinkConnection instance
+ * and keep the app current states
  */
 
 public class VideoService extends SkylinkCommonService implements VideoCallContract.Service {
 
-    // the state of local video {audio, video, camera}
-    private VideoLocalState videoLocalState = new VideoLocalState();
+    // the current state of local video {audio, video, camera}
+    private VideoLocalState currentVideoLocalState = new VideoLocalState();
 
     // the current speaker output {speaker/headset}
     private boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
+
+    // the current video resolution
+    private VideoResolution currentVideoRes = new VideoResolution();
+
+    // The current camera name.
+    private String currentCameraName = null;
+
+    // The selected SkylinkCaptureFormat on UI,
+    private SkylinkCaptureFormat currentCaptureFormat = null;
+
+    // The selected frame rate (fps) on UI,
+    private int currentFps = -1;
 
     public VideoService(Context context) {
         super(context);
@@ -35,55 +50,52 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
 
     @Override
     public void setPresenter(VideoCallContract.Presenter presenter) {
-        mPresenter = (BasePresenter) presenter;
+        this.presenter = (BasePresenter) presenter;
     }
 
     /**
      * Get the current state of audio
      */
     public boolean isAudioMute() {
-        return videoLocalState.isAudioMute();
+        return currentVideoLocalState.isAudioMute();
     }
 
     /**
      * Set current state of audio
      */
     public void setAudioMute(boolean isAudioMuted) {
-        videoLocalState.setAudioMute(isAudioMuted);
+        currentVideoLocalState.setAudioMute(isAudioMuted);
     }
 
     /**
      * Get the current state of video
      */
     public boolean isVideoMute() {
-        if (videoLocalState != null)
-            return videoLocalState.isVideoMute();
-
-        return false;
+        return currentVideoLocalState.isVideoMute();
     }
 
     /**
      * Set current state of video
      */
     public void setVideoMute(boolean isVideoMuted) {
-        videoLocalState.setVideoMute(isVideoMuted);
+        currentVideoLocalState.setVideoMute(isVideoMuted);
     }
 
     /**
      * Get current state of camera
      */
-    public boolean isCameraToggle() {
-        return videoLocalState.isCameraToggle();
+    public boolean isCameraMute() {
+        return currentVideoLocalState.isCameraMute();
     }
 
     /**
      * Set current state of camera
      */
-    public void setCamToggle(boolean isCamToggle) {
+    public void setCamMute(boolean isCamMute) {
 
-        //isCamToggle = true, then camera is active
-        //isCamToggle = false, then camera is stop
-        videoLocalState.setCameraToggle(isCamToggle);
+        //isCamMute = true, then camera is active
+        //isCamMute = false, then camera is stop
+        currentVideoLocalState.setCameraMute(isCamMute);
     }
 
     /**
@@ -98,7 +110,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public boolean toggleCamera(boolean isToggle) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera(isToggle);
+            return mSkylinkConnection.toggleCamera(!isToggle);
         return false;
     }
 
@@ -228,8 +240,18 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      * @param fps
      */
     public void setInputVideoResolution(int width, int height, int fps) {
+        // no need to update video resolution if nothing changed
+        if (currentVideoRes.getWidth() == width && currentVideoRes.getHeight() == height &&
+                currentVideoRes.getFps() == fps) {
+            return;
+        }
         if (mSkylinkConnection != null) {
             mSkylinkConnection.setInputVideoResolution(width, height, fps);
+
+            // save new res as current video resolution
+            currentVideoRes.setWidth(width);
+            currentVideoRes.setHeight(height);
+            currentVideoRes.setFps(fps);
         }
     }
 
@@ -275,6 +297,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public void changeSpeakerOutput(boolean isSpeakerOn) {
         AudioRouter.changeAudioOutput(mContext, isSpeakerOn);
+        this.currentVideoSpeaker = isSpeakerOn;
     }
 
     /**
@@ -370,5 +393,29 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
+    }
+
+    public int getCurrentFps() {
+        return currentFps;
+    }
+
+    public SkylinkCaptureFormat getCurrentCaptureFormat() {
+        return currentCaptureFormat;
+    }
+
+    public void setCurrentCaptureFormat(SkylinkCaptureFormat format) {
+        this.currentCaptureFormat = format;
+    }
+
+    public void setCurrentFps(int fpsNew) {
+        this.currentFps = fpsNew;
+    }
+
+    public String getCurrentCamera() {
+        return currentCameraName;
+    }
+
+    public void setCurrentCamera(String currentCamera) {
+        this.currentCameraName = currentCamera;
     }
 }

@@ -32,7 +32,8 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     private TextView txt_room_setting_name, txt_key_setting_name;
     private RadioGroup rdGroupAudioOutput, rdGroupVideoOutput, rdGroupCameraOutput, rdGroupVideoResolution;
-    private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_custom, camera_front, camera_back, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
+    private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_custom, camera_front,
+            camera_back, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
 
 
     private SettingContract.Presenter mPresenter;

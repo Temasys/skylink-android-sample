@@ -7,20 +7,19 @@ import java.io.Serializable;
  */
 
 public class VideoLocalState implements Serializable {
+    // current audio state
     private boolean audioMute;
+
+    // current video state
     private boolean videoMute;
-    private boolean cameraToggle;
+
+    // current camera state
+    private boolean cameraMute;
 
     public VideoLocalState() {
         this.audioMute = false;
         this.videoMute = false;
-        this.cameraToggle = false;
-    }
-
-    public VideoLocalState(boolean audioMute, boolean videoMute, boolean cameraToggle) {
-        this.audioMute = audioMute;
-        this.videoMute = videoMute;
-        this.cameraToggle = cameraToggle;
+        this.cameraMute = false;
     }
 
     public boolean isAudioMute() {
@@ -39,11 +38,11 @@ public class VideoLocalState implements Serializable {
         this.videoMute = videoMute;
     }
 
-    public boolean isCameraToggle() {
-        return cameraToggle;
+    public boolean isCameraMute() {
+        return cameraMute;
     }
 
-    public void setCameraToggle(boolean cameraToggle) {
-        this.cameraToggle = cameraToggle;
+    public void setCameraMute(boolean cameraMute) {
+        this.cameraMute = cameraMute;
     }
 }
