@@ -260,8 +260,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     /**
      * This is triggered from SkylinkSDK when a local camera starts to capture video,
-     * or when it's video dimension changes,
-     * if {@link SkylinkConfig#isReportVideoResolutionOnChange()} is true.
+     * if {@link SkylinkConfig#isReportVideoResolutionOnVideoChange()} is true;
+     * or when its currently reporting and video resolution is not yet stable,
+     * if {@link SkylinkConfig#isReportVideoResolutionUntilStable()} is true;
      * It can also be triggered by calling {@link SkylinkConnection#getInputVideoResolution()}.
      * The current resolution of the video being captured by the local camera
      * and the SkylinkCaptureFormat used will be provided.
@@ -284,8 +285,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     /**
      * This is triggered from SkylinkSDK when we receive a remote Peer's video,
-     * or when it's video dimension changes,
-     * if {@link SkylinkConfig#isReportVideoResolutionOnChange()} is true.
+     * if {@link SkylinkConfig#isReportVideoResolutionOnVideoChange()} is true;
+     * or when its currently reporting and video resolution is not yet stable,
+     * if {@link SkylinkConfig#isReportVideoResolutionUntilStable()} is true.
      * It can also be triggered by calling {@link SkylinkConnection#getReceivedVideoResolution}.
      * The current resolution of the video received from a specific Peer will be provided.
      * If a particular value is not available, a negative integer will be provided.
@@ -304,8 +306,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     /**
      * This is triggered from SkylinkSDK when a local video stream starts being sent to a remote Peer,
-     * or when it's video dimension changes,
-     * if {@link SkylinkConfig#isReportVideoResolutionOnChange()} is true.
+     * if {@link SkylinkConfig#isReportVideoResolutionOnVideoChange()} is true;
+     * or when its currently reporting and video resolution is not yet stable,
+     * if {@link SkylinkConfig#isReportVideoResolutionUntilStable()} is true;
      * It can also be triggered by calling {@link SkylinkConnection#getSentVideoResolution}.
      * The current resolution of the video being sent to a specific Peer will be provided.
      *
@@ -863,9 +866,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         String cameraName = cameraNames[0];
         CameraVideoCapturer.CameraEventsHandler cameraEventsHandler =
                 new CameraVideoCapturer.CameraEventsHandler() {
-                    String logTag = "[SA][CustomCapturer] ";
+                    String logTag = "[SA][CameraEventsHandler] ";
                     String log;
-
 
                     CameraState cameraState = CameraState.CAMERA_CLOSED;
                     final String cameraNameNone = "No camera opened.";

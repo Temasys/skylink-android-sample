@@ -25,9 +25,7 @@ import android.widget.TextView;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.sampleapp.R;

@@ -16,22 +16,7 @@ buildscript {
     }
 }
 
-plugins {
-    id "org.sonarqube" version "2.5"
-}
 apply plugin: 'com.android.application'
-
-sonarqube {
-    properties {
-        property "sonar.projectKey", "AND-Sample"
-        property "sonar.projectName", "Skylink Android SDK - Sample App"
-        property "sonar.projectVersion", "0.11.0"
-        property "sonar.language", "java"
-        property "sonar.sources", "src"
-        property "sonar.binaries", "build"
-        property "sonar.profile", "Temasys-Android"
-    }
-}
 
 repositories {
     maven {
@@ -47,7 +32,7 @@ repositories {
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "sg.com.temasys.skylink.sampleapp_0_11_1"
+        applicationId "sg.com.temasys.skylink.sampleapp_0_11_0"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode 1

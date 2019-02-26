@@ -41,6 +41,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     //utils to process permission
     private PermissionUtils permissionUtils;
 
+    // Camera is ready only if the current capture format is not null.
+    private boolean isCameraReady = false;
+
     // The array of SkylinkCaptureFormats support by the current camera.
     private SkylinkCaptureFormat[] captureFormats;
 
@@ -213,7 +216,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         boolean result2 = processUpdateUiResFps(fpsNew, format);
         boolean result3 = processUpdateInputVideoResolutions(format, fpsNew);
 
-        if (fpsNew < 0 || !result1 || !result2 || result3) {
+        if (fpsNew < 0 || !result1 || !result2 || !result3) {
             SkylinkCaptureFormat currentFormat = videoCallService.getCurrentCaptureFormat();
             processUpdateUiResDim(currentFormat.getWidth(), currentFormat.getHeight(), captureFormats);
             processUpdateUiResFps(currentFps, currentFormat);
@@ -235,7 +238,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         // or setting new resolution was not successful, reset Fps UI to previous values.
         boolean result1 = processUpdateInputVideoResolutions(currentFormat, fpsNew);
 
-        if (fpsNew < 0 || result1) {
+        if (fpsNew < 0 || !result1) {
             processUpdateUiResFps(currentFps, currentFormat);
             return;
         }
@@ -353,7 +356,13 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         processInputVideoResolutions(width, height, fps, captureFormat);
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
-                width + " x " + height + ", " + fps + " fps.\r\n";
+                width + " x " + height + ", " + fps + " fps.\r\n" + " CaptureFormat:";
+        if (captureFormat != null) {
+            log += captureFormat.toStringCompact() + ".";
+        } else {
+            log += " NULL.";
+        }
+        ;
         toastLog(TAG, context, log);
     }
 
@@ -471,62 +480,67 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      * @param fps
      * @param captureFormat
      */
-    private void processInputVideoResolutions(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    private void processInputVideoResolutions(int width, int height, int fps,
+                                              SkylinkCaptureFormat captureFormat) {
         // Update UI about input resolution of local video
         VideoResolution videoInputRes = new VideoResolution(width, height, fps);
         videoCallView.onPresenterRequestUpdateUiResInput(videoInputRes);
 
-        SkylinkConfig.VideoDevice currentVideoDevice = videoCallService.getCurrentVideoDevice();
-        String previousCameraName = videoCallService.getCurrentCamera();
+        // Update UI for new captureFormats if there was a camera change:
+        // Closed <-> Opened
+        // One camera -> Another camera
+        // Camera not ready -> Camera ready
+        boolean cameraChanged = false;
+        if (captureFormat == null) {
+            isCameraReady = false;
+        }
 
+        String previousCameraName = videoCallService.getCurrentCamera();
         String currentCamera = videoCallService.getCurrentCameraName();
 
-        String captureFormatString = "Current capture formats have not changed.";
-
         // Check if a new camera in now active.
-        boolean newCamera = false;
         if (currentCamera != null) {
-            if (!currentCamera.equals(previousCameraName)) {
-                newCamera = true;
+            // Check if camera just started from no/different camera.
+            if (!currentCamera.equals(previousCameraName)/* || !isCameraReady*/) {
+                cameraChanged = true;
             }
-        } else if (previousCameraName != null) {
-            if (!previousCameraName.equals(currentCamera)) {
-                newCamera = true;
+            // Check if camera was already started, but only just became ready.
+            else if (captureFormat != null && !isCameraReady) {
+                isCameraReady = true;
+                cameraChanged = true;
             }
         }
+        // Check if camera had just closed.
+        else if (previousCameraName != null) {
+            cameraChanged = true;
+        }
 
+        String captureFormatString = "Current capture formats have not changed.";
         // Update the UI for setting new video resolution if a new camera has been obtained.
-        if (newCamera) {
-            // Set the range of supported SkylinkCaptureFormats.
-            // Record current range of supported SkylinkCaptureFormats.
-            captureFormats = videoCallService.getCaptureFormats(null);
-            int currentFps = videoCallService.getCurrentFps();
-
-            //get mCaptureFormats String info
-            captureFormatString = videoCallService.getCaptureFormatsString(captureFormats);
-            // Try to continue to with last selected Fps if possible.
-            int fpsNew = Utils.getFpsForNewCaptureFormat(currentFps, captureFormat);
-
-            if (captureFormat != null) {
-                // Set new selected CaptureFormat and frame rate.
-                videoCallService.setCurrentCaptureFormat(captureFormat);
-                videoCallService.setCurrentFps(fpsNew);
-                videoCallService.setCurrentCamera(currentCamera);
+        if (cameraChanged) {
+            // When a new camera is first obtained, actual fps is often unavailable or zero.
+            // Hence, set to current fps.
+            int selectedFps = videoCallService.getCurrentFps();
+            if (selectedFps <= 0) {
+                // If current fps is invalid or zero.
+                // Else set to max of new captureFormat if available.
+                if (captureFormat != null) {
+                    selectedFps = captureFormat.getFpsMax();
+                } else {
+                    // Or -1 (no valid format).
+                    selectedFps = -1;
+                }
             }
-
-            // Set UI values.
-            processUpdateUiResDim(width, height, captureFormats);
-
-            processUpdateUiResFps(fpsNew, captureFormat);
-
+            captureFormatString = processUpdateUiResOnNewCamera(
+                    width, height, selectedFps, captureFormat, currentCamera);
         }
 
+        SkylinkConfig.VideoDevice currentVideoDevice = videoCallService.getCurrentVideoDevice();
         String log = "The current local video by VideoDevice " + currentVideoDevice +
                 ", with camera name \"" + currentCamera +
                 "\", has width, height, fps: " + width + ", " + height + ", " + fps +
                 ".\r\n" + captureFormatString;
         Log.d(TAG, log);
-
     }
 
     /**
@@ -596,7 +610,8 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     /**
      * Get the selected value of width x height seek bar
      */
-    private SkylinkCaptureFormat processGetSelectedValueDim(int progress, SkylinkCaptureFormat[] captureFormats) {
+    private SkylinkCaptureFormat processGetSelectedValueDim(
+            int progress, SkylinkCaptureFormat[] captureFormats) {
         if (!Utils.isCaptureFormatsValid(captureFormats) || progress >= captureFormats.length) {
             return null;
         }
@@ -629,7 +644,8 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      * @param height
      * @return Negative number if index could not be found, or if mCaptureFormats is invalid.
      */
-    private int processGetSelectedIndexDim(SkylinkCaptureFormat[] captureFormats, int width, int height) {
+    private int processGetSelectedIndexDim(SkylinkCaptureFormat[] captureFormats, int width,
+                                           int height) {
         if (!processCheckCaptureFormatsValid(captureFormats)) {
             return -1;
         }
@@ -706,6 +722,43 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     /**
+     * Update the UI for video resolution when the camera changes.
+     * Use -1 for width, height and fps if none is available.
+     *
+     * @param width         The new width to set in video resolution UI.
+     * @param height        The new height to set in video resolution UI.
+     * @param fps           The new fps to set in video resolution UI.
+     * @param captureFormat
+     * @param newCamera     Name of the new camera.
+     * @return
+     */
+    private String processUpdateUiResOnNewCamera(int width, int height, int fps, SkylinkCaptureFormat
+            captureFormat, String newCamera) {
+        String captureFormatString;
+        // Set the range of supported SkylinkCaptureFormats.
+        // Record current range of supported SkylinkCaptureFormats.
+        captureFormats = videoCallService.getCaptureFormats(null);
+
+        //get captureFormats String info
+        captureFormatString = videoCallService.getCaptureFormatsString(captureFormats);
+        // Try to continue to with last selected Fps if possible.
+        int fpsNew = Utils.getFpsForNewCaptureFormat(fps, captureFormat);
+
+        if (captureFormat != null) {
+            // Set new selected CaptureFormat and frame rate.
+            videoCallService.setCurrentCaptureFormat(captureFormat);
+            videoCallService.setCurrentFps(fpsNew);
+            videoCallService.setCurrentCamera(newCamera);
+        }
+
+        // Set UI values.
+        processUpdateUiResDim(width, height, captureFormats);
+
+        processUpdateUiResFps(fpsNew, captureFormat);
+        return captureFormatString;
+    }
+
+    /**
      * Set selected resolution dimensions (i.e. width and height) on the UI based on the
      * given range of {@link SkylinkCaptureFormat} array.
      * Both the SeekBar and the TextView would be set, or reset if provided values were not valid.
@@ -715,7 +768,8 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
      * @param captureFormats The {@link SkylinkCaptureFormat} array that provides range of seekbar.
      * @return True if provided values were valid and false otherwise.
      */
-    private boolean processUpdateUiResDim(int width, int height, SkylinkCaptureFormat[] captureFormats) {
+    private boolean processUpdateUiResDim(int width, int height, SkylinkCaptureFormat[]
+            captureFormats) {
         boolean valid;
         int index = -1;
         // Set the seekbar range.

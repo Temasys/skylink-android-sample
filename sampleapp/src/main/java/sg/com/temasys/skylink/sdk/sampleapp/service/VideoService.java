@@ -153,6 +153,21 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
     }
 
     /**
+     * Return the {@link SkylinkCaptureFormat} that is currently being used by the camera.
+     * Note that the current CaptureFormat may change whenever the
+     * video resolution dimensions change.
+     *
+     * @return
+     */
+    public SkylinkCaptureFormat getCaptureFormat() {
+        if (mSkylinkConnection != null) {
+            return mSkylinkConnection.getCaptureFormat();
+        }
+
+        return null;
+    }
+
+    /**
      * Get the possible capture format(s) of the specified camera device in an array.
      * Return null if current {@link SkylinkConfig.VideoDevice VideoDevice} is not a defined camera,
      * or if it was not possible to get the capture formats.
@@ -350,7 +365,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         skylinkConfig.setHasPeerMessaging(true);
         skylinkConfig.setHasFileTransfer(true);
         skylinkConfig.setMirrorLocalView(true);
-        skylinkConfig.setReportVideoResolutionOnChange(true);
+        skylinkConfig.setReportVideoResolutionUntilStable(true);
 
         // Allow only 1 remote Peer to join.
         skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
