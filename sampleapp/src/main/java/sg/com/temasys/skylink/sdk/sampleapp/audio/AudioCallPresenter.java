@@ -25,32 +25,32 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     private final String TAG = AudioCallPresenter.class.getName();
 
-    private Context mContext;
+    private Context context;
 
     //view object
-    private AudioCallContract.View mAudioCallView;
+    private AudioCallContract.View audioCallView;
 
     //service object
-    private AudioService mAudioCallService;
+    private AudioService audioCallService;
 
     //utils to process permission
-    private PermissionUtils mPermissionUtils;
+    private PermissionUtils permissionUtils;
 
     //current audio output
-    private boolean isSpeakerOn;
+    private boolean currentAudioOutput = Utils.getDefaultAudioSpeaker();
 
     //constructor
     public AudioCallPresenter(Context context) {
-        this.mContext = context;
-        this.mAudioCallService = new AudioService(context);
-        this.mAudioCallService.setPresenter(this);
-        this.mPermissionUtils = new PermissionUtils();
+        this.context = context;
+        this.audioCallService = new AudioService(context);
+        this.audioCallService.setPresenter(this);
+        this.permissionUtils = new PermissionUtils();
     }
 
     //link Presenter to View
     public void setView(AudioCallContract.View view) {
-        mAudioCallView = view;
-        mAudioCallView.setPresenter(this);
+        audioCallView = view;
+        audioCallView.setPresenter(this);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -69,16 +69,16 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mAudioCallService.isConnectingOrConnected()) {
+        if (!audioCallService.isConnectingOrConnected()) {
 
             //reset permission request states.
-            mPermissionUtils.permQReset();
+            permissionUtils.permQReset();
 
             //connect to room on Skylink connection
-            mAudioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
+            audioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
             //set default for audio output
-            mAudioCallService.setCurrenAudioSpeaker(Utils.getDefaultAudioSpeaker());
+            currentAudioOutput = Utils.getDefaultAudioSpeaker();
 
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
@@ -86,23 +86,22 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         }
 
         //get default audio output settings and change UI
-        isSpeakerOn = mAudioCallService.getCurrentAudioSpeaker();
-        mAudioCallView.onPresenterRequestChangeAudioOutput(isSpeakerOn);
+        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioOutput);
     }
 
     @Override
     public void onViewRequestChangeAudioOuput() {
         //change current speakerOn
-        isSpeakerOn = !isSpeakerOn;
+        currentAudioOutput = !currentAudioOutput;
 
-        // change button UI
-        mAudioCallService.changeAudioOutput(isSpeakerOn);
+        // change audio output (speaker state) in AudioRouter
+        AudioRouter.changeAudioOutput(context, currentAudioOutput);
     }
 
     @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
+        permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     /**
@@ -110,13 +109,13 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
      */
     @Override
     public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
-        return mAudioCallService.getPeerByIndex(index);
+        return audioCallService.getPeerByIndex(index);
     }
 
     @Override
     public void onViewRequestExit() {
         //process disconnect from room
-        mAudioCallService.disconnectFromRoom();
+        audioCallService.disconnectFromRoom();
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
@@ -133,10 +132,10 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             processUpdateStateConnected();
 
             //start audio routing if has audio config
-            SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
+            SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
             if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
                 AudioRouter.setPresenter(this);
-                AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.AUDIO);
+                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
             }
         }
     }
@@ -144,25 +143,22 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         // delegate to PermissionUtils to process the permissions require
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mAudioCallView.onPresenterRequestGetFragmentInstance());
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context, audioCallView.onPresenterRequestGetFragmentInstance());
     }
 
     @Override
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
         // change the current speaker state
-        this.isSpeakerOn = isSpeakerOn;
+        this.currentAudioOutput = isSpeakerOn;
 
         // change button UI
-        mAudioCallView.onPresenterRequestChangeAudioOutput(isSpeakerOn);
+        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioOutput);
 
-        if (isSpeakerOn) {
-            toastLog(TAG, mContext, "Speaker is turned ON");
+        if (currentAudioOutput) {
+            toastLog(TAG, context, "Speaker is turned ON");
         } else {
-            toastLog(TAG, mContext, "Speaker is turned OFF");
+            toastLog(TAG, context, "Speaker is turned OFF");
         }
-
-        // change speaker state in service layer
-        mAudioCallService.setCurrenAudioSpeaker(isSpeakerOn);
     }
 
     /**
@@ -174,20 +170,20 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
         // Fill the new peer in button in custom bar
         // Display new peer at most right location in action bar
-        mAudioCallView.onPresenterRequestChangeUIRemotePeerJoin(remotePeer,
-                mAudioCallService.getTotalPeersInRoom() - 1);
+        audioCallView.onPresenterRequestChangeUIRemotePeerJoin(remotePeer,
+                audioCallService.getTotalPeersInRoom() - 1);
     }
 
     @Override
     public void onServiceRequestRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -199,15 +195,15 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         // Remove the peer in button in custom bar
         // Remove a remote peer by re-fill total remote peer left in the room
         // to make sure the left peers are displayed correctly
-        mAudioCallView.onPresenterRequestChangeUIRemotePeerLeft(mAudioCallService.getPeersList());
+        audioCallView.onPresenterRequestChangeUIRemotePeerLeft(audioCallService.getPeersList());
     }
 
     @Override
     public void onServiceRequestDisconnect() {
         //stop audio routing
-        SkylinkConfig skylinkConfig = mAudioCallService.getSkylinkConfig();
+        SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(mContext);
+            AudioRouter.stopAudioRouting(context);
         }
     }
 
@@ -221,13 +217,13 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     private void processUpdateStateConnected() {
 
         // Update the view into connected state
-        mAudioCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        audioCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
     }
 
     /**
      * Get the room id info from SDK
      */
     private String processGetRoomId() {
-        return mAudioCallService.getRoomId();
+        return audioCallService.getRoomId();
     }
 }

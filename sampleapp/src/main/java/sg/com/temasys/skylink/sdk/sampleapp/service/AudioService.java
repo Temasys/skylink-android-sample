@@ -6,36 +6,22 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for communicating with SkylinkSDK
  */
 
 public class AudioService extends SkylinkCommonService implements AudioCallContract.Service {
 
-    private boolean currentAudioOutput = Utils.getDefaultAudioSpeaker();
-
-    public AudioService(Context mContext) {
-        super(mContext);
+    public AudioService(Context context) {
+        super(context);
     }
 
     @Override
     public void setPresenter(AudioCallContract.Presenter presenter) {
         this.presenter = (BasePresenter) presenter;
-    }
-
-    public void changeAudioOutput(boolean isAudioSpeaker) {
-        AudioRouter.changeAudioOutput(mContext, isAudioSpeaker);
-    }
-
-    public boolean getCurrentAudioSpeaker() {
-        return currentAudioOutput;
-    }
-
-    public void setCurrenAudioSpeaker(boolean isSpeakerOn) {
-        currentAudioOutput = isSpeakerOn;
     }
 
     /**

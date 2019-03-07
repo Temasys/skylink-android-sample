@@ -11,7 +11,8 @@
         android:layout_marginLeft="@dimen/dp_10dp"
         android:layout_marginTop="@dimen/dp_10dp"
         android:layout_marginBottom="@dimen/dp_10dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <LinearLayout
             android:id="@+id/ll_video_res_input"
@@ -142,6 +143,7 @@
         android:layout_above="@id/toggle_audio"
         android:src="@drawable/ic_audio_speaker"
         android:text="@string/toggle_camera"/>
+        app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_audio"
@@ -150,6 +152,7 @@
         android:layout_above="@id/toggle_video"
         android:src="@drawable/icon_audio_active"
         android:text="@string/toggle_camera"/>
+        app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_video"
@@ -158,6 +161,7 @@
         android:layout_above="@id/toggle_camera"
         android:src="@drawable/icon_video_active"
         android:text="@string/toggle_camera"/>
+        app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_camera"
@@ -166,6 +170,7 @@
         android:layout_above="@id/disconnect"
         android:src="@drawable/icon_camera_active"
         android:text="@string/toggle_camera"/>
+        app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/disconnect"
@@ -185,8 +190,12 @@
         android:layout_width="@dimen/dp_40dp"
         android:layout_height="@dimen/dp_40dp"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="@dimen/dp_70dp"
         android:background="@drawable/button_circle_menu_option"
         android:visibility="visible"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton
+        android:id="@+id/btnVideoResolution"
+        android:layout_width="@dimen/dp_50dp"
+        android:layout_height="@dimen/dp_50dp"
+        android:background="@android:color/transparent" />
 </RelativeLayout>

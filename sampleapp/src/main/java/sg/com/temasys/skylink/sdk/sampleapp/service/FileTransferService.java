@@ -17,6 +17,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for communicating with SkylinkSDK
  */
 
 public class FileTransferService extends SkylinkCommonService implements FileTransferContract.Service {
@@ -57,10 +58,10 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
                 peer = "Peer " + remotePeerId;
             }
             String log = "Sending file to " + peer + ".";
-            toastLog(TAG, mContext, log);
+            toastLog(TAG, context, log);
         } catch (SkylinkException e) {
             String log = e.getMessage();
-            toastLogLong(TAG, mContext, log);
+            toastLogLong(TAG, context, log);
             Log.e(TAG, log, e);
         }
     }
@@ -80,7 +81,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
             mSkylinkConnection.sendFileTransferPermissionResponse(remotePeerId, downloadedFilePath, isPermitted);
         } catch (SkylinkException e) {
             String log = e.getMessage();
-            toastLogLong(TAG, mContext, log);
+            toastLogLong(TAG, context, log);
         }
     }
 

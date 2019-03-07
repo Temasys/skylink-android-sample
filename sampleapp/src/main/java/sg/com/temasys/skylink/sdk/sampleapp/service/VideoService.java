@@ -4,15 +4,13 @@ import android.content.Context;
 
 import org.webrtc.SurfaceViewRenderer;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
+import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContract;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
@@ -20,29 +18,10 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTI
 
 /**
  * Created by muoi.pham on 20/07/18.
- * The service class is responsible for invoking the SDK API by using SkylinkConnection instance
- * and keep the app current states
+ * The service class is responsible for communicating with the SkylinkSDK API by using SkylinkConnection instance
  */
 
 public class VideoService extends SkylinkCommonService implements VideoCallContract.Service {
-
-    // the current state of local video {audio, video, camera}
-    private VideoLocalState currentVideoLocalState = new VideoLocalState();
-
-    // the current speaker output {speaker/headset}
-    private boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
-
-    // the current video resolution
-    private VideoResolution currentVideoRes = new VideoResolution();
-
-    // The current camera name.
-    private String currentCameraName = null;
-
-    // The selected SkylinkCaptureFormat on UI,
-    private SkylinkCaptureFormat currentCaptureFormat = null;
-
-    // The selected frame rate (fps) on UI,
-    private int currentFps = -1;
 
     public VideoService(Context context) {
         super(context);
@@ -53,49 +32,9 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         this.presenter = (BasePresenter) presenter;
     }
 
-    /**
-     * Get the current state of audio
-     */
-    public boolean isAudioMute() {
-        return currentVideoLocalState.isAudioMute();
-    }
-
-    /**
-     * Set current state of audio
-     */
-    public void setAudioMute(boolean isAudioMuted) {
-        currentVideoLocalState.setAudioMute(isAudioMuted);
-    }
-
-    /**
-     * Get the current state of video
-     */
-    public boolean isVideoMute() {
-        return currentVideoLocalState.isVideoMute();
-    }
-
-    /**
-     * Set current state of video
-     */
-    public void setVideoMute(boolean isVideoMuted) {
-        currentVideoLocalState.setVideoMute(isVideoMuted);
-    }
-
-    /**
-     * Get current state of camera
-     */
-    public boolean isCameraMute() {
-        return currentVideoLocalState.isCameraMute();
-    }
-
-    /**
-     * Set current state of camera
-     */
-    public void setCamMute(boolean isCamMute) {
-
-        //isCamMute = true, then camera is active
-        //isCamMute = false, then camera is stop
-        currentVideoLocalState.setCameraMute(isCamMute);
+    @Override
+    public void setResPresenter(VideoResolutionContract.Presenter videoResPresenter) {
+        this.videoResPresenter = (BasePresenter) videoResPresenter;
     }
 
     /**
@@ -153,124 +92,6 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
     }
 
     /**
-     * Return the {@link SkylinkCaptureFormat} that is currently being used by the camera.
-     * Note that the current CaptureFormat may change whenever the
-     * video resolution dimensions change.
-     *
-     * @return
-     */
-    public SkylinkCaptureFormat getCaptureFormat() {
-        if (mSkylinkConnection != null) {
-            return mSkylinkConnection.getCaptureFormat();
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the possible capture format(s) of the specified camera device in an array.
-     * Return null if current {@link SkylinkConfig.VideoDevice VideoDevice} is not a defined camera,
-     * or if it was not possible to get the capture formats.
-     *
-     * @param videoDevice Use null to specific the current VideoDevice.
-     * @return
-     */
-    public SkylinkCaptureFormat[] getCaptureFormats(SkylinkConfig.VideoDevice videoDevice) {
-        if (mSkylinkConnection != null) {
-            return mSkylinkConnection.getCaptureFormats(videoDevice);
-        }
-
-        return null;
-    }
-
-    /**
-     * Return the info of the SkylinkCaptureFormat that is currently being used by the camera.
-     * Note that the current CaptureFormat may change whenever the
-     * video resolution dimensions change.
-     *
-     * @return null if there is no CaptureFormat in use now, e.g. if video is not capturing.
-     */
-    public String getCaptureFormatsString(SkylinkCaptureFormat[] captureFormats) {
-        String strFormat = "No CaptureFormat currently registered.";
-        String strFormats = "No CaptureFormats currently registered.";
-
-        if (Utils.isCaptureFormatsValid(captureFormats)) {
-            strFormats = Utils.captureFormatsToString(captureFormats);
-        }
-
-        // Get the current CaptureFormat, if there is one.
-        String captureFormatString = null;
-        if (mSkylinkConnection != null) {
-            SkylinkCaptureFormat captureFormat = mSkylinkConnection.getCaptureFormat();
-
-
-            if (captureFormat != null) {
-                strFormat = captureFormat.toString();
-            }
-
-            captureFormatString = "Current capture format: " + strFormat + ".\r\n" +
-                    "Supported capture formats: " + strFormats + ".";
-        }
-        return captureFormatString;
-    }
-
-    /**
-     * Get the name of the current camera being used.
-     * If no camera or if a custom VideoCapturer is being used, return null.
-     *
-     * @return
-     */
-    public String getCurrentCameraName() {
-
-        if (mSkylinkConnection != null) {
-            return mSkylinkConnection.getCurrentCameraName();
-        }
-        return null;
-    }
-
-    /**
-     * Get the current {@link SkylinkConfig.VideoDevice VideoDevice} being used.
-     * If none are active, return null.
-     *
-     * @return
-     */
-    public SkylinkConfig.VideoDevice getCurrentVideoDevice() {
-        if (mSkylinkConnection != null) {
-            return mSkylinkConnection.getCurrentVideoDevice();
-        }
-        return null;
-    }
-
-    /**
-     * If the current local input video device is a camera,
-     * change the current captured video stream to the specified resolution,
-     * and the specified resolution will be set into SkylinkConfig.
-     * Non-camera supported resolution can be accepted,
-     * but a camera supported resolution will be used when opening camera.
-     * There is no guarantee that a specific camera resolution will be maintained
-     * as WebRTC may adjust the resolution dynamically to match its bandwidth criteria.
-     *
-     * @param width
-     * @param height
-     * @param fps
-     */
-    public void setInputVideoResolution(int width, int height, int fps) {
-        // no need to update video resolution if nothing changed
-        if (currentVideoRes.getWidth() == width && currentVideoRes.getHeight() == height &&
-                currentVideoRes.getFps() == fps) {
-            return;
-        }
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.setInputVideoResolution(width, height, fps);
-
-            // save new res as current video resolution
-            currentVideoRes.setWidth(width);
-            currentVideoRes.setHeight(height);
-            currentVideoRes.setFps(fps);
-        }
-    }
-
-    /**
      * Get the input/sent/received video resolution of a specified peer
      * Note:
      * - Resolution may not always be available, e.g. if no video is captured.
@@ -311,30 +132,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      * The speaker is automatically turned off when audio bluetooth is connected.
      */
     public void changeSpeakerOutput(boolean isSpeakerOn) {
-        AudioRouter.changeAudioOutput(mContext, isSpeakerOn);
-        this.currentVideoSpeaker = isSpeakerOn;
-    }
-
-    /**
-     * Resume the speaker output
-     * In case of activity is resumed, the speaker output state also needs to be resumed
-     */
-    public void resumeSpeakerOutput() {
-        changeSpeakerOutput(currentVideoSpeaker);
-    }
-
-    /**
-     * Get the current speaker state
-     */
-    public boolean getCurrentVideoSpeaker() {
-        return currentVideoSpeaker;
-    }
-
-    /**
-     * Set the current speaker state
-     */
-    public void setCurrentVideoSpeaker(boolean isSpeakerOn) {
-        currentVideoSpeaker = isSpeakerOn;
+        AudioRouter.changeAudioOutput(context, isSpeakerOn);
     }
 
     /**
@@ -408,29 +206,5 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
-    }
-
-    public int getCurrentFps() {
-        return currentFps;
-    }
-
-    public SkylinkCaptureFormat getCurrentCaptureFormat() {
-        return currentCaptureFormat;
-    }
-
-    public void setCurrentCaptureFormat(SkylinkCaptureFormat format) {
-        this.currentCaptureFormat = format;
-    }
-
-    public void setCurrentFps(int fpsNew) {
-        this.currentFps = fpsNew;
-    }
-
-    public String getCurrentCamera() {
-        return currentCameraName;
-    }
-
-    public void setCurrentCamera(String currentCamera) {
-        this.currentCameraName = currentCamera;
     }
 }

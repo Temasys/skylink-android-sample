@@ -9,7 +9,7 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
+import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContract;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -39,31 +39,6 @@ public interface VideoCallContract {
         void onPresenterRequestDisconnectUIChange();
 
         /**
-         * Update UI details when getting local input video resolution
-         */
-        void onPresenterRequestUpdateUiResInput(VideoResolution videoInput);
-
-        /**
-         * Update UI details when getting local sent video resolution
-         */
-        void onPresenterRequestUpdateUiResSent(VideoResolution videoSent);
-
-        /**
-         * Update UI details when getting remote received video resolution
-         */
-        void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive);
-
-        /**
-         * Update text view info when changing video width and height
-         */
-        boolean onPresenterRequestUpdateUiResDimInfo(int width, int height);
-
-        /**
-         * Update text view info details when changing video frame rate
-         */
-        void onPresenterRequestUpdateUiResFpsInfo(int fps);
-
-        /**
          * Update UI details when adding local video view
          */
         void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView);
@@ -79,34 +54,29 @@ public interface VideoCallContract {
         void onPresenterRequestRemoveRemotePeer();
 
         /**
-         * Update UI details when changing audio state (muted/on)
+         * Update UI into connected state
+         */
+        void onPresenterRequestUpdateUIConnected(String roomId);
+
+        /**
+         * Update UI details when new remote peer joins at a specific index the room
+         */
+        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+
+        /**
+         * Update UI details when peers are in room
+         */
+        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
+
+        /**
+         * Update audio state (muted/on)
          */
         void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast);
 
         /**
-         * Update UI details when changing video state (muted/on)
+         * Update video state (muted/on)
          */
         void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast);
-
-        /**
-         * Update UI details when changing max range of video width and height seekbar
-         */
-        void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange);
-
-        /**
-         * Update UI details when changing max range of video frame rate seekbar
-         */
-        void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange);
-
-        /**
-         * Update text view and seek bar info  when changing video width and height
-         */
-        void onPresenterRequestUpdateResDimInfo(int index, int width, int height);
-
-        /**
-         * Update text view and seek bar info when changing video frame rate
-         */
-        void onPresenterRequestUpdateResFpsInfo(int index, int fps);
 
         /**
          * Update UI details when changing speaker state (on/off)
@@ -132,21 +102,6 @@ public interface VideoCallContract {
          * Update UI details when changing screen configuration
          */
         void onPresenterRequestchangeViewLayout();
-
-        /**
-         * Update UI into connected state
-         */
-        void onPresenterRequestUpdateUIConnected(String roomId);
-
-        /**
-         * Update UI details when new remote peer joins at a specific index the room
-         */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
-
-        /**
-         * Update UI details when peers are in room
-         */
-        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
     }
 
     interface Presenter {
@@ -167,24 +122,13 @@ public interface VideoCallContract {
         void onViewRequestChangeAudioOutput();
 
         /**
-         * process change state when button clicked
+         * process change state when buttons clicked
          */
         void onViewRequestChangeAudioState();
 
         void onViewRequestChangeVideoState();
 
         void onViewRequestChangeCameraState();
-
-        /**
-         * process change state when video dimension or video fps changed
-         */
-        void onViewRequestDimProgressChanged(int progress);
-
-        void onViewRequestFpsProgressChanged(int progress);
-
-        void onViewRequestDimSelected(int progress);
-
-        void onViewRequestFpsSelected(int progress);
 
         /**
          * process change state when view resumed
@@ -200,11 +144,6 @@ public interface VideoCallContract {
          * switch camera between front and back
          */
         void onViewRequestSwitchCamera();
-
-        /**
-         * get remote peer nickname from SDK
-         */
-        String onViewRequestGetRoomPeerIdNick();
 
         /**
          * get current video resolution info
@@ -229,7 +168,10 @@ public interface VideoCallContract {
 
     interface Service extends BaseService<Presenter> {
 
-
+        /**
+         * set connection between service and presenter
+         */
+        void setResPresenter(VideoResolutionContract.Presenter videoResPresenter);
     }
 }
 

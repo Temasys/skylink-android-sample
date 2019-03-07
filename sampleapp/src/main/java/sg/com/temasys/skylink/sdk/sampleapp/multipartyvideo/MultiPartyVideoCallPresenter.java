@@ -15,6 +15,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
@@ -41,6 +42,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     private PermissionUtils mPermissionUtils;
 
     private Context mContext;
+
+    private VideoLocalState videoLocalState = new VideoLocalState();
 
     // Map with PeerId as key for boolean state
     // that indicates if currently getting WebRTC stats for Peer.
@@ -95,13 +98,10 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestResume() {
         // Toggle camera back to previous state if required.
-        if (mMultiVideoCallService.isCameraToggle()) {
-
+        if (videoLocalState.isCameraMute()) {
             if (mMultiVideoCallService.getVideoView(null) != null) {
-
                 mMultiVideoCallService.toggleCamera();
-
-                mMultiVideoCallService.setCamToggle(false);
+                videoLocalState.setCameraMute(false);
             }
         }
     }
@@ -111,8 +111,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         // Stop camera while view paused
         if (mMultiVideoCallService.getVideoView(null) != null) {
             boolean toggleCamera = mMultiVideoCallService.toggleCamera(false);
-
-            mMultiVideoCallService.setCamToggle(toggleCamera);
+            videoLocalState.setCameraMute(toggleCamera);
         }
     }
 

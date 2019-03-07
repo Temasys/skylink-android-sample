@@ -12,6 +12,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for communicating with SkylinkSDK
  */
 
 public class ChatService extends SkylinkCommonService implements ChatContract.Service {

@@ -206,7 +206,8 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     }
 
     /**
-     * Display information about list of peers in room on the action bar
+     * Update information about remote peer left the room
+     * Re-fill the peers list in order to display correct order of peers in room
      *
      * @param peersList
      */

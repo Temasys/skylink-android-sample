@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              tools:context="sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallFragment">
 
     <FrameLayout
         android:id="@+id/contentFrameVideoCall"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
-</LinearLayout>
+    <FrameLayout
+        android:id="@+id/contentFrameVideoRes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp_25dp"
+        android:layout_marginTop="@dimen/dp_25dp"
+        android:layout_marginRight="@dimen/dp_50dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible">
+
+    </FrameLayout>
+
+</RelativeLayout>

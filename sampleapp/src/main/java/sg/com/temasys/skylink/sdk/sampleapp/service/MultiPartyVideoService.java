@@ -12,7 +12,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
@@ -22,15 +21,12 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * Created by muoi.pham on 20/07/18.
- * This class is responsible for connecting with SkylinkSDK and keeping local media state
+ * This class is responsible for communicating with SkylinkSDK
  */
 
 public class MultiPartyVideoService extends SkylinkCommonService implements MultiPartyVideoCallContract.Service {
 
     private final String TAG = MultiPartyVideoService.class.getName();
-
-    //model to keep current video state
-    private VideoLocalState videoLocalState = new VideoLocalState();
 
     public MultiPartyVideoService(Context context) {
         super(context);
@@ -121,24 +117,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     /**
-     * Get current state of local camera
-     *
-     * @return true if camera is active, false if camera is stopped
-     */
-    public boolean isCameraToggle() {
-        return videoLocalState.isCameraMute();
-    }
-
-    /**
-     * set current state of local camera
-     *
-     * @param isCamToggle true if camera is active, false if camera is stopped
-     */
-    public void setCamToggle(boolean isCamToggle) {
-        videoLocalState.setCameraMute(isCamToggle);
-    }
-
-    /**
      * Stop or restart the local camera given that the local video source is available,
      * i.e., had been started and not removed.
      * When camera is toggled to stopped, it is accessible by other apps, for e.g.
@@ -201,7 +179,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
             String log = "[SRS][SA] startRecording=" + success +
                     ", isRecording=" + mSkylinkConnection.isRecording() + ".";
-            toastLog(TAG, mContext, log);
+            toastLog(TAG, context, log);
             return success;
         }
 
@@ -223,7 +201,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
             String log = "[SRS][SA] stopRecording=" + success +
                     ", isRecording=" + mSkylinkConnection.isRecording() + ".";
-            toastLog(TAG, mContext, log);
+            toastLog(TAG, context, log);
             return success;
         }
 
@@ -363,7 +341,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         } else {
             log += ".";
         }
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
 
         // Log errors if any.
         if (failedPeers != null) {
@@ -373,7 +351,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             } else {
                 log += "for Peer(s): " + Arrays.toString(failedPeers) + "!";
             }
-            toastLog(TAG, mContext, log);
+            toastLog(TAG, context, log);
         }
     }
 

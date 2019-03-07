@@ -19,8 +19,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import org.webrtc.SurfaceViewRenderer;
 
@@ -28,16 +26,15 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton;
 
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
  * A simple {@link CustomActionBar} subclass.
@@ -48,17 +45,14 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
     private final String TAG = VideoCallFragment.class.getName();
 
-    // presenter instance to implement app logic
-    private VideoCallContract.Presenter mPresenter;
-
     // view widgets
     private LinearLayout linearLayout, ll_video_res_input, ll_video_res_sent, ll_video_res_receive, ll_video_res_info;
     private FloatingActionButton btnDisconnect, btnAudioMute, btnVideoMute, btnCameraMute, btnSpeaker;
-    private TextView tvInput, tvResInput, tvSent, tvResSent, tvRecv, tvResRecv;
-    private SeekBar seekBarResDim, seekBarResFps;
-    private TextView tvResDim, tvResFps;
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim, seekBarChangeListenerResFps;
     private Button btnLocalOption;
+    private VideoResButton btnVideoResolution;
+
+    // presenter instance to implement video call logic
+    private VideoCallContract.Presenter mPresenter;
 
     public static VideoCallFragment newInstance() {
         return new VideoCallFragment();
@@ -129,6 +123,9 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     @Override
     public void onDetach() {
         super.onDetach();
+
+        // only exit/disconnect from room when it is chosen by user
+        // not changing configuration
         if (!((VideoCallActivity) context).isChangingConfigurations()) {
             mPresenter.onViewRequestExit();
         }
@@ -138,7 +135,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        // Changing video custom buttons position when screen orientation changed
+        // Changing video custom buttons position to have a better view when screen orientation changed
         if (newConfig.orientation == ORIENTATION_PORTRAIT) {
             changeFloatingButtons(false);
         } else {
@@ -148,7 +145,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
     @Override
     public void onClick(View view) {
-        //Defining a click event listener for the buttons in the layout
+        //Defining a click event actions for the buttons
         switch (view.getId()) {
             case R.id.btnBack:
                 processBack();
@@ -184,6 +181,12 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
             case R.id.btnLocalPeerOption:
                 onMenuOptionLocalPeer(btnLocalOption);
                 break;
+            case R.id.btnVideoResolution:
+                onMenuOptionVideoResolution(true);
+                break;
+            case R.id.ll_video_call:
+                onMenuOptionVideoResolution(false);
+                break;
         }
     }
 
@@ -207,7 +210,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     }
 
     //----------------------------------------------------------------------------------------------
-    // Methods called from the Presenter to update UI
+    // Methods invoked from the Presenter to update UI
     //----------------------------------------------------------------------------------------------
 
     /**
@@ -236,6 +239,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
     /**
      * Update information about remote peer left the room
+     * Re-fill the peers list in order to display correct order of peers in room
      *
      * @param peersList the list of left peer(s) in the room
      */
@@ -253,7 +257,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         btnVideoMute.setVisibility(GONE);
         btnCameraMute.setVisibility(GONE);
         btnDisconnect.setVisibility(VISIBLE);
-        setUiResControlsVisibility(VISIBLE);
     }
 
     /**
@@ -265,7 +268,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         btnVideoMute.setVisibility(VISIBLE);
         btnCameraMute.setVisibility(VISIBLE);
         btnDisconnect.setVisibility(VISIBLE);
-        setUiResControlsVisibility(VISIBLE);
     }
 
     /**
@@ -287,8 +289,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         btnVideoMute.setVisibility(GONE);
         btnCameraMute.setVisibility(GONE);
         btnDisconnect.setVisibility(GONE);
-
-        setUiResControlsVisibility(GONE);
 
         btnSpeaker.setVisibility(GONE);
         btnAudioMute.setVisibility(GONE);
@@ -511,90 +511,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     }
 
     /**
-     * Update the value of TextView for local input video resolution
-     */
-    @Override
-    public void onPresenterRequestUpdateUiResInput(VideoResolution videoInput) {
-        setUiResTvStats(videoInput, tvResInput);
-    }
-
-    /**
-     * Update the value of TextView for local sent video resolution
-     */
-    @Override
-    public void onPresenterRequestUpdateUiResSent(VideoResolution videoSent) {
-        setUiResTvStats(videoSent, tvResSent);
-    }
-
-    /**
-     * Update the value of TextView for received remote video resolution
-     */
-    @Override
-    public void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive) {
-        setUiResTvStats(videoReceive, tvResRecv);
-    }
-
-    /**
-     * Update the value of TextView when changing video resolution width x height Seek bar
-     */
-    @Override
-    public boolean onPresenterRequestUpdateUiResDimInfo(int width, int height) {
-        return setUiResTvDim(width, height);
-    }
-
-    /**
-     * Update the value of TextView when changing video resolution frame rate Seek bar
-     */
-    @Override
-    public void onPresenterRequestUpdateUiResFpsInfo(int fps) {
-        setUiResTvFps(fps);
-    }
-
-    /**
-     * Update the max range of the width x height resolution seek bar due to current camera
-     *
-     * @param maxDimRange
-     */
-    @Override
-    public void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange) {
-        seekBarResDim.setMax(maxDimRange);
-    }
-
-    /**
-     * Update the max range of the frame rate resolution seek bar due to current camera
-     *
-     * @param maxFpsRange
-     */
-    @Override
-    public void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange) {
-        seekBarResFps.setMax(maxFpsRange);
-    }
-
-    /**
-     * Update the UI when changing width x height video resolution.
-     * Update on both the seek bar and the text view
-     */
-    @Override
-    public void onPresenterRequestUpdateResDimInfo(int index, int width, int height) {
-        // Set the SeekBar
-        seekBarResDim.setProgress(index);
-        // Set TextView
-        setUiResTvDim(width, height);
-    }
-
-    /**
-     * Update the UI when changing frame rate video resolution.
-     * Update on both the seek bar and the text view
-     */
-    @Override
-    public void onPresenterRequestUpdateResFpsInfo(int index, int fps) {
-        // Set the SeekBar
-        seekBarResFps.setProgress(index);
-        // Set TextView
-        setUiResTvFps(fps);
-    }
-
-    /**
      * Update the view layout when changing screen orientation.
      * <p>
      * Change the custom floating buttons position
@@ -623,15 +539,8 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         btnVideoMute = rootView.findViewById(R.id.toggle_video);
         btnCameraMute = rootView.findViewById(R.id.toggle_camera);
         btnDisconnect = rootView.findViewById(R.id.disconnect);
-        tvInput = rootView.findViewById(R.id.textViewInput);
-        tvResInput = rootView.findViewById(R.id.textViewResInput);
-        tvSent = rootView.findViewById(R.id.textViewSent);
-        tvResSent = rootView.findViewById(R.id.textViewResSent);
-        tvRecv = rootView.findViewById(R.id.textViewRecv);
-        tvResRecv = rootView.findViewById(R.id.textViewResRecv);
-        tvResDim = rootView.findViewById(R.id.textViewDim);
-        tvResFps = rootView.findViewById(R.id.textViewFps);
         btnLocalOption = rootView.findViewById(R.id.btnLocalPeerOption);
+        btnVideoResolution = rootView.findViewById(R.id.btnVideoResolution);
     }
 
     /**
@@ -654,22 +563,20 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         btnRemotePeer2.setOnClickListener(this);
         btnRemotePeer3.setOnClickListener(this);
         btnLocalOption.setOnClickListener(this);
+        btnVideoResolution.setOnClickListener(this);
         btnSpeaker.setOnClickListener(this);
         btnAudioMute.setOnClickListener(this);
         btnVideoMute.setOnClickListener(this);
         btnCameraMute.setOnClickListener(this);
         btnDisconnect.setOnClickListener(this);
+        linearLayout.setOnClickListener(this);
 
         // init setting value for room name in action bar
         txtRoomName.setText(Config.ROOM_NAME_VIDEO);
 
-        // Video resolution UI.
-        setUiResControls(rootView);
-
         // Set init audio/video state
         setAudioBtnLabel(false, false);
         setVideoBtnLabel(false, false);
-
 
         // make floating buttons
         // changing button positions base on the screen orientation
@@ -680,113 +587,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         }
     }
 
-    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerDim() {
-        return new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mPresenter.onViewRequestDimProgressChanged(progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                mPresenter.onViewRequestDimSelected(seekBar.getProgress());
-            }
-        };
-    }
-
-    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerFps() {
-        return new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mPresenter.onViewRequestFpsProgressChanged(progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                mPresenter.onViewRequestFpsSelected(seekBar.getProgress());
-
-//                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-//                    linearLayout.setOrientation(LinearLayout.VERTICAL);
-//                } else {
-//                    linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-//                }
-            }
-        };
-    }
-
-    /**
-     * Set UI Controls for video resolution related.
-     */
-    private void setUiResControls(View rootView) {
-        seekBarResDim = (SeekBar) rootView.findViewById(R.id.seekBarDim);
-        seekBarChangeListenerResDim = getSeekBarChangeListenerDim();
-        seekBarResDim.setOnSeekBarChangeListener(seekBarChangeListenerResDim);
-        seekBarResFps = (SeekBar) rootView.findViewById(R.id.seekBarFps);
-        seekBarChangeListenerResFps = getSeekBarChangeListenerFps();
-        seekBarResFps.setOnSeekBarChangeListener(seekBarChangeListenerResFps);
-
-        // Set empty values.
-        tvInput.setText("Input:");
-        tvSent.setText("Sent:");
-        tvRecv.setText("Recv:");
-        tvResDim.setFocusable(true);
-        tvResDim.setEnabled(true);
-        tvResDim.setClickable(true);
-        tvResDim.setFocusableInTouchMode(true);
-        tvResFps.setFocusable(true);
-        tvResFps.setEnabled(true);
-        tvResFps.setClickable(true);
-        tvResFps.setFocusableInTouchMode(true);
-
-        setUiResTvStats(null, tvResInput);
-        setUiResTvStats(null, tvResSent);
-        setUiResTvStats(null, tvResRecv);
-
-        tvInput.setFreezesText(true);
-        tvResInput.setFreezesText(true);
-        tvSent.setFreezesText(true);
-        tvResSent.setFreezesText(true);
-        tvRecv.setFreezesText(true);
-        tvResRecv.setFreezesText(true);
-        tvResDim.setFreezesText(true);
-        tvResFps.setFreezesText(true);
-    }
-
-    private void setUiResControlsVisibility(int visibility) {
-        tvInput.setVisibility(visibility);
-        tvSent.setVisibility(visibility);
-        tvRecv.setVisibility(visibility);
-
-        if (tvResInput != null)
-            tvResInput.setVisibility(visibility);
-
-        if (tvResSent != null)
-            tvResSent.setVisibility(visibility);
-
-        if (tvResRecv != null)
-            tvResRecv.setVisibility(visibility);
-
-        if (tvResDim != null)
-            tvResDim.setVisibility(visibility);
-
-        if (tvResFps != null)
-            tvResFps.setVisibility(visibility);
-
-        if (seekBarResDim != null)
-            seekBarResDim.setVisibility(visibility);
-
-        if (seekBarResFps != null)
-            seekBarResFps.setVisibility(visibility);
-    }
-
     /**
      * request info to display on view from presenter
      * try to connect to room if not connected
@@ -795,61 +595,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         if (mPresenter != null) {
             mPresenter.onViewRequestConnectedLayout();
         }
-    }
-
-    /**
-     * Set the value of TextView for local input video resolution/sent video resolution/received video resolution.
-     * If any parameters are invalid, set default text.
-     *
-     * @param textView
-     * @param videoResolution
-     */
-    private void setUiResTvStats(VideoResolution videoResolution, TextView textView) {
-        if (textView == null)
-            return;
-
-        if (videoResolution == null || videoResolution.getWidth() <= 0 || videoResolution.getHeight() <= 0 || videoResolution.getFps() < 0) {
-            textView.setText("N/A");
-            return;
-        }
-        // Set textView to match
-        String str = Utils.getResDimStr(videoResolution) + ",\n" + Utils.getResFpsStr(videoResolution);
-        textView.setText(str);
-    }
-
-    /**
-     * Set the value of TextView tvResDim.
-     * If inputs are invalid, set default text.
-     *
-     * @param width  video width
-     * @param height video height
-     * @return True if inputs are valid, false otherwise.
-     */
-    private boolean setUiResTvDim(int width, int height) {
-        if (width <= 0 || height <= 0) {
-            tvResDim.setText("N/A");
-            return false;
-        }
-        // Set textView to match
-        tvResDim.setText(Utils.getResDimStr(width, height));
-        return true;
-    }
-
-    /**
-     * Set the value of TextView tvResFps.
-     * If input is invalid, set default text.
-     *
-     * @param fps frames per second.
-     * @return True if inputs are valid, false otherwise.
-     */
-    private boolean setUiResTvFps(int fps) {
-        if (fps < 0) {
-            tvResFps.setText("N/A");
-            return false;
-        }
-        // Set textView to match
-        tvResFps.setText(Utils.getResFpsStr(fps));
-        return true;
     }
 
     /**
@@ -892,7 +637,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
     /**
      * Changing view layout base on the screen orientation
-     * */
+     */
     private void changeFloatingButtons(boolean isLandscapeMode) {
         if (!isLandscapeMode) {
             linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -943,7 +688,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     /**
      * Changing floating buttons position in Portrait mode
      * All floating buttons will be located in the right of the layout
-     * */
+     */
     private void changeFloatingButtonPortrait(FloatingActionButton btn) {
         int landWidth = (int) context.getResources().getDimension(R.dimen.dp_60dp);
         int margin = (int) context.getResources().getDimension(R.dimen.dp_10dp);
@@ -993,7 +738,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     /**
      * Changing floating buttons position in Landscape mode
      * All floating buttons will be located in the left of the layout / on the local video side
-     * */
+     */
     private void changeFloatingButtonLandscape(FloatingActionButton btn) {
         int landWidth = (int) context.getResources().getDimension(R.dimen.dp_45dp);
         int margin = (int) context.getResources().getDimension(R.dimen.dp_10dp);
@@ -1061,5 +806,29 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         popup.setOnMenuItemClickListener(this);
         popup.inflate(R.menu.local_option_menu_video);
         popup.show();
+    }
+
+    /**
+     * Handle click/unclick event of btnVideoResolution
+     * if user clicks on this button, show the video resolution dialog
+     * and hide the dialog when it is unclicked
+     *
+     * @param isFromButton flag to check the click event comes from button clicked or not
+     *                     if from the button, we will show/hide the resolution fragment normally
+     *                     if not from the button like user click outside the video resolution fragment
+     *                     to hide the video resolution, only hide the video res fragment
+     */
+    private void onMenuOptionVideoResolution(boolean isFromButton) {
+        // change the button background
+        VideoResButton.ButtonState state = btnVideoResolution.getState();
+        if (state == VideoResButton.ButtonState.NORMAL && isFromButton) {
+            btnVideoResolution.setState(VideoResButton.ButtonState.CLICKED);
+            // Show the video resolution fragment
+            ((VideoCallActivity) getActivity()).onShowHideVideoResFragment(true);
+        } else if (state == VideoResButton.ButtonState.CLICKED) {
+            btnVideoResolution.setState(VideoResButton.ButtonState.NORMAL);
+            // Hide the video resolution fragment
+            ((VideoCallActivity) getActivity()).onShowHideVideoResFragment(false);
+        }
     }
 }

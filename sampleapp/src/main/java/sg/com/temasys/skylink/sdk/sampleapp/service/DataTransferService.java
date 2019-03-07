@@ -11,6 +11,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * Created by muoi.pham on 20/07/18.
+ * This class is responsible for communicating with SkylinkSDK
  */
 
 public class DataTransferService extends SkylinkCommonService implements DataTransferContract.Service {

@@ -30,6 +30,7 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -59,6 +60,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
     // the index of current selected peer
     private int currentSelectIndex = 0;
+
+
 
     public static MultiPartyVideoCallFragment newInstance() {
         return new MultiPartyVideoCallFragment();
@@ -269,7 +272,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     }
 
     /**
-     * Display information about list of peers in room on the action bar
+     * Update information about remote peer left the room
+     * Re-fill the peers list in order to display correct order of peers in room
      *
      * @param peersList
      */

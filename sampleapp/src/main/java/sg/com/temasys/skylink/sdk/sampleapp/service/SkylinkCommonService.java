@@ -44,7 +44,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
  * Created by muoi.pham on 20/07/18.
  * This class is responsible for implementing all SkylinkListeners for common use of all demos/functions
  * And directly works with SkylinkSDK.
- * In case user does not want to implement a specific demo/function, no need to implement correspond listener(s).
+ * In case user does not want to implement a specific demo/function, no need to implement corresponding listener(s).
  */
 
 public abstract class SkylinkCommonService implements LifeCycleListener, MediaListener, OsListener, RemotePeerListener, MessagesListener,
@@ -52,13 +52,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     private final String TAG = SkylinkCommonService.class.getName();
 
-    protected Context mContext;
+    protected Context context;
 
-    //common presenter for all presenters
+    // main presenter for audio/video/chat/...
     protected BasePresenter presenter;
+    // video resolution presenter to implements video resolution logic
+    protected BasePresenter videoResPresenter;
 
     //Skylink connection manager object
-    private SkylinkConnectionManager mSkylinkConnectionManager;
+    private SkylinkConnectionManager skylinkConnectionManager;
 
     // SkylinkConnection instance for working with SkylinkSDK
     // this variable need to be static for configuration change
@@ -69,12 +71,16 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     protected static List<SkylinkPeer> mPeersList;
 
     //room name and user name for each demo/function
-    protected String mRoomName;
-    protected String mUserName;
+    protected String roomName;
+    protected String userName;
+
+    enum CameraState {
+        CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
+    }
 
     public SkylinkCommonService(Context context) {
-        this.mContext = context;
-        this.mSkylinkConnectionManager = new SkylinkConnectionManager(this, context);
+        this.context = context;
+        this.skylinkConnectionManager = new SkylinkConnectionManager(this, context);
     }
 
     protected static void setmSkylinkConnection(SkylinkConnection mSkylinkConnection) {
@@ -104,8 +110,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (isSuccessful) {
             String localPeerId = mSkylinkConnection.getPeerId();
 
-            log += "Connected to room " + getRoomIdAndNickname(mRoomName) + " as " + mUserName + " (" + localPeerId + ")";
-            toastLog(TAG, mContext, log);
+            log += "Connected to room " + getRoomIdAndNickname(roomName) + " as " + userName + " (" + localPeerId + ")";
+            toastLog(TAG, context, log);
 
             //init/reset peers list and add self/local peer to list
             if (mPeersList == null) {
@@ -115,11 +121,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             }
 
             //add self peer as a peer in list
-            mPeersList.add(new SkylinkPeer(localPeerId, mUserName));
+            mPeersList.add(new SkylinkPeer(localPeerId, userName));
 
         } else {
             log += "Skylink failed to connect!\nReason : " + message;
-            toastLog(TAG, mContext, log);
+            toastLog(TAG, context, log);
         }
 
         //update UI to connected state
@@ -138,7 +144,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             log += "WARNING! We have been unexpectedly disconnected from the room!";
         }
         log += " Server message: " + message;
-        toastLogLong(TAG, mContext, log);
+        toastLogLong(TAG, context, log);
 
         //update UI to disconnected state for all types call
         presenter.onServiceRequestDisconnect();
@@ -156,7 +162,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         String log = "[onLockRoomStatusChange] ";
         log += "[SA] Peer " + remotePeerId + " changed Room locked status to "
                 + lockStatus + ".";
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -164,7 +170,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onReceiveLog(int infoCode, String message) {
-        Utils.handleSkylinkReceiveLog(infoCode, message, mContext, TAG);
+        Utils.handleSkylinkReceiveLog(infoCode, message, context, TAG);
     }
 
     /**
@@ -172,7 +178,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onWarning(int errorCode, String message) {
-        Utils.handleSkylinkWarning(errorCode, message, mContext, TAG);
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -211,7 +217,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
         }
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -231,7 +237,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (userInfo != null) {
             log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
         }
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -280,7 +286,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         Log.d(TAG, "[onInputVideoResolutionObtained]");
 
-        presenter.onServiceRequestInputVideoResolutionObtained(width, height, fps, captureFormat);
+        if (videoResPresenter != null)
+            videoResPresenter.onServiceRequestInputVideoResolutionObtained(width, height, fps, captureFormat);
     }
 
     /**
@@ -301,7 +308,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
         Log.d(TAG, "[onReceivedVideoResolutionObtained]");
 
-        presenter.onServiceRequestReceivedVideoResolutionObtained(peerId, width, height, fps);
+        if (videoResPresenter != null)
+            videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(peerId, width, height, fps);
     }
 
     /**
@@ -322,7 +330,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
         Log.d(TAG, "[onSentVideoResolutionObtained]");
 
-        presenter.onServiceRequestSentVideoResolutionObtained(peerId, width, height, fps);
+        if (videoResPresenter != null)
+            videoResPresenter.onServiceRequestSentVideoResolutionObtained(peerId, width, height, fps);
     }
 
     /**
@@ -409,7 +418,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "[onPermissionDenied]");
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, infoCode);
 
-        presenter.onServiceRequestPermissionDenied(mContext, info);
+        presenter.onServiceRequestPermissionDenied(context, info);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -448,7 +457,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         presenter.onServiceRequestRemotePeerJoin(remotePeer);
 
         logTag += "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
-        toastLog(TAG, mContext, logTag);
+        toastLog(TAG, context, logTag);
 
 
     }
@@ -497,7 +506,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
         String log = "[SA][onRemotePeerUserDataReceive] Peer " + getPeerIdNick(remotePeerId) +
                 ":\n" + nick;
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -541,7 +550,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (numRemotePeers >= 0) {
             String log = "Your Peer " + getUserDataString(userInfo) + " ( " + remotePeerId + " ) left: " +
                     message + ". " + numRemotePeers + " remote Peer(s) left in the room.";
-            toastLog(TAG, mContext, log);
+            toastLog(TAG, context, log);
         }
     }
 
@@ -559,7 +568,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onDataReceive(String remotePeerId, byte[] data) {
         Log.d(TAG, "[onDataReceive]");
 
-        presenter.onServiceRequestDataReceive(mContext, remotePeerId, data);
+        presenter.onServiceRequestDataReceive(context, remotePeerId, data);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -593,7 +602,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onFileTransferPermissionResponse(String remotePeerId, String fileName, boolean isPermitted) {
         Log.d(TAG, "[onFileTransferPermissionResponse]");
 
-        presenter.onServiceRequestFileTransferPermissionResponse(mContext, remotePeerId, fileName, isPermitted);
+        presenter.onServiceRequestFileTransferPermissionResponse(context, remotePeerId, fileName, isPermitted);
     }
 
     /**
@@ -609,7 +618,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onFileTransferDrop(String remotePeerId, String fileName, String message, boolean isExplicit) {
         Log.d(TAG, "[onFileTransferDrop]");
 
-        presenter.onServiceRequestFileTransferDrop(mContext, remotePeerId, fileName, message, isExplicit);
+        presenter.onServiceRequestFileTransferDrop(context, remotePeerId, fileName, message, isExplicit);
     }
 
     /**
@@ -622,7 +631,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onFileSendComplete(String remotePeerId, String fileName) {
         Log.d(TAG, "[onFileSendComplete]");
 
-        presenter.onServiceRequestFileSendComplete(mContext, remotePeerId, fileName);
+        presenter.onServiceRequestFileSendComplete(context, remotePeerId, fileName);
     }
 
     /**
@@ -649,7 +658,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onFileSendProgress(String remotePeerId, String fileName, double percentage) {
         Log.d(TAG, "[onFileSendProgress]");
 
-        presenter.onServiceRequestFileSendProgress(mContext, remotePeerId, fileName, percentage);
+        presenter.onServiceRequestFileSendProgress(context, remotePeerId, fileName, percentage);
     }
 
     /**
@@ -663,7 +672,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onFileReceiveProgress(String remotePeerId, String fileName, double percentage) {
         Log.d(TAG, "[onFileReceiveProgress]");
 
-        presenter.onServiceRequestFileReceiveProgress(mContext, remotePeerId, fileName, percentage);
+        presenter.onServiceRequestFileReceiveProgress(context, remotePeerId, fileName, percentage);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -717,7 +726,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onRecordingStart(String recordingId) {
         Log.d(TAG, "[onRecordingStart]");
 
-        presenter.onServiceRequestRecordingStart(mContext, mSkylinkConnection.isRecording());
+        presenter.onServiceRequestRecordingStart(context, mSkylinkConnection.isRecording());
     }
 
     /**
@@ -729,7 +738,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onRecordingStop(String recordingId) {
         Log.d(TAG, "[onRecordingStop]");
 
-        presenter.onServiceRequestRecordingStop(mContext, mSkylinkConnection.isRecording());
+        presenter.onServiceRequestRecordingStop(context, mSkylinkConnection.isRecording());
     }
 
     /**
@@ -758,7 +767,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onRecordingError(String recordingId, int errorCode, String description) {
         Log.d(TAG, "[onRecordingError]");
 
-        presenter.onServiceRequestRecordingError(mContext, recordingId, errorCode, description);
+        presenter.onServiceRequestRecordingError(context, recordingId, errorCode, description);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -801,7 +810,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //----------------------------------------------------------------------------------------------
 
     public boolean isConnectingOrConnected() {
-        return mSkylinkConnectionManager.isConnectingOrConnected();
+        return skylinkConnectionManager.isConnectingOrConnected();
     }
 
     /**
@@ -835,196 +844,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             customCapturer = createCameraVideoCapturer();
         }
 
-        mSkylinkConnectionManager.connectToRoom(typeCall, customCapturer);
+        skylinkConnectionManager.connectToRoom(typeCall, customCapturer);
     }
-
-    enum CameraState {
-        CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
-    }
-
-    /**
-     * Create a {@link CameraVideoCapturer}.
-     *
-     * @return Null if unable to create capturer.
-     */
-    private VideoCapturer createCameraVideoCapturer() {
-        String logTag = "";
-        String log;
-        CameraEnumerator cameraEnumerator = getCameraEnumerator();
-        if (cameraEnumerator == null) {
-            log = logTag + "Unable to create cameraVideoCapturer as we could not get a CameraEnumerator!";
-            Log.d(TAG, log);
-            return null;
-        }
-        String[] cameraNames = cameraEnumerator.getDeviceNames();
-        if (cameraNames == null || cameraNames.length < 1) {
-            log = logTag + "Unable to create cameraVideoCapturer as no camera was detected!";
-            Log.d(TAG, log);
-            return null;
-        }
-        // Start with the first named camera.
-        String cameraName = cameraNames[0];
-        CameraVideoCapturer.CameraEventsHandler cameraEventsHandler =
-                new CameraVideoCapturer.CameraEventsHandler() {
-                    String logTag = "[SA][CameraEventsHandler] ";
-                    String log;
-
-                    CameraState cameraState = CameraState.CAMERA_CLOSED;
-                    final String cameraNameNone = "No camera opened.";
-                    String cameraNameCurrent = cameraNameNone;
-                    String cameraNamePrevious = cameraNameNone;
-
-                    @Override
-                    public void onCameraError(String errorDescription) {
-                        log = logTag + "Camera had an error! Error: " + errorDescription
-                                + " from State: " + cameraState.name() + ".";
-                        Log.d(TAG, log);
-                    }
-
-                    @Override
-                    public void onCameraDisconnected() {
-                        log = logTag + "Camera disconnected"
-                                + " from State: " + cameraState.name() + ".";
-                        Log.d(TAG, log);
-                    }
-
-                    @Override
-                    public void onCameraFreezed(String errorDescription) {
-                        log = logTag + "Camera frozed! Error: " + errorDescription
-                                + " from State: " + cameraState.name() + ".";
-                        Log.d(TAG, log);
-                    }
-
-                    @Override
-                    public void onCameraOpening(String cameraName) {
-                        log = logTag + "Camera was ";
-                        switch (cameraState) {
-
-                            case CAMERA_OPENED:
-                                // Camera opened from an opened state => Switched camera.
-                                cameraState = CameraState.CAMERA_SWITCHED;
-                                cameraNamePrevious = cameraNameCurrent;
-                                cameraNameCurrent = cameraName;
-                                log += "switched from: " + cameraNamePrevious +
-                                        " to: " + cameraNameCurrent + ".";
-                                break;
-                            case CAMERA_CLOSED:
-                                // Camera opened from a closed state => New camera just opened.
-                                cameraState = CameraState.CAMERA_OPENED;
-                                cameraNameCurrent = cameraName;
-                                log += "just opened to: " + cameraNameCurrent + ".";
-                                break;
-                            case CAMERA_SWITCHED:
-                                cameraState = CameraState.CAMERA_OPENED;
-                                log += "opened from State:" + CameraState.CAMERA_SWITCHED.name()
-                                        + " to: " + cameraName + " => Error!";
-                                break;
-                        }
-
-                        Log.d(TAG, log);
-                    }
-
-                    @Override
-                    public void onFirstFrameAvailable() {
-                        log = logTag + "Camera (" + cameraNameCurrent + ") first frame available,"
-                                + " from State: " + cameraState.name() + ".";
-                        Log.d(TAG, log);
-                    }
-
-                    @Override
-                    public void onCameraClosed() {
-                        log = logTag;
-                        switch (cameraState) {
-                            case CAMERA_OPENED:
-                                cameraState = CameraState.CAMERA_CLOSED;
-                                cameraNamePrevious = cameraNameCurrent;
-                                cameraNameCurrent = cameraNameNone;
-                                log += "Closing all cameras. Last active ";
-                                break;
-                            case CAMERA_CLOSED:
-                                cameraState = CameraState.CAMERA_CLOSED;
-                                cameraNamePrevious = cameraNameCurrent;
-                                cameraNameCurrent = cameraNameNone;
-                                log += "Error! From State: " + cameraState.name() + ", ";
-                                break;
-                            case CAMERA_SWITCHED:
-                                cameraState = CameraState.CAMERA_OPENED;
-                                log += "Switch is complete. Previous ";
-                                break;
-                        }
-                        log += "camera (" + cameraNamePrevious + ") was just closed.";
-                        Log.d(TAG, log);
-                    }
-                };
-
-        VideoCapturer cameraVideoCapturer =
-                cameraEnumerator.createCapturer(cameraName, cameraEventsHandler);
-        log = logTag + "Created CameraVideoCapturer: " + cameraVideoCapturer;
-        Log.d(TAG, log);
-        return cameraVideoCapturer;
-    }
-
-    /**
-     * Get the CameraEnumerator to use.
-     * If Camera2 is supported, use Camera2Enumerator.
-     * Otherwise use Camera1Enumerator.
-     *
-     * @return
-     */
-    private CameraEnumerator getCameraEnumerator() {
-        String logTag = "[SMS][getCamEnum] ";
-        String log = logTag;
-
-        Context context = mContext.getApplicationContext();
-        if (context == null) {
-            log = logTag + "Failed as appContext is null.";
-            Log.d(TAG, log);
-            return null;
-        }
-
-        Boolean canUseCamera2 = isUseCamera2();
-        if (canUseCamera2 == null) {
-            log += "Unable to get CameraEnumerator!";
-            Log.d(TAG, log);
-            return null;
-        }
-
-        CameraEnumerator enumerator;
-        if (canUseCamera2) {
-            enumerator = new Camera2Enumerator(context);
-            Log.d(TAG, "Using camera2 enumerator.");
-        } else {
-            enumerator = new Camera1Enumerator();
-            Log.d(TAG, "Using camera1 enumerator.");
-        }
-        return enumerator;
-    }
-
-    /**
-     * Check if able to use android.hardware.camera2 (Lollipop and above).
-     *
-     * @return null if unable to perform check, e.g. if context is null.
-     */
-    private Boolean isUseCamera2() {
-        String logTag = "[SMS][isUseCam2] ";
-        String log = logTag;
-
-        Context context = mContext.getApplicationContext();
-        if (context == null) {
-            log += "Failed as appContext is null.";
-            Log.d(TAG, log);
-            return null;
-        }
-
-        Boolean result = Camera2Enumerator.isSupported(context);
-        log += "Camera2 is supported: " + result + ".";
-        Log.d(TAG, log);
-        return result;
-    }
-
 
     public void disconnectFromRoom() {
-        mSkylinkConnectionManager.disconnectFromRoom();
+        skylinkConnectionManager.disconnectFromRoom();
     }
 
     //static method for the other to access current instance of SkylinkConnection
@@ -1168,16 +992,291 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     public void setRoomName(String roomName) {
-        mRoomName = roomName;
+        this.roomName = roomName;
     }
 
     public void setUserName(String userName) {
-        mUserName = userName;
+        this.userName = userName;
+    }
+
+    // Video resolution
+
+    /**
+     * If the current local input video device is a camera,
+     * change the current captured video stream to the specified resolution,
+     * and the specified resolution will be set into SkylinkConfig.
+     * Non-camera supported resolution can be accepted,
+     * but a camera supported resolution will be used when opening camera.
+     * There is no guarantee that a specific camera resolution will be maintained
+     * as WebRTC may adjust the resolution dynamically to match its bandwidth criteria.
+     *
+     * @param width
+     * @param height
+     * @param fps
+     */
+    public void setInputVideoResolution(int width, int height, int fps) {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.setInputVideoResolution(width, height, fps);
+        }
+    }
+
+    /**
+     * Get the name of the current camera being used.
+     * If no camera or if a custom VideoCapturer is being used, return null.
+     *
+     * @return
+     */
+    public String getCurrentCameraName() {
+
+        if (mSkylinkConnection != null) {
+            return mSkylinkConnection.getCurrentCameraName();
+        }
+        return null;
+    }
+
+    /**
+     * Get the current {@link SkylinkConfig.VideoDevice VideoDevice} being used.
+     * If none are active, return null.
+     *
+     * @return
+     */
+    public SkylinkConfig.VideoDevice getCurrentVideoDevice() {
+        if (mSkylinkConnection != null) {
+            return mSkylinkConnection.getCurrentVideoDevice();
+        }
+        return null;
+    }
+
+    /**
+     * Get the possible capture format(s) of the specified camera device in an array.
+     * Return null if current {@link SkylinkConfig.VideoDevice VideoDevice} is not a defined camera,
+     * or if it was not possible to get the capture formats.
+     *
+     * @param videoDevice Use null to specific the current VideoDevice.
+     * @return
+     */
+    public SkylinkCaptureFormat[] getCaptureFormats(SkylinkConfig.VideoDevice videoDevice) {
+        if (mSkylinkConnection != null) {
+            return mSkylinkConnection.getCaptureFormats(videoDevice);
+        }
+
+        return null;
+    }
+
+    /**
+     * Return the info of the SkylinkCaptureFormat that is currently being used by the camera.
+     * Note that the current CaptureFormat may change whenever the
+     * video resolution dimensions change.
+     *
+     * @return null if there is no CaptureFormat in use now, e.g. if video is not capturing.
+     */
+    public String getCaptureFormatsString(SkylinkCaptureFormat[] captureFormats) {
+        String strFormat = "No CaptureFormat currently registered.";
+        String strFormats = "No CaptureFormats currently registered.";
+
+        if (Utils.isCaptureFormatsValid(captureFormats)) {
+            strFormats = Utils.captureFormatsToString(captureFormats);
+        }
+
+        // Get the current CaptureFormat, if there is one.
+        String captureFormatString = null;
+        if (mSkylinkConnection != null) {
+            SkylinkCaptureFormat captureFormat = mSkylinkConnection.getCaptureFormat();
+
+
+            if (captureFormat != null) {
+                strFormat = captureFormat.toString();
+            }
+
+            captureFormatString = "Current capture format: " + strFormat + ".\r\n" +
+                    "Supported capture formats: " + strFormats + ".";
+        }
+        return captureFormatString;
     }
 
     //----------------------------------------------------------------------------------------------
     // Private methods for internal processing
     //----------------------------------------------------------------------------------------------
+
+    /**
+     * Create a {@link CameraVideoCapturer}.
+     *
+     * @return Null if unable to create capturer.
+     */
+    private VideoCapturer createCameraVideoCapturer() {
+        String logTag = "";
+        String log;
+        CameraEnumerator cameraEnumerator = getCameraEnumerator();
+        if (cameraEnumerator == null) {
+            log = logTag + "Unable to create cameraVideoCapturer as we could not get a CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+        String[] cameraNames = cameraEnumerator.getDeviceNames();
+        if (cameraNames == null || cameraNames.length < 1) {
+            log = logTag + "Unable to create cameraVideoCapturer as no camera was detected!";
+            Log.d(TAG, log);
+            return null;
+        }
+        // Start with the first named camera.
+        String cameraName = cameraNames[0];
+        CameraVideoCapturer.CameraEventsHandler cameraEventsHandler =
+                new CameraVideoCapturer.CameraEventsHandler() {
+                    String logTag = "[SA][CameraEventsHandler] ";
+                    String log;
+
+                    CameraState cameraState = CameraState.CAMERA_CLOSED;
+                    final String cameraNameNone = "No camera opened.";
+                    String cameraNameCurrent = cameraNameNone;
+                    String cameraNamePrevious = cameraNameNone;
+
+                    @Override
+                    public void onCameraError(String errorDescription) {
+                        log = logTag + "Camera had an error! Error: " + errorDescription
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraDisconnected() {
+                        log = logTag + "Camera disconnected"
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraFreezed(String errorDescription) {
+                        log = logTag + "Camera frozed! Error: " + errorDescription
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraOpening(String cameraName) {
+                        log = logTag + "Camera was ";
+                        switch (cameraState) {
+
+                            case CAMERA_OPENED:
+                                // Camera opened from an opened state => Switched camera.
+                                cameraState = CameraState.CAMERA_SWITCHED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraName;
+                                log += "switched from: " + cameraNamePrevious +
+                                        " to: " + cameraNameCurrent + ".";
+                                break;
+                            case CAMERA_CLOSED:
+                                // Camera opened from a closed state => New camera just opened.
+                                cameraState = CameraState.CAMERA_OPENED;
+                                cameraNameCurrent = cameraName;
+                                log += "just opened to: " + cameraNameCurrent + ".";
+                                break;
+                            case CAMERA_SWITCHED:
+                                cameraState = CameraState.CAMERA_OPENED;
+                                log += "opened from State:" + CameraState.CAMERA_SWITCHED.name()
+                                        + " to: " + cameraName + " => Error!";
+                                break;
+                        }
+
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onFirstFrameAvailable() {
+                        log = logTag + "Camera (" + cameraNameCurrent + ") first frame available,"
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraClosed() {
+                        log = logTag;
+                        switch (cameraState) {
+                            case CAMERA_OPENED:
+                                cameraState = CameraState.CAMERA_CLOSED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraNameNone;
+                                log += "Closing all cameras. Last active ";
+                                break;
+                            case CAMERA_CLOSED:
+                                cameraState = CameraState.CAMERA_CLOSED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraNameNone;
+                                log += "Error! From State: " + cameraState.name() + ", ";
+                                break;
+                            case CAMERA_SWITCHED:
+                                cameraState = CameraState.CAMERA_OPENED;
+                                log += "Switch is complete. Previous ";
+                                break;
+                        }
+                        log += "camera (" + cameraNamePrevious + ") was just closed.";
+                        Log.d(TAG, log);
+                    }
+                };
+
+        VideoCapturer cameraVideoCapturer =
+                cameraEnumerator.createCapturer(cameraName, cameraEventsHandler);
+        log = logTag + "Created CameraVideoCapturer: " + cameraVideoCapturer;
+        Log.d(TAG, log);
+        return cameraVideoCapturer;
+    }
+
+    /**
+     * Get the CameraEnumerator to use.
+     * If Camera2 is supported, use Camera2Enumerator.
+     * Otherwise use Camera1Enumerator.
+     *
+     * @return
+     */
+    private CameraEnumerator getCameraEnumerator() {
+        String logTag = "[SMS][getCamEnum] ";
+        String log = logTag;
+
+        Context applicationContext = context.getApplicationContext();
+        if (applicationContext == null) {
+            log = logTag + "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean canUseCamera2 = isUseCamera2();
+        if (canUseCamera2 == null) {
+            log += "Unable to get CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        CameraEnumerator enumerator;
+        if (canUseCamera2) {
+            enumerator = new Camera2Enumerator(applicationContext);
+            Log.d(TAG, "Using camera2 enumerator.");
+        } else {
+            enumerator = new Camera1Enumerator();
+            Log.d(TAG, "Using camera1 enumerator.");
+        }
+        return enumerator;
+    }
+
+    /**
+     * Check if able to use android.hardware.camera2 (Lollipop and above).
+     *
+     * @return null if unable to perform check, e.g. if context is null.
+     */
+    private Boolean isUseCamera2() {
+        String logTag = "[SMS][isUseCam2] ";
+        String log = logTag;
+
+        Context applicationContext = context.getApplicationContext();
+        if (applicationContext == null) {
+            log += "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean result = Camera2Enumerator.isSupported(applicationContext);
+        log += "Camera2 is supported: " + result + ".";
+        Log.d(TAG, log);
+        return result;
+    }
 
     /**
      * Retrieves the user defined data object of a peer.
