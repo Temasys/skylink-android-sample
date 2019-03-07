@@ -14,7 +14,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionPrese
 public class VideoCallActivity extends AppCompatActivity {
 
     private final String VIDEO_CALL_FRAGMENT_TAG = "VIDEO_CALL_FRAGMENT";
-    private final String VIDEO_RES_FRAGMENT_TAG = "VIDEO_CALL_FRAGMENT";
+    private final String VIDEO_RES_FRAGMENT_TAG = "VIDEO_RES_FRAGMENT";
 
     // video call presenter instance
     private VideoCallPresenter videoCallPresenter;
