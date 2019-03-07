@@ -21,6 +21,7 @@ https://github.com/Temasys/skylink-android-sample/blob/master/SA_MVP_Class_Diagr
       + service package: contain AudioService, VideoService,...SkylinkCommonService, SkylinkConnectionManager, PermissionService and model package to implement the service tasks of all functions
       + setting package: contain classes to implement the setting like user and room setting, application key setting
       + utils package: contains some utility classes
+      + videoresolution: contain classes to implement the video resolution function. The video resolution fragment and presenter can be injected to any other fragments/presenter which contains video view and want to show its video resolution
 
 - Model package: inside the service package and contains all models in the application.
       + KeyInfo : encapsulate info about application Key
