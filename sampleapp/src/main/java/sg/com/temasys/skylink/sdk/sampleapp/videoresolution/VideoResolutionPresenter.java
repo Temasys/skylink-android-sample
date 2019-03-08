@@ -8,7 +8,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.SkylinkCommonService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -307,11 +306,6 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
 
         if (Utils.isCaptureFormatValid(captureFormat)) {
             maxFpsRange = captureFormat.getFpsMax() - captureFormat.getFpsMin();
-
-            //limit the max value of fps to match with the adjusted value returned from WebRTC
-            if (maxFpsRange > Constants.MAX_VALUE_FPS) {
-                maxFpsRange = Constants.MAX_VALUE_FPS;
-            }
             isValid = true;
         }
 

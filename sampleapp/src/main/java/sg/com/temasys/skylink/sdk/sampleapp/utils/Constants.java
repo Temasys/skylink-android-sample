@@ -3,11 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.utils;
 public final class Constants {
     public static final int TIME_OUT = 30;
 
-    // limit the max value of fps to match with the adjusted value returned from WebRTC
-    // even if the SkylinkCaptureFormat has max 60fps, but the WebRTC will auto adjust the max fps
-    // to 31/30 fps
-    public static final int MAX_VALUE_FPS = 30;
-
     // default values for room and username setting
     public static final String ROOM_NAME_AUDIO_DEFAULT = "Room-1234";
     public static final String ROOM_NAME_CHAT_DEFAULT = "Room-10";
