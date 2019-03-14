@@ -45,7 +45,7 @@ public class CustomActionBar extends Fragment {
         return null;
     }
 
-    protected void setActionBar(ActionBar actionBar){
+    protected void setActionBar(ActionBar actionBar) {
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(R.layout.custom_action_bar);
@@ -79,6 +79,10 @@ public class CustomActionBar extends Fragment {
     protected void updateUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
         // Update the peer info in the index button in action bar
         // Using the first character of the peerName for peer avatar
+        if (newPeer.getPeerName() == null || newPeer.getPeerName().length() == 0) {
+            return;
+        }
+
         String peerAvatar = newPeer.getPeerName().charAt(0) + "";
         switch (index) {
             case 1:

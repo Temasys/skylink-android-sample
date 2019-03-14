@@ -1,190 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <LinearLayout
-        android:id="@+id/ll_video_res_info"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_48dp"
-        android:layout_marginLeft="@dimen/dp_10dp"
-        android:layout_marginTop="@dimen/dp_10dp"
-        android:layout_marginBottom="@dimen/dp_10dp"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:id="@+id/ll_video_res_input"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_marginRight="@dimen/dp_20dp">
-
-            <TextView
-                android:id="@+id/textViewInput"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:layout_marginRight="@dimen/dp_10dp"/>
-
-            <TextView
-                android:id="@+id/textViewResInput"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/sp_11sp"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_video_res_sent"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_marginRight="@dimen/dp_20dp">
-
-            <TextView
-                android:id="@+id/textViewSent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:layout_marginRight="@dimen/dp_10dp"/>
-
-            <TextView
-                android:id="@+id/textViewResSent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/sp_11sp"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_video_res_receive"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textViewRecv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:layout_marginRight="@dimen/dp_10dp"/>
-
-            <TextView
-                android:id="@+id/textViewResRecv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/sp_11sp"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginLeft="@dimen/dp_10dp">
-
-            <SeekBar
-                android:id="@+id/seekBarDim"
-                style="@style/Widget.AppCompat.SeekBar.Discrete"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/textViewDim"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_20dp"
-                android:layout_weight="1"
-                android:textSize="@dimen/sp_11sp"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <SeekBar
-                android:id="@+id/seekBarFps"
-                style="@style/Widget.AppCompat.SeekBar.Discrete"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/textViewFps"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_20dp"
-                android:layout_weight="1"
-                android:textSize="@dimen/sp_11sp"/>
-
-        </LinearLayout>
-
-    </LinearLayout>
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/ll_video_call"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/ll_video_res_info"
-        android:orientation="vertical"
-        android:background="@color/cardview_shadow_start_color"></LinearLayout>
+        android:background="@color/cardview_shadow_start_color"
+        android:orientation="vertical"></LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_speaker"
         style="@style/CustonmFloatingButton"
-        app:elevation="0dp"
         android:layout_above="@id/toggle_audio"
         android:src="@drawable/ic_audio_speaker"
-        android:text="@string/toggle_camera"/>
         app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_audio"
         style="@style/CustonmFloatingButton"
-        app:elevation="0dp"
         android:layout_above="@id/toggle_video"
         android:src="@drawable/icon_audio_active"
-        android:text="@string/toggle_camera"/>
         app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_video"
         style="@style/CustonmFloatingButton"
-        app:elevation="0dp"
         android:layout_above="@id/toggle_camera"
         android:src="@drawable/icon_video_active"
-        android:text="@string/toggle_camera"/>
         app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/toggle_camera"
         style="@style/CustonmFloatingButton"
-        app:elevation="0dp"
         android:layout_above="@id/disconnect"
         android:src="@drawable/icon_camera_active"
-        android:text="@string/toggle_camera"/>
         app:elevation="0dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/disconnect"
         android:layout_width="@dimen/dp_60dp"
         android:layout_height="@dimen/dp_60dp"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="@dimen/dp_20dp"
+        android:layout_alignParentBottom="true"
         android:layout_marginRight="@dimen/dp_10dp"
+        android:layout_marginBottom="@dimen/dp_20dp"
         android:backgroundTint="@color/call_end"
-        android:src="@drawable/ic_audio_call_end"
-        android:text="@string/disconnect"
+        android:scaleType="center"
         android:visibility="visible"
-        android:scaleType="center"/>
+        app:srcCompat="@drawable/ic_audio_call_end" />
+
     <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
         android:id="@+id/btnLocalPeerOption"
         android:layout_width="@dimen/dp_40dp"

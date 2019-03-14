@@ -46,7 +46,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     private final String TAG = VideoCallFragment.class.getName();
 
     // view widgets
-    private LinearLayout linearLayout, ll_video_res_input, ll_video_res_sent, ll_video_res_receive, ll_video_res_info;
+    private LinearLayout linearLayout;
     private FloatingActionButton btnDisconnect, btnAudioMute, btnVideoMute, btnCameraMute, btnSpeaker;
     private Button btnLocalOption;
     private VideoResButton btnVideoResolution;
@@ -530,10 +530,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
     private void getControlWidgets(View rootView) {
         linearLayout = rootView.findViewById(R.id.ll_video_call);
-        ll_video_res_input = rootView.findViewById(R.id.ll_video_res_input);
-        ll_video_res_sent = rootView.findViewById(R.id.ll_video_res_sent);
-        ll_video_res_receive = rootView.findViewById(R.id.ll_video_res_receive);
-        ll_video_res_info = rootView.findViewById(R.id.ll_video_res_info);
         btnSpeaker = rootView.findViewById(R.id.toggle_speaker);
         btnAudioMute = rootView.findViewById(R.id.toggle_audio);
         btnVideoMute = rootView.findViewById(R.id.toggle_video);
@@ -641,15 +637,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     private void changeFloatingButtons(boolean isLandscapeMode) {
         if (!isLandscapeMode) {
             linearLayout.setOrientation(LinearLayout.VERTICAL);
-            ll_video_res_input.setOrientation(LinearLayout.VERTICAL);
-            ll_video_res_sent.setOrientation(LinearLayout.VERTICAL);
-            ll_video_res_receive.setOrientation(LinearLayout.VERTICAL);
-
-            int llHeight = (int) context.getResources().getDimension(R.dimen.dp_48dp);
-
-            RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
-            llParams.height = llHeight;
-            ll_video_res_info.setLayoutParams(llParams);
 
             changeFloatingButtonPortrait(btnDisconnect);
             changeFloatingButtonPortrait(btnCameraMute);
@@ -665,16 +652,6 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
             } else {
                 linearLayout.setOrientation(LinearLayout.VERTICAL);
             }
-
-            ll_video_res_input.setOrientation(LinearLayout.HORIZONTAL);
-            ll_video_res_sent.setOrientation(LinearLayout.HORIZONTAL);
-            ll_video_res_receive.setOrientation(LinearLayout.HORIZONTAL);
-
-            int llHeight = (int) context.getResources().getDimension(R.dimen.dp_35dp);
-
-            RelativeLayout.LayoutParams llParams = (RelativeLayout.LayoutParams) ll_video_res_info.getLayoutParams();
-            llParams.height = llHeight;
-            ll_video_res_info.setLayoutParams(llParams);
 
             changeFloatingButtonLandscape(btnDisconnect);
             changeFloatingButtonLandscape(btnCameraMute);
