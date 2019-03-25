@@ -97,11 +97,6 @@ public interface VideoCallContract {
          * Update UI details when changing camera state (muted/on)
          */
         void onPresenterRequestChangeCameraUI(boolean isCameraMute);
-
-        /**
-         * Update UI details when changing screen configuration
-         */
-        void onPresenterRequestchangeViewLayout();
     }
 
     interface Presenter {

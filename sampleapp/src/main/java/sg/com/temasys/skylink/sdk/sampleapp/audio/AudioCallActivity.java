@@ -14,10 +14,10 @@ public class AudioCallActivity extends AppCompatActivity {
     private final String AUDIO_CALL_FRAGMENT_TAG = "AUDIO_CALL_FRAGMENT";
 
     // presenter instance
-    private AudioCallPresenter mAudioCallPresenter;
+    private AudioCallPresenter audioCallPresenter;
 
     // view instance
-    private AudioCallFragment mAudioCallFragment;
+    private AudioCallFragment audioCallFragment;
 
 
     @Override
@@ -26,25 +26,25 @@ public class AudioCallActivity extends AppCompatActivity {
         setContentView(R.layout.activity_audio_call);
 
         // create presenter
-        mAudioCallPresenter = new AudioCallPresenter(this);
+        audioCallPresenter = new AudioCallPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            mAudioCallFragment = AudioCallFragment.newInstance();
+            audioCallFragment = AudioCallFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameAudioCall, mAudioCallFragment, AUDIO_CALL_FRAGMENT_TAG)
+                    .add(R.id.contentFrameAudioCall, audioCallFragment, AUDIO_CALL_FRAGMENT_TAG)
                     .commit();
         } else {
-            mAudioCallFragment = (AudioCallFragment) getSupportFragmentManager()
+            audioCallFragment = (AudioCallFragment) getSupportFragmentManager()
                     .findFragmentByTag(AUDIO_CALL_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        if (mAudioCallFragment != null)
-            mAudioCallPresenter.setView(mAudioCallFragment);
+        if (audioCallFragment != null)
+            audioCallPresenter.setView(audioCallFragment);
     }
 
     @Override
@@ -58,6 +58,6 @@ public class AudioCallActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, AUDIO_CALL_FRAGMENT_TAG, mAudioCallFragment);
+        getSupportFragmentManager().putFragment(outState, AUDIO_CALL_FRAGMENT_TAG, audioCallFragment);
     }
 }

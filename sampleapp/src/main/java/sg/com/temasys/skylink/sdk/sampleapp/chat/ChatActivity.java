@@ -13,10 +13,10 @@ public class ChatActivity extends AppCompatActivity {
     private final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
 
     // presenter instance
-    private ChatPresenter mChatPresenter;
+    private ChatPresenter chatPresenter;
 
     // view instance
-    private ChatFragment mChatFragment;
+    private ChatFragment chatFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,25 +24,25 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         //create presenter
-        mChatPresenter = new ChatPresenter(this);
+        chatPresenter = new ChatPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            mChatFragment = ChatFragment.newInstance();
+            chatFragment = ChatFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameChat, mChatFragment, CHAT_FRAGMENT_TAG)
+                    .add(R.id.contentFrameChat, chatFragment, CHAT_FRAGMENT_TAG)
                     .commit();
         } else {
-            mChatFragment = (ChatFragment) getSupportFragmentManager()
+            chatFragment = (ChatFragment) getSupportFragmentManager()
                     .findFragmentByTag(CHAT_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        if (mChatFragment != null)
-            mChatPresenter.setView(mChatFragment);
+        if (chatFragment != null)
+            chatPresenter.setView(chatFragment);
     }
 
     @Override
@@ -56,6 +56,6 @@ public class ChatActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, CHAT_FRAGMENT_TAG, mChatFragment);
+        getSupportFragmentManager().putFragment(outState, CHAT_FRAGMENT_TAG, chatFragment);
     }
 }

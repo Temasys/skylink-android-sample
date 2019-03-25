@@ -23,9 +23,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     private final String TAG = ChatPresenter.class.getName();
 
-    private ChatContract.View mChatView;
+    private ChatContract.View chatView;
 
-    private ChatService mChatService;
+    private ChatService chatService;
 
     // when screen orientation changed, we need to maintain the message list
     private List<String> chatMessageCollection = new ArrayList<String>();
@@ -43,16 +43,16 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     }
 
     public ChatPresenter(Context context) {
-        mChatService = new ChatService(context);
-        this.mChatService.setPresenter(this);
+        chatService = new ChatService(context);
+        this.chatService.setPresenter(this);
     }
 
     /**
      * Set the view for the presenter
      */
     public void setView(ChatContract.View view) {
-        mChatView = view;
-        mChatView.setPresenter(this);
+        chatView = view;
+        chatView.setPresenter(this);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -72,10 +72,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mChatService.isConnectingOrConnected()) {
+        if (!chatService.isConnectingOrConnected()) {
 
             //connect to room on Skylink connection
-            mChatService.connectToRoom(Constants.CONFIG_TYPE.CHAT);
+            chatService.connectToRoom(Constants.CONFIG_TYPE.CHAT);
 
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
@@ -86,7 +86,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void onViewRequestExit() {
         //process disconnect from room
-        mChatService.disconnectFromRoom();
+        chatService.disconnectFromRoom();
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
@@ -109,28 +109,28 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 processAddSelfMessageToChatCollection(null, false, message);
 
                 // using service to send message to remote peer(s) via signaling server
-                mChatService.sendServerMessage(null, message);
+                chatService.sendServerMessage(null, message);
             } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
                 processAddSelfMessageToChatCollection(null, true, message);
 
                 // using service to send message to remote peer(s) directly P2P
-                mChatService.sendP2PMessage(null, message);
+                chatService.sendP2PMessage(null, message);
             }
         } else {
             // get the selected peer to send message to
-            SkylinkPeer selectedPeer = mChatService.getPeerByIndex(selectedPeerIndex);
+            SkylinkPeer selectedPeer = chatService.getPeerByIndex(selectedPeerIndex);
 
             // send message to the selected peer
             if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
                 processAddSelfMessageToChatCollection(selectedPeer.getPeerId(), false, message);
 
                 // using service to send message to remote peer(s) via signaling server
-                mChatService.sendServerMessage(selectedPeer.getPeerId(), message);
+                chatService.sendServerMessage(selectedPeer.getPeerId(), message);
             } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
                 processAddSelfMessageToChatCollection(selectedPeer.getPeerId(), true, message);
 
                 // using service to send message to remote peer(s) directly P2P
-                mChatService.sendP2PMessage(selectedPeer.getPeerId(), message);
+                chatService.sendP2PMessage(selectedPeer.getPeerId(), message);
             }
         }
     }
@@ -148,7 +148,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      */
     @Override
     public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
-        return mChatService.getPeerByIndex(index);
+        return chatService.getPeerByIndex(index);
     }
 
     /**
@@ -214,7 +214,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
-        processAddNewPeer(newPeer, mChatService.getTotalPeersInRoom() - 1);
+        processAddNewPeer(newPeer, chatService.getTotalPeersInRoom() - 1);
 
         // Adding info to message collection
         // This message is metadata message to inform the peer join the room
@@ -222,7 +222,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 Utils.getISOTimeStamp(new Date()));
 
         // notify the adapter to update list view
-        mChatView.onPresenterRequestUpdateChatCollection();
+        chatView.onPresenterRequestUpdateChatCollection();
     }
 
     /**
@@ -243,7 +243,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 "(" + removePeer.getPeerId() + ")" + " left the room." + "\n" +
                 Utils.getISOTimeStamp(new Date()));
 
-        mChatView.onPresenterRequestUpdateChatCollection();
+        chatView.onPresenterRequestUpdateChatCollection();
 
         // Remove the peer in button in custom bar
         processRemoveRemotePeer();
@@ -268,9 +268,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = mChatService.getPeerNameById(remotePeerId);
+            String remotePeerName = chatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onPresenterRequestUpdateChatCollection();
+            chatView.onPresenterRequestUpdateChatCollection();
         }
     }
 
@@ -293,9 +293,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = mChatService.getPeerNameById(remotePeerId);
+            String remotePeerName = chatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            mChatView.onPresenterRequestUpdateChatCollection();
+            chatView.onPresenterRequestUpdateChatCollection();
         }
     }
 
@@ -310,7 +310,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param index   the index of the new peer to add
      */
     private void processAddNewPeer(SkylinkPeer newPeer, int index) {
-        mChatView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
+        chatView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
     }
 
     /**
@@ -318,7 +318,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * to make sure the left peers are displayed correctly
      */
     private void processRemoveRemotePeer() {
-        mChatView.onPresenterRequestChangeUiRemotePeerLeft(mChatService.getPeersList());
+        chatView.onPresenterRequestChangeUiRemotePeerLeft(chatService.getPeersList());
     }
 
     /**
@@ -340,7 +340,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         }
 
         // adding prefix to the message
-        String localPeerId = mChatService.getPeerId();
+        String localPeerId = chatService.getPeerId();
         String prefix = "You---" + Config.USER_NAME_CHAT + " (" + localPeerId + ")" + " : ";
 
         prefix += isPrivateMessage ? "[PTE]" : "[GRP]";
@@ -348,9 +348,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         chatMessageCollection.add(prefix + message);
 
-        mChatView.onPresenterRequestUpdateChatCollection();
+        chatView.onPresenterRequestUpdateChatCollection();
 
-        mChatView.onPresenterRequestClearInput();
+        chatView.onPresenterRequestClearInput();
     }
 
     /**
@@ -359,15 +359,15 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     private void processUpdateStateConnected() {
 
         // Update the view into connected state
-        mChatView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        chatView.onPresenterRequestUpdateUIConnected(processGetRoomId());
 
         // This message is metadata message to inform the user is connected to the room
         chatMessageCollection.add("[Metadata]:You (" + Config.USER_NAME_CHAT + "_" +
-                mChatService.getPeerId() + ") joined the room." + "\n" +
+                chatService.getPeerId() + ") joined the room." + "\n" +
                 Utils.getISOTimeStamp(new Date()));
 
         // notify the adapter to update list view
-        mChatView.onPresenterRequestUpdateChatCollection();
+        chatView.onPresenterRequestUpdateChatCollection();
 
     }
 
@@ -375,6 +375,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Get the room id info
      */
     private String processGetRoomId() {
-        return mChatService.getRoomId();
+        return chatService.getRoomId();
     }
 }

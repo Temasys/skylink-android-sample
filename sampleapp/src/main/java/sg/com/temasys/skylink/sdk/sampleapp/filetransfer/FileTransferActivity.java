@@ -14,10 +14,10 @@ public class FileTransferActivity extends AppCompatActivity {
     private final String FILE_TRANSFER_FRAGMENT_TAG = "FILE_TRANSFER_FRAGMENT";
 
     // presenter instance
-    private FileTransferPresenter mFileTransferPresenter;
+    private FileTransferPresenter fileTransferPresenter;
 
     // view instance
-    private FileTransferFragment mFileTransferFragment;
+    private FileTransferFragment fileTransferFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,25 +25,25 @@ public class FileTransferActivity extends AppCompatActivity {
         setContentView(R.layout.activity_file_transfer);
 
         //create presenter
-        mFileTransferPresenter = new FileTransferPresenter(this);
+        fileTransferPresenter = new FileTransferPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            mFileTransferFragment = FileTransferFragment.newInstance();
+            fileTransferFragment = FileTransferFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameFileTransfer, mFileTransferFragment, FILE_TRANSFER_FRAGMENT_TAG)
+                    .add(R.id.contentFrameFileTransfer, fileTransferFragment, FILE_TRANSFER_FRAGMENT_TAG)
                     .commit();
         } else {
-            mFileTransferFragment = (FileTransferFragment) getSupportFragmentManager()
+            fileTransferFragment = (FileTransferFragment) getSupportFragmentManager()
                     .findFragmentByTag(FILE_TRANSFER_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        if (mFileTransferFragment != null)
-            mFileTransferPresenter.setView(mFileTransferFragment);
+        if (fileTransferFragment != null)
+            fileTransferPresenter.setView(fileTransferFragment);
     }
 
     @Override
@@ -57,6 +57,6 @@ public class FileTransferActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, FILE_TRANSFER_FRAGMENT_TAG, mFileTransferFragment);
+        getSupportFragmentManager().putFragment(outState, FILE_TRANSFER_FRAGMENT_TAG, fileTransferFragment);
     }
 }

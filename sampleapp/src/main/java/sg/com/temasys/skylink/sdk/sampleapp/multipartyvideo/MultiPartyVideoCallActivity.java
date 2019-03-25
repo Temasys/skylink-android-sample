@@ -14,10 +14,10 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
     private final String MULTI_PARTY_VIDEO_FRAGMENT_TAG = "MULTI_PARTY_VIDEO_FRAGMENT";
 
     // presenter instance
-    private MultiPartyVideoCallPresenter mMultiPartyVideoPresenter;
+    private MultiPartyVideoCallPresenter multiPartyVideoPresenter;
 
     // view instance
-    private MultiPartyVideoCallFragment mMultiPartyVideoFragment;
+    private MultiPartyVideoCallFragment multiPartyVideoFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,24 +25,24 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         setContentView(R.layout.activity_multi_party_video_call);
 
         //create presenter
-        mMultiPartyVideoPresenter = new MultiPartyVideoCallPresenter(this);
+        multiPartyVideoPresenter = new MultiPartyVideoCallPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            mMultiPartyVideoFragment = MultiPartyVideoCallFragment.newInstance();
+            multiPartyVideoFragment = MultiPartyVideoCallFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameMultiPartyVideoCall, mMultiPartyVideoFragment, MULTI_PARTY_VIDEO_FRAGMENT_TAG)
+                    .add(R.id.contentFrameMultiPartyVideoCall, multiPartyVideoFragment, MULTI_PARTY_VIDEO_FRAGMENT_TAG)
                     .commit();
         } else {
-            mMultiPartyVideoFragment = (MultiPartyVideoCallFragment) getSupportFragmentManager()
+            multiPartyVideoFragment = (MultiPartyVideoCallFragment) getSupportFragmentManager()
                     .findFragmentByTag(MULTI_PARTY_VIDEO_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        mMultiPartyVideoPresenter.setView(mMultiPartyVideoFragment);
+        multiPartyVideoPresenter.setView(multiPartyVideoFragment);
     }
 
     @Override
@@ -56,6 +56,6 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, MULTI_PARTY_VIDEO_FRAGMENT_TAG, mMultiPartyVideoFragment);
+        getSupportFragmentManager().putFragment(outState, MULTI_PARTY_VIDEO_FRAGMENT_TAG, multiPartyVideoFragment);
     }
 }

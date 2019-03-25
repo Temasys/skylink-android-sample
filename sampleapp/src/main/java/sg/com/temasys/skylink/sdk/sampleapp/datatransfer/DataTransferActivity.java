@@ -14,10 +14,10 @@ public class DataTransferActivity extends AppCompatActivity {
     private final String DATA_TRANSFER_FRAGMENT_TAG = "DATA_TRANSFER_FRAGMENT";
 
     // presenter instance
-    private DataTransferPresenter mDataTransferPresenter;
+    private DataTransferPresenter dataTransferPresenter;
 
     // view instance
-    private DataTransferFragment mDataTransferFragment;
+    private DataTransferFragment aataTransferFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,24 +25,24 @@ public class DataTransferActivity extends AppCompatActivity {
         setContentView(R.layout.activity_data_transfer);
 
         //create presenter
-        mDataTransferPresenter = new DataTransferPresenter(this);
+        dataTransferPresenter = new DataTransferPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            mDataTransferFragment = DataTransferFragment.newInstance();
+            aataTransferFragment = DataTransferFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameDataTransfer, mDataTransferFragment, DATA_TRANSFER_FRAGMENT_TAG)
+                    .add(R.id.contentFrameDataTransfer, aataTransferFragment, DATA_TRANSFER_FRAGMENT_TAG)
                     .commit();
         } else {
-            mDataTransferFragment = (DataTransferFragment) getSupportFragmentManager()
+            aataTransferFragment = (DataTransferFragment) getSupportFragmentManager()
                     .findFragmentByTag(DATA_TRANSFER_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        mDataTransferPresenter.setView(mDataTransferFragment);
+        dataTransferPresenter.setView(aataTransferFragment);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class DataTransferActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, DATA_TRANSFER_FRAGMENT_TAG, mDataTransferFragment);
+        getSupportFragmentManager().putFragment(outState, DATA_TRANSFER_FRAGMENT_TAG, aataTransferFragment);
     }
 
 }

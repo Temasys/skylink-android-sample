@@ -33,7 +33,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     private final String TAG = ChatFragment.class.getName();
 
     // presenter instance to implement app logic
-    private ChatContract.Presenter mPresenter;
+    private ChatContract.Presenter presenter;
 
     // view widgets
     private Button btnSendServerMessage;
@@ -49,7 +49,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
 
     @Override
     public void setPresenter(ChatContract.Presenter presenter) {
-        this.mPresenter = presenter;
+        this.presenter = presenter;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         // in case of changing screen orientation, do not close the connection
         if (!((ChatActivity) context).isChangingConfigurations()) {
             // Inform the presenter to implement closing the connection
-            mPresenter.onViewRequestExit();
+            presenter.onViewRequestExit();
         }
     }
 
@@ -272,7 +272,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         txtRoomName.setText(Config.ROOM_NAME_CHAT);
 
         //Defining the ArrayAdapter to set items to ListView
-        adapter = new ChatListAdapter(context, R.layout.list_item_remote, mPresenter.onViewRequestGetChatCollection());
+        adapter = new ChatListAdapter(context, R.layout.list_item_remote, presenter.onViewRequestGetChatCollection());
 
         //Setting the adapter to the ListView
         listViewChats.setAdapter(adapter);
@@ -296,7 +296,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      */
     private void processSelectMessageType(ChatPresenter.MESSAGE_TYPE message_type) {
         // inform the presenter layer about the selection
-        mPresenter.onViewRequestSelectedMessageType(message_type);
+        presenter.onViewRequestSelectedMessageType(message_type);
 
         // update selected state of buttons
         if (message_type == ChatPresenter.MESSAGE_TYPE.TYPE_SERVER) {
@@ -330,8 +330,8 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      * try to update UI if connected to room
      */
     private void requestViewLayout() {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestConnectedLayout();
+        if (presenter != null) {
+            presenter.onViewRequestConnectedLayout();
         }
     }
 
@@ -343,7 +343,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         String message = editChatMessage.getText().toString();
 
         // delegate to the presenter to implement sending message
-        mPresenter.onViewRequestSendMessage(message);
+        presenter.onViewRequestSendMessage(message);
     }
 
     /**
@@ -352,10 +352,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      */
     private void processSelectPeer(int index) {
         // inform the presenter layer about the selection
-        mPresenter.onViewRequestSelectedRemotePeer(index);
+        presenter.onViewRequestSelectedRemotePeer(index);
 
         // check for select remote peer or un select it
-        boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+        boolean unSelected = presenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
 
         // update the UI of the peer buttons
         updateUISelectRemotePeer(index, unSelected);
@@ -366,7 +366,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      * when the user long click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {

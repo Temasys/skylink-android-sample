@@ -12,7 +12,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
  */
 public class OptionButton extends android.support.v7.widget.AppCompatButton {
 
-    private Paint mPaint;
+    private Paint myPaint;
 
     public OptionButton(Context context) {
         super(context);
@@ -31,11 +31,11 @@ public class OptionButton extends android.support.v7.widget.AppCompatButton {
 
     private void init(AttributeSet attrs, Context context) {
         // create paint object
-        this.mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        this.myPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         // set style
-        this.mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        this.myPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         // set color
-        this.mPaint.setColor(getResources().getColor(R.color.primary));
+        this.myPaint.setColor(getResources().getColor(R.color.primary));
     }
 
     @Override
@@ -44,9 +44,9 @@ public class OptionButton extends android.support.v7.widget.AppCompatButton {
         int centerYOnView = getHeight() / 2;
 
         // draw 3 dots in vertical line
-        canvas.drawCircle(centerXOnView, centerYOnView - 20f, 5f, mPaint);
-        canvas.drawCircle(centerXOnView, centerYOnView, 5f, mPaint);
-        canvas.drawCircle(centerXOnView, centerYOnView + 20f, 5f, mPaint);
+        canvas.drawCircle(centerXOnView, centerYOnView - 20f, 5f, myPaint);
+        canvas.drawCircle(centerXOnView, centerYOnView, 5f, myPaint);
+        canvas.drawCircle(centerXOnView, centerYOnView + 20f, 5f, myPaint);
     }
 
 }

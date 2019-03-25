@@ -16,7 +16,7 @@ public class CurvedTextView extends android.support.v7.widget.AppCompatTextView 
 
 	private Path myArc;
 
-	private Paint mPaintText;
+	private Paint myPaintText;
 
 	public CurvedTextView(Context context, AttributeSet ats, int defStyle) {
 		super(context, ats, defStyle);
@@ -37,13 +37,13 @@ public class CurvedTextView extends android.support.v7.widget.AppCompatTextView 
 	private void init(AttributeSet attrs, Context context) {
 		this.myArc = new Path();
 		// create paint object
-		this.mPaintText = new Paint(Paint.ANTI_ALIAS_FLAG);
+		this.myPaintText = new Paint(Paint.ANTI_ALIAS_FLAG);
 		// set style
-		this.mPaintText.setStyle(Paint.Style.FILL_AND_STROKE);
+		this.myPaintText.setStyle(Paint.Style.FILL_AND_STROKE);
 		// set color
-		this.mPaintText.setColor(getResources().getColor(R.color.primary_dark));
+		this.myPaintText.setColor(getResources().getColor(R.color.primary_dark));
 		// set text Size
-		this.mPaintText.setTextSize(getResources().getDimension(
+		this.myPaintText.setTextSize(getResources().getDimension(
 				R.dimen.sp_15sp));
 	}
 
@@ -74,6 +74,6 @@ public class CurvedTextView extends android.support.v7.widget.AppCompatTextView 
 		this.myArc.addArc(oval, -90 - (textLength * 2), 90 + textLength + 10);
 
 		canvas.drawTextOnPath((String) getText(), this.myArc, 0, 10,
-				this.mPaintText);
+				this.myPaintText);
 	}
 }

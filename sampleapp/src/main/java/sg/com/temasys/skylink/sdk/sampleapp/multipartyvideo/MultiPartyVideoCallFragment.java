@@ -30,7 +30,6 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -47,7 +46,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private final String TAG = MultiPartyVideoCallFragment.class.getName();
 
     // presenter instance to implement app logic
-    private MultiPartyVideoCallContract.Presenter mPresenter;
+    private MultiPartyVideoCallContract.Presenter presenter;
 
     // layout for displaying local video view
     private FrameLayout selfViewLayout;
@@ -62,14 +61,13 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private int currentSelectIndex = 0;
 
 
-
     public static MultiPartyVideoCallFragment newInstance() {
         return new MultiPartyVideoCallFragment();
     }
 
     @Override
     public void setPresenter(MultiPartyVideoCallContract.Presenter presenter) {
-        this.mPresenter = presenter;
+        this.presenter = presenter;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -117,7 +115,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         super.onResume();
 
         // Toggle camera back to previous state if required.
-        mPresenter.onViewRequestResume();
+        presenter.onViewRequestResume();
     }
 
     @Override
@@ -126,7 +124,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
         // Stop local video source only if not changing orientation
         if (!((MultiPartyVideoCallActivity) context).isChangingConfigurations()) {
-            mPresenter.onViewRequestPause();
+            presenter.onViewRequestPause();
         }
     }
 
@@ -134,7 +132,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
-        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
+        presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     /**
@@ -180,27 +178,27 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public boolean onMenuItemClick(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.switchCamera:
-                mPresenter.onViewRequestSwitchCamera();
+                presenter.onViewRequestSwitchCamera();
                 break;
             case R.id.inputVideoRes:
-                mPresenter.onViewRequestGetInputVideoResolution();
+                presenter.onViewRequestGetInputVideoResolution();
                 break;
             case R.id.sentVideoRes:
-                mPresenter.onViewRequestGetSentVideoResolution(currentSelectIndex);
+                presenter.onViewRequestGetSentVideoResolution(currentSelectIndex);
                 break;
             case R.id.receiveVideoRes:
-                mPresenter.onViewRequestGetReceivedVideoResolution(currentSelectIndex);
+                presenter.onViewRequestGetReceivedVideoResolution(currentSelectIndex);
                 break;
             case R.id.webRtcStats:
-                mPresenter.onViewRequestWebrtcStatsToggle(currentSelectIndex);
+                presenter.onViewRequestWebrtcStatsToggle(currentSelectIndex);
                 break;
             case R.id.transferSpeed:
-                mPresenter.onViewRequestGetTransferSpeeds(currentSelectIndex, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+                presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
                 break;
             case R.id.recordingStart:
-                return mPresenter.onViewRequestStartRecording();
+                return presenter.onViewRequestStartRecording();
             case R.id.recordingStop:
-                return mPresenter.onViewRequestStopRecording();
+                return presenter.onViewRequestStopRecording();
             case R.id.restart:
                 refreshConnection(currentSelectIndex, false);
                 break;
@@ -235,7 +233,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         // Exit from room only if not changing orientation
         if (!((MultiPartyVideoCallActivity) context).isChangingConfigurations()) {
             //exit from room
-            mPresenter.onViewRequestExit();
+            presenter.onViewRequestExit();
 
             //remove all views
             processEmptyLayout();
@@ -269,6 +267,22 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
         //add new remote peer button in the action bar
         updateUiRemotePeerJoin(newPeer, index);
+
+        // add emty black view to layout
+        if (index < 1 || index > remoteViewLayouts.length)
+            return;
+
+        // Remove any existing Peer View at index.
+        // This may sometimes be the case, for e.g. in screen sharing.
+        removePeerView(index);
+
+        //Create an empty view with black background color
+        View remoteVideoView = new FrameLayout(context);
+        remoteVideoView.setBackgroundColor(getResources().getColor(R.color.color_black));
+
+        // Add new remote videoView to frame at specific position
+        setLayoutParams(remoteVideoView);
+        remoteViewLayouts[index].addView(remoteVideoView);
     }
 
     /**
@@ -436,10 +450,10 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * Remove all videoViews from layouts.
      */
     private void processEmptyLayout() {
-        int totalInRoom = mPresenter.onViewRequestGetTotalInRoom();
+        int totalInRoom = presenter.onViewRequestGetTotalInRoom();
 
         for (int i = 0; i < totalInRoom; i++) {
-            SurfaceViewRenderer videoView = mPresenter.onViewRequestGetVideoViewByIndex(i);
+            SurfaceViewRenderer videoView = presenter.onViewRequestGetVideoViewByIndex(i);
 
             if (videoView != null)
                 Utils.removeViewFromParent(videoView);
@@ -451,7 +465,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      *
      * @param videoView
      */
-    private void setLayoutParams(SurfaceViewRenderer videoView) {
+    private void setLayoutParams(View videoView) {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.FILL_PARENT,
                 FrameLayout.LayoutParams.FILL_PARENT, FILL);
@@ -464,8 +478,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * try to update UI if connected
      */
     private void requestViewLayout() {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestConnectedLayout();
+        if (presenter != null) {
+            presenter.onViewRequestConnectedLayout();
         }
     }
 
@@ -476,8 +490,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * @param iceRestart the option to allow refresh the ICE connection of the peer
      */
     private void refreshConnection(int peerIndex, boolean iceRestart) {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestRefreshConnection(peerIndex, iceRestart);
+        if (presenter != null) {
+            presenter.onViewRequestRefreshConnection(peerIndex, iceRestart);
         }
     }
 
@@ -522,7 +536,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * when the user click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {
@@ -589,7 +603,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
         // need to check the current WebRTC Stats to display correct title for WebRTC Stats menu item
         // using different menu layouts for menu option WebRTC Stats
-        Boolean startOn = mPresenter.onViewRequestGetWebRtcStatsState(peerIndex);
+        Boolean startOn = presenter.onViewRequestGetWebRtcStatsState(peerIndex);
         if (startOn != null && startOn) {
             popup.inflate(R.menu.remote_option_menu_on);
         } else {

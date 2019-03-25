@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
@@ -46,13 +47,13 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     private final String TAG = VideoCallFragment.class.getName();
 
     // view widgets
-    private LinearLayout linearLayout;
+    private LinearLayout videoViewLayout;
     private FloatingActionButton btnDisconnect, btnAudioMute, btnVideoMute, btnCameraMute, btnSpeaker;
     private Button btnLocalOption;
     private VideoResButton btnVideoResolution;
 
     // presenter instance to implement video call logic
-    private VideoCallContract.Presenter mPresenter;
+    private VideoCallContract.Presenter presenter;
 
     public static VideoCallFragment newInstance() {
         return new VideoCallFragment();
@@ -60,7 +61,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
     @Override
     public void setPresenter(VideoCallContract.Presenter presenter) {
-        this.mPresenter = presenter;
+        this.presenter = presenter;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -94,7 +95,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         setActionBar();
 
         // init the UI controls
-        initComponents(rootView);
+        initComponents();
 
         //request an initiative connection
         requestViewLayout();
@@ -105,30 +106,19 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     @Override
     public void onResume() {
         super.onResume();
-        mPresenter.onViewRequestResume();
+        presenter.onViewRequestResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mPresenter.onViewRequestPause();
+        presenter.onViewRequestPause();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
-        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        // only exit/disconnect from room when it is chosen by user
-        // not changing configuration
-        if (!((VideoCallActivity) context).isChangingConfigurations()) {
-            mPresenter.onViewRequestExit();
-        }
+        presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -163,19 +153,19 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
                 displayPeerInfo(3);
                 break;
             case R.id.toggle_speaker:
-                mPresenter.onViewRequestChangeAudioOutput();
+                presenter.onViewRequestChangeAudioOutput();
                 break;
             case R.id.toggle_audio:
-                mPresenter.onViewRequestChangeAudioState();
+                presenter.onViewRequestChangeAudioState();
                 break;
             case R.id.toggle_video:
-                mPresenter.onViewRequestChangeVideoState();
+                presenter.onViewRequestChangeVideoState();
                 break;
             case R.id.toggle_camera:
-                mPresenter.onViewRequestChangeCameraState();
+                presenter.onViewRequestChangeCameraState();
                 break;
             case R.id.disconnect:
-                mPresenter.onViewRequestDisconnectFromRoom();
+                presenter.onViewRequestDisconnectFromRoom();
                 onPresenterRequestDisconnectUIChange();
                 break;
             case R.id.btnLocalPeerOption:
@@ -197,16 +187,27 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     public boolean onMenuItemClick(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.switch_camera:
-                mPresenter.onViewRequestSwitchCamera();
+                presenter.onViewRequestSwitchCamera();
                 break;
             case R.id.video_resolution:
-                mPresenter.onViewRequestGetVideoResolutions();
+                presenter.onViewRequestGetVideoResolutions();
                 break;
             default:
                 Log.e(TAG, "Unknown menu option: " + menuItem.getItemId() + "!");
                 return false;
         }
         return true;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        // only exit/disconnect from room when it is chosen by user
+        // not changing configuration
+        if (!((VideoCallActivity) context).isChangingConfigurations()) {
+            presenter.onViewRequestExit();
+        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -235,6 +236,8 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     @Override
     public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
         updateUiRemotePeerJoin(newPeer, index);
+
+        addEmptyRemoteView(index);
     }
 
     /**
@@ -275,14 +278,14 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      */
     @Override
     public void onPresenterRequestDisconnectUIChange() {
-        View self = linearLayout.findViewWithTag("self");
+        View self = videoViewLayout.findViewWithTag("self");
         if (self != null) {
-            linearLayout.removeView(self);
+            videoViewLayout.removeView(self);
         }
 
-        View peer = linearLayout.findViewWithTag("peer");
+        View peer = videoViewLayout.findViewWithTag("peer");
         if (peer != null) {
-            linearLayout.removeView(peer);
+            videoViewLayout.removeView(peer);
         }
 
         btnAudioMute.setVisibility(GONE);
@@ -317,49 +320,57 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      */
     @Override
     public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
-        if (videoView != null) {
-            // If previous self video exists,
-            // Set new video to size of previous self video
-            // And remove old self video.
-            View self = linearLayout.findViewWithTag("self");
-            if (self != null) {
-                // Remove the old self video.
-                linearLayout.removeView(self);
-            }
-
-            // Tag new video as self and add onClickListener.
-            videoView.setTag("self");
-
-            // If peer video exists, remove it first.
-            View peer = linearLayout.findViewWithTag("peer");
-            if (peer != null) {
-                linearLayout.removeView(peer);
-            }
-
-            // Show new video on screen
-            // Remove video from previous parent, if any.
-            Utils.removeViewFromParent(videoView);
-
-            // And new self video.
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-            params.gravity = Gravity.CENTER;
-            params.weight = 1;
-            videoView.setLayoutParams(params);
-
-            //alway set self video as vertical orientation
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-
-            linearLayout.addView(videoView);
-
-            // Return the peer video, if it was there before.
-            if (peer != null) {
-                linearLayout.addView(peer);
-            }
-        } else {
+        if (videoView == null) {
             String log = "[SA][addSelfView] Not adding self view as videoView is null!";
             Log.d(TAG, log);
+            return;
+        }
+
+        // If previous self video exists,
+        // Set new video to size of previous self video
+        // And remove old self video.
+        View self = videoViewLayout.findViewWithTag("self");
+        if (self != null) {
+            // Remove the old self video.
+            videoViewLayout.removeView(self);
+        }
+
+        // Tag new video as self and add onClickListener.
+        videoView.setTag("self");
+
+        // If peer video exists, remove it first.
+        View peer = videoViewLayout.findViewWithTag("peer");
+        if (peer != null) {
+            videoViewLayout.removeView(peer);
+        }
+
+        // Show new video on screen
+        // Remove video from previous parent, if any.
+        Utils.removeViewFromParent(videoView);
+
+        // And new self video.
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+        params.gravity = Gravity.CENTER;
+        params.weight = 1;
+        videoView.setLayoutParams(params);
+
+        //alway set self video as vertical orientation
+        videoViewLayout.setOrientation(LinearLayout.VERTICAL);
+
+        videoViewLayout.addView(videoView);
+
+        // Return the peer video, if it was there before.
+        if (peer != null) {
+            videoViewLayout.addView(peer);
+        }
+
+        // Change video layout to fit with the screen size
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            changeFloatingButtons(false);
+        } else {
+            changeFloatingButtons(true);
         }
     }
 
@@ -370,21 +381,10 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      */
     @Override
     public void onPresenterRequestAddRemoteView(SurfaceViewRenderer remoteVideoView) {
-
-        if (remoteVideoView == null)
+        if (remoteVideoView == null) {
             return;
-
-        // Remove previous peer video if it exists
-        View viewToRemove = linearLayout.findViewWithTag("peer");
-        if (viewToRemove != null) {
-            linearLayout.removeView(viewToRemove);
         }
-
-        // Add new peer video and add tag
-        remoteVideoView.setTag("peer");
-        // Remove view from previous parent, if any.
-        Utils.removeViewFromParent(remoteVideoView);
-        // Add view to parent
+        // Config the layout param for the view
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1f);
@@ -392,14 +392,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         params.weight = 1;
         remoteVideoView.setLayoutParams(params);
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-        } else {
-            linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-        }
-
-        linearLayout.setGravity(Gravity.CENTER);
-        linearLayout.addView(remoteVideoView);
+        addViewToLayout(remoteVideoView);
     }
 
     /**
@@ -409,11 +402,11 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      */
     @Override
     public void onPresenterRequestRemoveRemotePeer() {
-        View peerView = linearLayout.findViewWithTag("peer");
-        linearLayout.removeView(peerView);
+        View peerView = videoViewLayout.findViewWithTag("peer");
+        videoViewLayout.removeView(peerView);
 
         //change orientation to vertical
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        videoViewLayout.setOrientation(LinearLayout.VERTICAL);
     }
 
     /**
@@ -510,26 +503,12 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         }
     }
 
-    /**
-     * Update the view layout when changing screen orientation.
-     * <p>
-     * Change the custom floating buttons position
-     */
-    @Override
-    public void onPresenterRequestchangeViewLayout() {
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            changeFloatingButtons(false);
-        } else {
-            changeFloatingButtons(true);
-        }
-    }
-
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
-        linearLayout = rootView.findViewById(R.id.ll_video_call);
+        videoViewLayout = rootView.findViewById(R.id.ll_video_call);
         btnSpeaker = rootView.findViewById(R.id.toggle_speaker);
         btnAudioMute = rootView.findViewById(R.id.toggle_audio);
         btnVideoMute = rootView.findViewById(R.id.toggle_video);
@@ -551,7 +530,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     /**
      * Init value for view components
      */
-    private void initComponents(View rootView) {
+    private void initComponents() {
         // set onClick event for buttons in layout
         btnBack.setOnClickListener(this);
         btnLocalPeer.setOnClickListener(this);
@@ -565,7 +544,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         btnVideoMute.setOnClickListener(this);
         btnCameraMute.setOnClickListener(this);
         btnDisconnect.setOnClickListener(this);
-        linearLayout.setOnClickListener(this);
+        videoViewLayout.setOnClickListener(this);
 
         // init setting value for room name in action bar
         txtRoomName.setText(Config.ROOM_NAME_VIDEO);
@@ -588,8 +567,8 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      * try to connect to room if not connected
      */
     private void requestViewLayout() {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestConnectedLayout();
+        if (presenter != null) {
+            presenter.onViewRequestConnectedLayout();
         }
     }
 
@@ -636,7 +615,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      */
     private void changeFloatingButtons(boolean isLandscapeMode) {
         if (!isLandscapeMode) {
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
+            videoViewLayout.setOrientation(LinearLayout.VERTICAL);
 
             changeFloatingButtonPortrait(btnDisconnect);
             changeFloatingButtonPortrait(btnCameraMute);
@@ -646,11 +625,11 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
         } else {
             //only change orientation if there is peer in room
-            View viewToRemove = linearLayout.findViewWithTag("peer");
+            View viewToRemove = videoViewLayout.findViewWithTag("peer");
             if (viewToRemove != null) {
-                linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+                videoViewLayout.setOrientation(LinearLayout.HORIZONTAL);
             } else {
-                linearLayout.setOrientation(LinearLayout.VERTICAL);
+                videoViewLayout.setOrientation(LinearLayout.VERTICAL);
             }
 
             changeFloatingButtonLandscape(btnDisconnect);
@@ -767,7 +746,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
      * when the user click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {
@@ -807,5 +786,56 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
             // Hide the video resolution fragment
             ((VideoCallActivity) getActivity()).onShowHideVideoResFragment(false);
         }
+    }
+
+
+    /**
+     * Add an emtpy view to the UI to inform that remote peer has joined the room
+     *
+     * @param index the position to be added of the remote peer
+     */
+    private void addEmptyRemoteView(int index) {
+        //Create an empty view with black background color
+        View remoteVideoView = new FrameLayout(context);
+        remoteVideoView.setBackgroundColor(getResources().getColor(R.color.color_black));
+        // Config the layout param for the view
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+        params.gravity = Gravity.CENTER;
+        params.weight = 1;
+        remoteVideoView.setLayoutParams(params);
+
+        addViewToLayout(remoteVideoView);
+    }
+
+    /**
+     * process add view to layout on UI
+     * view can be an black emty view or remote video view
+     *
+     * @param view the back empty view when remote peer has joined the room
+     *             or actual remote peer video view when remote peer media received
+     */
+    private void addViewToLayout(View view) {
+        // Remove previous peer video if it exists
+        View viewToRemove = videoViewLayout.findViewWithTag("peer");
+        if (viewToRemove != null) {
+            videoViewLayout.removeView(viewToRemove);
+        }
+
+        // Add new peer video and add tag
+        view.setTag("peer");
+        // Remove view from previous parent, if any.
+        Utils.removeViewFromParent(view);
+
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            videoViewLayout.setOrientation(LinearLayout.VERTICAL);
+        } else {
+            videoViewLayout.setOrientation(LinearLayout.HORIZONTAL);
+        }
+
+        videoViewLayout.setGravity(Gravity.CENTER);
+        videoViewLayout.addView(view);
     }
 }

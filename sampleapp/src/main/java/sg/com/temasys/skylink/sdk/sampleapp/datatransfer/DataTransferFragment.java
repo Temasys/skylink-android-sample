@@ -49,7 +49,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
     private static final int CHOOSE_DATA_REQUEST_CODE = 11;
 
     // presenter instance to implement app logic
-    private DataTransferContract.Presenter mPresenter;
+    private DataTransferContract.Presenter presenter;
 
     // sample data in byte array to be transfered
     private byte[] dataSample;
@@ -69,7 +69,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
 
     @Override
     public void setPresenter(DataTransferContract.Presenter presenter) {
-        this.mPresenter = presenter;
+        this.presenter = presenter;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
                 showFilePicker();
             } else {
                 // permission denied, warning the user
-                mPresenter.onViewRequestPermissionDeny();
+                presenter.onViewRequestPermissionDeny();
             }
         }
     }
@@ -188,12 +188,12 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
         if (requestCode == CHOOSE_DATA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             // update data info
             // check for select remote peer or un select it
-            boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+            boolean unSelected = presenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
             if (unSelected) {
                 txtDataPathInfo.setText("Data source path to send to all peers : ");
             } else {
-                int index = mPresenter.onViewRequestGetCurrentSelectedPeer();
-                SkylinkPeer selectedPeer = mPresenter.onViewRequestGetPeerByIndex(index);
+                int index = presenter.onViewRequestGetCurrentSelectedPeer();
+                SkylinkPeer selectedPeer = presenter.onViewRequestGetPeerByIndex(index);
                 txtDataPathInfo.setText("Data source path to send to " + selectedPeer.toString() + " : ");
             }
 
@@ -242,7 +242,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
         // in case of changing screen orientation, do not close the connection
         if (!((DataTransferActivity) context).isChangingConfigurations()) {
             // Inform the presenter to implement closing the connection
-            mPresenter.onViewRequestExit();
+            presenter.onViewRequestExit();
 
             //reset sample data
             dataSample = null;
@@ -376,8 +376,8 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
      * try to update UI if connected to room
      */
     private void requestViewLayout() {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestConnectedLayout();
+        if (presenter != null) {
+            presenter.onViewRequestConnectedLayout();
         }
     }
 
@@ -402,14 +402,14 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
      */
     private void processSelectPeer(int index) {
         // inform the presenter layer about the selection
-        mPresenter.onViewRequestSelectedRemotePeer(index);
+        presenter.onViewRequestSelectedRemotePeer(index);
 
         // check for select remote peer or un select it
-        boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+        boolean unSelected = presenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
         if (unSelected) {
             txtDataPathInfo.setText("Data source path to send to all peers : ");
         } else {
-            SkylinkPeer selectedPeer = mPresenter.onViewRequestGetPeerByIndex(index);
+            SkylinkPeer selectedPeer = presenter.onViewRequestGetPeerByIndex(index);
             txtDataPathInfo.setText("Data source path to send to " + selectedPeer.toString() + " : ");
         }
 
@@ -422,7 +422,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
      * when the user long click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {
@@ -434,7 +434,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
      * request permission for file browser
      */
     private void requestPermission() {
-        if (mPresenter.onViewRequestFilePermission()) {
+        if (presenter.onViewRequestFilePermission()) {
             // Permission has already been granted
             showFilePicker();
         }
@@ -473,7 +473,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
         if (file.isFile()) {
             // Delegate sending data to presenter layer
             try {
-                mPresenter.onViewRequestSendData(Utils.getDataFromFile(file));
+                presenter.onViewRequestSendData(Utils.getDataFromFile(file));
                 isValidPath = true;
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

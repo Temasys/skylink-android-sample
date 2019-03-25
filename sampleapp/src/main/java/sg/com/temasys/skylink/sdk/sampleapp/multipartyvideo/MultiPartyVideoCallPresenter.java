@@ -33,15 +33,15 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     private final String TAG = MultiPartyVideoCallPresenter.class.getName();
 
     // view instance
-    public MultiPartyVideoCallContract.View mMultiVideoCallView;
+    public MultiPartyVideoCallContract.View multiVideoCallView;
 
     // Service helps to work with SkylinkSDK
-    private MultiPartyVideoService mMultiVideoCallService;
+    private MultiPartyVideoService multiVideoCallService;
 
     //Permission helps to process media runtime permission
-    private PermissionUtils mPermissionUtils;
+    private PermissionUtils permissionUtils;
 
-    private Context mContext;
+    private Context context;
 
     private VideoLocalState videoLocalState = new VideoLocalState();
 
@@ -51,15 +51,15 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             new ConcurrentHashMap<String, Boolean>();
 
     public MultiPartyVideoCallPresenter(Context context) {
-        this.mContext = context;
-        this.mMultiVideoCallService = new MultiPartyVideoService(mContext);
-        this.mMultiVideoCallService.setPresenter(this);
-        this.mPermissionUtils = new PermissionUtils();
+        this.context = context;
+        this.multiVideoCallService = new MultiPartyVideoService(this.context);
+        this.multiVideoCallService.setPresenter(this);
+        this.permissionUtils = new PermissionUtils();
     }
 
     public void setView(MultiPartyVideoCallContract.View view) {
-        mMultiVideoCallView = view;
-        mMultiVideoCallView.setPresenter(this);
+        multiVideoCallView = view;
+        multiVideoCallView.setPresenter(this);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -73,10 +73,10 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mMultiVideoCallService.isConnectingOrConnected()) {
+        if (!multiVideoCallService.isConnectingOrConnected()) {
 
             //reset permission request states.
-            mPermissionUtils.permQReset();
+            permissionUtils.permQReset();
 
             //connect to room on Skylink connection
             processConnectToRoom();
@@ -91,7 +91,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestExit() {
         //process disconnect from room
-        mMultiVideoCallService.disconnectFromRoom();
+        multiVideoCallService.disconnectFromRoom();
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
@@ -99,8 +99,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onViewRequestResume() {
         // Toggle camera back to previous state if required.
         if (videoLocalState.isCameraMute()) {
-            if (mMultiVideoCallService.getVideoView(null) != null) {
-                mMultiVideoCallService.toggleCamera();
+            if (multiVideoCallService.getVideoView(null) != null) {
+                multiVideoCallService.toggleCamera();
                 videoLocalState.setCameraMute(false);
             }
         }
@@ -109,8 +109,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestPause() {
         // Stop camera while view paused
-        if (mMultiVideoCallService.getVideoView(null) != null) {
-            boolean toggleCamera = mMultiVideoCallService.toggleCamera(false);
+        if (multiVideoCallService.getVideoView(null) != null) {
+            boolean toggleCamera = multiVideoCallService.toggleCamera(false);
             videoLocalState.setCameraMute(toggleCamera);
         }
     }
@@ -118,49 +118,49 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
+        permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
     public void onViewRequestSwitchCamera() {
         //change to back/front camera by SkylinkSDK
-        mMultiVideoCallService.switchCamera();
+        multiVideoCallService.switchCamera();
     }
 
     @Override
     public boolean onViewRequestStartRecording() {
         // start recording the view call by SkylinkSDK (with SMR key)
-        return mMultiVideoCallService.startRecording();
+        return multiVideoCallService.startRecording();
     }
 
     @Override
     public boolean onViewRequestStopRecording() {
         // stop recording the view call by SkylinkSDK (with SMR key)
-        return mMultiVideoCallService.stopRecording();
+        return multiVideoCallService.stopRecording();
     }
 
     @Override
     public void onViewRequestGetInputVideoResolution() {
         // get local video resolution by SkylinkSDK
-        mMultiVideoCallService.getInputVideoResolution();
+        multiVideoCallService.getInputVideoResolution();
     }
 
     @Override
     public void onViewRequestGetSentVideoResolution(int peerIndex) {
         // get video resolution sent to remote peer(s)
-        mMultiVideoCallService.getSentVideoResolution(peerIndex);
+        multiVideoCallService.getSentVideoResolution(peerIndex);
     }
 
     @Override
     public void onViewRequestGetReceivedVideoResolution(int peerIndex) {
         //get received video resolution from remote peer(s)
-        mMultiVideoCallService.getReceivedVideoResolution(peerIndex);
+        multiVideoCallService.getReceivedVideoResolution(peerIndex);
     }
 
     @Override
     public void onViewRequestWebrtcStatsToggle(int peerIndex) {
 
-        String peerId = mMultiVideoCallService.getPeerIdByIndex(peerIndex);
+        String peerId = multiVideoCallService.getPeerIdByIndex(peerIndex);
 
         if (peerId == null)
             return;
@@ -185,29 +185,29 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onViewRequestGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
-        mMultiVideoCallService.getTransferSpeeds(peerIndex, mediaDirection, mediaType);
+        multiVideoCallService.getTransferSpeeds(peerIndex, mediaDirection, mediaType);
     }
 
     @Override
     public void onViewRequestRefreshConnection(int peerIndex, boolean iceRestart) {
-        mMultiVideoCallService.refreshConnection(peerIndex, iceRestart);
+        multiVideoCallService.refreshConnection(peerIndex, iceRestart);
     }
 
     @Override
     public String onViewRequestGetRoomIdAndNickname() {
         //get id and nickname of the room by SkylinkSDK
-        return mMultiVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
+        return multiVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
     }
 
     @Override
     public int onViewRequestGetTotalInRoom() {
         //get total peers in room (include local peer)
-        return mMultiVideoCallService.getTotalInRoom();
+        return multiVideoCallService.getTotalInRoom();
     }
 
     @Override
     public SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int index) {
-        return mMultiVideoCallService.getVideoViewByIndex(index);
+        return multiVideoCallService.getVideoViewByIndex(index);
     }
 
     /**
@@ -215,13 +215,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
      */
     @Override
     public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
-        return mMultiVideoCallService.getPeerByIndex(index);
+        return multiVideoCallService.getPeerByIndex(index);
     }
 
     @Override
     public Boolean onViewRequestGetWebRtcStatsState(int peerIndex) {
         SkylinkPeer peer = onViewRequestGetPeerByIndex(peerIndex);
-        if(peer != null)
+        if (peer != null)
             return isGettingWebrtcStats.get(peer.getPeerId());
         return null;
     }
@@ -235,22 +235,22 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
             //start audio routing if has audio config
-            SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
+            SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
             if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
                 AudioRouter.setPresenter(this);
-                AudioRouter.startAudioRouting(mContext, Constants.CONFIG_TYPE.VIDEO);
+                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
             }
 
-            mMultiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+            multiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
         }
     }
 
     @Override
     public void onServiceRequestDisconnect() {
         //stop audio routing
-        SkylinkConfig skylinkConfig = mMultiVideoCallService.getSkylinkConfig();
+        SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(mContext);
+            AudioRouter.stopAudioRouting(context);
         }
     }
 
@@ -262,13 +262,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = mMultiVideoCallService.getVideoView(null);
-            mMultiVideoCallView.onPresenterRequestAddSelfView(selfVideoView);
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null);
+            multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView);
 
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            mMultiVideoCallView.onPresenterRequestAddSelfView(videoView);
+            multiVideoCallView.onPresenterRequestAddSelfView(videoView);
         }
     }
 
@@ -277,7 +277,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
-        toastLogLong(TAG, mContext, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -285,7 +285,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
-        toastLogLong(TAG, mContext, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -293,14 +293,14 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
-        toastLogLong(TAG, mContext, log);
+        toastLogLong(TAG, context, log);
     }
 
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
 
         // add new peer button in action bar
-        mMultiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, mMultiVideoCallService.getTotalPeersInRoom() - 1);
+        multiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, multiVideoCallService.getTotalPeersInRoom() - 1);
 
         // add new webRTCStats for peer
         isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
@@ -316,13 +316,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             return;
 
         // Remove the peer in button in custom bar
-        mMultiVideoCallView.onPresenterRequestChangeUIRemotePeerLeft(removeIndex, mMultiVideoCallService.getPeersList());
+        multiVideoCallView.onPresenterRequestChangeUIRemotePeerLeft(removeIndex, multiVideoCallService.getPeersList());
 
         // remove the   webRtStats of the peer
         isGettingWebrtcStats.remove(remotePeer.getPeerId());
 
         // remote the remote peer video view
-        mMultiVideoCallView.onPresenterRequestRemoveRemotePeer(removeIndex);
+        multiVideoCallView.onPresenterRequestRemoveRemotePeer(removeIndex);
     }
 
     @Override
@@ -331,7 +331,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -350,17 +350,17 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onServiceRequestRecordingVideoLink(String recordingId, String peerId, String videoLink) {
         String peer = " Mixin";
         if (peerId != null) {
-            peer = " Peer " + mMultiVideoCallService.getPeerIdNick(peerId) + "'s";
+            peer = " Peer " + multiVideoCallService.getPeerIdNick(peerId) + "'s";
         }
         String msg = "Recording:" + recordingId + peer + " video link:\n" + videoLink;
 
-        mMultiVideoCallView.onPresenterRequestDisplayVideoLinkInfo(recordingId, msg);
+        multiVideoCallView.onPresenterRequestDisplayVideoLinkInfo(recordingId, msg);
 
     }
 
     @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext, mMultiVideoCallView.onPresenterRequestGetFragmentInstance());
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context, multiVideoCallView.onPresenterRequestGetFragmentInstance());
     }
 
     //----------------------------------------------------------------------------------------------
@@ -373,11 +373,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     private void processConnectToRoom() {
 
         //connect to SkylinkSDK
-        mMultiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
+        multiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
 
         //get roomName from setting
         String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
-        toastLog(TAG, mContext, log);
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -417,22 +417,22 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     private void processGetWebrtcStats(String peerId, int mediaDirection, int mediaType) {
-        mMultiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
+        multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
     }
 
     private void processAddRemoteView(String remotePeerId) {
 
-        int index = mMultiVideoCallService.getPeerIndexByPeerId(remotePeerId);
+        int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId);
 
-        SurfaceViewRenderer videoView = mMultiVideoCallService.getVideoView(remotePeerId);
+        SurfaceViewRenderer videoView = multiVideoCallService.getVideoView(remotePeerId);
 
-        mMultiVideoCallView.onPresenterRequestAddRemoteView(index, videoView);
+        multiVideoCallView.onPresenterRequestAddRemoteView(index, videoView);
     }
 
     /**
      * Get the room id info
      */
     private String processGetRoomId() {
-        return mMultiVideoCallService.getRoomId();
+        return multiVideoCallService.getRoomId();
     }
 }

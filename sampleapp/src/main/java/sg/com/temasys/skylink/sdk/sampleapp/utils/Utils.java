@@ -19,6 +19,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -77,7 +78,7 @@ public class Utils {
     // maximum data size to be transfered
     public static final int MAX_TRANSFER_SIZE = 65456;
 
-    private static Context mContext;
+    private static Context context;
     private static SharedPreferences sharedPref;
 
     /**
@@ -86,8 +87,8 @@ public class Utils {
     private static Toast toast;
 
     public Utils(Context context) {
-        this.mContext = context;
-        sharedPref = mContext.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        this.context = context;
+        sharedPref = Utils.context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     /**
@@ -147,6 +148,23 @@ public class Utils {
                 // If parent is a ViewGroup, remove from parent.
                 if (ViewGroup.class.isInstance(viewParent)) {
                     ((ViewGroup) viewParent).removeView(videoView);
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove a view from containing layout, if any.
+     *
+     * @param view
+     */
+    public static void removeViewFromParent(View view) {
+        if (view != null) {
+            Object viewParent = view.getParent();
+            if (viewParent != null) {
+                // If parent is a ViewGroup, remove from parent.
+                if (ViewGroup.class.isInstance(viewParent)) {
+                    ((ViewGroup) viewParent).removeView(view);
                 }
             }
         }
@@ -359,7 +377,7 @@ public class Utils {
      * @return File to be transferred from default directory (Pictures directory).
      */
     public static File getFileToTransfer(String fileName) {
-        File path = mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return new File(path, fileName);
     }
 
@@ -374,7 +392,7 @@ public class Utils {
             // no error checking, and assumes the picture is small (does not
             // try to copy it in chunks).  Note that if external storage is
             // not currently mounted this will silently fail.
-            InputStream is = mContext.getResources().openRawResource(fileIn);
+            InputStream is = context.getResources().openRawResource(fileIn);
             OutputStream os = new FileOutputStream(fileCopy);
             byte[] data = new byte[is.available()];
             is.read(data);
@@ -384,7 +402,7 @@ public class Utils {
 
             // Tell the media scanner about the new file so that it is
             // immediately available to the user.
-            MediaScannerConnection.scanFile(mContext,
+            MediaScannerConnection.scanFile(context,
                     new String[]{fileCopy.toString()}, null,
                     new MediaScannerConnection.OnScanCompletedListener() {
                         public void onScanCompleted(String path, Uri uri) {
@@ -510,7 +528,7 @@ public class Utils {
     public static byte[] getDataSample() {
         byte[] data = null;
 
-        InputStream inputStream = mContext.getResources().openRawResource(R.raw.logo_icon);
+        InputStream inputStream = context.getResources().openRawResource(R.raw.logo_icon);
         try {
             data = new byte[inputStream.available()];
             inputStream.read(data);
@@ -603,7 +621,7 @@ public class Utils {
 
         // get Connectivity Manager object to check connection
         ConnectivityManager connec =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         // Check for network connections
         if (connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTED ||
@@ -659,7 +677,7 @@ public class Utils {
             Log.d(TAG, log);
             defaultVideoDevice = cameraFront;
             Config.setPrefString(DEFAULT_VIDEO_DEVICE,
-                    cameraFront.name(), (Activity) mContext);
+                    cameraFront.name(), (Activity) context);
             log = logTag + "Set Shared Preference to " + defaultVideoDevice + ".";
             Log.d(TAG, log);
         }
@@ -762,7 +780,7 @@ public class Utils {
      */
     private Bitmap getBitmapFromUri(Uri uri) throws IOException {
         ParcelFileDescriptor parcelFileDescriptor =
-                mContext.getContentResolver().openFileDescriptor(uri, "r");
+                context.getContentResolver().openFileDescriptor(uri, "r");
         FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
         Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
         parcelFileDescriptor.close();

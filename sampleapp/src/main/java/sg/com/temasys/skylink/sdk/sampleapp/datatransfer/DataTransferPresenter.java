@@ -24,27 +24,27 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
     private final String TAG = DataTransferPresenter.class.getName();
 
-    private Context mContext;
+    private Context context;
 
-    private DataTransferContract.View mDataTransferView;
-    private DataTransferService mDataTransferService;
+    private DataTransferContract.View dataTransferView;
+    private DataTransferService dataTransferService;
     //utils to process permission
-    private PermissionUtils mPermissionUtils;
+    private PermissionUtils permissionUtils;
 
     // the index of the peer on the action bar that user selected to send message privately
     // default is 0 - send message to all peers
     private int selectedPeerIndex = 0;
 
     public DataTransferPresenter(Context context) {
-        this.mContext = context;
-        this.mDataTransferService = new DataTransferService(context);
-        this.mDataTransferService.setPresenter(this);
-        this.mPermissionUtils = new PermissionUtils();
+        this.context = context;
+        this.dataTransferService = new DataTransferService(context);
+        this.dataTransferService.setPresenter(this);
+        this.permissionUtils = new PermissionUtils();
     }
 
     public void setView(DataTransferContract.View view) {
-        mDataTransferView = view;
-        mDataTransferView.setPresenter(this);
+        dataTransferView = view;
+        dataTransferView.setPresenter(this);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -63,10 +63,10 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
 
         //start to connect to room when entering room
         //if not being connected, then connect
-        if (!mDataTransferService.isConnectingOrConnected()) {
+        if (!dataTransferService.isConnectingOrConnected()) {
 
             //connect to room on Skylink connection
-            mDataTransferService.connectToRoom(Constants.CONFIG_TYPE.DATA);
+            dataTransferService.connectToRoom(Constants.CONFIG_TYPE.DATA);
 
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
@@ -81,8 +81,8 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      */
     @Override
     public boolean onViewRequestFilePermission() {
-        return mPermissionUtils.requestFilePermission(mContext,
-                mDataTransferView.onPresenterRequestGetFragmentInstance());
+        return permissionUtils.requestFilePermission(context,
+                dataTransferView.onPresenterRequestGetFragmentInstance());
     }
 
     /**
@@ -90,7 +90,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      */
     @Override
     public void onViewRequestPermissionDeny() {
-        mPermissionUtils.displayFilePermissionWarning(mContext);
+        permissionUtils.displayFilePermissionWarning(context);
     }
 
     /**
@@ -99,7 +99,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to the PermissionUtils to process the permission
-        mPermissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
+        permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     /**
@@ -129,15 +129,15 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      */
     @Override
     public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
-        return mDataTransferService.getPeerByIndex(index);
+        return dataTransferService.getPeerByIndex(index);
     }
 
     @Override
     public void onViewRequestSendData(byte[] data) {
         // Do not allow button actions if there are no remote Peers in the room.
-        if (mDataTransferService.getTotalPeersInRoom() < 2) {
-            String log = mContext.getString(R.string.warn_no_peer_message);
-            toastLog(TAG, mContext, log);
+        if (dataTransferService.getTotalPeersInRoom() < 2) {
+            String log = context.getString(R.string.warn_no_peer_message);
+            toastLog(TAG, context, log);
             return;
         }
 
@@ -145,13 +145,13 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         // send data to specific peer id if user choose the peer
         String remotePeerId = null;
         if (selectedPeerIndex != 0) {
-            remotePeerId = mDataTransferService.getPeerByIndex(selectedPeerIndex).getPeerId();
+            remotePeerId = dataTransferService.getPeerByIndex(selectedPeerIndex).getPeerId();
         }
 
         // delegate to service layer to implement sending data
         String error = null;
         try {
-            mDataTransferService.sendData(remotePeerId, data);
+            dataTransferService.sendData(remotePeerId, data);
         } catch (SkylinkException e) {
             error = e.getMessage();
         } catch (UnsupportedOperationException e) {
@@ -159,16 +159,16 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         }
 
         if (error != null) {
-            toastLogLong(TAG, mContext, error);
+            toastLogLong(TAG, context, error);
         } else {
-            toastLog(TAG, mContext, "You have sent an array of data");
+            toastLog(TAG, context, "You have sent an array of data");
         }
     }
 
     @Override
     public void onViewRequestExit() {
         //process disconnect from room
-        mDataTransferService.disconnectFromRoom();
+        dataTransferService.disconnectFromRoom();
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 
@@ -186,8 +186,8 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
-        mDataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
-                mDataTransferService.getTotalPeersInRoom() - 1);
+        dataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
+                dataTransferService.getTotalPeersInRoom() - 1);
     }
 
     @Override
@@ -197,7 +197,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
             return;
 
         // Remove the peer in button in custom bar
-        mDataTransferView.onPresenterRequestChangeUiRemotePeerLeft(mDataTransferService.getPeersList());
+        dataTransferView.onPresenterRequestChangeUiRemotePeerLeft(dataTransferService.getPeersList());
     }
 
     /**
@@ -206,16 +206,16 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         // delegate to the PermissionUtils to process the permission
-        mPermissionUtils.onPermissionRequiredHandler(info, TAG, mContext,
-                mDataTransferView.onPresenterRequestGetFragmentInstance());
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context,
+                dataTransferView.onPresenterRequestGetFragmentInstance());
     }
 
     @Override
     public void onServiceRequestDataReceive(Context context, String remotePeerId, byte[] data) {
-        SkylinkPeer remotePeer = mDataTransferService.getPeerById(remotePeerId);
-        mDataTransferView.onPresenterRequestChangeUIReceivedData(remotePeer, data);
+        SkylinkPeer remotePeer = dataTransferService.getPeerById(remotePeerId);
+        dataTransferView.onPresenterRequestChangeUIReceivedData(remotePeer, data);
 
-        toastLog("DataTransfer", mContext, "You have received an array of data");
+        toastLog("DataTransfer", this.context, "You have received an array of data");
     }
 
 
@@ -230,7 +230,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     private void processUpdateStateConnected() {
 
         // Update the view into connected state
-        mDataTransferView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        dataTransferView.onPresenterRequestUpdateUIConnected(processGetRoomId());
     }
 
 
@@ -238,7 +238,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * Get the room id info
      */
     private String processGetRoomId() {
-        return mDataTransferService.getRoomId();
+        return dataTransferService.getRoomId();
     }
 }
 

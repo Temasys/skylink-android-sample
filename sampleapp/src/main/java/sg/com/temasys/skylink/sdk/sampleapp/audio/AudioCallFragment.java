@@ -38,7 +38,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
     private ImageView img;
 
     // presenter instance to implement app logic
-    private AudioCallContract.Presenter mPresenter;
+    private AudioCallContract.Presenter presenter;
 
     public static AudioCallFragment newInstance() {
         return new AudioCallFragment();
@@ -46,7 +46,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
 
     @Override
     public void setPresenter(AudioCallContract.Presenter presenter) {
-        this.mPresenter = presenter;
+        this.presenter = presenter;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         // delegate presenter to implement the permission results
-        mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
+        presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
                 displayPeerInfo(3);
                 break;
             case R.id.btnAudioSpeaker:
-                mPresenter.onViewRequestChangeAudioOuput();
+                presenter.onViewRequestChangeAudioOuput();
                 break;
             case R.id.btnAudioEnd:
                 processEndAudio();
@@ -139,7 +139,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
         if (!((AudioCallActivity) context).isChangingConfigurations()) {
-            mPresenter.onViewRequestExit();
+            presenter.onViewRequestExit();
         }
     }
 
@@ -293,8 +293,8 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
      * try to connect to room if not connected
      */
     private void requestViewLayout() {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestConnectedLayout();
+        if (presenter != null) {
+            presenter.onViewRequestConnectedLayout();
         }
 
         //changing layout to fit with screen
@@ -323,7 +323,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
      * when the user click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {
@@ -337,7 +337,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
     private void processEndAudio() {
 
         // Inform the presenter to implement closing the connection
-        mPresenter.onViewRequestExit();
+        presenter.onViewRequestExit();
 
         //close UI
         if (getActivity() != null) {

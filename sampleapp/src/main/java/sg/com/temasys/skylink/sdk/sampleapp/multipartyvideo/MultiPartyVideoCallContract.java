@@ -140,15 +140,21 @@ public interface MultiPartyVideoCallContract {
         /**
          * process getting remote video view from specific peer
          */
-        SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int i);
+        SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int index);
 
         /**
          * process data to display on view at initiative connection
          */
         void onViewRequestConnectedLayout();
 
+        /**
+         * Get specific peer at index
+         * */
         SkylinkPeer onViewRequestGetPeerByIndex(int index);
 
+        /**
+         * Get the stats state of specific remote video view
+         * */
         Boolean onViewRequestGetWebRtcStatsState(int peerIndex);
     }
 

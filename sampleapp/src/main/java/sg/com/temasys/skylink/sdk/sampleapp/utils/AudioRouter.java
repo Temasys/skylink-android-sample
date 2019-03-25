@@ -27,11 +27,11 @@ public class AudioRouter {
 
     private static BluetoothAdapter bluetoothAdapter;
 
-    private static BasePresenter mPresenter;
+    private static BasePresenter presenter;
 
     private static boolean isAudioOnSpeaker;
 
-    private static Constants.CONFIG_TYPE mCallType;
+    private static Constants.CONFIG_TYPE callType;
 
     private AudioRouter() {
         headsetBroadcastReceiver = new BroadcastReceiver() {
@@ -66,7 +66,7 @@ public class AudioRouter {
                         if (isAudioOnSpeaker) {
                             setAudioPathOnBluetooth(true);
 
-                            mPresenter.onServiceRequestAudioOutputChanged(true);
+                            presenter.onServiceRequestAudioOutputChanged(true);
                         }
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
@@ -160,7 +160,7 @@ public class AudioRouter {
         Log.d(TAG, log);
 
         //use default setting for initialize
-        mCallType = typeCall;
+        callType = typeCall;
         applyDefaultAudioSetting();
 
         log = logTag + "Starting audio routing is complete.";
@@ -197,7 +197,7 @@ public class AudioRouter {
 
             isAudioOnSpeaker = false;
             bluetoothAdapter = null;
-            mPresenter = null;
+            presenter = null;
             audioManager = null;
 
             // Must use applicationContext here and not Activity context.
@@ -288,17 +288,17 @@ public class AudioRouter {
         if (!isSpeakerphoneOn) {
             isAudioOnSpeaker = false;
             audioManager.setSpeakerphoneOn(false);
-            mPresenter.onServiceRequestAudioOutputChanged(false);
+            presenter.onServiceRequestAudioOutputChanged(false);
 
         } else {
             isAudioOnSpeaker = true;
             audioManager.setSpeakerphoneOn(true);
-            mPresenter.onServiceRequestAudioOutputChanged(true);
+            presenter.onServiceRequestAudioOutputChanged(true);
         }
     }
 
     public static void setPresenter(BasePresenter presenter) {
-        mPresenter = presenter;
+        AudioRouter.presenter = presenter;
     }
 
     public static boolean isBluetoothHeadsetConnected() {
@@ -309,7 +309,7 @@ public class AudioRouter {
 
     public static void applyDefaultAudioSetting() {
 
-        if (mCallType.equals(Constants.CONFIG_TYPE.AUDIO)) {
+        if (callType.equals(Constants.CONFIG_TYPE.AUDIO)) {
 
             boolean isAudioSpeaker = Utils.getDefaultAudioSpeaker();
 
@@ -319,7 +319,7 @@ public class AudioRouter {
             } else {
                 setAudioPathOnHeadedSet(true);
             }
-        } else if (mCallType.equals(Constants.CONFIG_TYPE.VIDEO) || mCallType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {
+        } else if (callType.equals(Constants.CONFIG_TYPE.VIDEO) || callType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {
 
             boolean isVideoSpeaker = Utils.getDefaultVideoSpeaker();
 
@@ -340,14 +340,14 @@ public class AudioRouter {
             //set speaker off
             setAudioPathOnHeadedSet(false);
 
-            mPresenter.onServiceRequestAudioOutputChanged(false);
+            presenter.onServiceRequestAudioOutputChanged(false);
             log = logTag + "Headset: Plugged";
 
         } else {
             //only set speaker on when user select turn on speaker button
             if (isAudioOnSpeaker) {
                 setAudioPathOnHeadedSet(true);
-                mPresenter.onServiceRequestAudioOutputChanged(true);
+                presenter.onServiceRequestAudioOutputChanged(true);
             }
             log = logTag + "Headset: Unplugged";
         }
@@ -361,7 +361,7 @@ public class AudioRouter {
         if (isConnected) {
             setAudioPathOnBluetooth(false);
 
-            mPresenter.onServiceRequestAudioOutputChanged(false);
+            presenter.onServiceRequestAudioOutputChanged(false);
 
             log = logTag + "Bluetooth: on";
             Log.d(TAG, log);
@@ -372,7 +372,7 @@ public class AudioRouter {
             if (isAudioOnSpeaker) {
                 setAudioPathOnBluetooth(true);
 
-                mPresenter.onServiceRequestAudioOutputChanged(true);
+                presenter.onServiceRequestAudioOutputChanged(true);
             }
 
             log = logTag + "Bluetooth: off";

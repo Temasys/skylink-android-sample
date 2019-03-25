@@ -50,7 +50,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
     private static final int CHOOSE_FILE_REQUEST_CODE = 10;
 
     // presenter instance to implement app logic
-    private FileTransferContract.Presenter mPresenter;
+    private FileTransferContract.Presenter presenter;
 
     // view widgets
     private TextView txtFilePathInfo;
@@ -70,7 +70,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
 
     @Override
     public void setPresenter(FileTransferContract.Presenter presenter) {
-        this.mPresenter = presenter;
+        this.presenter = presenter;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
         // in case of changing screen orientation, do not close the connection
         if (!((FileTransferActivity) context).isChangingConfigurations()) {
             //disconnect from room
-            mPresenter.onViewRequestExit();
+            presenter.onViewRequestExit();
         }
     }
 
@@ -190,10 +190,10 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
                 showFilePicker();
             } else {
                 // permission denied, warning the user
-                mPresenter.onViewRequestPermissionDeny();
+                presenter.onViewRequestPermissionDeny();
             }
         } else { // permission results from SDK
-            mPresenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
+            presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -208,12 +208,12 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
         if (requestCode == CHOOSE_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             // update file info
             // check for select remote peer or un select it
-            boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+            boolean unSelected = presenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
             if (unSelected) {
                 txtFilePathInfo.setText("File path to send to all peers : ");
             } else {
-                int index = mPresenter.onViewRequestGetCurrentSelectedPeer();
-                SkylinkPeer selectedPeer = mPresenter.onViewRequestGetPeerByIndex(index);
+                int index = presenter.onViewRequestGetCurrentSelectedPeer();
+                SkylinkPeer selectedPeer = presenter.onViewRequestGetPeerByIndex(index);
                 txtFilePathInfo.setText("File path to send to " + selectedPeer.toString() + " : ");
             }
 
@@ -433,8 +433,8 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
      * try to update UI if connected to room
      */
     private void requestViewLayout() {
-        if (mPresenter != null) {
-            mPresenter.onViewRequestConnectedLayout();
+        if (presenter != null) {
+            presenter.onViewRequestConnectedLayout();
         }
     }
 
@@ -452,14 +452,14 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
      */
     private void processSelectPeer(int index) {
         // inform the presenter layer about the selection
-        mPresenter.onViewRequestSelectedRemotePeer(index);
+        presenter.onViewRequestSelectedRemotePeer(index);
 
         // check for select remote peer or un select it
-        boolean unSelected = mPresenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
+        boolean unSelected = presenter.onViewRequestGetCurrentSelectedPeer() == 0 ? true : false;
         if (unSelected) {
             txtFilePathInfo.setText("File path to send to all peers : ");
         } else {
-            SkylinkPeer selectedPeer = mPresenter.onViewRequestGetPeerByIndex(index);
+            SkylinkPeer selectedPeer = presenter.onViewRequestGetPeerByIndex(index);
             txtFilePathInfo.setText("File path to send to " + selectedPeer.toString() + " : ");
         }
 
@@ -472,7 +472,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
      * when the user long click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = mPresenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {
@@ -484,7 +484,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
      * request permission for file browser
      */
     private void requestPermission() {
-        if (mPresenter.onViewRequestFilePermission()) {
+        if (presenter.onViewRequestFilePermission()) {
             // Permission has already been granted
             showFilePicker();
         }
@@ -521,7 +521,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
 
         if (file.isFile()) {
             // Delegate sending file to presenter layer
-            mPresenter.onViewRequestSendFile(file);
+            presenter.onViewRequestSendFile(file);
 
             // Update image preview in case of user manual input the file path
             updateFilePreview(file.getAbsolutePath());

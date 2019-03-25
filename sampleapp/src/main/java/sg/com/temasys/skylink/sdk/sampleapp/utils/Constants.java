@@ -4,12 +4,12 @@ public final class Constants {
     public static final int TIME_OUT = 30;
 
     // default values for room and username setting
-    public static final String ROOM_NAME_AUDIO_DEFAULT = "Room-1234";
-    public static final String ROOM_NAME_CHAT_DEFAULT = "Room-10";
-    public static final String ROOM_NAME_DATA_DEFAULT = "Room-10";
-    public static final String ROOM_NAME_FILE_DEFAULT = "Room-10";
-    public static final String ROOM_NAME_PARTY_DEFAULT = "Room-1234";
-    public static final String ROOM_NAME_VIDEO_DEFAULT = "Room-1234";
+    public static final String ROOM_NAME_AUDIO_DEFAULT = "Room-audio";
+    public static final String ROOM_NAME_CHAT_DEFAULT = "Room-chat";
+    public static final String ROOM_NAME_DATA_DEFAULT = "Room-dataTransfer";
+    public static final String ROOM_NAME_FILE_DEFAULT = "Room-fileTransfer";
+    public static final String ROOM_NAME_PARTY_DEFAULT = "Room-multiVideosCall";
+    public static final String ROOM_NAME_VIDEO_DEFAULT = "Room-video";
 
     public static final String USER_NAME_AUDIO_DEFAULT = "User-audio";
     public static final String USER_NAME_CHAT_DEFAULT = "User-chat";

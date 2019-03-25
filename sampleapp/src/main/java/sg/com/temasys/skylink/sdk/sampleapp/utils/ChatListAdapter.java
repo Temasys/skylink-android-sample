@@ -16,7 +16,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 public class ChatListAdapter extends ArrayAdapter<String> {
 
-    private Context mContext = null;
+    private Context context = null;
     private List<String> chatCollection = null;
     private VIEW_TYPE viewType = VIEW_TYPE.CHAT_METADATA;
 
@@ -28,7 +28,7 @@ public class ChatListAdapter extends ArrayAdapter<String> {
 
     public ChatListAdapter(@NonNull Context context, int resource, @NonNull List<String> objects) {
         super(context, resource, objects);
-        mContext = context;
+        this.context = context;
         chatCollection = objects;
     }
 
@@ -42,13 +42,13 @@ public class ChatListAdapter extends ArrayAdapter<String> {
 
         // base on the content, decide it is from local or remote peer
         if (chatContent.startsWith("[Metadata]")) {
-            listItem = LayoutInflater.from(mContext).inflate(R.layout.list_item_metadata, parent, false);
+            listItem = LayoutInflater.from(context).inflate(R.layout.list_item_metadata, parent, false);
             viewType = VIEW_TYPE.CHAT_METADATA;
         } else if (chatContent.startsWith("You")) {
-            listItem = LayoutInflater.from(mContext).inflate(R.layout.list_item_local, parent, false);
+            listItem = LayoutInflater.from(context).inflate(R.layout.list_item_local, parent, false);
             viewType = VIEW_TYPE.CHAT_LOCAL;
         } else {
-            listItem = LayoutInflater.from(mContext).inflate(R.layout.list_item_remote, parent, false);
+            listItem = LayoutInflater.from(context).inflate(R.layout.list_item_remote, parent, false);
             viewType = VIEW_TYPE.CHAT_REMOTE;
         }
 

@@ -299,11 +299,6 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             Log.d(TAG, log);
             processAddSelfView(videoView);
         }
-
-        //change video layout to horizontal for landscape mode
-        //and vertical for portrait mode
-        videoCallView.onPresenterRequestchangeViewLayout();
-
     }
 
     @Override
