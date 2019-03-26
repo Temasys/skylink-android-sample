@@ -241,6 +241,41 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     /**
+     * This is triggered from SkylinkSDK upon receiving the audio track of the remote peer
+     * if the connection is configured to have an audio call.
+     * This will only be triggered after onRemotePeerJoin has triggered.
+     *
+     * @param remotePeerId The id of the peer
+     */
+    @Override
+    public void onRemotePeerAudioReceive(String remotePeerId) {
+        String log = "[onRemotePeerAudioReceive] ";
+        log += "Received new Audio from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
+
+        UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
+
+        presenter.onServiceRequestRemotePeerAudioReceive(log, remotePeerUserInfo, remotePeerId);
+    }
+
+    /**
+     * This is triggered from SkylinkSDK upon receiving the video view of the remote peer
+     * if the connection is configured to have a video call.
+     * This will only be triggered after onRemotePeerJoin has triggered.
+     *
+     * @param remotePeerId The id of the peer
+     * @param videoView    Remote peer's video.
+     */
+    @Override
+    public void onRemotePeerVideoReceive(String remotePeerId, SurfaceViewRenderer videoView) {
+        String log = "[onRemotePeerVideoReceive] ";
+        log += "Received new Video from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
+
+        UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
+
+        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId);
+    }
+
+    /**
      * This is triggered from SkylinkSDK upon receiving the media stream of the remote peer
      * if the connection is configured to have a audio and/or video call.
      * This will only be triggered after onRemotePeerJoin has triggered.
@@ -259,9 +294,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
         log += "from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
 
-        UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
-
-        presenter.onServiceRequestRemotePeerMediaReceive(log, remotePeerUserInfo, remotePeerId);
+        Log.d(TAG, log);
     }
 
     /**

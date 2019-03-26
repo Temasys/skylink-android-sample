@@ -60,7 +60,10 @@ public abstract class BasePresenter {
     public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
     }
 
-    public void onServiceRequestRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    }
+
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
     }
 
     public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
@@ -209,8 +212,9 @@ public abstract class BasePresenter {
      * with the setting state.
      *
      * @param isSpeakerOn the state of audio speaker on/off
-     * */
+     */
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
     }
+
 
 }

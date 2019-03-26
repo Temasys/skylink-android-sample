@@ -268,15 +268,23 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     @Override
-    public void onServiceRequestRemotePeerMediaReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
+        Log.d(TAG, log);
+        toastLog(TAG, context, log);
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
         // add the remote video view in to the view
-        processAddRemoteView();
+        processAddRemoteView(remotePeerId);
 
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
         Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 
     @Override
@@ -395,12 +403,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     /**
      * Get the remote video view from peer id
-     * the local peer is always at index 0 and
-     * the remote peer is at index 1 because we just have 2 peers in the room
      */
-    private SurfaceViewRenderer processGetRemoteView() {
+    private SurfaceViewRenderer processGetRemoteView(String remotePeerId) {
         SurfaceViewRenderer videoView;
-        String remotePeerId = videoCallService.getPeerId(1);
         // Proceed only if the first (& only) remote Peer has joined.
         if (remotePeerId == null) {
             return null;
@@ -421,9 +426,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     /**
      * Add remote video view into the layout
      */
-    private void processAddRemoteView() {
+    private void processAddRemoteView(String remotePeerId) {
 
-        SurfaceViewRenderer videoView = processGetRemoteView();
+        SurfaceViewRenderer videoView = processGetRemoteView(remotePeerId);
 
         videoCallView.onPresenterRequestAddRemoteView(videoView);
 
