@@ -39,12 +39,12 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
      * @param data         Array of bytes
      * @throws SkylinkException When byte array is not of a size allowed.
      */
-    public void sendData(String remotePeerId, byte[] data) throws SkylinkException{
+    public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
         if (mSkylinkConnection == null)
             return;
 
 //        try {
-            mSkylinkConnection.sendData(remotePeerId, data);
+        mSkylinkConnection.sendData(remotePeerId, data);
 //        } catch (SkylinkException e) {
 //            String log = e.getMessage();
 //            toastLogLong(TAG, mContext, log);
@@ -70,7 +70,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
     /**
      * Get the config for data transfer function
      * User can custom data transfer config by using SkylinkConfig
-     * */
+     */
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();

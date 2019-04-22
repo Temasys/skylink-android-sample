@@ -1,23 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/sentVideoRes"
+    <item
+        android:id="@+id/sentVideoRes"
         android:title="Sent video resolution"/>
-    <item android:id="@+id/receiveVideoRes"
-        android:title="Received video resolution" />
-    <item android:id="@+id/webRtcStats"
-        android:title="@string/webrtc_stats_on" />
-    <item android:id="@+id/transferSpeed"
-        android:title="Transfer speed" />
-    <item android:id="@+id/recordingStart"
-        android:title="Recording stat" />
-    <item android:id="@+id/recordingStop"
-        android:title="Recording stop" />
-    <item android:id="@+id/restart"
-        android:title="Restart" />
-    <item android:id="@+id/restartAll"
-        android:title="Restart All" />
-    <item android:id="@+id/restartICE"
-        android:title="Restart (ICE)" />
-    <item android:id="@+id/restartAllICE"
-        android:title="Restart All (ICE)" />
+    <item
+        android:id="@+id/receiveVideoRes"
+        android:title="Received video resolution"/>
+    <item
+        android:id="@+id/webRtcStats"
+        android:title="@string/webrtc_stats_on"/>
+    <item
+        android:id="@+id/transferSpeed"
+        android:title="Transfer speed"/>
+    <item
+        android:id="@+id/recordingStart"
+        android:title="Recording stat"/>
+    <item
+        android:id="@+id/recordingStop"
+        android:title="Recording stop"/>
+    <item
+        android:id="@+id/restart"
+        android:title="Restart"/>
+    <item
+        android:id="@+id/restartAll"
+        android:title="Restart All"/>
+    <item
+        android:id="@+id/restartICE"
+        android:title="Restart (ICE)"/>
+    <item
+        android:id="@+id/restartAllICE"
+        android:title="Restart All (ICE)"/>
 </menu>

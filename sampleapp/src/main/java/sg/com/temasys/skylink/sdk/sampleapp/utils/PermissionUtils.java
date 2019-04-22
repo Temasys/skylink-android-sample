@@ -1,8 +1,10 @@
 package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -13,6 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.sampleapp.service.PermissionService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 
@@ -64,6 +67,53 @@ public class PermissionUtils {
      * @param tag          Tag string for logging.
      * @return wasAppRequest variable to check the permission is from SDK or from the app
      */
+    /**
+     * Handles the Android provided result(s) of requested Activity for result calls.
+     * Sends to Skylink SDK for processing.
+     * If the requests did not originate from the SDK, the App should process them.
+     *
+     * @param requestCode As given in Android method.
+     * @param resultCode  As given in Android method.
+     * @param data        As given in Android method.
+     */
+    public void onRequestActivityResultHandler(int requestCode, int resultCode, Intent data) {
+
+        String logTag = "[SA][onActResult][requestCode:" + requestCode + "] ";
+        String log = logTag + "Was ";
+
+        boolean permGranted = (Activity.RESULT_OK == resultCode);
+        if (permGranted) {
+            log += "Granted.";
+        } else {
+            log += "Denied!";
+        }
+
+        log += " This Activity for result ";
+
+        // Call SDK processPermissionsResult with the given parameters.
+        boolean wasSkylinkRequest = PermissionService.processActivityResult(requestCode, resultCode, data);
+
+        if (wasSkylinkRequest) {
+            log += "originates from the Skylink SDK.";
+        } else {
+            log += "does NOT originate from the Skylink SDK.";
+            // If result is false, process the results in the app
+            // (permission request was not from SDK).
+        }
+        Log.d(TAG, log);
+    }
+
+    /**
+     * Handles the Android provided result(s) of requested Android permission(s).
+     * Sends to Skylink SDK for processing.
+     * If the permission requests did not originate from the SDK, the App should process them.
+     *
+     * @param requestCode  As given in Android method.
+     * @param permissions  As given in Android method.
+     * @param grantResults As given in Android method.
+     * @param tag          Tag string for logging.
+     * @return wasAppRequest variable to check the permission is from SDK or from the app
+     */
     public void onRequestPermissionsResultHandler(
             int requestCode, String[] permissions, int[] grantResults,
             String tag) {
@@ -72,12 +122,13 @@ public class PermissionUtils {
         permQTaskCompleted();
 
         // Null check.
+        String logTag = "[SA][onPermRes] ";
         String error = "";
         if (permissions.length < 1) {
-            error = "[SA][onPermRes] Unable to process empty permissions array!";
+            error = logTag + "Unable to process empty permissions array!";
         }
         if (grantResults.length < 1) {
-            error = "[SA][onPermRes] Unable to process empty grantResults array!";
+            error = logTag + "Unable to process empty grantResults array!";
         }
         if (!"".equals(error)) {
             Log.e(tag, error);
@@ -85,7 +136,7 @@ public class PermissionUtils {
 
         String permission = permissions[0];
         int grantResult = grantResults[0];
-        String log = "[SA][onPermRes] Received results for requestCode:" + requestCode +
+        String log = logTag + "Received results for requestCode:" + requestCode +
                 ", Permissions:" + permission + ", with results:" + grantResult + ", that ";
         // Call SDK processPermissionsResult with the given parameters.
         boolean wasSkylinkRequest = PermissionService.processPermissionsResult(requestCode, permissions, grantResults);
@@ -99,6 +150,27 @@ public class PermissionUtils {
             // If result is false, process the results in the app
             // (permission request was not from SDK).
         }
+    }
+
+    /**
+     * Handles the Skylink SDK OsListener callback onIntentRequired.
+     * Use the intent and requestCode provided to call
+     * {@link android.app.Activity#startActivityForResult(Intent, int)}.
+     * Once the corresponding {@link android.app.Activity#onActivityResult(int, int, Intent)}
+     * is received, pass the parameters (requestCode, resultCode, Intent) to the SDK's
+     * {@link SkylinkConnection#processActivityResult(int, int, Intent)}.
+     *
+     * @param intent          As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
+     * @param requestCode     As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
+     * @param infoCode        As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
+     * @param currentActivity The current {@link Activity}.
+     */
+    public void onIntentRequiredHandler(Intent intent, int requestCode, int infoCode, Activity currentActivity) {
+        String logTag = "[SPmS][getScreenCaptureIntent] ";
+        currentActivity.startActivityForResult(intent, requestCode);
+        String log = logTag + "Started Activity for result, infoCode:" + infoCode
+                + " (" + Info.getInfoString(infoCode) + ").";
+        Log.d("PermissionUtils", log);
     }
 
     /**
@@ -124,6 +196,22 @@ public class PermissionUtils {
 
         // Add PermRequesterInfo to Queue.
         permQOfferLast(permRequester);
+    }
+
+    /**
+     * Handles Skylink SDK OsListener callback onPermissionGranted.
+     * Log the permission that had been granted.
+     *
+     * @param info As given in OsListener method.
+     */
+    public static void onPermissionGrantedHandler(int requestCode, int infoCode, boolean granted) {
+        String outcome = "GRANTED";
+        if (!granted) {
+            outcome = "DENIED";
+        }
+        String log = "[SA][onPermGrant] Permission has been " + outcome + " for requestCode " +
+                requestCode + ", infoCode:" + infoCode + " (" + getInfoString(infoCode) + ").";
+        Log.d("PermissionUtils", log);
     }
 
     /**
@@ -378,23 +466,27 @@ public class PermissionUtils {
          */
         void processOnPermReq(final PermRequesterInfo requester, final String tag,
                               final Context context, final Fragment fragment) {
-            String log = "[SA][PR][procPermReq] SDK requesting permission for " + requester.getPermissions()[0] +
+            int requestCode = requester.getRequestCode();
+            int infoCode = requester.getInfoCode();
+            String[] permissions = requester.getPermissions();
+            String permission = permissions[0];
+            String log = "[SA][PR][procPermReq] SDK requesting permission for " + permission +
                     ", which ";
 
             // For permission already granted,
-            // call Sylink SDK processPermissionsResult with PERMISSION_GRANTED as the result.
-            int permissionState = ContextCompat.checkSelfPermission(context, requester.getPermissions()[0]);
+            // call Skylink SDK processPermissionsResult with PERMISSION_GRANTED as the result.
+            int permissionState = ContextCompat.checkSelfPermission(context, permission);
             if (permissionState == PackageManager.PERMISSION_GRANTED) {
-
                 log += "has already been granted, no need to request again. " +
-                        "infoCode:" + requester.getInfoCode() + " (" + getInfoString(requester.getInfoCode()) + ")";
+                        "infoCode:" + infoCode +
+                        " (" + getInfoString(infoCode) + ")";
 
                 int[] grantResults = new int[]{PackageManager.PERMISSION_GRANTED};
-                if (!PermissionService.processPermissionsResult(requester.getRequestCode(), requester.getPermissions(),
-                        grantResults)) {
+                if (!PermissionService.processPermissionsResult(
+                        requestCode, permissions, grantResults)) {
                     // If result is false, an error has occurred.
-                    log += "\r\n[ERROR] The SDK should but does not recognise permission requestCode: "
-                            + " " + requester.getRequestCode() + "!";
+                    log += "\r\n[ERROR] The SDK should but does not recognise " +
+                            "permission requestCode: " + requestCode + "!";
                     Log.e(tag, log);
                 } else {
                     Log.d(tag, log);
@@ -410,7 +502,7 @@ public class PermissionUtils {
 
             // Create explanation based on permission required.
             String alertText = "";
-            switch (requester.getInfoCode()) {
+            switch (infoCode) {
                 case PERM_AUDIO_MIC:
                     alertText += "Android permission to use the Microphone must be given " +
                             "in order to send our audio to a remote Peer!";
@@ -428,11 +520,11 @@ public class PermissionUtils {
                             "in order to receive file from a remote Peer!";
                     break;
             }
-            log += alertText + "\r\ninfoCode:" + requester.getInfoCode() + " (" + getInfoString(requester.getInfoCode()) + ")";
+            log += alertText + "\r\ninfoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
 
             // Explain rationale for permission request if the user
             // has denied this Permission before, but did not indicate to never ask again.
-            if (fragment.shouldShowRequestPermissionRationale(requester.getPermissions()[0])) {
+            if (fragment.shouldShowRequestPermissionRationale(permission)) {
 
                 // Create AlertDialog to present Permission rationale message.
                 AlertDialog.Builder permissionRationaleDialogBuilder =
@@ -456,14 +548,14 @@ public class PermissionUtils {
                             requestMade[0] = true;
                             String logDeny = finalLogDeny;
 
-                            // Call Sylink SDK processPermissionsResult with
+                            // Call Skylink SDK processPermissionsResult with
                             // PERMISSION_DENIED as the result.
                             int[] grantResults = new int[]{PackageManager.PERMISSION_DENIED};
-                            if (!PermissionService.processPermissionsResult(requester.getRequestCode(), requester.getPermissions(),
-                                    grantResults)) {
+                            if (!PermissionService.processPermissionsResult(
+                                    requestCode, permissions, grantResults)) {
                                 // If result is false, an error has occurred.
                                 logDeny += "\r\n[ERROR] The SDK should but does not recognise "
-                                        + "permission requestCode: " + requester.getRequestCode() + "!";
+                                        + "permission requestCode: " + requestCode + "!";
                                 Log.e(tag, logDeny);
                             } else {
                                 // Log permission denied.
@@ -482,7 +574,7 @@ public class PermissionUtils {
                             requestMade[0] = true;
                             // Request for permission:
                             Log.d(tag, finalLogRequest);
-                            fragment.requestPermissions(requester.getPermissions(), requester.getRequestCode());
+                            fragment.requestPermissions(permissions, requestCode);
                         });
 
                 // Set this permission in Q again if it was canceled without being requested.
@@ -518,7 +610,7 @@ public class PermissionUtils {
             log += ".\r\nRequesting Android for Permission for the first time.";
             Log.d(tag, log);
 
-            fragment.requestPermissions(requester.getPermissions(), requester.getRequestCode());
+            fragment.requestPermissions(permissions, requestCode);
             return;
         }
     }

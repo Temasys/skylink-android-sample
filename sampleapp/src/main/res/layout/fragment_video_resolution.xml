@@ -1,11 +1,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/dp_10dp"
-    android:background="@drawable/frame_layout_round_border"
-    tools:context="sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionFragment">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/dp_10dp"
+                android:background="@drawable/frame_layout_round_border"
+                tools:context="sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionFragment">
 
     <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
         android:id="@+id/seekBarResWidthHeight"
@@ -97,6 +97,7 @@
             android:textStyle="normal"
             android:gravity="center"
             android:layout_weight="1"/>
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -106,6 +107,7 @@
             android:text="Res Sent"
             android:gravity="center"
             android:layout_weight="1"/>
+
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -116,6 +118,7 @@
             android:gravity="center"
             android:layout_weight="1"/>
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/layout_res_widthHeight"
         android:layout_width="match_parent"
@@ -132,7 +135,8 @@
             android:text="1920x1080"
             android:gravity="center"
             android:layout_weight="1"
-            android:layout_width="0dp" />
+            android:layout_width="0dp"/>
+
         <TextView
             android:id="@+id/txtResSent"
             android:layout_width="0dp"
@@ -142,6 +146,7 @@
             android:text="640x480"
             android:gravity="center"
             android:layout_weight="1"/>
+
         <TextView
             android:id="@+id/txtResReceived"
             android:layout_width="0dp"
@@ -152,6 +157,7 @@
             android:gravity="center"
             android:layout_weight="1"/>
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -167,7 +173,8 @@
             android:text="30fps"
             android:gravity="center"
             android:layout_weight="1"
-            android:layout_width="0dp" />
+            android:layout_width="0dp"/>
+
         <TextView
             android:id="@+id/txtResSentFps"
             android:layout_width="0dp"
@@ -177,6 +184,7 @@
             android:text="30fps"
             android:gravity="center"
             android:layout_weight="1"/>
+
         <TextView
             android:id="@+id/txtResReceivedFps"
             android:layout_width="0dp"
@@ -187,7 +195,6 @@
             android:gravity="center"
             android:layout_weight="1"/>
     </LinearLayout>
-
 
 
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -66,6 +67,11 @@ public class VideoCallActivity extends AppCompatActivity {
         videoCallPresenter.setView(videoCallFragment);
         videoResPresenter.setView(videoResolutionFragment);
         videoCallPresenter.setVideoResPresenter(videoResPresenter);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        videoCallPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
     }
 
     @Override

@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-<item android:state_pressed="false">
-    <shape android:shape="oval">
-        <solid android:color="@color/primary"/>
-        <stroke android:width="@dimen/dp_0_5dp" android:color="@color/primary"/>
-        <corners android:radius="@dimen/dp_3dp"></corners>
-    </shape>
-</item>
-<item android:state_pressed="false" android:state_hovered="true">
-    <shape android:shape="oval">
-        <solid android:color="@color/primary"/>
-        <stroke android:width="@dimen/dp_0_5dp" android:color="@color/primary"/>
-        <corners android:radius="@dimen/dp_3dp"></corners>
-    </shape>
-</item>
-<item android:state_pressed="true">
-    <shape android:shape="oval">
-        <solid android:color="@color/primary_dark"/>
-        <stroke android:width="@dimen/dp_0_5dp" android:color="@color/primary"/>
-        <corners android:radius="@dimen/dp_3dp"></corners>
-    </shape>
-</item>
+    <item android:state_pressed="false">
+        <shape android:shape="oval">
+            <solid android:color="@color/primary"/>
+            <stroke android:width="@dimen/dp_0_5dp" android:color="@color/primary"/>
+            <corners android:radius="@dimen/dp_3dp"></corners>
+        </shape>
+    </item>
+    <item android:state_pressed="false" android:state_hovered="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/primary"/>
+            <stroke android:width="@dimen/dp_0_5dp" android:color="@color/primary"/>
+            <corners android:radius="@dimen/dp_3dp"></corners>
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/primary_dark"/>
+            <stroke android:width="@dimen/dp_0_5dp" android:color="@color/primary"/>
+            <corners android:radius="@dimen/dp_3dp"></corners>
+        </shape>
+    </item>
 </selector>

@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Point;
 import android.util.Log;
 
@@ -27,6 +28,7 @@ import sg.com.temasys.skylink.sdk.listener.RecordingListener;
 import sg.com.temasys.skylink.sdk.listener.RemotePeerListener;
 import sg.com.temasys.skylink.sdk.listener.StatsListener;
 import sg.com.temasys.skylink.sdk.rtc.Errors;
+import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
@@ -384,6 +386,62 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //----------------------------------------------------------------------------------------------
     // Methods which are from OsListener need to be implemented for audio, video, fileTransfer, multiVideo functions
     //----------------------------------------------------------------------------------------------
+
+    /**
+     * This is triggered when an Android Intent is required to use a part of the SDK. For e.g.,
+     * the intent from {@link android.app.Activity#onActivityResult(int, int, Intent)} generated
+     * from {@link android.app.Activity#startActivityForResult(Intent, int)}, using the intent of
+     * {@link android.media.projection.MediaProjectionManager#createScreenCaptureIntent},
+     * is required before screen capture can be performed.
+     * When received, app should use the intent and requestCode provided here to call
+     * {@link android.app.Activity#startActivityForResult(Intent, int)}.
+     * Once the corresponding {@link android.app.Activity#onActivityResult(int, int, Intent)}
+     * is received, app should pass the parameters (requestCode, resultCode, Intent) to the SDK's
+     * {@link SkylinkConnection#processActivityResult(int, int, Intent)}.
+     * The SDK will process this result and also notify app via
+     * {@link #onPermissionGranted} or {@link #onPermissionDenied}.
+     *
+     * @param intent      An Intent to be passed to
+     *                    {@link android.app.Activity#startActivityForResult(Intent, int)}.
+     * @param requestCode An unique integer that represents this permission request.
+     *                    This is to be used as the requestCode when calling Android's
+     *                    {@link android.app.Activity#startActivityForResult(Intent, int)}.
+     * @param infoCode    {@link Info} Integer that explains why this permission is required.
+     *                    Further info can be obtained by calling
+     *                    {@link Info#getInfoString Info.getInfoString(infoCode)}.
+     *                    Based on this info, an explanation might be crafted
+     *                    to educate the user on why this permission is required.
+     */
+    public void onIntentRequired(Intent intent, int requestCode, int infoCode) {
+        Log.d(TAG, "[onIntentRequired]");
+        presenter.onServiceRequestIntentRequired(intent, requestCode, infoCode);
+    }
+
+    /**
+     * This is triggered when Android Intent based permission has been granted for the usage of
+     * a particular part of the SDK.
+     *
+     * @param intent      As that in {@link #onIntentRequired(Intent, int, int)}.
+     * @param requestCode As that in {@link #onIntentRequired(Intent, int, int)}.
+     * @param infoCode    As that in {@link #onIntentRequired(Intent, int, int)}.
+     */
+    public void onPermissionGranted(Intent intent, int requestCode, int infoCode) {
+        Log.d(TAG, "[onIntentPermissionGranted]");
+        presenter.onServiceRequestPermissionGranted(intent, requestCode, infoCode);
+    }
+
+    /**
+     * This is triggered when Android Intent based permission has been denied for the usage of
+     * a particular part of the SDK.
+     *
+     * @param intent      As that in {@link #onIntentRequired(Intent, int, int)}.
+     * @param requestCode As that in {@link #onIntentRequired(Intent, int, int)}.
+     * @param infoCode    As that in {@link #onIntentRequired(Intent, int, int)}.
+     */
+    public void onPermissionDenied(Intent intent, int requestCode, int infoCode) {
+        Log.d(TAG, "[onIntentPermissionDenied]");
+        presenter.onServiceRequestPermissionDenied(intent, requestCode, infoCode);
+    }
 
     /**
      * This is triggered from SkylinkSDK when Android Runtime permission is required to use

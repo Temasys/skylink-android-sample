@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center_vertical"
+              android:orientation="horizontal"
 
     >
 
@@ -21,7 +21,7 @@
             android:layout_marginBottom="@dimen/dp_3dp"
             android:layout_weight="5"
             android:text="peerId1234"
-            android:textSize="@dimen/sp_9sp" />
+            android:textSize="@dimen/sp_9sp"/>
 
         <TextView
             android:id="@+id/txtChatContent"
@@ -32,7 +32,7 @@
             android:background="@drawable/button_corner_chat_content_local"
             android:gravity="center_vertical"
             android:padding="@dimen/dp_7dp"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"/>
     </RelativeLayout>
 
 

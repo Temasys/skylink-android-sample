@@ -16,12 +16,11 @@ import android.widget.ListView;
 
 import java.util.List;
 
+import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
-
-import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
  * A simple {@link CustomActionBar} subclass.

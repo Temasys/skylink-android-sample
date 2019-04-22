@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/dp_55dp"
-    android:background="@android:color/transparent">
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_55dp"
+                android:background="@android:color/transparent">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -16,7 +16,7 @@
             android:layout_width="@dimen/dp_40dp"
             android:layout_height="@dimen/dp_40dp"
             android:background="@android:color/transparent"
-            android:src="@drawable/icon_back_40dp" />
+            android:src="@drawable/icon_back_40dp"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:text="Room Name"
                 android:textColor="@android:color/white"
-                android:textSize="@dimen/sp_14sp" />
+                android:textSize="@dimen/sp_14sp"/>
 
             <TextView
                 android:id="@+id/txtRoomId"
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/init_room_id"
                 android:textColor="@android:color/white"
-                android:textSize="@dimen/sp_7sp" />
+                android:textSize="@dimen/sp_7sp"/>
         </LinearLayout>
 
     </LinearLayout>
@@ -59,7 +59,7 @@
             android:layout_marginBottom="@dimen/dp_5dp"
             android:text="Paticipants"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/sp_9sp" />
+            android:textSize="@dimen/sp_9sp"/>
 
         <Button
             android:id="@+id/btnLocalPeer"

@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -105,6 +106,11 @@ public interface VideoCallContract {
          * process data to display on view at initiative connection
          */
         void onViewRequestConnectedLayout();
+
+        /**
+         * process results from Activity for results
+         */
+        void onViewRequestActivityResult(int requestCode, int resultCode, Intent data);
 
         /**
          * process runtime permission results

@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
+import android.content.Intent;
+
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 
 /**
@@ -23,6 +25,25 @@ public class PermissionService {
 
         if (skylinkConnection != null) {
             return skylinkConnection.processPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        return false;
+    }
+
+    /**
+     * Process Android onActivityResult received by App.
+     *
+     * @param requestCode The int requestCode in the Android callback.
+     * @param resultCode  The int resultCode in the Android callback.
+     * @param data        The Intent data in the Android callback.
+     * @return
+     */
+    public static boolean processActivityResult(int requestCode, int resultCode, Intent data) {
+        //
+        SkylinkConnection skylinkConnection = SkylinkCommonService.getCurrentSkylinkConnection();
+
+        if (skylinkConnection != null) {
+            return skylinkConnection.processActivityResult(requestCode, resultCode, data);
         }
 
         return false;

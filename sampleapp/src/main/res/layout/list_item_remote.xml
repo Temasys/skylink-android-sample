@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:gravity="center_vertical"
     >
 
     <Button
@@ -23,6 +23,7 @@
         android:layout_marginRight="@dimen/dp_10dp"
         android:layout_marginBottom="@dimen/dp_10dp"
         android:layout_marginTop="@dimen/dp_10dp">
+
         <TextView
             android:id="@+id/txtRemotePeerChat"
             android:layout_width="wrap_content"
@@ -32,6 +33,7 @@
             android:textSize="@dimen/sp_9sp"
             android:layout_weight="5"
             android:layout_marginBottom="@dimen/dp_3dp"/>
+
         <TextView
             android:id="@+id/txtChatContent"
             android:layout_width="wrap_content"

@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Point;
 import android.util.Log;
 
@@ -87,6 +88,17 @@ public abstract class BasePresenter {
     //----------------------------------------------------------------------------------------------
     // Methods which are from OsListener need to be implemented for audio, video, fileTransfer, multiVideo functions
     //----------------------------------------------------------------------------------------------
+
+    public void onServiceRequestIntentRequired(Intent intent, int requestCode, int infoCode) {
+    }
+
+    public void onServiceRequestPermissionGranted(Intent intent, int requestCode, int infoCode) {
+        PermissionUtils.onPermissionGrantedHandler(requestCode, infoCode, true);
+    }
+
+    public void onServiceRequestPermissionDenied(Intent intent, int requestCode, int infoCode) {
+        PermissionUtils.onPermissionGrantedHandler(requestCode, infoCode, false);
+    }
 
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
     }

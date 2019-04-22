@@ -281,7 +281,7 @@ public class AudioRouter {
     public static void changeAudioOutput(Context context, boolean isSpeakerphoneOn) {
         // check the audioManager object
         // incase of user not connected to room, but user changes the speaker state
-        if(audioManager == null)
+        if (audioManager == null)
             return;
 
         //turn on speaker if no have plug headset or bluetooth headset

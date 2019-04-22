@@ -26,7 +26,7 @@ public interface MultiPartyVideoCallContract {
 
         /**
          * Update UI when remote peer join the room
-         * */
+         */
         void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
 
         /**
@@ -149,12 +149,12 @@ public interface MultiPartyVideoCallContract {
 
         /**
          * Get specific peer at index
-         * */
+         */
         SkylinkPeer onViewRequestGetPeerByIndex(int index);
 
         /**
          * Get the stats state of specific remote video view
-         * */
+         */
         Boolean onViewRequestGetWebRtcStatsState(int peerIndex);
     }
 

@@ -1,6 +1,8 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -209,6 +211,11 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     @Override
+    public void onViewRequestActivityResult(int requestCode, int resultCode, Intent data) {
+        permissionUtils.onRequestActivityResultHandler(requestCode, resultCode, data);
+    }
+
+    @Override
     public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
@@ -285,6 +292,12 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
+    }
+
+    @Override
+    public void onServiceRequestIntentRequired(Intent intent, int requestCode, int infoCode) {
+        // delegate to PermissionUtils to process the permissions
+        permissionUtils.onIntentRequiredHandler(intent, requestCode, infoCode, (Activity) context);
     }
 
     @Override

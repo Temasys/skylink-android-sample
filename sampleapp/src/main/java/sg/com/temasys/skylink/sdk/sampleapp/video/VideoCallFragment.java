@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;

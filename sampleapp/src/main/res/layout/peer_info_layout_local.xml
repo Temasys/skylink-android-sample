@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingTop="@dimen/dp_20dp"
-    android:paddingBottom="@dimen/dp_20dp">
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center"
+              android:gravity="center"
+              android:orientation="vertical"
+              android:paddingTop="@dimen/dp_20dp"
+              android:paddingBottom="@dimen/dp_20dp">
 
     <Button
         android:id="@+id/btnPeerInfoAvatar"
@@ -15,7 +15,7 @@
         android:background="@drawable/button_circle_avatar_local"
         android:text="L"
         android:textColor="@android:color/white"
-        android:textSize="@dimen/sp_26sp" />
+        android:textSize="@dimen/sp_26sp"/>
 
     <TextView
         android:id="@+id/txtPeerInfoUserName"
@@ -24,7 +24,7 @@
         android:layout_marginTop="@dimen/dp_15dp"
         android:text="Local Peer"
         android:textColor="@android:color/black"
-        android:textSize="@dimen/sp_20sp" />
+        android:textSize="@dimen/sp_20sp"/>
 
     <TextView
         android:id="@+id/txtPeerInfoId"
@@ -33,6 +33,6 @@
         android:layout_marginTop="@dimen/dp_10dp"
         android:text="Local Peer Id _ bfsdn"
         android:textColor="@android:color/black"
-        android:textSize="@dimen/sp_16sp" />
+        android:textSize="@dimen/sp_16sp"/>
 
 </LinearLayout>

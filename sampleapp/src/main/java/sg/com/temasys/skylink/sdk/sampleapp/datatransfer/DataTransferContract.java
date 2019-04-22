@@ -39,7 +39,7 @@ public interface DataTransferContract {
 
         /**
          * Update UI when received data from remote peer
-         * */
+         */
         void onPresenterRequestChangeUIReceivedData(SkylinkPeer remotePeer, byte[] data);
     }
 

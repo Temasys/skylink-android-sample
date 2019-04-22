@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <ListView
         android:id="@+id/lv_messages"
@@ -44,7 +44,7 @@
                 android:stateListAnimator="@null"
                 android:text="Server"
                 android:textColor="@android:color/black"
-                android:textSize="@dimen/sp_11sp" />
+                android:textSize="@dimen/sp_11sp"/>
 
             <Button
                 android:id="@+id/btnP2PMsg"
@@ -55,7 +55,7 @@
                 android:background="@drawable/button_message_type"
                 android:stateListAnimator="@null"
                 android:text="P2P"
-                android:textSize="@dimen/sp_11sp" />
+                android:textSize="@dimen/sp_11sp"/>
         </LinearLayout>
 
         <EditText
@@ -67,7 +67,7 @@
             android:background="@android:color/transparent"
             android:hint="Enter message"
             android:maxLines="3"
-            android:paddingRight="@dimen/dp_50dp" />
+            android:paddingRight="@dimen/dp_50dp"/>
 
         <View
             android:layout_width="@dimen/dp_0_5dp"
@@ -83,7 +83,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:background="@drawable/button_msg_send"
-            android:src="@drawable/ic_send_32dp" />
+            android:src="@drawable/ic_send_32dp"/>
 
 
     </RelativeLayout>
