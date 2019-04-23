@@ -109,6 +109,10 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     @Override
     public void onViewRequestResume() {
+        // Do not toggleCamera if currently doing screensharing.
+        if (videoCallService.getCurrentVideoDevice() == SkylinkConfig.VideoDevice.SCREEN) {
+            return;
+        }
         // Toggle camera back to previous state if required.
         // check the current camera state isCameraMute() is true if camera is currently stop
         if (!currentVideoLocalState.isCameraMute()) {
@@ -128,6 +132,10 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
 
     @Override
     public void onViewRequestPause() {
+        // Do not toggleCamera if currently doing screensharing.
+        if (videoCallService.getCurrentVideoDevice() == SkylinkConfig.VideoDevice.SCREEN) {
+            return;
+        }
         //stop camera when pausing so that camera will be available for the others to use
         videoCallService.toggleCamera(true);
     }
