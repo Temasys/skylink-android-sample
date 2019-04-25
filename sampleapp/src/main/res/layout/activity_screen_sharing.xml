@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/color_white"
+                tools:context="sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallFragment">
+
+    <FrameLayout
+        android:id="@+id/contentFrameMainScreenShare"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <FrameLayout
+        android:id="@+id/contentFrameScreenRes"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/dp_20dp"
+        android:layout_marginTop="@dimen/dp_20dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible">
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/contentFrameLocalCameraView"
+        android:layout_width="@dimen/dp_100dp"
+        android:layout_height="@dimen/dp_150dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible">
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/contentFrameLocalScreenView"
+        android:layout_width="@dimen/dp_100dp"
+        android:layout_height="@dimen/dp_150dp"
+        android:layout_marginLeft="@dimen/dp_100dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible">
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/contentFrameRemoteCameraView"
+        android:layout_width="@dimen/dp_100dp"
+        android:layout_height="@dimen/dp_150dp"
+        android:layout_marginTop="@dimen/dp_150dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible">
+    </FrameLayout>
+
+</RelativeLayout>

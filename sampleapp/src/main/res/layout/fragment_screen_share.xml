@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/ll_screen_share"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/cardview_shadow_start_color"
+        android:orientation="vertical"></LinearLayout>
+
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton
+        android:id="@+id/btn_video_res_screen_share"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_alignParentRight="true"
+        android:background="@android:color/transparent"
+        android:visibility="visible"/>
+
+
+    <ScrollView
+        android:id="@+id/scrollViewTool"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true">
+
+        <LinearLayout
+            android:id="@+id/ll_screen_share_tool"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_screen_share_action"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/ic_stop_screen_share"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/toggle_speaker_screen_share"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/ic_audio_speaker"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/toggle_audio_screen_share"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/icon_audio_active"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/toggle_video_screen_share"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/icon_video_active"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/toggle_camera_screen_share"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/icon_camera_active"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_option_video"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/ic_expand_option"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_disconnect_screen_share"
+                android:layout_width="@dimen/dp_60dp"
+                android:layout_height="@dimen/dp_60dp"
+                android:layout_marginBottom="@dimen/dp_20dp"
+                android:layout_marginRight="@dimen/dp_10dp"
+                android:backgroundTint="@color/call_end"
+                android:scaleType="center"
+                android:visibility="visible"
+                app:srcCompat="@drawable/ic_audio_call_end"
+                tools:ignore="VectorDrawableCompat"/>
+
+
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btn_full_screen"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="@dimen/dp_5dp"
+        android:background="@drawable/ic_full_screen"/>
+
+</RelativeLayout>

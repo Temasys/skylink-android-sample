@@ -7,9 +7,9 @@
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fillViewport="true"
                 android:layout_marginBottom="70dp"
-                android:layout_marginTop="20dp">
+                android:layout_marginTop="20dp"
+                android:fillViewport="true">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -18,352 +18,409 @@
             android:padding="5dp">
 
             <RelativeLayout
+                android:id="@+id/f1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:background="@android:color/background_light"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
-                android:id="@+id/f1">
+                android:background="@android:color/background_light"
+                android:padding="5dp">
 
                 <TextView
+                    android:id="@+id/txtAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
                     android:text="Audio Call Config"
                     android:textSize="18dp"
-                    android:layout_marginBottom="5dp"
-                    android:id="@+id/txtAudio"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <TextView
+                    android:id="@+id/txtUserAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtAudio"
                     android:text="UserName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/txtAudio"
-                    android:id="@+id/txtUserAudio"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtUserNameAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:layout_below="@+id/txtUserAudio"
-                    android:id="@+id/edtUserNameAudio"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtUserAudio"
+                    android:maxLines="1"
                     android:textColor="#000000"/>
 
                 <TextView
+                    android:id="@+id/txtRoomAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameAudio"
                     android:text="RoomName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/edtUserNameAudio"
-                    android:id="@+id/txtRoomAudio"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtRoomNameAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:id="@+id/edtRoomNameAudio"
-                    android:layout_below="@+id/txtRoomAudio"
                     android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_alignParentStart="true"
-                    android:textColor="#000000"
-                    android:layout_alignParentEnd="true"/>
+                    android:layout_below="@+id/txtRoomAudio"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/f2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/f1"
                 android:layout_gravity="top"
-                android:background="@android:color/background_light"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
-                android:id="@+id/f2"
-                android:layout_below="@+id/f1">
+                android:background="@android:color/background_light"
+                android:padding="5dp">
 
                 <TextView
+                    android:id="@+id/txtChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
                     android:text="Chat Call Config"
                     android:textSize="18dp"
-                    android:layout_marginBottom="5dp"
-                    android:id="@+id/txtChat"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <TextView
+                    android:id="@+id/txtUserChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtChat"
                     android:text="UserName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/txtChat"
-                    android:id="@+id/txtUserChat"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtUserNameChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtUserChat"
-                    android:id="@+id/edtUserNameChat"
-                    android:maxLines="1"
-                    android:textColor="#000000"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtUserChat"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
 
                 <TextView
+                    android:id="@+id/txtRoomChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameChat"
                     android:text="RoomName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/edtUserNameChat"
-                    android:id="@+id/txtRoomChat"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtRoomNameChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
                     android:layout_below="@+id/txtRoomChat"
                     android:maxLines="1"
-                    android:textColor="#000000"
-                    android:id="@+id/edtRoomNameChat"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:textColor="#000000"/>
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/f3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/f2"
                 android:layout_gravity="top"
-                android:background="@android:color/background_light"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
-                android:id="@+id/f3"
-                android:layout_below="@+id/f2">
+                android:background="@android:color/background_light"
+                android:padding="5dp">
 
                 <TextView
+                    android:id="@+id/txtDataTransfer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
                     android:text="Data Transfer Config"
                     android:textSize="18dp"
-                    android:layout_marginBottom="5dp"
-                    tools:textColor="?attr/colorPrimary"
-                    android:id="@+id/txtDataTransfer"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <TextView
+                    android:id="@+id/txtUserData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtDataTransfer"
                     android:text="UserName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/txtDataTransfer"
-                    tools:textColor="?attr/colorPrimary"
-                    android:id="@+id/txtUserData"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtUserNameData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
                     android:layout_below="@+id/txtUserData"
                     android:maxLines="1"
-                    android:textColor="#000000"
-                    android:id="@+id/edtUserNameData"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:textColor="#000000"/>
 
                 <TextView
+                    android:id="@+id/txtRoomData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameData"
                     android:text="RoomName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/edtUserNameData"
-                    tools:textColor="?attr/colorPrimary"
-                    android:id="@+id/txtRoomData"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtRoomNameData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtRoomData"
-                    android:id="@+id/edtRoomNameData"
-                    android:maxLines="1"
-                    android:textColor="#000000"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtRoomData"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
 
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/f4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/f3"
                 android:layout_gravity="top"
-                android:background="@android:color/background_light"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
-                android:id="@+id/f4"
-                android:layout_below="@+id/f3">
+                android:background="@android:color/background_light"
+                android:padding="5dp">
 
                 <TextView
+                    android:id="@+id/txtFileTransfer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
                     android:text="File Transfer Config"
                     android:textSize="18dp"
-                    tools:textColor="?attr/colorPrimary"
-                    android:layout_marginBottom="5dp"
-                    android:id="@+id/txtFileTransfer"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <TextView
+                    android:id="@+id/txtUserFile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtFileTransfer"
                     android:text="UserName"
                     android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"
-                    android:layout_below="@+id/txtFileTransfer"
-                    android:id="@+id/txtUserFile"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtUserNameFile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#000000"
-                    android:layout_below="@+id/txtUserFile"
-                    android:id="@+id/edtUserNameFile"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtUserFile"
                     android:maxLines="1"
-                    android:layout_alignParentStart="true"/>
+                    android:textColor="#000000"/>
 
                 <TextView
+                    android:id="@+id/txtRoomFile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameFile"
                     android:text="RoomName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/edtUserNameFile"
-                    tools:textColor="?attr/colorPrimary"
-                    android:id="@+id/txtRoomFile"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtRoomNameFile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:layout_below="@+id/txtRoomFile"
-                    android:textColor="#000000"
-                    android:id="@+id/edtRoomNameFile"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtRoomFile"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
 
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/f5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/f4"
                 android:layout_gravity="top"
-                android:background="@android:color/background_light"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
-                android:id="@+id/f5"
-                android:layout_below="@+id/f4">
+                android:background="@android:color/background_light"
+                android:padding="5dp">
 
                 <TextView
+                    android:id="@+id/txtMultipartyVideo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
                     android:text="Multiparty Video Call Config"
                     android:textSize="18dp"
-                    android:layout_marginBottom="5dp"
-                    tools:textColor="?attr/colorPrimary"
-                    android:id="@+id/txtMultipartyVideo"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <TextView
+                    android:id="@+id/txtUserMulti"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtMultipartyVideo"
                     android:text="UserName"
                     android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"
-                    android:layout_below="@+id/txtMultipartyVideo"
-                    android:id="@+id/txtUserMulti"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtUserNameParty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtUserMulti"
-                    android:textColor="#000000"
-                    android:id="@+id/edtUserNameParty"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtUserMulti"
                     android:maxLines="1"
-                    android:layout_alignParentStart="true"/>
+                    android:textColor="#000000"/>
 
                 <TextView
+                    android:id="@+id/txtRoomMulti"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameParty"
                     android:text="RoomName"
                     android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"
-                    android:layout_below="@+id/edtUserNameParty"
-                    android:id="@+id/txtRoomMulti"/>
+                    tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtRoomNameParty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textColor="#000000"
-                    android:layout_below="@+id/txtRoomMulti"
-                    android:id="@+id/edtRoomNameParty"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtRoomMulti"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/f6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/f5"
                 android:layout_gravity="top"
-                android:background="@android:color/background_light"
                 android:layout_marginBottom="20dp"
-                android:padding="5dp"
-                android:id="@+id/f6"
-                android:layout_below="@+id/f5">
+                android:background="@android:color/background_light"
+                android:padding="5dp">
 
                 <TextView
+                    android:id="@+id/txtVideo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Video Call Config"
-                    android:textSize="18dp"
                     android:layout_marginBottom="5dp"
-                    android:id="@+id/txtVideo"/>
+                    android:text="Video Call Config"
+                    android:textSize="18dp"/>
 
                 <TextView
+                    android:id="@+id/txtUserVideo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtVideo"
                     android:text="UserName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/txtVideo"
-                    android:id="@+id/txtUserVideo"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtUserNameVideo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:layout_below="@+id/txtUserVideo"
-                    android:id="@+id/edtUserNameVideo"
-                    android:textColor="#000000"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtUserVideo"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
 
                 <TextView
+                    android:id="@+id/txtRoomVideo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameVideo"
                     android:text="RoomName"
                     android:textSize="16dp"
-                    android:layout_below="@+id/edtUserNameVideo"
-                    android:id="@+id/txtRoomVideo"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
+                    android:id="@+id/edtRoomNameVideo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:textColor="#000000"
-                    android:layout_below="@+id/txtRoomVideo"
-                    android:id="@+id/edtRoomNameVideo"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtRoomVideo"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/f7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/f6"
+                android:layout_gravity="top"
+                android:layout_marginBottom="20dp"
+                android:background="@android:color/background_light"
+                android:padding="5dp">
+
+                <TextView
+                    android:id="@+id/txtScreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:text="Screen share Config"
+                    android:textSize="18dp"/>
+
+                <TextView
+                    android:id="@+id/txtUserScreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtScreen"
+                    android:text="UserName"
+                    android:textSize="16dp"
+                    tools:textColor="?attr/colorPrimary"/>
+
+                <EditText
+                    android:id="@+id/edtUserNameScreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtUserScreen"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
+
+                <TextView
+                    android:id="@+id/txtRoomScreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/edtUserNameScreen"
+                    android:text="RoomName"
+                    android:textSize="16dp"
+                    tools:textColor="?attr/colorPrimary"/>
+
+                <EditText
+                    android:id="@+id/edtRoomNameScreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/txtRoomScreen"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
             </RelativeLayout>
 
         </RelativeLayout>
@@ -376,14 +433,14 @@
         android:background="#ff00796b">
 
         <Button
-            android:text="Reset To Default"
+            android:id="@+id/btnResetDefault"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
             android:layout_width="200dp"
             android:layout_height="50dp"
-            android:id="@+id/btnResetDefault"
-            android:background="@android:color/white"
-            android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@android:color/white"
             android:gravity="center_vertical|center_horizontal"
-            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"/>
+            android:text="Reset To Default"/>
     </RelativeLayout>
 </FrameLayout>

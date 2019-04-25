@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -504,6 +503,15 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
         }
     }
 
+    @Override
+    public void onPresenterRequestRemoveRemoteView() {
+        View peerView = videoViewLayout.findViewWithTag("peer");
+        videoViewLayout.removeView(peerView);
+
+        //change orientation to vertical
+        videoViewLayout.setOrientation(LinearLayout.VERTICAL);
+    }
+
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
@@ -549,6 +557,7 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
 
         // init setting value for room name in action bar
         txtRoomName.setText(Config.ROOM_NAME_VIDEO);
+        btnVideoResolution.setDirection(VideoResButton.ButtonDirection.TOP_LEFT);
 
         // Set init audio/video state
         setAudioBtnLabel(false, false);
@@ -820,6 +829,9 @@ public class VideoCallFragment extends CustomActionBar implements VideoCallContr
     private void addViewToLayout(View view) {
         // Remove previous peer video if it exists
         View viewToRemove = videoViewLayout.findViewWithTag("peer");
+
+        // The remote peer has a video view
+        // Add more view to the layour
         if (viewToRemove != null) {
             videoViewLayout.removeView(viewToRemove);
         }

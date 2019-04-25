@@ -47,9 +47,9 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      *
      * @return True if camera state had changed, false if not.
      */
-    public boolean toggleCamera(boolean isToggle) {
+    public boolean toggleCamera(String mediaId, boolean isToggle) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera(!isToggle);
+            return mSkylinkConnection.toggleCamera(mediaId, !isToggle);
         return false;
     }
 
@@ -60,7 +60,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public void muteLocalAudio(boolean audioMuted) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.muteLocalAudio(audioMuted);
+            mSkylinkConnection.muteLocalAudio(null, audioMuted);
     }
 
     /**
@@ -71,7 +71,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public void muteLocalVideo(boolean videoMuted) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.muteLocalVideo(videoMuted);
+            mSkylinkConnection.muteLocalVideo(null, videoMuted);
     }
 
     /**
@@ -84,9 +84,9 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      * @param peerId Id of the Peer whose videoView to be returned.
      * @return Video View of Peer or null if none present.
      */
-    public SurfaceViewRenderer getVideoView(String peerId) {
+    public SurfaceViewRenderer getVideoView(String peerId, String mediaId) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.getVideoView(peerId);
+            return mSkylinkConnection.getVideoView(peerId, mediaId);
 
         return null;
     }

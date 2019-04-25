@@ -6,16 +6,21 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.widget.TextView;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
+import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.PermissionService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 
@@ -36,7 +41,12 @@ public class PermissionUtils {
 
     // request code for permission for file browser from file transfer in the app
     // this permission is not from the SDK
-    public static final int APP_PERMISSIONS_READ_EXTERNAL_STORAGE = 11;
+    public static final int APP_PERMISSIONS_READ_EXTERNAL_STORAGE = 1031;
+
+    public static final int REQUEST_BUTTON_OVERLAY_CODE = 1032;
+
+    public static final int CAPTURE_PERMISSION_REQUEST_CODE = 1033;
+
 
     // Queue of Permission requesting objects.
     //these variables need to be static for all type call and configuration change
@@ -202,7 +212,9 @@ public class PermissionUtils {
      * Handles Skylink SDK OsListener callback onPermissionGranted.
      * Log the permission that had been granted.
      *
-     * @param info As given in OsListener method.
+     * @param requestCode
+     * @param infoCode
+     * @param granted
      */
     public static void onPermissionGrantedHandler(int requestCode, int infoCode, boolean granted) {
         String outcome = "GRANTED";
@@ -260,7 +272,7 @@ public class PermissionUtils {
 
         // Create AlertDialog to warn user of consequences of permission denied.
         AlertDialog.Builder permissionDeniedDialogBuilder =
-                new AlertDialog.Builder(context);
+                new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
         permissionDeniedDialogBuilder.setTitle("Warning! Feature(s) unavailable " +
                 "due to Permission(s) denied.");
 
@@ -528,7 +540,7 @@ public class PermissionUtils {
 
                 // Create AlertDialog to present Permission rationale message.
                 AlertDialog.Builder permissionRationaleDialogBuilder =
-                        new AlertDialog.Builder(context);
+                        new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
                 permissionRationaleDialogBuilder.setTitle("Why this permission is requested...");
 
                 // Create TextView for permission rationale alert.
@@ -650,9 +662,67 @@ public class PermissionUtils {
 
         // Create AlertDialog to warn user of consequences of permission denied.
         AlertDialog.Builder permissionDeniedDialogBuilder =
-                new AlertDialog.Builder(context);
+                new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
         permissionDeniedDialogBuilder.setTitle("Warning! Feature(s) unavailable " +
                 "due to Permission(s) denied.");
+
+        // Create TextView for permission alert.
+        final TextView msgTxtView = new TextView(context);
+        msgTxtView.setText(alertText);
+        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+        permissionDeniedDialogBuilder.setView(msgTxtView);
+        permissionDeniedDialogBuilder.setPositiveButton("Ok", null);
+
+        alertText = "[SA][onPermDenied] " + alertText;
+        Log.d("PermissionUtils", alertText);
+        permissionDeniedDialogBuilder.show();
+    }
+
+    /**
+     * display the activity for grant the overlay button permission
+     *
+     * @param context
+     * @param fragmentInstance the view instance
+     * @return true if the permission already grant before
+     */
+    public static boolean requestButtonOverlayPermission(Context context, Fragment fragmentInstance) {
+        /** check if we already  have permission to draw over other apps */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(context)) {
+                /** if not construct intent to request permission */
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + context.getPackageName()));
+                /** request permission via start activity for result */
+                fragmentInstance.startActivityForResult(intent, PermissionUtils.REQUEST_BUTTON_OVERLAY_CODE);
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * display the dialog to warn about permission deny for overlay button
+     *
+     * @param context
+     */
+    public void displayOverlayButtonPermissionWarning(Context context) {
+        String alertText = "\r\nAndroid permission to allow overlay button is denied. " +
+                "We are now NOT able to show the \"Stop Screen Share\" button for stopping screen sharing at anytime";
+
+        alertText += "\r\n\nTo enable feature, restart this feature and grant the permission " +
+                "required. Alternatively, go to Android's Settings -> \"Appear on top/Display over other apps\", select "
+                + context.getResources().getString(R.string.app_name) + ", " +
+                "grant the required permission, and restart this feature.";
+
+        // Create AlertDialog to warn user of consequences of permission denied.
+        AlertDialog.Builder permissionDeniedDialogBuilder =
+                new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
+        permissionDeniedDialogBuilder.setTitle("Warning! Feature unavailable " +
+                "due to Permission denied.");
+
 
         // Create TextView for permission alert.
         final TextView msgTxtView = new TextView(context);

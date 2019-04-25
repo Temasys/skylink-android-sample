@@ -99,8 +99,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onViewRequestResume() {
         // Toggle camera back to previous state if required.
         if (videoLocalState.isCameraMute()) {
-            if (multiVideoCallService.getVideoView(null) != null) {
-                multiVideoCallService.toggleCamera();
+            if (multiVideoCallService.getVideoView(null, null) != null) {
+                multiVideoCallService.toggleCamera(null);
                 videoLocalState.setCameraMute(false);
             }
         }
@@ -109,8 +109,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestPause() {
         // Stop camera while view paused
-        if (multiVideoCallService.getVideoView(null) != null) {
-            boolean toggleCamera = multiVideoCallService.toggleCamera(false);
+        if (multiVideoCallService.getVideoView(null, null) != null) {
+            boolean toggleCamera = multiVideoCallService.toggleCamera(null,false);
             videoLocalState.setCameraMute(toggleCamera);
         }
     }
@@ -255,14 +255,21 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
-        String log = "[SA][onLocalMediaCapture] ";
+    public void onServiceRequestLocalAudioCapture(String mediaId) {
+        String log = "[SA][onServiceRequestLocalAudioCapture] ";
+
+        toastLog(TAG, context, "Local audio is on with id = " + mediaId);
+    }
+
+    @Override
+    public void onServiceRequestLocalVideoCapture(SurfaceViewRenderer videoView) {
+        String log = "[SA][onServiceRequestLocalVideoCapture] ";
 
         if (videoView == null) {
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null);
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, null);
             multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView);
 
         } else {
@@ -277,7 +284,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
-        toastLogLong(TAG, context, log);
+//        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -285,7 +292,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
-        toastLogLong(TAG, context, log);
+//        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -293,7 +300,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
-        toastLogLong(TAG, context, log);
+//        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -306,7 +313,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
 
         // add remote peer video view
-        processAddRemoteView(skylinkPeer.getPeerId());
+        processAddRemoteView(skylinkPeer.getPeerId(), null);
     }
 
     @Override
@@ -335,16 +342,16 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
 
-        processAddRemoteView(remotePeerId);
+        processAddRemoteView(remotePeerId, mediaId);
 
         log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -427,11 +434,14 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
     }
 
-    private void processAddRemoteView(String remotePeerId) {
+    private void processAddRemoteView(String remotePeerId, String mediaId) {
+        if (mediaId == null) {
+            return;
+        }
 
         int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId);
 
-        SurfaceViewRenderer videoView = multiVideoCallService.getVideoView(remotePeerId);
+        SurfaceViewRenderer videoView = multiVideoCallService.getVideoView(remotePeerId, mediaId);
 
         multiVideoCallView.onPresenterRequestAddRemoteView(index, videoView);
     }

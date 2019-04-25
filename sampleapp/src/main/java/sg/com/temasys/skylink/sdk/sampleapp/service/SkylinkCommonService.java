@@ -11,12 +11,12 @@ import org.webrtc.Camera1Enumerator;
 import org.webrtc.Camera2Enumerator;
 import org.webrtc.CameraEnumerator;
 import org.webrtc.CameraVideoCapturer;
-import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
 import sg.com.temasys.skylink.sdk.listener.FileTransferListener;
@@ -32,6 +32,7 @@ import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -75,6 +76,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //room name and user name for each demo/function
     protected String roomName;
     protected String userName;
+
+    private String localAudioId, localVideoId, localScreenSharingId;
+
+    protected String mainAudioId, mainVideoId;
 
     enum CameraState {
         CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
@@ -123,7 +128,17 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             }
 
             //add self peer as a peer in list
-            mPeersList.add(new SkylinkPeer(localPeerId, userName));
+            SkylinkPeer selfPeer = new SkylinkPeer(localPeerId, userName);
+
+            if (localAudioId != null) {
+                selfPeer.addMediaId(localAudioId, SkylinkPeer.MEDIA_TYPE.AUDIO);
+            }
+
+            if (localVideoId != null) {
+                selfPeer.addMediaId(localVideoId, SkylinkPeer.MEDIA_TYPE.VIDEO);
+            }
+
+            mPeersList.add(selfPeer);
 
         } else {
             log += "Skylink failed to connect!\nReason : " + message;
@@ -192,52 +207,49 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * This may be at the start of video usage or when video source has changed.
      * It can happen only if the connection is configured to have a video call.
      *
-     * @param videoView Local video
+     * @param localAudio the local audio object
      */
     @Override
-    public void onLocalMediaCapture(SurfaceViewRenderer videoView) {
+    public void onLocalAudioCapture(SkylinkMedia localAudio) {
         Log.d(TAG, "[onLocalMediaCapture]");
+        presenter.onServiceRequestLocalAudioCapture(localAudio.getMediaId());
 
-        presenter.onServiceRequestLocalMediaCapture(videoView);
+        localAudioId = localAudio.getMediaId();
     }
 
-    /**
-     * This is triggered from SkylinkSDK when a remote peer enable / disable its audio.
-     *
-     * @param remotePeerId The id of the remote peer
-     * @param isMuted      Flag specifying whether the audio is muted or not
-     */
     @Override
-    public void onRemotePeerAudioToggle(String remotePeerId, boolean isMuted) {
-        String log = "[onRemotePeerAudioToggle] ";
-        log += "Peer " + getPeerIdNick(remotePeerId) +
-                " Audio mute status via:\r\nCallback: " + isMuted + ".";
+    public void onLocalVideoCapture(SkylinkMedia localVideo) {
+        Log.d(TAG, "[onLocalMediaCapture]");
 
-        // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = getUserInfo(remotePeerId);
+        if (localVideo == null)
+            return;
 
-        if (userInfo != null) {
-            log += "\r\nUserInfo: " + userInfo.isAudioMuted() + ".";
+        if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+
+            presenter.onServiceRequestLocalVideoCapture(localVideo.getVideoView());
+            localVideoId = localVideo.getMediaId();
+        } else if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+            presenter.onServiceRequestLocalScreenCapture(localVideo.getVideoView());
+            localScreenSharingId = localVideo.getMediaId();
         }
-        toastLog(TAG, context, log);
     }
 
     /**
      * This is triggered from SkylinkSDK when a peer enable / disable its video.
      *
-     * @param remotePeerId The id of the remote peer
-     * @param isMuted      Flag specifying whether the video is muted or not
+     * @param peerId The id of the peer (can be selfPeer or remote peer)
+     * @param media  The media object with new state
      */
     @Override
-    public void onRemotePeerVideoToggle(String remotePeerId, boolean isMuted) {
-        String log = "[onRemotePeerVideoToggle] ";
-        log += "Peer " + getPeerIdNick(remotePeerId) +
-                " Video mute status via:\r\nCallback: " + isMuted + ".";
+    public void onMediaStateChange(String peerId, SkylinkMedia media) {
+        String log = "[onMediaStateChange] ";
+        log += "Peer " + getPeerIdNick(peerId) +
+                " Media (" + media.getMediaId() + ") state changed status via:\r\nCallback: " + media.getMediaState() + ".";
 
         // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = getUserInfo(remotePeerId);
+        UserInfo userInfo = getUserInfo(peerId);
         if (userInfo != null) {
-            log += "\r\nUserInfo: " + userInfo.isVideoMuted() + ".";
+            log += "\r\nUserInfo: " + userInfo.getMediaState(media.getMediaId()) + ".";
         }
         toastLog(TAG, context, log);
     }
@@ -250,13 +262,16 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param remotePeerId The id of the peer
      */
     @Override
-    public void onRemotePeerAudioReceive(String remotePeerId) {
+    public void onRemotePeerAudioReceive(String remotePeerId, SkylinkMedia remoteAudio) {
         String log = "[onRemotePeerAudioReceive] ";
-        log += "Received new Audio from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
+        log += "Received new Audio (" + remoteAudio.getMediaId() + ") from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
-        presenter.onServiceRequestRemotePeerAudioReceive(log, remotePeerUserInfo, remotePeerId);
+        // add audio id for the peer
+        addPeerMedia(remotePeerId, remoteAudio.getMediaId(), SkylinkPeer.MEDIA_TYPE.AUDIO);
+
+        presenter.onServiceRequestRemotePeerAudioReceive(log, remotePeerUserInfo, remotePeerId, remoteAudio.getMediaId());
     }
 
     /**
@@ -265,38 +280,27 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * This will only be triggered after onRemotePeerJoin has triggered.
      *
      * @param remotePeerId The id of the peer
-     * @param videoView    Remote peer's video.
+     * @param remoteVideo  the received video object
      */
     @Override
-    public void onRemotePeerVideoReceive(String remotePeerId, SurfaceViewRenderer videoView) {
+    public void onRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
         String log = "[onRemotePeerVideoReceive] ";
-        log += "Received new Video from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
+        log += "Received new Video (" + remoteVideo.getMediaId() + ") from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
-        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId);
-    }
+        if (remoteVideo == null)
+            return;
 
-    /**
-     * This is triggered from SkylinkSDK upon receiving the media stream of the remote peer
-     * if the connection is configured to have a audio and/or video call.
-     * This will only be triggered after onRemotePeerJoin has triggered.
-     *
-     * @param remotePeerId The id of the peer
-     * @param videoView    Remote peer's video. Will be null if Peer is sending only audio.
-     */
-    @Override
-    public void onRemotePeerMediaReceive(String remotePeerId, SurfaceViewRenderer videoView) {
-        String log = "[onRemotePeerMediaReceive] ";
-        log += "Received new ";
-        if (videoView != null) {
-            log += "Video ";
-        } else {
-            log += "Audio ";
+        if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+            addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.VIDEO);
+
+            presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
+        } else if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+            addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.SCREEN_SHARING);
+
+            presenter.onServiceRequestRemotePeerScreenReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
         }
-        log += "from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
-
-        Log.d(TAG, log);
     }
 
     /**
@@ -324,6 +328,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (videoResPresenter != null)
             videoResPresenter.onServiceRequestInputVideoResolutionObtained(width, height, fps, captureFormat);
     }
+
 
     /**
      * This is triggered from SkylinkSDK when we receive a remote Peer's video,
@@ -924,6 +929,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             case MULTI_PARTY_VIDEO:
                 useCustomCapturer = true;
                 break;
+            case SCREEN_SHARE:
+                break;
         }
 
         SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
@@ -937,6 +944,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         skylinkConnectionManager.connectToRoom(typeCall, customCapturer);
     }
+
 
     public void disconnectFromRoom() {
         skylinkConnectionManager.disconnectFromRoom();
@@ -1000,6 +1008,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @return SkylinkPeer
      */
     public SkylinkPeer getPeerById(String peerId) {
+        if (mPeersList == null)
+            return null;
+
         for (int i = 0; i < mPeersList.size(); i++) {
             if (mPeersList.get(i).getPeerId().equals(peerId))
                 return mPeersList.get(i);
@@ -1414,5 +1425,38 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             return mSkylinkConnection.getUserInfo(userId);
         }
         return null;
+    }
+
+    /**
+     * Add received media for the peer
+     * 1 peer can have multiple audios/videos and we keep track of their ids in @link{#SkylinkPeer.mediaIds}
+     *
+     * @param remotePeerId remote peer id that media belongs to
+     * @param mediaId      the id of the remote video view
+     */
+    private void addPeerMedia(String remotePeerId, String mediaId, SkylinkPeer.MEDIA_TYPE mediaType) {
+        String logTag = "[SCS][addPeerMedia] ";
+        String log = logTag;
+
+        //get the remote peer instance to add media
+        SkylinkPeer remotePeer = getPeerById(remotePeerId);
+
+        if (remotePeer == null) {
+            log = logTag + "Can not add video view for peer " + remotePeerId;
+            log += " cause the peer is not existed";
+            toastLog(TAG, context, log);
+            return;
+        }
+
+        // create a new mediaIds list if it is not existed
+        if (remotePeer.getMediaIds() == null) {
+            Map<String, SkylinkPeer.MEDIA_TYPE> mediaIds = new HashMap<String, SkylinkPeer.MEDIA_TYPE>();
+            remotePeer.setMediaIds(mediaIds);
+        }
+
+        remotePeer.getMediaIds().put(mediaId, mediaType);
+        log = logTag + "Successfully add media " + mediaId + " for peer" + remotePeerId;
+        Log.d(TAG, log);
+        toastLog(TAG, context, log);
     }
 }

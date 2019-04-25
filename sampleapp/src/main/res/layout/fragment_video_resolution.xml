@@ -1,22 +1,23 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout android:id="@+id/frameVideoRes"
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/frame_layout_round_border"
                 android:orientation="vertical"
                 android:paddingBottom="@dimen/dp_10dp"
-                android:background="@drawable/frame_layout_round_border"
                 tools:context="sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionFragment">
 
     <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
         android:id="@+id/seekBarResWidthHeight"
         android:layout_width="350dp"
         android:layout_height="90dp"
+        android:layout_centerHorizontal="true"
         android:paddingLeft="30dp"
         android:paddingRight="30dp"
-        android:visibility="visible"
-        android:layout_centerHorizontal="true"
         android:progressBackgroundTint="@color/color_white"
         android:progressTint="@android:color/transparent"
+        android:visibility="visible"
         >
     </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
 
@@ -24,176 +25,178 @@
         android:id="@+id/seekBarResFps"
         android:layout_width="350dp"
         android:layout_height="90dp"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-        android:layout_marginTop="-10dp"
-        android:visibility="visible"
         android:layout_below="@id/seekBarResWidthHeight"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="-10dp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
         android:progressBackgroundTint="@color/color_white"
-        android:progressTint="@android:color/transparent">
+        android:progressTint="@android:color/transparent"
+        android:visibility="visible">
     </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
 
     <TextView
         android:id="@+id/txtMinRes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="174x143"
-        android:textSize="@dimen/sp_11sp"
-        android:textColor="@color/color_white"
-        android:layout_marginTop="60dp"
         android:layout_marginLeft="@dimen/dp_20dp"
+        android:layout_marginTop="60dp"
+        android:text="174x143"
+        android:textColor="@color/color_white"
+        android:textSize="@dimen/sp_11sp"
         />
 
     <TextView
         android:id="@+id/txtMaxRes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="1920x1080"
-        android:textSize="@dimen/sp_11sp"
-        android:textColor="@color/color_white"
-        android:layout_marginTop="60dp"
-        android:layout_marginRight="@dimen/dp_20dp"
         android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/dp_20dp"
+        android:layout_marginTop="60dp"
+        android:paddingRight="@dimen/dp_10dp"
+        android:text="1920x1080"
+        android:textColor="@color/color_white"
+        android:textSize="@dimen/sp_11sp"
         />
 
     <TextView
         android:id="@+id/txtMinFps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0"
-        android:textSize="@dimen/sp_11sp"
-        android:textColor="@color/color_white"
-        android:layout_marginTop="130dp"
         android:layout_marginLeft="@dimen/dp_30dp"
+        android:layout_marginTop="130dp"
+        android:text="0"
+        android:textColor="@color/color_white"
+        android:textSize="@dimen/sp_11sp"
         />
 
     <TextView
         android:id="@+id/txtMaxFps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="30"
-        android:textSize="@dimen/sp_11sp"
-        android:textColor="@color/color_white"
-        android:layout_marginTop="130dp"
-        android:layout_marginRight="@dimen/dp_30dp"
         android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/dp_30dp"
+        android:layout_marginTop="130dp"
+        android:paddingRight="@dimen/dp_10dp"
+        android:text="30"
+        android:textColor="@color/color_white"
+        android:textSize="@dimen/sp_11sp"
         />
 
     <LinearLayout
         android:id="@+id/layout_res_lable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_below="@id/seekBarResFps"
-        android:clickable="true">
+        android:clickable="true"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/primary"
+            android:layout_weight="1"
+            android:gravity="center"
             android:text="Res Input"
-            android:textStyle="normal"
-            android:gravity="center"
-            android:layout_weight="1"/>
+            android:textColor="@color/primary"
+            android:textSize="@dimen/sp_12sp"
+            android:textStyle="normal"/>
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/primary"
-            android:textStyle="normal"
+            android:layout_weight="1"
+            android:gravity="center"
             android:text="Res Sent"
-            android:gravity="center"
-            android:layout_weight="1"/>
+            android:textColor="@color/primary"
+            android:textSize="@dimen/sp_12sp"
+            android:textStyle="normal"/>
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/primary"
-            android:textStyle="normal"
-            android:text="Res Received"
+            android:layout_weight="1"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:text="Res Received"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/sp_12sp"
+            android:textStyle="normal"/>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layout_res_widthHeight"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_below="@id/layout_res_lable"
-        android:clickable="true">
+        android:clickable="true"
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/txtResInput"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/color_white"
-            android:text="1920x1080"
-            android:gravity="center"
             android:layout_weight="1"
-            android:layout_width="0dp"/>
+            android:gravity="center"
+            android:text="1920x1080"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_12sp"/>
 
         <TextView
             android:id="@+id/txtResSent"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/color_white"
-            android:text="640x480"
+            android:layout_weight="1"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:text="640x480"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_12sp"/>
 
         <TextView
             android:id="@+id/txtResReceived"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/color_white"
-            android:text="640x480"
+            android:layout_weight="1"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:text="640x480"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_12sp"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_below="@id/layout_res_widthHeight"
+        android:orientation="horizontal"
         android:visibility="gone">
 
         <TextView
             android:id="@+id/txtResInputFps"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/color_white"
-            android:text="30fps"
-            android:gravity="center"
             android:layout_weight="1"
-            android:layout_width="0dp"/>
+            android:gravity="center"
+            android:text="30fps"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_12sp"/>
 
         <TextView
             android:id="@+id/txtResSentFps"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/color_white"
-            android:text="30fps"
+            android:layout_weight="1"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:text="30fps"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_12sp"/>
 
         <TextView
             android:id="@+id/txtResReceivedFps"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:textSize="@dimen/sp_12sp"
-            android:textColor="@color/color_white"
-            android:text="30fps"
+            android:layout_weight="1"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:text="30fps"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_12sp"/>
     </LinearLayout>
 
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent">
+
+    <LinearLayout
+        android:id="@+id/ll_local_video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/cardview_shadow_start_color"
+        android:orientation="vertical"></LinearLayout>
+
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton
+        android:id="@+id/btnLocalVideoOption"
+        android:layout_width="@dimen/dp_40dp"
+        android:layout_height="@dimen/dp_40dp"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/button_circle_menu_option"
+        android:visibility="visible"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
+
+
+</RelativeLayout>

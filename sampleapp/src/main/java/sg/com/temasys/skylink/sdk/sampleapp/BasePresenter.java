@@ -58,13 +58,13 @@ public abstract class BasePresenter {
     // Methods which are from MediaListener need to be implemented for audio and video
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
     }
 
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
     }
 
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerScreenReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
     }
 
     public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
@@ -229,4 +229,12 @@ public abstract class BasePresenter {
     }
 
 
+    public void onServiceRequestLocalAudioCapture(String mediaId) {
+    }
+
+    public void onServiceRequestLocalVideoCapture(SurfaceViewRenderer videoView) {
+    }
+
+    public void onServiceRequestLocalScreenCapture(SurfaceViewRenderer videoView) {
+    }
 }

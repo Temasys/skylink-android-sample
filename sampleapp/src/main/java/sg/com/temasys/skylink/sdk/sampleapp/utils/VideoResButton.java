@@ -20,10 +20,18 @@ public class VideoResButton extends AppCompatButton {
     private Context context;
     private Paint iconPaint, backgroundNormalPaint, backgroundClickedMainPaint;
     private ButtonState state = ButtonState.NORMAL;
+    private ButtonDirection currentDirection = ButtonDirection.TOP_LEFT;
 
     public enum ButtonState {
         NORMAL,
         CLICKED
+    }
+
+    public enum ButtonDirection {
+        TOP_LEFT,
+        TOP_RIGHT,
+        BOTTOM_LEFT,
+        BOTTOM_RIGHT
     }
 
     public VideoResButton(Context context) {
@@ -75,16 +83,10 @@ public class VideoResButton extends AppCompatButton {
         int centerYOnView = getHeight() / 2;
 
         // draw background is a triangle
-        drawTriangleMain(canvas,
-                new PointF[]{
-                        new PointF(0, 0),
-                        new PointF(getWidth(), 0),
-                        new PointF(0, getHeight())
-                });
+        drawTriangleMain(canvas, getDirection());
 
         int centerPosX = centerXOnView / 3 * 2;
         int centerPosY = centerYOnView / 3 * 2;
-
 
         // draw icons
         Bitmap icon_setting = getBitmapFromVectorDrawable(this.context, R.drawable.ic_settings_white_24dp);
@@ -95,14 +97,44 @@ public class VideoResButton extends AppCompatButton {
         int height = icon_setting.getHeight();
         int poswidth = centerPosX - (width / 2);
         int posHeight = centerPosY - (height / 2);
-        canvas.drawBitmap(icon_setting, poswidth, posHeight, iconPaint);
 
-        canvas.drawCircle(centerPosX, centerPosY, 20f, iconPaint);
+        if (currentDirection == ButtonDirection.TOP_LEFT) {
 
-        width = icon_video_normal.getWidth();
-        height = icon_video_normal.getHeight();
-        poswidth = centerPosX - (width / 2);
-        posHeight = centerPosY - (height / 2);
+            poswidth = centerPosX - (width / 2);
+            posHeight = centerPosY - (height / 2);
+            canvas.drawBitmap(icon_setting, poswidth, posHeight, iconPaint);
+
+            canvas.drawCircle(centerPosX, centerPosY, 20f, iconPaint);
+
+            width = icon_video_normal.getWidth();
+            height = icon_video_normal.getHeight();
+
+            poswidth = centerPosX - (width / 2) - 1;
+            posHeight = centerPosY - (height / 2) - 1;
+
+
+        } else if (currentDirection == ButtonDirection.TOP_RIGHT) {
+            icon_setting = getBitmapFromVectorDrawable(this.context, R.drawable.ic_settings_white_20dp);
+
+            poswidth = centerPosX + (width / 4);
+            posHeight = centerPosY - (height / 2);
+            canvas.drawBitmap(icon_setting, poswidth, posHeight, iconPaint);
+
+            poswidth = centerPosX + (width / 3 * 2);
+            posHeight = centerPosY + (height / 4) - 20;
+            canvas.drawCircle(poswidth, posHeight, 12f, iconPaint);
+
+            width = icon_video_normal.getWidth();
+            height = icon_video_normal.getHeight();
+
+            poswidth = centerPosX + (width / 3 + 10);
+            posHeight = centerPosY - (height / 2) - 5;
+
+        } else if (currentDirection == ButtonDirection.BOTTOM_LEFT) {
+
+        } else if (currentDirection == ButtonDirection.BOTTOM_RIGHT) {
+
+        }
 
         if (state == ButtonState.NORMAL) {
             canvas.drawBitmap(icon_video_normal, poswidth, posHeight, iconPaint);
@@ -162,5 +194,51 @@ public class VideoResButton extends AppCompatButton {
 
     public void setState(ButtonState state) {
         this.state = state;
+    }
+
+    public void setDirection(ButtonDirection direction) {
+        this.currentDirection = direction;
+    }
+
+    // set the direction of the button
+    // 1 for top-left
+    // 2 for top-right
+    // 3 for bottom-left
+    // 4 for bottom-right
+    public PointF[] getDirection() {
+        PointF[] point = null;
+
+        switch (currentDirection) {
+            case TOP_LEFT:
+                point = new PointF[]{
+                        new PointF(0, 0),
+                        new PointF(getWidth(), 0),
+                        new PointF(0, getHeight())
+                };
+                break;
+            case TOP_RIGHT:
+                point = new PointF[]{
+                        new PointF(0, 0),
+                        new PointF(getWidth(), 0),
+                        new PointF(getWidth(), getHeight())
+                };
+                break;
+            case BOTTOM_LEFT:
+                point = new PointF[]{
+                        new PointF(0, 0),
+                        new PointF(0, getHeight()),
+                        new PointF(getWidth(), getHeight())
+                };
+                break;
+            case BOTTOM_RIGHT:
+                point = new PointF[]{
+                        new PointF(getWidth(), 0),
+                        new PointF(getWidth(), getHeight()),
+                        new PointF(getWidth(), 0)
+                };
+                break;
+        }
+
+        return point;
     }
 }

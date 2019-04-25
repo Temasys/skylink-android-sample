@@ -593,6 +593,8 @@ public class Utils {
                 return Config.ROOM_NAME_FILE;
             case MULTI_PARTY_VIDEO:
                 return Config.ROOM_NAME_PARTY;
+            case SCREEN_SHARE:
+                return Config.ROOM_NAME_SCREEN;
         }
 
         return null;
@@ -612,6 +614,8 @@ public class Utils {
                 return Config.USER_NAME_FILE;
             case MULTI_PARTY_VIDEO:
                 return Config.USER_NAME_PARTY;
+            case SCREEN_SHARE:
+                return Config.USER_NAME_SCREEN;
         }
 
         return null;

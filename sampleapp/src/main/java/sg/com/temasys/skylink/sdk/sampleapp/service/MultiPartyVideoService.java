@@ -6,6 +6,7 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -127,9 +128,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *
      * @return True if local camera has been restarted, false if it has been stopped.
      */
-    public boolean toggleCamera() {
+    public boolean toggleCamera(String mediaId) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera();
+            return mSkylinkConnection.toggleCamera(mediaId);
         return false;
     }
 
@@ -143,9 +144,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @param isToggle true if restart camera, false if stop camera
      * @return True if camera state had changed, false if not.
      */
-    public boolean toggleCamera(boolean isToggle) {
+    public boolean toggleCamera(String mediaId, boolean isToggle) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera(isToggle);
+            return mSkylinkConnection.toggleCamera(mediaId,isToggle);
         return false;
     }
 
@@ -362,9 +363,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @param remotePeerId PeerId of the Peer whose videoView to be returned.
      * @return Video View of Peer or null if none present.
      */
-    public SurfaceViewRenderer getVideoView(String remotePeerId) {
+    public SurfaceViewRenderer getVideoView(String remotePeerId, String mediaId) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.getVideoView(remotePeerId);
+            return mSkylinkConnection.getVideoView(remotePeerId, mediaId);
 
         return null;
     }
@@ -381,11 +382,30 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public SurfaceViewRenderer getVideoViewByIndex(int peerIndex) {
         if (peerIndex == -1) {
-            return mSkylinkConnection.getVideoView(null);
+            return mSkylinkConnection.getVideoView(null, null);
         }
 
         if (mSkylinkConnection != null && peerIndex < mPeersList.size()) {
-            return mSkylinkConnection.getVideoView(mPeersList.get(peerIndex).getPeerId());
+            SkylinkPeer skylinkPeer = mPeersList.get(peerIndex);
+            if (skylinkPeer.getMediaIds() != null) {
+                for (int i = 0; i < skylinkPeer.getMediaIds().size(); i++) {
+                    // return the first video view of the remote peer
+                    Map<String, SkylinkPeer.MEDIA_TYPE> mediaIds = skylinkPeer.getMediaIds();
+
+                    if (mediaIds == null) {
+                        return null;
+                    }
+
+                    String trackId = null;
+                    for (String key : mediaIds.keySet()) {
+                        if (mediaIds.get(key) == SkylinkPeer.MEDIA_TYPE.VIDEO) {
+                            trackId = key;
+                        }
+                    }
+
+                    return mSkylinkConnection.getVideoView(skylinkPeer.getPeerId(), trackId);
+                }
+            }
         }
 
         return null;

@@ -139,7 +139,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
             log += " NULL.";
         }
         ;
-        toastLog(TAG, context, log);
+//        toastLog(TAG, context, log);
     }
 
     @Override

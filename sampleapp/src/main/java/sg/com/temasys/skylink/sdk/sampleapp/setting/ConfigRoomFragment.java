@@ -18,36 +18,42 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_CHAT
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_FILE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_SCREEN;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_CHAT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_FILE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_SCREEN;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameAudio;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameChat;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameData;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameFile;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameParty;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameScreen;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameVideo;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameAudio;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameChat;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameData;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameFile;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameParty;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameScreen;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameVideo;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_SCREEN_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_SCREEN_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VIDEO_DEFAULT;
 
 /**
@@ -61,6 +67,7 @@ public class ConfigRoomFragment extends Fragment {
     public static final String PREF_ROOM_NAME_FILE = "RoomNameFile";
     public static final String PREF_ROOM_NAME_PARTY = "RoomNameParty";
     public static final String PREF_ROOM_NAME_VIDEO = "RoomNameVideo";
+    public static final String PREF_ROOM_NAME_SCREEN = "RoomNameScreen";
 
     public static final String PREF_USER_NAME_AUDIO = "UserNameAudio";
     public static final String PREF_USER_NAME_CHAT = "UserNameChat";
@@ -68,6 +75,7 @@ public class ConfigRoomFragment extends Fragment {
     public static final String PREF_USER_NAME_FILE = "UserNameFile";
     public static final String PREF_USER_NAME_PARTY = "UserNameParty";
     public static final String PREF_USER_NAME_VIDEO = "UserNameVideo";
+    public static final String PREF_USER_NAME_SCREEN = "UserNameScreen";
 
     private EditText edtRoomNameAudio;
     private EditText edtRoomNameChat;
@@ -75,6 +83,7 @@ public class ConfigRoomFragment extends Fragment {
     private EditText edtRoomNameFile;
     private EditText edtRoomNameParty;
     private EditText edtRoomNameVideo;
+    private EditText edtRoomNameScreen;
 
     private EditText edtUserNameAudio;
     private EditText edtUserNameChat;
@@ -82,6 +91,7 @@ public class ConfigRoomFragment extends Fragment {
     private EditText edtUserNameFile;
     private EditText edtUserNameParty;
     private EditText edtUserNameVideo;
+    private EditText edtUserNameScreen;
 
     public ConfigRoomFragment() {
         // Required empty public constructor
@@ -138,6 +148,13 @@ public class ConfigRoomFragment extends Fragment {
         edtRoomNameVideo = (EditText) view.findViewById(R.id.edtRoomNameVideo);
         edtRoomNameVideo.setText(ROOM_NAME_VIDEO);
 
+        // Screen share Function Value Set
+        edtUserNameScreen = (EditText) view.findViewById(R.id.edtUserNameScreen);
+        edtUserNameScreen.setText(USER_NAME_SCREEN);
+
+        edtRoomNameScreen = (EditText) view.findViewById(R.id.edtRoomNameScreen);
+        edtRoomNameScreen.setText(ROOM_NAME_SCREEN);
+
         // Set Listener actions for each EditText field.
         //  - Room names.
         setFocusChangeListener(edtRoomNameAudio, PREF_ROOM_NAME_AUDIO);
@@ -146,6 +163,7 @@ public class ConfigRoomFragment extends Fragment {
         setFocusChangeListener(edtRoomNameFile, PREF_ROOM_NAME_FILE);
         setFocusChangeListener(edtRoomNameParty, PREF_ROOM_NAME_PARTY);
         setFocusChangeListener(edtRoomNameVideo, PREF_ROOM_NAME_VIDEO);
+        setFocusChangeListener(edtRoomNameScreen, PREF_ROOM_NAME_SCREEN);
         //  - User names.
         setFocusChangeListener(edtUserNameAudio, PREF_USER_NAME_AUDIO);
         setFocusChangeListener(edtUserNameChat, PREF_USER_NAME_CHAT);
@@ -153,6 +171,7 @@ public class ConfigRoomFragment extends Fragment {
         setFocusChangeListener(edtUserNameFile, PREF_USER_NAME_FILE);
         setFocusChangeListener(edtUserNameParty, PREF_USER_NAME_PARTY);
         setFocusChangeListener(edtUserNameVideo, PREF_USER_NAME_VIDEO);
+        setFocusChangeListener(edtUserNameScreen, PREF_USER_NAME_SCREEN);
 
         // Button to reset all values to Default values (from Constants.java)
         final Button button = (Button) view.findViewById(R.id.btnResetDefault);
@@ -165,6 +184,7 @@ public class ConfigRoomFragment extends Fragment {
                 edtRoomNameFile.setText(ROOM_NAME_FILE_DEFAULT);
                 edtRoomNameParty.setText(ROOM_NAME_PARTY_DEFAULT);
                 edtRoomNameVideo.setText(ROOM_NAME_VIDEO_DEFAULT);
+                edtRoomNameScreen.setText(ROOM_NAME_SCREEN_DEFAULT);
 
                 edtUserNameAudio.setText(USER_NAME_AUDIO_DEFAULT);
                 edtUserNameChat.setText(USER_NAME_CHAT_DEFAULT);
@@ -172,6 +192,7 @@ public class ConfigRoomFragment extends Fragment {
                 edtUserNameFile.setText(USER_NAME_FILE_DEFAULT);
                 edtUserNameParty.setText(USER_NAME_PARTY_DEFAULT);
                 edtUserNameVideo.setText(USER_NAME_VIDEO_DEFAULT);
+                edtUserNameScreen.setText(USER_NAME_SCREEN_DEFAULT);
 
                 // Set Config values to default values and write to Preferences if it had changed.
                 setRoomNameAudio(ROOM_NAME_AUDIO_DEFAULT, getActivity());
@@ -180,6 +201,7 @@ public class ConfigRoomFragment extends Fragment {
                 setRoomNameFile(ROOM_NAME_FILE_DEFAULT, getActivity());
                 setRoomNameParty(ROOM_NAME_PARTY_DEFAULT, getActivity());
                 setRoomNameVideo(ROOM_NAME_VIDEO_DEFAULT, getActivity());
+                setRoomNameScreen(ROOM_NAME_SCREEN_DEFAULT, getActivity());
 
                 setUserNameAudio(USER_NAME_AUDIO_DEFAULT, getActivity());
                 setUserNameChat(USER_NAME_CHAT_DEFAULT, getActivity());
@@ -187,6 +209,7 @@ public class ConfigRoomFragment extends Fragment {
                 setUserNameFile(USER_NAME_FILE_DEFAULT, getActivity());
                 setUserNameParty(USER_NAME_PARTY_DEFAULT, getActivity());
                 setUserNameVideo(USER_NAME_VIDEO_DEFAULT, getActivity());
+                setUserNameScreen(USER_NAME_SCREEN_DEFAULT, getActivity());
             }
         });
 
@@ -227,6 +250,10 @@ public class ConfigRoomFragment extends Fragment {
                             setRoomNameVideo(uiValue, getActivity());
                             editText.setText(ROOM_NAME_VIDEO);
                             break;
+                        case PREF_ROOM_NAME_SCREEN:
+                            setRoomNameScreen(uiValue, getActivity());
+                            editText.setText(ROOM_NAME_SCREEN);
+                            break;
 
                         // User name types
                         case PREF_USER_NAME_AUDIO:
@@ -252,6 +279,10 @@ public class ConfigRoomFragment extends Fragment {
                         case PREF_USER_NAME_VIDEO:
                             setUserNameVideo(uiValue, getActivity());
                             editText.setText(USER_NAME_VIDEO);
+                            break;
+                        case PREF_USER_NAME_SCREEN:
+                            setUserNameScreen(uiValue, getActivity());
+                            editText.setText(USER_NAME_SCREEN);
                             break;
                     }
                 }

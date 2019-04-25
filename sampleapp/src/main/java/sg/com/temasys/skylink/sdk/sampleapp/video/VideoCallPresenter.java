@@ -116,15 +116,15 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         // Toggle camera back to previous state if required.
         // check the current camera state isCameraMute() is true if camera is currently stop
         if (!currentVideoLocalState.isCameraMute()) {
-            if (videoCallService.getVideoView(null) != null) {
+            if (videoCallService.getVideoView(null, null) != null) {
                 // change camera state
-                videoCallService.toggleCamera(false);
+                videoCallService.toggleCamera(null,false);
                 // change UI
                 videoCallView.onPresenterRequestChangeCameraUI(false);
             }
         } else {
             // change camera state
-            videoCallService.toggleCamera(true);
+            videoCallService.toggleCamera(null, true);
             // change UI
             videoCallView.onPresenterRequestChangeCameraUI(true);
         }
@@ -137,7 +137,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             return;
         }
         //stop camera when pausing so that camera will be available for the others to use
-        videoCallService.toggleCamera(true);
+        videoCallService.toggleCamera(null,true);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
         currentVideoLocalState.setCameraMute(!isCamMute);
 
         //change camera state in service layer
-        videoCallService.toggleCamera(!isCamMute);
+        videoCallService.toggleCamera(null, !isCamMute);
 
         // change UI
         videoCallView.onPresenterRequestChangeCameraUI(!isCamMute);
@@ -283,19 +283,18 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
         // add the remote video view in to the view
-        processAddRemoteView(remotePeerId);
+        processAddRemoteView(remotePeerId, mediaId);
 
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
-                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
+        log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
         Log.d(TAG, log);
@@ -315,13 +314,20 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     }
 
     @Override
-    public void onServiceRequestLocalMediaCapture(SurfaceViewRenderer videoView) {
-        String log = "[SA][onLocalMediaCapture] ";
+    public void onServiceRequestLocalAudioCapture(String mediaId) {
+        String log = "[SA][onServiceRequestLocalAudioCapture] ";
+
+        toastLog(TAG, context, "Local audio is on with id = " + mediaId);
+    }
+
+    @Override
+    public void onServiceRequestLocalVideoCapture(SurfaceViewRenderer videoView) {
+        String log = "[SA][onServiceRequestLocalVideoCapture] ";
         if (videoView == null) {
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = videoCallService.getVideoView(null);
+            SurfaceViewRenderer selfVideoView = videoCallService.getVideoView(null, null);
             processAddSelfView(selfVideoView);
         } else {
             log += "Adding VideoView as selfView.";
@@ -418,20 +424,20 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     /**
      * Get video view by remote peer id
      */
-    private SurfaceViewRenderer processGetVideoView(String remotePeerId) {
-        return videoCallService.getVideoView(remotePeerId);
+    private SurfaceViewRenderer processGetVideoView(String remotePeerId, String mediaId) {
+        return videoCallService.getVideoView(remotePeerId, mediaId);
     }
 
     /**
      * Get the remote video view from peer id
      */
-    private SurfaceViewRenderer processGetRemoteView(String remotePeerId) {
+    private SurfaceViewRenderer processGetRemoteView(String remotePeerId, String mediaId) {
         SurfaceViewRenderer videoView;
         // Proceed only if the first (& only) remote Peer has joined.
         if (remotePeerId == null) {
             return null;
         } else {
-            videoView = processGetVideoView(remotePeerId);
+            videoView = processGetVideoView(remotePeerId, mediaId);
         }
 
         return videoView;
@@ -447,12 +453,13 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
     /**
      * Add remote video view into the layout
      */
-    private void processAddRemoteView(String remotePeerId) {
+    private void processAddRemoteView(String remotePeerId, String mediaId) {
 
-        SurfaceViewRenderer videoView = processGetRemoteView(remotePeerId);
+        SurfaceViewRenderer videoView = processGetRemoteView(remotePeerId, mediaId);
+        // setTag for the remote video view
+        videoView.setTag(mediaId);
 
         videoCallView.onPresenterRequestAddRemoteView(videoView);
-
     }
 
     /**

@@ -166,7 +166,9 @@ public class CustomActionBar extends Fragment {
      * Define the action for button back in action bar
      */
     protected void processBack() {
-        getActivity().onBackPressed();
+        if (getActivity() != null) {
+            getActivity().onBackPressed();
+        }
     }
 
     /**

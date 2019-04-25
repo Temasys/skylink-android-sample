@@ -7,13 +7,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,6 +37,7 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
 
     private final String TAG = VideoResolutionFragment.class.getName();
 
+    private RelativeLayout frameVideoRes;
     private CustomSeekBar seekBarWidthHeight, seekBarFps;
     private TextView txtMinWH, txtMaxWH, txtMinFps, txtMaxFps, txtInputWH, txtSentWH, txtRecceivedWH,
             txtInputFps, txtSentFps, txtReceivedFps;
@@ -198,6 +203,7 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
     //----------------------------------------------------------------------------------------------
 
     private void getControlWidgets(View rootView) {
+        frameVideoRes = rootView.findViewById(R.id.frameVideoRes);
         seekBarWidthHeight = rootView.findViewById(R.id.seekBarResWidthHeight);
         seekBarFps = rootView.findViewById(R.id.seekBarResFps);
         txtMinWH = rootView.findViewById(R.id.txtMinRes);
@@ -213,6 +219,12 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
     }
 
     private void init() {
+        if (getDirection() == VideoResButton.ButtonDirection.TOP_LEFT) {
+            frameVideoRes.setBackgroundResource(R.drawable.frame_layout_round_border_topleft);
+        } else if (getDirection() == VideoResButton.ButtonDirection.TOP_RIGHT) {
+            frameVideoRes.setBackgroundResource(R.drawable.frame_layout_round_border_topright);
+        }
+
         txtMinWH.setText("widthxheight");
         txtMaxWH.setText("widthxheight");
         txtMinFps.setText("Fps");
@@ -326,6 +338,16 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
                 presenter.onViewRequestFpsSelected(seekBar.getProgress());
             }
         };
+    }
+
+    private VideoResButton.ButtonDirection getDirection() {
+        if (getActivity() instanceof VideoCallActivity) {
+            return VideoResButton.ButtonDirection.TOP_LEFT;
+        } else if (getActivity() instanceof ScreenSharingActivity) {
+            return VideoResButton.ButtonDirection.TOP_RIGHT;
+        }
+
+        return null;
     }
 
 

@@ -18,16 +18,17 @@ import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig;
-    private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer;
-    private ImageButton btnAudio, btnVideo, btnChat, btnFile, btnData, btnMultiVideo;
-    private TextView tvAudio, tvVideo, tvChat, tvFile, tvData, tvMultiVideo;
+    private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig, screenShareContainerBig;
+    private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer, screenShareContainer;
+    private ImageButton btnAudio, btnVideo, btnChat, btnFile, btnData, btnMultiVideo, btnScreenShare;
+    private TextView tvAudio, tvVideo, tvChat, tvFile, tvData, tvMultiVideo, tvScreenShare;
     private ImageView imgLogo;
 
     @Override
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //init utils
         Utils utils = new Utils(this);
+
+        processScreenShare();
     }
 
     private void getControlWidgets() {
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fileContainerBig = findViewById(R.id.fileContainerBig);
         dataContainerBig = findViewById(R.id.dataContainerBig);
         multiVideoContainerBig = findViewById(R.id.multiVideoContainerBig);
+        screenShareContainerBig = findViewById(R.id.screenShareContainerBig);
 
         audioContainer = findViewById(R.id.audioContainer);
         videoContainer = findViewById(R.id.videoContainer);
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fileContainer = findViewById(R.id.fileContainer);
         dataContainer = findViewById(R.id.dataContainer);
         multiVideoContainer = findViewById(R.id.multiVideoContainer);
+        screenShareContainer = findViewById(R.id.screenShareContainer);
 
         btnAudio = findViewById(R.id.btnAudioCall);
         btnVideo = findViewById(R.id.btnVideoCall);
@@ -69,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnFile = findViewById(R.id.btnFileTransfer);
         btnData = findViewById(R.id.btnDataTransfer);
         btnMultiVideo = findViewById(R.id.btnMultiVideoCall);
+        btnScreenShare = findViewById(R.id.btnScreenShare);
 
         tvAudio = findViewById(R.id.tvAudio);
         tvVideo = findViewById(R.id.tvVideo);
@@ -76,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvFile = findViewById(R.id.tvFileTransfer);
         tvData = findViewById(R.id.tvDataTransfer);
         tvMultiVideo = findViewById(R.id.tvMultiVideoCall);
+        tvScreenShare = findViewById(R.id.tvsSreenShare);
 
         imgLogo = findViewById(R.id.imgLogo);
     }
@@ -87,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fileContainerBig.setOnClickListener(this);
         dataContainerBig.setOnClickListener(this);
         multiVideoContainerBig.setOnClickListener(this);
+        screenShareContainerBig.setOnClickListener(this);
 
         audioContainer.setOnClickListener(this);
         videoContainer.setOnClickListener(this);
@@ -94,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fileContainer.setOnClickListener(this);
         dataContainer.setOnClickListener(this);
         multiVideoContainer.setOnClickListener(this);
+        screenShareContainer.setOnClickListener(this);
 
         btnAudio.setOnClickListener(this);
         btnVideo.setOnClickListener(this);
@@ -101,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnFile.setOnClickListener(this);
         btnData.setOnClickListener(this);
         btnMultiVideo.setOnClickListener(this);
+        btnScreenShare.setOnClickListener(this);
 
         tvAudio.setOnClickListener(this);
         tvVideo.setOnClickListener(this);
@@ -108,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvFile.setOnClickListener(this);
         tvData.setOnClickListener(this);
         tvMultiVideo.setOnClickListener(this);
+        tvScreenShare.setOnClickListener(this);
 
         //need check imgLogo in case of landscape orientation
         //because imgLogo is not available for landscape orientation
@@ -174,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tvMultiVideoCall:
                 processMultiVideo();
                 break;
+            case R.id.screenShareContainerBig:
+            case R.id.screenShareContainer:
+            case R.id.btnScreenShare:
+            case R.id.tvsSreenShare:
+                processScreenShare();
+                break;
             case R.id.imgLogo:
                 processImglogo();
                 break;
@@ -202,6 +219,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void processMultiVideo() {
         startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
+    }
+
+    private void processScreenShare() {
+        startActivity(new Intent(this, ScreenSharingActivity.class));
     }
 
     private void processImglogo() {

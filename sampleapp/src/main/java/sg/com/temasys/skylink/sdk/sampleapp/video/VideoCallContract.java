@@ -98,6 +98,8 @@ public interface VideoCallContract {
          * Update UI details when changing camera state (muted/on)
          */
         void onPresenterRequestChangeCameraUI(boolean isCameraMute);
+
+        void onPresenterRequestRemoveRemoteView();
     }
 
     interface Presenter {
@@ -165,6 +167,7 @@ public interface VideoCallContract {
          * process get peer info at specific index
          */
         SkylinkPeer onViewRequestGetPeerByIndex(int index);
+
     }
 
     interface Service extends BaseService<Presenter> {

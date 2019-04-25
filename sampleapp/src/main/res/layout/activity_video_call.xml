@@ -12,13 +12,14 @@
 
     <FrameLayout
         android:id="@+id/contentFrameVideoRes"
-        android:layout_width="match_parent"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/dp_25dp"
         android:layout_marginTop="@dimen/dp_25dp"
-        android:layout_marginRight="@dimen/dp_50dp"
+        android:layout_marginRight="@dimen/dp_25dp"
         android:background="@android:color/transparent"
-        android:visibility="visible">
+        android:visibility="visible"
+        android:layout_alignParentLeft="true">
 
     </FrameLayout>
 
