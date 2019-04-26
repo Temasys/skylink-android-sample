@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //init utils
         Utils utils = new Utils(this);
 
-        processScreenShare();
+        // processScreenShare();
     }
 
     private void getControlWidgets() {

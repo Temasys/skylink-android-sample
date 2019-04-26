@@ -127,6 +127,18 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         }
     }
 
+    public void startLocalMedia() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        //Start audio.
+        mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+        //Start video.
+        mSkylinkConnection.startLocalMedia(videoDevice);
+    }
+
     /**
      * Change the speaker output to on/off
      * The speaker is automatically turned off when audio bluetooth is connected.

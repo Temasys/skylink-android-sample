@@ -81,6 +81,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             //connect to room on Skylink connection
             processConnectToRoom();
 
+            //Start local audio and video.
+            multiVideoCallService.startLocalMedia();
+
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");

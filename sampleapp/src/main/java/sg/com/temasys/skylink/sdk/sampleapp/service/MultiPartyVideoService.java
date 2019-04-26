@@ -164,6 +164,17 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
     }
 
+    public void startLocalMedia() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        //Start audio.
+        mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+        //Start video.
+        mSkylinkConnection.startLocalMedia(videoDevice);
+    }
+
     /**
      * Start recording with conditions:
      * - We must be using Skylink Media Relay (SMR key)

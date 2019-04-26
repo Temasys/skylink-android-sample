@@ -95,6 +95,9 @@ public class VideoCallPresenter extends BasePresenter implements VideoCallContra
             //connect to room on Skylink connection
             processConnectToRoom();
 
+            //Start local audio and video.
+            videoCallService.startLocalMedia();
+
             //default setting for video output
             this.currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
 
