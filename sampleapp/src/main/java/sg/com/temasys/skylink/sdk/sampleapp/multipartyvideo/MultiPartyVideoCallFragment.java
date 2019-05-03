@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,11 +13,13 @@ import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
@@ -28,13 +31,17 @@ import org.webrtc.SurfaceViewRenderer;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.DoubleClickListener;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.Gravity.FILL;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -55,11 +62,17 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private FrameLayout[] remoteViewLayouts;
 
     // menu option buttons for peers
-    private Button btnOptionLocal, btnOptionPeer1, btnOptionPeer2, btnOptionPeer3;
+    private Button btnOptionLocal, btnOptionPeer1, btnOptionPeer2, btnOptionPeer3, btnStartAudioMulti,
+            btnStartVideoMulti, stopScreenshareFloat;
+
+    private SurfaceViewRenderer localCameraView, localScreenView;
+
+    private WindowManager.LayoutParams stopScreenshareLayoutParams;
 
     // the index of current selected peer
     private int currentSelectIndex = 0;
 
+    private boolean isStopScreenShareBtnShowing;
 
     public static MultiPartyVideoCallFragment newInstance() {
         return new MultiPartyVideoCallFragment();
@@ -168,6 +181,12 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             case R.id.btnPeer3Menu:
                 onMenuOptionRemotePeer(btnOptionPeer3, 3);
                 break;
+            case R.id.btnStartAudioMulti:
+                presenter.onViewRequestStartAudio();
+                break;
+            case R.id.btnStartVideoMulti:
+                presenter.onViewRequestStartVideo();
+                break;
         }
     }
 
@@ -237,6 +256,11 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
             //remove all views
             processEmptyLayout();
+
+
+            if (isStopScreenShareBtnShowing) {
+                showHideButton(stopScreenshareFloat, false);
+            }
         }
     }
 
@@ -255,6 +279,16 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         updateRoomInfo(roomId);
         // update the local peer button in the action bar
         updateUILocalPeer(Config.USER_NAME_PARTY);
+
+        // Remove any existing Peer View at index.
+        // This may sometimes be the case, for e.g. in screen sharing.
+        removePeerView(0);
+
+        //Create an empty view with black background color
+        selfViewLayout = new FrameLayout(context);
+        selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
+        setLayoutParams(selfViewLayout);
+        remoteViewLayouts[0].addView(selfViewLayout);
     }
 
     /**
@@ -304,7 +338,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * @param videoView videoView of remoteView
      */
     @Override
-    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView) {
+    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MEDIA_TYPE mediaType) {
         if (videoView == null) {
             return;
         }
@@ -320,6 +354,15 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         remoteViewLayouts[0].addView(videoView);
 
         displayPeerMenuOption(0);
+
+        btnStartAudioMulti.setVisibility(View.GONE);
+        btnStartVideoMulti.setVisibility(View.GONE);
+
+        if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+            localCameraView = videoView;
+        } else if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+            localScreenView = videoView;
+        }
     }
 
     /**
@@ -396,6 +439,18 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         Log.d(TAG, "[SRS][SA] " + msg);
     }
 
+    @Override
+    public void onPresenterRequestShowHideButtonStopScreenSharing(boolean isShow) {
+        isStopScreenShareBtnShowing = isShow;
+
+        WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
+        if (isShow) {
+            windowManager.addView(stopScreenshareFloat, stopScreenshareLayoutParams);
+        } else {
+            windowManager.removeView(stopScreenshareFloat);
+        }
+    }
+
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
@@ -412,6 +467,9 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         btnOptionPeer1 = rootView.findViewById(R.id.btnPeer1Menu);
         btnOptionPeer2 = rootView.findViewById(R.id.btnPeer2Menu);
         btnOptionPeer3 = rootView.findViewById(R.id.btnPeer3Menu);
+
+        btnStartAudioMulti = rootView.findViewById(R.id.btnStartAudioMulti);
+        btnStartVideoMulti = rootView.findViewById(R.id.btnStartVideoMulti);
     }
 
     /**
@@ -442,8 +500,64 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         btnOptionPeer2.setOnClickListener(this);
         btnOptionPeer3.setOnClickListener(this);
 
+        btnStartAudioMulti.setOnClickListener(this);
+        btnStartVideoMulti.setOnClickListener(this);
+
         // display context menu button for each peer in correct position
         locateMenuButtons();
+
+        isStopScreenShareBtnShowing = false;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            stopScreenshareLayoutParams = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
+        } else {
+            stopScreenshareLayoutParams = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_PHONE,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
+        }
+
+        stopScreenshareLayoutParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+
+        stopScreenshareFloat = new Button(getActivity());
+        stopScreenshareFloat.setText(getActivity().getResources().getText(R.string.stop_screenShare));
+        stopScreenshareFloat.setTextColor(getActivity().getResources().getColor(R.color.color_white));
+        stopScreenshareFloat.setTextSize(getActivity().getResources().getDimension(R.dimen.sp_4sp));
+        stopScreenshareFloat.setBackground(getActivity().getResources().getDrawable(R.drawable.button_stop_screen_sharing));
+
+        stopScreenshareFloat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isStopScreenShareBtnShowing = false;
+                showHideButton(stopScreenshareFloat, false);
+                onPresenterRequestAddSelfView(localCameraView, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
+            }
+        });
+
+        // setup double click event for selfViewLayout
+        // double click on selfViewLayout to start second local video view
+        selfViewLayout.setOnClickListener(new DoubleClickListener() {
+            @Override
+            public void onDoubleClick() {
+                startSecondVideoView();
+            }
+        });
+    }
+
+    /**
+     * Start the second video view
+     * if current video view is from camera, then start screen video view
+     * if current video view is from screen view, then start camera video view
+     */
+    private void startSecondVideoView() {
+        presenter.onViewRequestStartSecondVideoView();
     }
 
     /**
@@ -640,5 +754,25 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         RelativeLayout.LayoutParams params3 = (RelativeLayout.LayoutParams) btnOptionPeer3.getLayoutParams();
         params3.bottomMargin = height / 2 - (buttonSize * 2);
         btnOptionPeer3.setLayoutParams(params3);
+    }
+
+    private void showHideButton(View view, boolean isShow) {
+        if (view == null)
+            return;
+
+        if (view == stopScreenshareFloat) {
+            WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
+            if (isShow) {
+                windowManager.addView(stopScreenshareFloat, stopScreenshareLayoutParams);
+            } else {
+                windowManager.removeView(stopScreenshareFloat);
+            }
+        } else {
+            if (isShow) {
+                view.setVisibility(VISIBLE);
+            } else {
+                view.setVisibility(GONE);
+            }
+        }
     }
 }

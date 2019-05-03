@@ -11,7 +11,7 @@ public class SkylinkPeer implements Serializable {
     public enum MEDIA_TYPE {
         AUDIO,
         VIDEO,
-        SCREEN_SHARING
+        SCREEN
     }
 
 

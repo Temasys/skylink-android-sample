@@ -1,33 +1,28 @@
-package sg.com.temasys.skylink.sdk.sampleapp.localvideo;
+package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 
 import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingContract;
-import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingPresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.VIDEO_TYPE;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 
-import static android.widget.PopupMenu.OnMenuItemClickListener;
 
 /**
  * A simple {@link CustomActionBar} subclass.
@@ -35,34 +30,24 @@ import static android.widget.PopupMenu.OnMenuItemClickListener;
  */
 
 // need to refactor the name of the class to apply for both local view and remote view
-public class LocalVideoFragment extends Fragment implements LocalVideoContract.View,
-        OnClickListener, OnMenuItemClickListener, View.OnTouchListener, ScreenSharingContract.SmallView {
+public class SmallVideoViewFragment extends Fragment implements
+        OnClickListener, View.OnTouchListener {
 
-    private final String TAG = LocalVideoFragment.class.getName();
+    private final String TAG = SmallVideoViewFragment.class.getName();
     private Context context;
 
     // view widgets
     private LinearLayout localVideoViewLayout;
     private Button btnLocalOption;
+    private ImageButton btnBringToMain;
 
-    // presenter instance to implement video call logic
-    private LocalVideoContract.Presenter presenter;
-    private ScreenSharingPresenter remoteCameraPresenter;
+    // the type of this small view, can be one of Constants.VIDEO_TYPE
     private VIDEO_TYPE type = VIDEO_TYPE.LOCAL_CAMERA;
     private SurfaceViewRenderer currentView = null;
 
 
-    public static LocalVideoFragment newInstance() {
-        return new LocalVideoFragment();
-    }
-
-    @Override
-    public void setLocalPresenter(LocalVideoContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
-
-    public void setRemotePresenter(ScreenSharingPresenter screenSharingPresenter) {
-        this.remoteCameraPresenter = screenSharingPresenter;
+    public static SmallVideoViewFragment newInstance() {
+        return new SmallVideoViewFragment();
     }
 
     public void setVideoType(VIDEO_TYPE videoType) {
@@ -99,34 +84,12 @@ public class LocalVideoFragment extends Fragment implements LocalVideoContract.V
     public void onClick(View view) {
         //Defining a click event actions for the buttons
         switch (view.getId()) {
-            case R.id.btnLocalVideoOption:
-                onMenuOptionLocalPeer(btnLocalOption);
-                break;
             case R.id.ll_local_video_view:
                 break;
-        }
-    }
-
-    /**
-     * define the action for each menu items for local peer
-     */
-    @Override
-    public boolean onMenuItemClick(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.switch_camera:
-                presenter.onViewRequestSwitchCamera();
-                break;
-            case R.id.video_resolution:
-                presenter.onViewRequestGetVideoResolutions();
-                break;
-            case R.id.bring_to_main:
+            case R.id.btn_bring_to_main:
                 processBringViewToMain();
                 break;
-            default:
-                Log.e(TAG, "Unknown menu option: " + menuItem.getItemId() + "!");
-                return false;
         }
-        return true;
     }
 
     @Override
@@ -140,6 +103,7 @@ public class LocalVideoFragment extends Fragment implements LocalVideoContract.V
     private void getControlWidgets(View rootView) {
         localVideoViewLayout = rootView.findViewById(R.id.ll_local_video_view);
         btnLocalOption = rootView.findViewById(R.id.btnLocalVideoOption);
+        btnBringToMain = rootView.findViewById(R.id.btn_bring_to_main);
     }
 
     /**
@@ -150,30 +114,11 @@ public class LocalVideoFragment extends Fragment implements LocalVideoContract.V
         btnLocalOption.setOnClickListener(this);
         localVideoViewLayout.setOnClickListener(this);
         localVideoViewLayout.setOnTouchListener(this);
-    }
+        btnBringToMain.setOnClickListener(this);
 
-    /**
-     * Display local peer menu option
-     */
-    private void onMenuOptionLocalPeer(View view) {
-        PopupMenu popup = new PopupMenu(context, view);
-        popup.setOnMenuItemClickListener(this);
-        switch (type) {
-            case LOCAL_CAMERA:
-                popup.inflate(R.menu.local_camera_menu);
-                break;
-            case LOCAL_SCREEN:
-                popup.inflate(R.menu.local_screen_menu);
-                break;
-            case REMOTE_CAMERA:
-                popup.inflate(R.menu.remote_camera_menu);
-                break;
-            case REMOTE_SCREEN:
-                popup.inflate(R.menu.remote_screen_menu);
-                break;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            btnBringToMain.setTooltipText("Bring view to main view");
         }
-
-        popup.show();
     }
 
     @Override
@@ -197,7 +142,7 @@ public class LocalVideoFragment extends Fragment implements LocalVideoContract.V
                 break;
             case MotionEvent.ACTION_MOVE:
                 // send data for the fragment to move
-                ScreenSharingActivity activity = (ScreenSharingActivity) getActivity();
+                VideoActivity activity = (VideoActivity) getActivity();
                 if (activity != null) {
                     activity.changeViewPosition(getContentFrameContainer(type), X, Y, _xDelta, _yDelta);
                 }
@@ -208,20 +153,21 @@ public class LocalVideoFragment extends Fragment implements LocalVideoContract.V
     }
 
     private FrameLayout getContentFrameContainer(VIDEO_TYPE videoType) {
-        ScreenSharingActivity activity = null;
+        VideoActivity activity = null;
 
-        if (context != null && context instanceof ScreenSharingActivity) {
-            activity = (ScreenSharingActivity) (getActivity());
+        if (context != null && context instanceof VideoActivity) {
+            activity = (VideoActivity) (getActivity());
         }
 
         switch (videoType) {
             case LOCAL_CAMERA:
                 return activity.getContentFrameLocalCameraView();
             case LOCAL_SCREEN:
-                return activity.getContentFrameLocalCameraView();
-
+                return activity.getContentFrameLocalScreenView();
             case REMOTE_CAMERA:
                 return activity.getContentFrameRemoteCameraView();
+            case REMOTE_SCREEN:
+                return activity.getContentFrameRemoteScreenView();
         }
 
         return null;
@@ -341,8 +287,8 @@ public class LocalVideoFragment extends Fragment implements LocalVideoContract.V
     }
 
     private void processBringViewToMain() {
-        if (context != null && context instanceof ScreenSharingActivity) {
-            ((ScreenSharingActivity) getActivity()).processBringLocalCameraToMain(type);
+        if (context != null && context instanceof VideoActivity) {
+            ((VideoActivity) getActivity()).processBringLocalCameraToMain(type);
         }
     }
 

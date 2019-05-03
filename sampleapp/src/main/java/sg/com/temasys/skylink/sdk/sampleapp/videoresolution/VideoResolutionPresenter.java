@@ -10,8 +10,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.SkylinkCommonService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-
 /**
  * Created by muoi.pham on 27/02/19.
  * This class is responsible for implementing logic of video resolutions
@@ -120,6 +118,13 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
             processUpdateUiResFps(currentFps, currentFormat);
             return;
         }
+    }
+
+    @Override
+    public void onViewRequestGetVideoResolutions() {
+        // get the remote peer id
+        String peerId = videoService.getPeerId(1);
+        videoService.getVideoResolutions(peerId);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -303,6 +308,11 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
 
         int maxFpsRange = 0;
         boolean isValid = false;
+
+        // just for hot fix min-max capture format returned value
+        if (captureFormat != null && captureFormat.getFpsMin() != 0) {
+            captureFormat.setFpsMin(0);
+        }
 
         if (Utils.isCaptureFormatValid(captureFormat)) {
             maxFpsRange = captureFormat.getFpsMax() - captureFormat.getFpsMin();

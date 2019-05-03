@@ -3,8 +3,8 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/color_white"
-                tools:context="sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallFragment">
+                android:background="@color/color_black"
+                tools:context="sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity">
 
     <FrameLayout
         android:id="@+id/contentFrameMainScreenShare"
@@ -24,16 +24,16 @@
 
     <FrameLayout
         android:id="@+id/contentFrameLocalCameraView"
-        android:layout_width="@dimen/dp_100dp"
-        android:layout_height="@dimen/dp_150dp"
+        android:layout_width="@dimen/small_view_content_frame_width"
+        android:layout_height="@dimen/small_view_content_frame_height"
         android:background="@android:color/transparent"
         android:visibility="visible">
     </FrameLayout>
 
     <FrameLayout
         android:id="@+id/contentFrameLocalScreenView"
-        android:layout_width="@dimen/dp_100dp"
-        android:layout_height="@dimen/dp_150dp"
+        android:layout_width="@dimen/small_view_content_frame_width"
+        android:layout_height="@dimen/small_view_content_frame_height"
         android:layout_marginLeft="@dimen/dp_100dp"
         android:background="@android:color/transparent"
         android:visibility="visible">
@@ -41,8 +41,18 @@
 
     <FrameLayout
         android:id="@+id/contentFrameRemoteCameraView"
-        android:layout_width="@dimen/dp_100dp"
-        android:layout_height="@dimen/dp_150dp"
+        android:layout_width="@dimen/small_view_content_frame_width"
+        android:layout_height="@dimen/small_view_content_frame_height"
+        android:layout_marginTop="@dimen/dp_150dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible">
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/contentFrameRemoteScreenView"
+        android:layout_width="@dimen/small_view_content_frame_width"
+        android:layout_height="@dimen/small_view_content_frame_height"
+        android:layout_marginLeft="@dimen/dp_100dp"
         android:layout_marginTop="@dimen/dp_150dp"
         android:background="@android:color/transparent"
         android:visibility="visible">

@@ -12,24 +12,24 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 /**
  * A custom text view for displaying the sending/receiving progress
  */
-public class CurvedTextView extends android.support.v7.widget.AppCompatTextView {
+public class CustomTextView extends android.support.v7.widget.AppCompatTextView {
 
     private Path myArc;
 
     private Paint myPaintText;
 
-    public CurvedTextView(Context context, AttributeSet ats, int defStyle) {
+    public CustomTextView(Context context, AttributeSet ats, int defStyle) {
         super(context, ats, defStyle);
         init(ats, context);
 
     }
 
-    public CurvedTextView(Context context, AttributeSet ats) {
+    public CustomTextView(Context context, AttributeSet ats) {
         super(context, ats);
         init(ats, context);
     }
 
-    public CurvedTextView(Context context) {
+    public CustomTextView(Context context) {
         super(context);
         init(null, context);
     }

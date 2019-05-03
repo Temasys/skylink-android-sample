@@ -10,7 +10,6 @@ public final class Constants {
     public static final String ROOM_NAME_FILE_DEFAULT = "Room-fileTransfer";
     public static final String ROOM_NAME_PARTY_DEFAULT = "Room-multiVideosCall";
     public static final String ROOM_NAME_VIDEO_DEFAULT = "Room-video";
-    public static final String ROOM_NAME_SCREEN_DEFAULT = "Room-screenSharing";
 
     public static final String USER_NAME_AUDIO_DEFAULT = "User-audio";
     public static final String USER_NAME_CHAT_DEFAULT = "User-chat";
@@ -18,12 +17,6 @@ public final class Constants {
     public static final String USER_NAME_FILE_DEFAULT = "User-fileTransfer";
     public static final String USER_NAME_PARTY_DEFAULT = "User-multiVideosCall";
     public static final String USER_NAME_VIDEO_DEFAULT = "User-video";
-    public static final String USER_NAME_SCREEN_DEFAULT = "User-screenSharing";
-
-    public static final String LOCAL_CAMERA_VIEW_TAG = "self_camera";
-    public static final String LOCAL_SCREEN_VIEW_TAG = "self_screen";
-    public static final String REMOTE_CAMERA_VIEW_TAG = "remote_camera";
-    public static final String REMOTE_SCREEN_VIEW_TAG = "remote_screen";
 
     public enum CONFIG_TYPE {
         AUDIO,

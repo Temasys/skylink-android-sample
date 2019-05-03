@@ -35,4 +35,20 @@
     <dimen name="sp_14sp">14sp</dimen>
     <dimen name="sp_15sp">15sp</dimen>
     <dimen name="dp_180dp">180dp</dimen>
+    <dimen name="dp_90dp">90dp</dimen>
+    <dimen name="dp_190dp">190dp</dimen>
+    <dimen name="dp_350dp">350dp</dimen>
+
+    <dimen name="custom_seekbar_height">90dp</dimen>
+    <dimen name="video_res_height">300dp</dimen>
+    <dimen name="custom_seekbar_width">350dp</dimen>
+    <dimen name="min_res_margin_top">90dp</dimen>
+    <dimen name="seekbar_res_fps_margin_top">110dp</dimen>
+    <dimen name="min_fps_margin_top">160dp</dimen>
+    <dimen name="res_label_margin_top">10dp</dimen>
+    <dimen name="small_view_content_frame_width">100dp</dimen>
+    <dimen name="small_view_content_frame_height">150dp</dimen>
+    <dimen name="bring_to_main_btn_width">30dp</dimen>
+    <dimen name="bring_to_main_btn_height">30dp</dimen>
+    <dimen name="file_preview_height">300dp</dimen>
 </resources>

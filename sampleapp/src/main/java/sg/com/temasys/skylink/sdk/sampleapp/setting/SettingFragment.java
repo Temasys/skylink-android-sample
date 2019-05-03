@@ -33,7 +33,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     private TextView txt_room_setting_name, txt_key_setting_name;
     private RadioGroup rdGroupAudioOutput, rdGroupVideoOutput, rdGroupCameraOutput, rdGroupVideoResolution;
     private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_custom, camera_front,
-            camera_back, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
+            camera_back, screen_device, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
 
 
     private SettingContract.Presenter mPresenter;
@@ -122,6 +122,9 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
             case R.id.camera_back:
                 processCameraBack();
                 break;
+            case R.id.screen_device:
+                processScreenDevice();
+                break;
             case R.id.rd_video_res_VGA:
                 processVideoResVGA();
                 break;
@@ -184,6 +187,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         camera_custom.setChecked(true);
         camera_front.setChecked(false);
         camera_back.setChecked(false);
+        screen_device.setChecked(false);
     }
 
     @Override
@@ -191,6 +195,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         camera_custom.setChecked(false);
         camera_front.setChecked(true);
         camera_back.setChecked(false);
+        screen_device.setChecked(false);
     }
 
     @Override
@@ -198,6 +203,15 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         camera_custom.setChecked(false);
         camera_front.setChecked(false);
         camera_back.setChecked(true);
+        screen_device.setChecked(false);
+    }
+
+    @Override
+    public void onScreenDeviceSelected() {
+        camera_custom.setChecked(false);
+        camera_front.setChecked(false);
+        camera_back.setChecked(false);
+        screen_device.setChecked(true);
     }
 
     private void processSettingRoom() {
@@ -250,6 +264,10 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
     }
 
+    private void processScreenDevice() {
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.SCREEN);
+    }
+
     private void processVideoResVGA() {
         mPresenter.onProcessVideoResolution(Config.VideoResolution.VGA);
     }
@@ -280,6 +298,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         camera_custom = rootView.findViewById(R.id.camera_custom);
         camera_front = rootView.findViewById(R.id.camera_front);
         camera_back = rootView.findViewById(R.id.camera_back);
+        screen_device = rootView.findViewById(R.id.screen_device);
         rd_video_res_VGA = rootView.findViewById(R.id.rd_video_res_VGA);
         rd_video_res_HDR = rootView.findViewById(R.id.rd_video_res_HDR);
         rd_video_res_FHD = rootView.findViewById(R.id.rd_video_res_FHD);
@@ -309,6 +328,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         camera_custom.setOnClickListener(this);
         camera_front.setOnClickListener(this);
         camera_back.setOnClickListener(this);
+        screen_device.setOnClickListener(this);
         rd_video_res_VGA.setOnClickListener(this);
         rd_video_res_HDR.setOnClickListener(this);
         rd_video_res_FHD.setOnClickListener(this);

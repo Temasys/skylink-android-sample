@@ -1,5 +1,6 @@
-package sg.com.temasys.skylink.sdk.sampleapp.screensharing;
+package sg.com.temasys.skylink.sdk.sampleapp.video;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -15,7 +16,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContr
  * Created by muoi.pham on 20/07/18.
  */
 
-public interface ScreenSharingContract {
+public interface VideoContract {
     interface MainView extends BaseView<Presenter> {
 
         /**
@@ -39,9 +40,14 @@ public interface ScreenSharingContract {
         void onPresenterRequestAddScreenSelfView(SurfaceViewRenderer videoView);
 
         /**
-         * Update UI details when adding remote video view
+         * Update UI details when adding remote camera video view
          */
-        void onPresenterRequestAddRemoteView(SurfaceViewRenderer remoteVideoView);
+        void onPresenterRequestAddCameraRemoteView(SurfaceViewRenderer remoteVideoView);
+
+        /**
+         * Update UI details when adding remote screen video view
+         */
+        void onPresenterRequestAddScreenRemoteView(SurfaceViewRenderer videoView);
 
         /**
          * Update UI details when removing remote video view
@@ -76,7 +82,7 @@ public interface ScreenSharingContract {
         /**
          * Update UI details when changing speaker state (on/off)
          */
-        void onPresenterRequestChangeAudioOuput(boolean isSpeakerOff);
+        void onPresenterRequestChangeSpeakerOutput(boolean isSpeakerOff);
 
         /**
          * Update UI details when changing audio state (muted/on)
@@ -91,13 +97,22 @@ public interface ScreenSharingContract {
         /**
          * Update UI details when changing camera state (muted/on)
          */
-        void onPresenterRequestChangeCameraUI(boolean isCameraMute, boolean isToast);
-    }
+        void onPresenterRequestChangeVideoSourceUI(boolean isCameraMute, boolean isToast);
 
-    interface SmallView {
+        /**
+         * Show or hide button stop screen sharing on UI
+         * */
+        void onPresenterRequestShowHideButtonStopScreenSharing();
 
-        void setRemotePresenter(ScreenSharingPresenter screenSharingPresenter);
+        /**
+         * Update UI details when local audio is on
+         */
+        void onPresenterRequestLocalAudioCapture(String mediaId);
 
+        /**
+         * Update UI details when local video is on
+         */
+        void onPresenterRequestLocalVideoCapture(String mediaId);
     }
 
     interface Presenter {
@@ -108,30 +123,33 @@ public interface ScreenSharingContract {
         void onViewRequestConnectedLayout();
 
         /**
+         * process results from Activity for results
+         */
+        void onViewRequestActivityResult(int requestCode, int resultCode, Intent data);
+
+        /**
          * process runtime permission results
          */
         void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
-        boolean onViewRequestButtonOverlayPermission();
-
         /**
          * process logic when user deny the permission for overlay button
          */
-        void onViewRequestPermissionDeny();
+        void onViewRequestOverlayPermissionDeny();
 
         /**
          * process change audio output between headset and speaker
          */
-        void onViewRequestChangeAudioOutput();
+        void onViewRequestChangeSpeakerOutput();
 
         /**
-         * process change state when buttons clicked
+         * process change states when buttons clicked
          */
         void onViewRequestChangeAudioState();
 
         void onViewRequestChangeVideoState();
 
-        void onViewRequestChangeCameraState();
+        void onViewRequestChangeVideoSourceState();
 
         /**
          * process change state when view resumed
@@ -158,7 +176,30 @@ public interface ScreenSharingContract {
          */
         SkylinkPeer onViewRequestGetPeerByIndex(int index);
 
-        void onViewRequestShareScreen();
+        /**
+         * switch camera between front and back
+         */
+        void onViewRequestSwitchCamera();
+
+        /**
+         * start local audio
+         */
+        void onViewRequestStartAudio();
+
+        /**
+         * start local video base on the default video device setting
+         */
+        void onViewRequestStartVideo();
+
+        /**
+         * start capturing screen
+         * */
+        void onViewRequestStartScreen();
+
+        /**
+         * start video from front camera
+         * */
+        void onViewRequestStartFrontCamera();
     }
 
     interface Service extends BaseService<Presenter> {

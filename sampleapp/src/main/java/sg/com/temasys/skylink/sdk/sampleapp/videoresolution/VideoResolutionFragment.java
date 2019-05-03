@@ -1,23 +1,24 @@
 package sg.com.temasys.skylink.sdk.sampleapp.videoresolution;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,13 +40,12 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
 
     private RelativeLayout frameVideoRes;
     private CustomSeekBar seekBarWidthHeight, seekBarFps;
-    private TextView txtMinWH, txtMaxWH, txtMinFps, txtMaxFps, txtInputWH, txtSentWH, txtRecceivedWH,
-            txtInputFps, txtSentFps, txtReceivedFps;
+    private TextView txtMinWH, txtMaxWH, txtMinFps, txtMaxFps, txtInputWH, txtSentWH, txtRecceivedWH;
     private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim, seekBarChangeListenerResFps;
+    private ImageButton btnGetVideoRes;
 
     // presenter instance to implement video res logic
     private VideoResolutionContract.Presenter presenter;
-
 
     public VideoResolutionFragment() {
         // Required empty public constructor
@@ -213,9 +213,7 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
         txtInputWH = rootView.findViewById(R.id.txtResInput);
         txtSentWH = rootView.findViewById(R.id.txtResSent);
         txtRecceivedWH = rootView.findViewById(R.id.txtResReceived);
-        txtInputFps = rootView.findViewById(R.id.txtResInputFps);
-        txtSentFps = rootView.findViewById(R.id.txtResSentFps);
-        txtReceivedFps = rootView.findViewById(R.id.txtResReceivedFps);
+        btnGetVideoRes = rootView.findViewById(R.id.btnGetVideoRes);
     }
 
     private void init() {
@@ -232,9 +230,6 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
         txtInputWH.setText("widthxheight");
         txtSentWH.setText("widthxheight");
         txtRecceivedWH.setText("widthxheight");
-        txtInputFps.setText("Fps");
-        txtSentFps.setText("Fps");
-        txtReceivedFps.setText("Fps");
 
         // init seekbars
         seekBarWidthHeight.setType(CustomSeekBar.Seekbar_Type.WIDTH_HEIGHT);
@@ -247,6 +242,11 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
 
         seekBarChangeListenerResFps = getSeekBarChangeListenerFps();
         seekBarFps.setOnSeekBarChangeListener(seekBarChangeListenerResFps);
+
+        btnGetVideoRes.setOnClickListener(view -> presenter.onViewRequestGetVideoResolutions());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            btnGetVideoRes.setTooltipText("Get video resolution");
+        }
     }
 
     /**
@@ -341,9 +341,7 @@ public class VideoResolutionFragment extends Fragment implements VideoResolution
     }
 
     private VideoResButton.ButtonDirection getDirection() {
-        if (getActivity() instanceof VideoCallActivity) {
-            return VideoResButton.ButtonDirection.TOP_LEFT;
-        } else if (getActivity() instanceof ScreenSharingActivity) {
+        if (getActivity() instanceof VideoActivity) {
             return VideoResButton.ButtonDirection.TOP_RIGHT;
         }
 

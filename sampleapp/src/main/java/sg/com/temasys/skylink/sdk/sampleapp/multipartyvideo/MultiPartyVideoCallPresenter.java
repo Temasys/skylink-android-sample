@@ -1,6 +1,10 @@
 package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -10,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
@@ -20,9 +25,9 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -82,7 +87,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             processConnectToRoom();
 
             //Start local audio and video.
-            multiVideoCallService.startLocalMedia();
+//            multiVideoCallService.startLocalMedia();
 
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
@@ -101,21 +106,26 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestResume() {
         // Toggle camera back to previous state if required.
-        if (videoLocalState.isCameraMute()) {
-            if (multiVideoCallService.getVideoView(null, null) != null) {
-                multiVideoCallService.toggleCamera(null);
-                videoLocalState.setCameraMute(false);
-            }
-        }
+        // apply for video camera only
+
+
+//        if (videoLocalState.isCameraMute()) {
+//            if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
+//                multiVideoCallService.toggleCamera(null);
+//                videoLocalState.setCameraMute(false);
+//            }
+//        }
     }
 
     @Override
     public void onViewRequestPause() {
         // Stop camera while view paused
-        if (multiVideoCallService.getVideoView(null, null) != null) {
-            boolean toggleCamera = multiVideoCallService.toggleCamera(null,false);
-            videoLocalState.setCameraMute(toggleCamera);
-        }
+        // apply for video camera only
+
+//        if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
+//            boolean toggleCamera = multiVideoCallService.toggleCamera(null, false);
+//            videoLocalState.setCameraMute(toggleCamera);
+//        }
     }
 
     @Override
@@ -229,6 +239,55 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         return null;
     }
 
+    @Override
+    public void onViewRequestStartAudio() {
+        multiVideoCallService.startLocalAudio();
+    }
+
+    @Override
+    public void onViewRequestStartVideo() {
+        multiVideoCallService.startLocalVideo();
+    }
+
+    @Override
+    public void onViewRequestStartSecondVideoView() {
+        if (!Utils.isDefaultScreenDeviceSetting()) {
+            // start screen sharing
+            multiVideoCallService.startLocalScreen();
+        } else {
+            // start front camera
+            multiVideoCallService.startLocalFrontCamera();
+        }
+    }
+
+    @Override
+    public void onViewRequestActivityResult(int requestCode, int resultCode, Intent data) {
+        permissionUtils.onRequestActivityResultHandler(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            //show the stop screen share button
+            permissionUtils.requestButtonOverlayPermission(context,
+                    multiVideoCallView.onPresenterRequestGetFragmentInstance());
+        }
+
+        // display overlay button if permission is grant
+        // or warning dialog if permission is deny
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(context)) {
+                multiVideoCallView.onPresenterRequestShowHideButtonStopScreenSharing(true);
+            } else {
+                permissionUtils.displayOverlayButtonPermissionWarning(context);
+            }
+        }
+    }
+
+    @Override
+    public void onServiceRequestIntentRequired(Intent intent, int requestCode, int infoCode) {
+        // delegate to PermissionUtils to process the permissions
+        permissionUtils.onIntentRequiredHandler(intent, requestCode, infoCode, (Activity) context);
+    }
+
+
     //----------------------------------------------------------------------------------------------
     // Override methods from BasePresenter for service to call
     // These methods are responsible for processing requests from service
@@ -258,27 +317,45 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestLocalAudioCapture(String mediaId) {
+    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
         String log = "[SA][onServiceRequestLocalAudioCapture] ";
 
-        toastLog(TAG, context, "Local audio is on with id = " + mediaId);
+        toastLog(TAG, context, "Local audio is on with id = " + localAudio.getMediaId());
     }
 
     @Override
-    public void onServiceRequestLocalVideoCapture(SurfaceViewRenderer videoView) {
-        String log = "[SA][onServiceRequestLocalVideoCapture] ";
+    public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
+        String log = "[SA][onServiceRequestLocalCameraCapture] ";
 
-        if (videoView == null) {
+        if (localVideo.getVideoView() == null) {
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, null);
-            multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView);
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType());
+            multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
 
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            multiVideoCallView.onPresenterRequestAddSelfView(videoView);
+            multiVideoCallView.onPresenterRequestAddSelfView(localVideo.getVideoView(), localVideo.getMediaType());
+        }
+    }
+
+    @Override
+    public void onServiceRequestLocalScreenCapture(SkylinkMedia localVideo) {
+        String log = "[SA][onServiceRequestLocalScreenCapture] ";
+
+        if (localVideo.getVideoView() == null) {
+            log += "VideoView is null!";
+            Log.d(TAG, log);
+
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType());
+            multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
+
+        } else {
+            log += "Adding VideoView as selfView.";
+            Log.d(TAG, log);
+            multiVideoCallView.onPresenterRequestAddSelfView(localVideo.getVideoView(), localVideo.getMediaType());
         }
     }
 
@@ -352,7 +429,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerVideoCameraReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
 
         processAddRemoteView(remotePeerId, mediaId);
 

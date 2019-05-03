@@ -583,8 +583,6 @@ public class Utils {
         switch (typeCall) {
             case AUDIO:
                 return Config.ROOM_NAME_AUDIO;
-            case VIDEO:
-                return Config.ROOM_NAME_VIDEO;
             case CHAT:
                 return Config.ROOM_NAME_CHAT;
             case DATA:
@@ -593,8 +591,8 @@ public class Utils {
                 return Config.ROOM_NAME_FILE;
             case MULTI_PARTY_VIDEO:
                 return Config.ROOM_NAME_PARTY;
-            case SCREEN_SHARE:
-                return Config.ROOM_NAME_SCREEN;
+            case VIDEO:
+                return Config.ROOM_NAME_VIDEO;
         }
 
         return null;
@@ -604,8 +602,6 @@ public class Utils {
         switch (typeCall) {
             case AUDIO:
                 return Config.USER_NAME_AUDIO;
-            case VIDEO:
-                return Config.USER_NAME_VIDEO;
             case CHAT:
                 return Config.USER_NAME_CHAT;
             case DATA:
@@ -614,8 +610,8 @@ public class Utils {
                 return Config.USER_NAME_FILE;
             case MULTI_PARTY_VIDEO:
                 return Config.USER_NAME_PARTY;
-            case SCREEN_SHARE:
-                return Config.USER_NAME_SCREEN;
+            case VIDEO:
+                return Config.USER_NAME_VIDEO;
         }
 
         return null;
@@ -807,6 +803,20 @@ public class Utils {
         }
 
         return data;
+    }
+
+    public static boolean isDefaultScreenDeviceSetting() {
+        SkylinkConfig.VideoDevice videoDevice = getDefaultVideoDevice();
+        switch (videoDevice) {
+            case CAMERA_FRONT:
+            case CAMERA_BACK:
+            case CUSTOM_CAPTURER:
+                return false;
+            case SCREEN:
+                return true;
+        }
+
+        return false;
     }
 
 }

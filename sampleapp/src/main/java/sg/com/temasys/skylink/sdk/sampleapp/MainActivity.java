@@ -18,17 +18,18 @@ import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.screensharing.ScreenSharingActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private LinearLayout audioContainerBig, videoContainerBig, chatContainerBig, fileContainerBig, dataContainerBig, multiVideoContainerBig, screenShareContainerBig;
-    private RelativeLayout audioContainer, videoContainer, chatContainer, fileContainer, dataContainer, multiVideoContainer, screenShareContainer;
-    private ImageButton btnAudio, btnVideo, btnChat, btnFile, btnData, btnMultiVideo, btnScreenShare;
-    private TextView tvAudio, tvVideo, tvChat, tvFile, tvData, tvMultiVideo, tvScreenShare;
+    private LinearLayout audioContainerBig, chatContainerBig, fileContainerBig, dataContainerBig,
+            multiVideoContainerBig, screenShareContainerBig;
+    private RelativeLayout audioContainer, chatContainer, fileContainer, dataContainer,
+            multiVideoContainer, screenShareContainer;
+    private ImageButton btnAudio, btnChat, btnFile, btnData, btnMultiVideo, btnScreenShare;
+    private TextView tvAudio, tvChat, tvFile, tvData, tvMultiVideo, tvScreenShare;
     private ImageView imgLogo;
 
     @Override
@@ -47,13 +48,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //init utils
         Utils utils = new Utils(this);
-
-        // processScreenShare();
     }
 
     private void getControlWidgets() {
         audioContainerBig = findViewById(R.id.audioContainerBig);
-        videoContainerBig = findViewById(R.id.videoContainerBig);
         chatContainerBig = findViewById(R.id.chatContainerBig);
         fileContainerBig = findViewById(R.id.fileContainerBig);
         dataContainerBig = findViewById(R.id.dataContainerBig);
@@ -61,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         screenShareContainerBig = findViewById(R.id.screenShareContainerBig);
 
         audioContainer = findViewById(R.id.audioContainer);
-        videoContainer = findViewById(R.id.videoContainer);
         chatContainer = findViewById(R.id.chatContainer);
         fileContainer = findViewById(R.id.fileContainer);
         dataContainer = findViewById(R.id.dataContainer);
@@ -69,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         screenShareContainer = findViewById(R.id.screenShareContainer);
 
         btnAudio = findViewById(R.id.btnAudioCall);
-        btnVideo = findViewById(R.id.btnVideoCall);
         btnChat = findViewById(R.id.btnChat);
         btnFile = findViewById(R.id.btnFileTransfer);
         btnData = findViewById(R.id.btnDataTransfer);
@@ -77,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnScreenShare = findViewById(R.id.btnScreenShare);
 
         tvAudio = findViewById(R.id.tvAudio);
-        tvVideo = findViewById(R.id.tvVideo);
         tvChat = findViewById(R.id.tvChat);
         tvFile = findViewById(R.id.tvFileTransfer);
         tvData = findViewById(R.id.tvDataTransfer);
@@ -89,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initComponents() {
         audioContainerBig.setOnClickListener(this);
-        videoContainerBig.setOnClickListener(this);
         chatContainerBig.setOnClickListener(this);
         fileContainerBig.setOnClickListener(this);
         dataContainerBig.setOnClickListener(this);
@@ -97,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         screenShareContainerBig.setOnClickListener(this);
 
         audioContainer.setOnClickListener(this);
-        videoContainer.setOnClickListener(this);
         chatContainer.setOnClickListener(this);
         fileContainer.setOnClickListener(this);
         dataContainer.setOnClickListener(this);
@@ -105,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         screenShareContainer.setOnClickListener(this);
 
         btnAudio.setOnClickListener(this);
-        btnVideo.setOnClickListener(this);
         btnChat.setOnClickListener(this);
         btnFile.setOnClickListener(this);
         btnData.setOnClickListener(this);
@@ -113,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnScreenShare.setOnClickListener(this);
 
         tvAudio.setOnClickListener(this);
-        tvVideo.setOnClickListener(this);
         tvChat.setOnClickListener(this);
         tvFile.setOnClickListener(this);
         tvData.setOnClickListener(this);
@@ -155,12 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tvAudio:
                 processAudio();
                 break;
-            case R.id.videoContainerBig:
-            case R.id.videoContainer:
-            case R.id.btnVideoCall:
-            case R.id.tvVideo:
-                processVideo();
-                break;
             case R.id.chatContainerBig:
             case R.id.chatContainer:
             case R.id.btnChat:
@@ -201,10 +186,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(new Intent(this, AudioCallActivity.class));
     }
 
-    private void processVideo() {
-        startActivity(new Intent(this, VideoCallActivity.class));
-    }
-
     private void processChat() {
         startActivity(new Intent(this, ChatActivity.class));
     }
@@ -222,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void processScreenShare() {
-        startActivity(new Intent(this, ScreenSharingActivity.class));
+        startActivity(new Intent(this, VideoActivity.class));
     }
 
     private void processImglogo() {

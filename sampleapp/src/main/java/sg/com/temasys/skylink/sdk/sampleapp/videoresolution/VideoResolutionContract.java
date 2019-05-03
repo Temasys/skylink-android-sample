@@ -65,6 +65,8 @@ public interface VideoResolutionContract {
 
         void onViewRequestFpsSelected(int progress);
 
+        void onViewRequestGetVideoResolutions();
+
     }
 
     interface Service extends BaseService<VideoResolutionContract.Presenter> {

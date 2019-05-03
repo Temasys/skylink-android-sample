@@ -5,13 +5,12 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.util.Log;
 
-import org.webrtc.SurfaceViewRenderer;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -61,10 +60,10 @@ public abstract class BasePresenter {
     public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
     }
 
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerVideoCameraReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
     }
 
-    public void onServiceRequestRemotePeerScreenReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerVideoScreenReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
     }
 
     public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
@@ -229,12 +228,12 @@ public abstract class BasePresenter {
     }
 
 
-    public void onServiceRequestLocalAudioCapture(String mediaId) {
+    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
     }
 
-    public void onServiceRequestLocalVideoCapture(SurfaceViewRenderer videoView) {
+    public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
     }
 
-    public void onServiceRequestLocalScreenCapture(SurfaceViewRenderer videoView) {
+    public void onServiceRequestLocalScreenCapture(SkylinkMedia localVideo) {
     }
 }

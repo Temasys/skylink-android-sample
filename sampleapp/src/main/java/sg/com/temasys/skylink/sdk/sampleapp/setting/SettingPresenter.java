@@ -61,6 +61,9 @@ public class SettingPresenter implements Presenter {
             case CAMERA_BACK:
                 mSettingView.onCameraBackSelected();
                 break;
+            case SCREEN:
+                mSettingView.onScreenDeviceSelected();
+                break;
             case CUSTOM_CAPTURER:
                 mSettingView.onCameraCustomSelected();
                 break;
@@ -100,7 +103,6 @@ public class SettingPresenter implements Presenter {
     public void onProcessVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
         //save default camera output to save sharePreference
         //value true is camera back, false is camera front
-        // Config.setPrefBoolean(DEFAULT_VIDEO_DEVICE, isCameraBack, (SettingActivity) mContext);
         Config.setPrefString(DEFAULT_VIDEO_DEVICE, videoDevice.name(), (SettingActivity) mContext);
     }
 

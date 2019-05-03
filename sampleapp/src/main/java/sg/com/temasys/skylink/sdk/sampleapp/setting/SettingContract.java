@@ -28,6 +28,8 @@ public interface SettingContract {
         void onCameraFrontSelected();
 
         void onCameraBackSelected();
+
+        void onScreenDeviceSelected();
     }
 
     interface Presenter {

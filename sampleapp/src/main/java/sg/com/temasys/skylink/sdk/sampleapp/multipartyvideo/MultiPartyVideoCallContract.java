@@ -1,11 +1,13 @@
 package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -37,7 +39,7 @@ public interface MultiPartyVideoCallContract {
         /**
          * Update UI details when need to add local video view
          */
-        void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView);
+        void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MEDIA_TYPE mediaType);
 
         /**
          * Update UI details when need to add remote video view
@@ -58,6 +60,11 @@ public interface MultiPartyVideoCallContract {
          * Update UI details when need to display video link after recorded
          */
         void onPresenterRequestDisplayVideoLinkInfo(String recordingId, String msg);
+
+        /**
+         * Show or hide button stop screen sharing on UI
+         * */
+        void onPresenterRequestShowHideButtonStopScreenSharing(boolean isShow);
     }
 
     interface Presenter {
@@ -156,6 +163,26 @@ public interface MultiPartyVideoCallContract {
          * Get the stats state of specific remote video view
          */
         Boolean onViewRequestGetWebRtcStatsState(int peerIndex);
+
+        /**
+         * Start local audio
+         */
+        void onViewRequestStartAudio();
+
+        /**
+         * Start local video base on the default video device setting
+         */
+        void onViewRequestStartVideo();
+
+        /**
+         * Start second video view
+         * */
+        void onViewRequestStartSecondVideoView();
+
+        /**
+         * process the permission for screen sharing
+         * */
+        void onViewRequestActivityResult(int requestCode, int resultCode, Intent data);
     }
 
     interface Service extends BaseService<Presenter> {

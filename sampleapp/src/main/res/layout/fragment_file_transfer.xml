@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/ll_file_transfer"
+<RelativeLayout android:id="@+id/ll_file_transfer"
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/color_black"
@@ -11,7 +11,7 @@
     <LinearLayout
         android:id="@+id/file_preview_container"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_300dp"
+        android:layout_height="@dimen/file_preview_height"
         android:layout_centerInParent="true"
         android:background="@color/color_white"
         android:gravity="center">
@@ -23,17 +23,17 @@
             android:src="@drawable/logo_icon"/>
     </LinearLayout>
 
-    <sg.com.temasys.skylink.sdk.sampleapp.utils.CurvedTextView
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTextView
         android:id="@+id/progress_info"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
         android:layout_alignParentTop="true"
-        android:textSize="@dimen/sp_20sp"
-        android:text="Sending"
-        android:textStyle="bold"
-        android:textColor="@color/primary_dark"
+        android:gravity="center"
         android:paddingTop="10dp"
+        android:text="Sending"
+        android:textColor="@color/primary_dark"
+        android:textSize="@dimen/sp_20sp"
+        android:textStyle="bold"
         android:visibility="gone"/>
 
     <ProgressBar
@@ -55,22 +55,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:max="100"
-        android:rotation="-90"
         android:indeterminate="false"
+        android:max="100"
         android:progressDrawable="@drawable/circle_progress_foreground"
+        android:rotation="-90"
         android:visibility="gone"/>
 
     <TextView
         android:id="@+id/txtPercentage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:gravity="center"
         android:text="100%"
+        android:textColor="@color/primary_dark"
         android:textSize="@dimen/sp_20sp"
         android:textStyle="bold"
-        android:textColor="@color/primary_dark"
-        android:layout_centerInParent="true"
         android:visibility="gone"/>
 
     <TextView
@@ -87,8 +87,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/dp_10dp"
-        android:layout_marginTop="@dimen/dp_30dp"
         android:layout_marginRight="@dimen/dp_10dp"
+        android:layout_marginTop="@dimen/dp_30dp"
         android:textColor="@color/color_white"
         android:textSize="@dimen/sp_16sp"/>
 

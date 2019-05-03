@@ -5,11 +5,12 @@ import android.content.Context;
 import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContract;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
@@ -21,14 +22,14 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTI
  * The service class is responsible for communicating with the SkylinkSDK API by using SkylinkConnection instance
  */
 
-public class VideoService extends SkylinkCommonService implements VideoCallContract.Service {
+public class VideoService extends SkylinkCommonService implements VideoContract.Service {
 
     public VideoService(Context context) {
         super(context);
     }
 
     @Override
-    public void setPresenter(VideoCallContract.Presenter presenter) {
+    public void setPresenter(VideoContract.Presenter presenter) {
         this.presenter = (BasePresenter) presenter;
     }
 
@@ -60,7 +61,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public void muteLocalAudio(boolean audioMuted) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.muteLocalAudio(null, audioMuted);
+            mSkylinkConnection.muteLocalAudio(mainAudioId, audioMuted);
     }
 
     /**
@@ -71,7 +72,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public void muteLocalVideo(boolean videoMuted) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.muteLocalVideo(null, videoMuted);
+            mSkylinkConnection.muteLocalVideo(mainVideoId, videoMuted);
     }
 
     /**
@@ -92,51 +93,21 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
     }
 
     /**
-     * Get the input/sent/received video resolution of a specified peer
-     * Note:
-     * - Resolution may not always be available, e.g. if no video is captured.
-     * - If resolution are available, they will be returned in
-     * {@link SkylinkCommonService#onInputVideoResolutionObtained} for input video resolution
-     * {@link SkylinkCommonService#onReceivedVideoResolutionObtained} for received video resolution
-     * {@link SkylinkCommonService#onSentVideoResolutionObtained} for sent video resolution
+     * Return the video view of Peer whose PeerId was provided.
+     * If peerId is null, local video view will be returned.
+     * Return null if:
+     * - No video view exists for given PeerId.
+     * - Including if given PeerId does not exist.
+     *
+     * @param peerId    Id of the Peer whose videoView to be returned.
+     * @param mediaType Type the the media
+     * @return Video View of Peer or null if none present.
      */
-    public void getVideoResolutions(String peerId) {
-        if (mSkylinkConnection == null) {
-            return;
-        }
+    public SurfaceViewRenderer getVideoView(String peerId, SkylinkMedia.MEDIA_TYPE mediaType) {
+        if (mSkylinkConnection != null)
+            return mSkylinkConnection.getVideoView(peerId, mediaType);
 
-        mSkylinkConnection.getInputVideoResolution();
-
-        if (peerId != null) {
-            mSkylinkConnection.getSentVideoResolution(peerId);
-            mSkylinkConnection.getReceivedVideoResolution(peerId);
-        }
-    }
-
-    /**
-     * Call this method to switch between available camera.
-     * Outcome of operation delivered via callback at SkylinkCommonService.onReceiveLog,
-     * with 3 possible Info:
-     * -- Info.CAM_SWITCH_FRONT (successfully switched to the front camera)
-     * -- Info.CAM_SWITCH_NON_FRONT (successfully switched to a non front camera/back camera)
-     * -- Info.CAM_SWITCH_NO (camera could not be switched)
-     */
-    public void switchCamera() {
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.switchCamera();
-        }
-    }
-
-    public void startLocalMedia() {
-        if (mSkylinkConnection == null) {
-            return;
-        }
-
-        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        //Start audio.
-        mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
-        //Start video.
-        mSkylinkConnection.startLocalMedia(videoDevice);
+        return null;
     }
 
     /**
@@ -183,19 +154,7 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 
-        // Set default camera setting
-        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        switch (videoDevice) {
-            case CAMERA_FRONT:
-                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
-                break;
-            case CAMERA_BACK:
-                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-                break;
-            case CUSTOM_CAPTURER:
-                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
-                break;
-        }
+        skylinkConfig.setDefaultVideoDevice(Utils.getDefaultVideoDevice());
 
         //Set default video resolution setting
         String videoResolution = Utils.getDefaultVideoResolution();
@@ -218,5 +177,48 @@ public class VideoService extends SkylinkCommonService implements VideoCallContr
      */
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
+    }
+
+    public void switchCamera() {
+        mSkylinkConnection.switchCamera();
+    }
+
+    public void startLocalAudio() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+
+        //Start audio.
+        mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+    }
+
+    public void startLocalVideo() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        //Start video.
+        mSkylinkConnection.startLocalMedia(videoDevice);
+    }
+
+    public void startLocalScreen() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+
+        SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
+        //Start video.
+        mSkylinkConnection.startLocalMedia(videoDevice);
+    }
+
+    public void startFrontCamera() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+
+        SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.CAMERA_FRONT;
+        //Start video.
+        mSkylinkConnection.startLocalMedia(videoDevice);
     }
 }

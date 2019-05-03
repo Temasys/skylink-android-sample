@@ -6,19 +6,41 @@
                 android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/ll_screen_share"
+        android:id="@+id/ll_videos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/cardview_shadow_start_color"
+        android:background="@color/color_black"
         android:orientation="vertical"></LinearLayout>
 
     <sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton
-        android:id="@+id/btn_video_res_screen_share"
+        android:id="@+id/btn_video_res_video"
         android:layout_width="@dimen/dp_40dp"
         android:layout_height="@dimen/dp_40dp"
         android:layout_alignParentRight="true"
         android:background="@android:color/transparent"
         android:visibility="visible"/>
+
+    <Button
+        android:id="@+id/btnStartVideo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/button_circle_trans"
+        android:padding="@dimen/dp_10dp"
+        android:text="Start video"
+        android:textColor="@color/primary"/>
+
+    <Button
+        android:id="@+id/btnStartAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnStartVideo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/dp_20dp"
+        android:background="@drawable/button_circle_trans"
+        android:padding="@dimen/dp_10dp"
+        android:text="Start audio"
+        android:textColor="@color/primary"/>
 
 
     <ScrollView
@@ -29,40 +51,45 @@
         android:layout_alignParentRight="true">
 
         <LinearLayout
-            android:id="@+id/ll_screen_share_tool"
+            android:id="@+id/ll_videos_tool"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/btn_screen_share_action"
+                android:id="@+id/btn_start_second_video"
                 style="@style/CustonmFloatingButton"
-                android:src="@drawable/ic_stop_screen_share"
+                android:src="@drawable/ic_start_second_video"
                 app:elevation="0dp"/>
 
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_speaker_screen_share"
+                android:id="@+id/btn_switch_camera_video"
+                style="@style/CustonmFloatingButton"
+                android:src="@drawable/ic_switch_camera"
+                app:elevation="0dp"/>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/toggle_speaker_video"
                 style="@style/CustonmFloatingButton"
                 android:src="@drawable/ic_audio_speaker"
                 app:elevation="0dp"/>
 
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_audio_screen_share"
+                android:id="@+id/toggle_audio_video"
                 style="@style/CustonmFloatingButton"
-                android:src="@drawable/icon_audio_active"
+                android:src="@drawable/icon_audio_mute"
                 app:elevation="0dp"/>
 
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_video_screen_share"
+                android:id="@+id/toggle_video_video"
                 style="@style/CustonmFloatingButton"
-                android:src="@drawable/icon_video_active"
+                android:src="@drawable/icon_video_mute"
                 app:elevation="0dp"/>
 
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_camera_screen_share"
+                android:id="@+id/toggle_video_device"
                 style="@style/CustonmFloatingButton"
-                android:src="@drawable/icon_camera_active"
+                android:src="@drawable/ic_stop_video"
                 app:elevation="0dp"/>
 
             <android.support.design.widget.FloatingActionButton
@@ -72,7 +99,7 @@
                 app:elevation="0dp"/>
 
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/btn_disconnect_screen_share"
+                android:id="@+id/btn_disconnect_video"
                 android:layout_width="@dimen/dp_60dp"
                 android:layout_height="@dimen/dp_60dp"
                 android:layout_marginBottom="@dimen/dp_20dp"

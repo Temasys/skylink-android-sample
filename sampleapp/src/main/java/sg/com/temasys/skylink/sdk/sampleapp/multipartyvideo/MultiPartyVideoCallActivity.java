@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -57,5 +58,10 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
 
         //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, MULTI_PARTY_VIDEO_FRAGMENT_TAG, multiPartyVideoFragment);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        multiPartyVideoPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
     }
 }

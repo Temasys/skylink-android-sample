@@ -54,17 +54,13 @@
             android:label="@string/title_section5"
             android:windowSoftInputMode="stateHidden"/>
         <activity
-            android:name=".video.VideoCallActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_section2"/>
-        <activity
             android:name=".multipartyvideo.MultiPartyVideoCallActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_section6"/>
         <activity
-            android:name=".screensharing.ScreenSharingActivity"
+            android:name=".video.VideoActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/screenShare"/>
+            android:label="@string/video"/>
 
         <activity
             android:name=".setting.SettingActivity"

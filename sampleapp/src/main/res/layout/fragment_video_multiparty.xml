@@ -7,6 +7,28 @@
                 android:orientation="vertical"
                 android:weightSum="2">
 
+    <Button
+        android:id="@+id/btnStartVideoMulti"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/button_circle_trans"
+        android:padding="@dimen/dp_10dp"
+        android:text="Start video"
+        android:textColor="@color/primary"/>
+
+    <Button
+        android:id="@+id/btnStartAudioMulti"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnStartVideoMulti"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/dp_20dp"
+        android:background="@drawable/button_circle_trans"
+        android:padding="@dimen/dp_10dp"
+        android:text="Start audio"
+        android:textColor="@color/primary"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

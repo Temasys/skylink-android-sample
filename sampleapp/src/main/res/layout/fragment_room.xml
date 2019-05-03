@@ -310,10 +310,10 @@
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/f6"
+                android:id="@+id/f7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/f5"
+                android:layout_below="@+id/f4"
                 android:layout_gravity="top"
                 android:layout_marginBottom="20dp"
                 android:background="@android:color/background_light"
@@ -324,7 +324,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="5dp"
-                    android:text="Video Call Config"
+                    android:text="Screen share Config"
                     android:textSize="18dp"/>
 
                 <TextView
@@ -362,63 +362,6 @@
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/txtRoomVideo"
-                    android:maxLines="1"
-                    android:textColor="#000000"/>
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/f7"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/f6"
-                android:layout_gravity="top"
-                android:layout_marginBottom="20dp"
-                android:background="@android:color/background_light"
-                android:padding="5dp">
-
-                <TextView
-                    android:id="@+id/txtScreen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:text="Screen share Config"
-                    android:textSize="18dp"/>
-
-                <TextView
-                    android:id="@+id/txtUserScreen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtScreen"
-                    android:text="UserName"
-                    android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameScreen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserScreen"
-                    android:maxLines="1"
-                    android:textColor="#000000"/>
-
-                <TextView
-                    android:id="@+id/txtRoomScreen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameScreen"
-                    android:text="RoomName"
-                    android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameScreen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomScreen"
                     android:maxLines="1"
                     android:textColor="#000000"/>
             </RelativeLayout>

@@ -30,7 +30,7 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.CurvedTextView;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTextView;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -60,7 +60,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
     private ImageButton btnSendFile;
     private ProgressBar spinnerBackground;
     private ProgressBar spinnerForeground;
-    private CurvedTextView txtProgressInfo;
+    private CustomTextView txtProgressInfo;
     private TextView txtPercentage;
     private LinearLayout filePreviewContainer;
 

@@ -10,6 +10,7 @@ import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -146,7 +147,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public boolean toggleCamera(String mediaId, boolean isToggle) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera(mediaId,isToggle);
+            return mSkylinkConnection.toggleCamera(mediaId, isToggle);
         return false;
     }
 
@@ -173,6 +174,39 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
         //Start video.
         mSkylinkConnection.startLocalMedia(videoDevice);
+    }
+
+    public void startLocalAudio() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+        //Start audio.
+        mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+    }
+
+    public void startLocalVideo() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+        //Start video.
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+        mSkylinkConnection.startLocalMedia(videoDevice);
+    }
+
+    public void startLocalFrontCamera() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+        //Start video.
+        mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+    }
+
+    public void startLocalScreen() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+        //Start video.
+        mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.SCREEN);
     }
 
     /**
@@ -382,6 +416,20 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     /**
+     * Return the video view of Peer whose PeerId was provided.
+     * If peerId is null, local video view will be returned.
+     *
+     * @param remotePeerId PeerId of the Peer whose videoView to be returned.
+     * @return Video View of Peer or null if none present.
+     */
+    public SurfaceViewRenderer getVideoView(String remotePeerId, SkylinkMedia.MEDIA_TYPE mediaType) {
+        if (mSkylinkConnection != null)
+            return mSkylinkConnection.getVideoView(remotePeerId, mediaType);
+
+        return null;
+    }
+
+    /**
      * Return the video view of Peer whose peerIndex was provided.
      * If peerIndex is -1, local video view will be returned.
      * Return null if:
@@ -393,7 +441,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public SurfaceViewRenderer getVideoViewByIndex(int peerIndex) {
         if (peerIndex == -1) {
-            return mSkylinkConnection.getVideoView(null, null);
+            return mSkylinkConnection.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
         }
 
         if (mSkylinkConnection != null && peerIndex < mPeersList.size()) {
@@ -488,5 +536,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
     }
+
 
 }

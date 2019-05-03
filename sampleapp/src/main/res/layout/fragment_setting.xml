@@ -153,7 +153,7 @@
         <LinearLayout
             android:id="@+id/layout_setting_camera_output"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_70dp"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="vertical">
 
@@ -170,10 +170,10 @@
             <RadioGroup
                 android:id="@+id/rdGroupVideoDevice"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="3"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
                 <RadioButton
                     android:id="@+id/camera_front"
@@ -187,13 +187,23 @@
                     android:id="@+id/camera_back"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/dp_50dp"
                     android:text="@string/camera_back"
+                    android:textSize="@dimen/sp_12sp"/>
+
+                <RadioButton
+                    android:id="@+id/screen_device"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/dp_50dp"
+                    android:text="@string/screen_device"
                     android:textSize="@dimen/sp_12sp"/>
 
                 <RadioButton
                     android:id="@+id/camera_custom"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/dp_50dp"
                     android:text="@string/camera_custom"
                     android:textSize="@dimen/sp_12sp"/>
 
@@ -213,8 +223,8 @@
             android:id="@+id/layout_setting_video_resolution"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:layout_marginTop="@dimen/dp_3dp"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView

@@ -11,28 +11,24 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PR
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_PARTY;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_SCREEN;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_CHAT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_FILE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_PARTY;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_SCREEN;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_PARTY_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_SCREEN_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_PARTY_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_SCREEN_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VIDEO_DEFAULT;
 
 /**
@@ -63,7 +59,6 @@ public class Config {
     public static String ROOM_NAME_FILE = ROOM_NAME_FILE_DEFAULT;
     public static String ROOM_NAME_PARTY = ROOM_NAME_PARTY_DEFAULT;
     public static String ROOM_NAME_VIDEO = ROOM_NAME_VIDEO_DEFAULT;
-    public static String ROOM_NAME_SCREEN = ROOM_NAME_SCREEN_DEFAULT;
 
     // Config values for user names.
     public static String USER_NAME_AUDIO = USER_NAME_AUDIO_DEFAULT;
@@ -72,7 +67,6 @@ public class Config {
     public static String USER_NAME_FILE = USER_NAME_FILE_DEFAULT;
     public static String USER_NAME_PARTY = USER_NAME_PARTY_DEFAULT;
     public static String USER_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
-    public static String USER_NAME_SCREEN = USER_NAME_SCREEN_DEFAULT;
 
     // Constants for saving default settings of audio and video
     // Is speaker mode the default for audio demo.
@@ -156,14 +150,12 @@ public class Config {
         ROOM_NAME_DATA = sharedPref.getString(PREF_ROOM_NAME_DATA, ROOM_NAME_DATA);
         ROOM_NAME_FILE = sharedPref.getString(PREF_ROOM_NAME_FILE, ROOM_NAME_FILE);
         ROOM_NAME_PARTY = sharedPref.getString(PREF_ROOM_NAME_PARTY, ROOM_NAME_PARTY);
-        ROOM_NAME_VIDEO = sharedPref.getString(PREF_ROOM_NAME_VIDEO, ROOM_NAME_VIDEO);
 
         USER_NAME_AUDIO = sharedPref.getString(PREF_USER_NAME_AUDIO, USER_NAME_AUDIO);
         USER_NAME_CHAT = sharedPref.getString(PREF_USER_NAME_CHAT, USER_NAME_CHAT);
         USER_NAME_DATA = sharedPref.getString(PREF_USER_NAME_DATA, USER_NAME_DATA);
         USER_NAME_FILE = sharedPref.getString(PREF_USER_NAME_FILE, USER_NAME_FILE);
         USER_NAME_PARTY = sharedPref.getString(PREF_USER_NAME_PARTY, USER_NAME_PARTY);
-        USER_NAME_VIDEO = sharedPref.getString(PREF_USER_NAME_VIDEO, USER_NAME_VIDEO);
     }
 
     /**
@@ -376,25 +368,6 @@ public class Config {
      * @param newValue
      * @param activity
      */
-    public static void setUserNameScreen(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_SCREEN_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_SCREEN)) {
-            USER_NAME_SCREEN = newValue;
-            setPrefString(PREF_USER_NAME_SCREEN, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
     public static void setRoomNameAudio(String newValue, Activity activity) {
         if (newValue == null || "".equals(newValue)) {
             newValue = ROOM_NAME_AUDIO_DEFAULT;
@@ -498,25 +471,6 @@ public class Config {
         if (!newValue.equals(ROOM_NAME_VIDEO)) {
             ROOM_NAME_VIDEO = newValue;
             setPrefString(PREF_ROOM_NAME_VIDEO, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameScreen(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_SCREEN_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_SCREEN)) {
-            ROOM_NAME_SCREEN = newValue;
-            setPrefString(PREF_ROOM_NAME_SCREEN, newValue, activity);
         }
     }
 }

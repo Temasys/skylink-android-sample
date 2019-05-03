@@ -212,7 +212,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onLocalAudioCapture(SkylinkMedia localAudio) {
         Log.d(TAG, "[onLocalMediaCapture]");
-        presenter.onServiceRequestLocalAudioCapture(localAudio.getMediaId());
+
+        if (localAudio == null)
+            return;
+
+        presenter.onServiceRequestLocalAudioCapture(localAudio);
 
         localAudioId = localAudio.getMediaId();
     }
@@ -224,12 +228,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (localVideo == null)
             return;
 
-        if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
-
-            presenter.onServiceRequestLocalVideoCapture(localVideo.getVideoView());
+        if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA && !Utils.isDefaultScreenDeviceSetting()) {
+            presenter.onServiceRequestLocalCameraCapture(localVideo);
             localVideoId = localVideo.getMediaId();
-        } else if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
-            presenter.onServiceRequestLocalScreenCapture(localVideo.getVideoView());
+        } else if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN || Utils.isDefaultScreenDeviceSetting()) {
+            presenter.onServiceRequestLocalScreenCapture(localVideo);
             localScreenSharingId = localVideo.getMediaId();
         }
     }
@@ -295,11 +298,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
             addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.VIDEO);
 
-            presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
+            presenter.onServiceRequestRemotePeerVideoCameraReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
         } else if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
-            addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.SCREEN_SHARING);
+            addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.SCREEN);
 
-            presenter.onServiceRequestRemotePeerScreenReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
+            presenter.onServiceRequestRemotePeerVideoScreenReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
         }
     }
 
@@ -1194,6 +1197,28 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                     "Supported capture formats: " + strFormats + ".";
         }
         return captureFormatString;
+    }
+
+    /**
+     * Get the input/sent/received video resolution of a specified peer
+     * Note:
+     * - Resolution may not always be available, e.g. if no video is captured.
+     * - If resolution are available, they will be returned in
+     * {@link SkylinkCommonService#onInputVideoResolutionObtained} for input video resolution
+     * {@link SkylinkCommonService#onReceivedVideoResolutionObtained} for received video resolution
+     * {@link SkylinkCommonService#onSentVideoResolutionObtained} for sent video resolution
+     */
+    public void getVideoResolutions(String peerId) {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+
+        mSkylinkConnection.getInputVideoResolution();
+
+        if (peerId != null) {
+            mSkylinkConnection.getSentVideoResolution(peerId);
+            mSkylinkConnection.getReceivedVideoResolution(peerId);
+        }
     }
 
     //----------------------------------------------------------------------------------------------

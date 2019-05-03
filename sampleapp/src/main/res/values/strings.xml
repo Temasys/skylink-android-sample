@@ -39,9 +39,10 @@
     <string name="camera_custom">Camera Custom</string>
     <string name="camera_front">Camera front</string>
     <string name="camera_back">Camera back</string>
+    <string name="screen_device">Screen device</string>
     <string name="radio_headset">Headset</string>
     <string name="radio_speaker">Speaker</string>
-    <string name="default_camera_output">Default camera output</string>
+    <string name="default_camera_output">Default video device</string>
     <string name="default_video_resolution">Default video resolution</string>
     <string name="video_res_VGA">VGA (640x480)</string>
     <string name="video_res_HDR">HDR (1280x720)</string>

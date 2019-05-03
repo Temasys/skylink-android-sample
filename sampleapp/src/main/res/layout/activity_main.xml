@@ -72,19 +72,19 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/videoContainerBig"
+                    android:id="@+id/screenShareContainerBig"
                     style="@style/CustonmButton"
                     android:layout_width="@dimen/dp_150dp"
                     android:layout_height="@dimen/dp_80dp"
                     android:layout_margin="@dimen/dp_10dp">
 
                     <RelativeLayout
-                        android:id="@+id/videoContainer"
+                        android:id="@+id/screenShareContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <ImageButton
-                            android:id="@+id/btnVideoCall"
+                            android:id="@+id/btnScreenShare"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@android:color/transparent"
@@ -92,10 +92,10 @@
                             android:src="@drawable/ic_video_icon"/>
 
                         <TextView
-                            android:id="@+id/tvVideo"
+                            android:id="@+id/tvsSreenShare"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_below="@id/btnVideoCall"
+                            android:layout_below="@id/btnScreenShare"
                             android:gravity="center_horizontal"
                             android:text="@string/video"/>
 
@@ -225,38 +225,6 @@
 
                     </RelativeLayout>
                 </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/screenShareContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp"
-                    android:layout_margin="@dimen/dp_10dp">
-
-                    <RelativeLayout
-                        android:id="@+id/screenShareContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <ImageButton
-                            android:id="@+id/btnScreenShare"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_screen_share_black_24dp"/>
-
-                        <TextView
-                            android:id="@+id/tvsSreenShare"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnScreenShare"
-                            android:gravity="center_horizontal"
-                            android:text="@string/screenShare"/>
-
-                    </RelativeLayout>
-                </LinearLayout>
-
             </GridLayout>
         </LinearLayout>
     </ScrollView>
