@@ -76,12 +76,26 @@ public class SkylinkConnectionManager {
      * @return SkylinkConnection
      */
     public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
-        //check internet connection first
         String logTag = "[SA][SCM][connectToRoom] ";
-        String log;
+        String log = logTag;
+
+        //check internet connection
         if (!Utils.isInternetOn()) {
             log = "Internet connection is off !";
             toastLog(TAG, context, log);
+            return null;
+        }
+
+        if (skylinkCommonService == null) {
+            log += "Error: SkylinkCommonService is null";
+            Log.e(TAG, log);
+            return null;
+        }
+
+        SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
+        if (skylinkConfig == null) {
+            log += "Error: SkylinkConfig is null";
+            Log.e(TAG, log);
             return null;
         }
 
@@ -110,7 +124,7 @@ public class SkylinkConnectionManager {
         // (such as a secure App server that has the Skylink App Key secret), and sent to the App.
         // This is to avoid keeping the App Key secret within the application, for better security.
         String skylinkConnectionString = getSkylinkConnectionString(
-                mRoomName, new Date(), SkylinkConnection.DEFAULT_DURATION);
+                mRoomName, new Date(), SkylinkConnection.DEFAULT_DURATION, skylinkConfig.getRoomSize());
 
         // The skylinkConnectionString should not be logged in production,
         // as it contains potentially sensitive information like the Skylink App Key ID.
@@ -162,9 +176,15 @@ public class SkylinkConnectionManager {
      * @param roomName  Name of the room
      * @param startTime Room Start Time
      * @param duration  Duration of the room in Hours
+     * @param roomSize  The size of the room, restricted by the server
+     *                  Only the first Peer to start the room will have it's room_size effected.
+     *                  Later Peers who join the room will not have their room_size value respected.
+     *                  If more Peers than indicated by the effected room_size join the room,
+     *                  they may get warnings and/or not be allowed to join room.
      * @return
      */
-    public String getSkylinkConnectionString(String roomName, Date startTime, int duration) {
+    public String getSkylinkConnectionString(String roomName, Date startTime, int duration,
+                                             SkylinkConfig.RoomSize roomSize) {
 
         String info = "Room name: " + roomName + ", startTime: " + startTime +
                 ", duration: " + duration + ".\r\n";
@@ -217,7 +237,7 @@ public class SkylinkConnectionManager {
         http://host/<connectionString>
         */
         connectionString = uriString.substring(urlStart.length(), uriString.length())
-                + "?cred=" + cred;
+                + "?cred=" + cred + "&room_size=" + roomSize.getValue();
         info += "URL safe connectionString: \"" + connectionString + "\"";
         Log.d(TAG, info);
 

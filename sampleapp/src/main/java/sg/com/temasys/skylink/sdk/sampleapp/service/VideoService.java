@@ -151,6 +151,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         // Allow only 1 remote Peer to join.
         skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
 
+        // Set the room size
+        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.SMALL);
+
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 

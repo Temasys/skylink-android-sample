@@ -86,6 +86,9 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setHasPeerMessaging(true);
 
+        // Set the room size
+        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.MEDIUM);
+
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;

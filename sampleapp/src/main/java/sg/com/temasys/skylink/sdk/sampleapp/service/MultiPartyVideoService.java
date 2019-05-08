@@ -85,6 +85,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         // Allow only 3 remote Peers to join, due to current UI design.
         skylinkConfig.setMaxPeers(3);
 
+        // Set the room size
+        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.MEDIUM);
+
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 

@@ -43,15 +43,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
         if (mSkylinkConnection == null)
             return;
 
-//        try {
         mSkylinkConnection.sendData(remotePeerId, data);
-//        } catch (SkylinkException e) {
-//            String log = e.getMessage();
-//            toastLogLong(TAG, mContext, log);
-//        } catch (UnsupportedOperationException e) {
-//            String log = e.getMessage();
-//            toastLogLong(TAG, mContext, log);
-//        }
     }
 
     /**
@@ -79,6 +71,9 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setHasDataTransfer(true);
+
+        // Set the room size
+        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.MEDIUM);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);

@@ -113,6 +113,9 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setHasFileTransfer(true);
 
+        // Set the room size
+        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.MEDIUM);
+
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
