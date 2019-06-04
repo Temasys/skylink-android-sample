@@ -51,7 +51,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     private PermissionUtils permissionUtils;
 
     // the current speaker output {speaker/headset}
-    private boolean currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
+    private boolean currentVideoSpeaker = Utils.isDefaultSpeakerSettingForVideo();
 
     // the current state of local video {audio, video, camera}
     private VideoLocalState currentVideoLocalState = new VideoLocalState();
@@ -99,7 +99,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             processConnectToRoom();
 
             //default setting for video output
-            this.currentVideoSpeaker = Utils.getDefaultVideoSpeaker();
+            this.currentVideoSpeaker = Utils.isDefaultSpeakerSettingForVideo();
 
             //after connected to skylink SDK, UI will be updated latter on onServiceRequestConnect
 
@@ -113,20 +113,20 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onViewRequestResume() {
         // Toggle camera back to previous state if required.
-        // check the current camera state isCameraMute() is true if camera is currently stop
+        // check the current camera state isCameraCapturerStop() is true if camera is currently stop
         // just process for mediaType as VIDEO_CAMERA, because we do not pause/resume view with mediaType as VIDEO_SCREEN
-        if (!currentVideoLocalState.isCameraMute()) {
+        if (!currentVideoLocalState.isCameraCapturerStop()) {
             if (videoService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
                 // change camera state
                 videoService.toggleCamera(null, false);
                 // change UI
-                mainView.onPresenterRequestChangeVideoSourceUI(false, false);
+                mainView.onPresenterRequestChangeCameraUI(false, false);
             }
         } else {
             // change camera state
             videoService.toggleCamera(null, true);
             // change UI
-            mainView.onPresenterRequestChangeVideoSourceUI(true, false);
+            mainView.onPresenterRequestChangeCameraUI(true, false);
         }
     }
 
@@ -177,29 +177,26 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestChangeVideoSourceState() {
-        //get current camera state: true is muted, false is active
-        boolean isCamMute = currentVideoLocalState.isCameraMute();
+    public void onViewRequestChangeScreenState() {
+        boolean isScreenMute = currentVideoLocalState.isScreenMute();
 
-        //change state
-        currentVideoLocalState.setCameraMute(!isCamMute);
+        //change UI and video state to opposite state
+        if (!isScreenMute) {
+            mainView.onPresenterRequestChangeVideoUI(true);
+        } else {
+            mainView.onPresenterRequestChangeVideoUI(false);
+        }
 
-        //change camera state in service layer
-        videoService.toggleCamera(null, !isCamMute);
-
-        // change UI
-        mainView.onPresenterRequestChangeVideoSourceUI(!isCamMute, true);
+        processScreenStateChanged(!isScreenMute);
     }
 
     @Override
     public void onViewRequestChangeSpeakerOutput() {
         //change current speakerOn
-        boolean isSpeakerOn = this.currentVideoSpeaker;
+        this.currentVideoSpeaker = !this.currentVideoSpeaker;
 
-        // use service layer to change the audio output
-        videoService.changeSpeakerOutput(!isSpeakerOn);
-
-        this.currentVideoSpeaker = !isSpeakerOn;
+        // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+        videoService.changeSpeakerOutput(this.currentVideoSpeaker);
     }
 
     @Override
@@ -262,11 +259,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onViewRequestStartScreen() {
         videoService.startLocalScreen();
-    }
-
-    @Override
-    public void onViewRequestStartFrontCamera() {
-        videoService.startFrontCamera();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -395,23 +387,10 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoCameraReceive(String log, UserInfo remotePeerUserInfo,
-                                                             String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo,
+                                                       String remotePeerId, SkylinkMedia remoteMedia) {
         // add the remote video view in to the view
-        processAddRemoteView(remotePeerId, mediaId);
-
-        log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
-        Log.d(TAG, log);
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerVideoScreenReceive(String log, UserInfo remotePeerUserInfo,
-                                                             String remotePeerId, String mediaId) {
-        // add the remote video view in to the view
-        processAddScreenView(remotePeerId, mediaId);
+        processAddRemoteView(remotePeerId, remoteMedia);
 
         log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -449,7 +428,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         //Refresh currentVideoLocalState
         currentVideoLocalState.setAudioMute(false);
         currentVideoLocalState.setVideoMute(false);
-        currentVideoLocalState.setCameraMute(false);
+        currentVideoLocalState.setCameraCapturerStop(false);
     }
 
     /**
@@ -494,6 +473,19 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         mainView.onPresenterRequestUpdateVideoState(isVideoMuted, true);
     }
 
+    // If screen video is enabled, mute screen video and if screen video is mute, then enable it
+    private void processScreenStateChanged(boolean isScreenMuted) {
+
+        //save audioMuted for other usage
+        currentVideoLocalState.setScreenMute(isScreenMuted);
+
+        //set mute screen video to sdk
+        videoService.muteLocalScreen(isScreenMuted);
+
+        // Set UI and Toast.
+        mainView.onPresenterRequestUpdateScreenState(isScreenMuted, true);
+    }
+
     /**
      * Get video view by remote peer id
      */
@@ -533,26 +525,19 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     /**
      * Add remote video view into the layout
      */
-    private void processAddRemoteView(String remotePeerId, String mediaId) {
+    private void processAddRemoteView(String remotePeerId, SkylinkMedia remoteMedia) {
 
-        SurfaceViewRenderer videoView = processGetRemoteView(remotePeerId, mediaId);
+        SurfaceViewRenderer videoView = remoteMedia.getVideoView();
+
+        if (videoView == null) {
+            videoView = processGetRemoteView(remotePeerId, remoteMedia.getMediaId());
+        }
 
         if (videoView == null)
             return;
+
         // setTag for the remote video view
-        videoView.setTag(mediaId);
-
-        mainView.onPresenterRequestAddCameraRemoteView(videoView);
-    }
-
-    /**
-     * Add remote video view into the layout
-     */
-    private void processAddScreenView(String remotePeerId, String mediaId) {
-
-        SurfaceViewRenderer videoView = processGetRemoteView(remotePeerId, mediaId);
-        // setTag for the remote video view
-        videoView.setTag(mediaId);
+        videoView.setTag(remoteMedia.getMediaId());
 
         mainView.onPresenterRequestAddCameraRemoteView(videoView);
     }

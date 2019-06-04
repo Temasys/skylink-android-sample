@@ -18,6 +18,8 @@ public final class Constants {
     public static final String USER_NAME_PARTY_DEFAULT = "User-multiVideosCall";
     public static final String USER_NAME_VIDEO_DEFAULT = "User-video";
 
+    public static final String NON_VIDEO_DEVICE_DEFAULT = "NONE_VIDEO_DEVICE";
+
     public enum CONFIG_TYPE {
         AUDIO,
         VIDEO,

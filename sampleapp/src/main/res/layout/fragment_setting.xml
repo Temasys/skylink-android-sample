@@ -206,6 +206,13 @@
                     android:layout_marginLeft="@dimen/dp_50dp"
                     android:text="@string/camera_custom"
                     android:textSize="@dimen/sp_12sp"/>
+                <RadioButton
+                    android:id="@+id/camera_none"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/dp_50dp"
+                    android:text="@string/no_camera"
+                    android:textSize="@dimen/sp_12sp"/>
 
             </RadioGroup>
 

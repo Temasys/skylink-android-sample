@@ -51,4 +51,6 @@
     <dimen name="bring_to_main_btn_width">30dp</dimen>
     <dimen name="bring_to_main_btn_height">30dp</dimen>
     <dimen name="file_preview_height">300dp</dimen>
+    <dimen name="btn_video_tool_width">40dp</dimen>
+    <dimen name="btn_video_tool_height">40dp</dimen>
 </resources>

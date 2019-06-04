@@ -80,6 +80,11 @@ public interface VideoContract {
         void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast);
 
         /**
+         * Update screen video state (muted/on)
+         */
+        void onPresenterRequestUpdateScreenState(boolean isScreenMuted, boolean isToast);
+
+        /**
          * Update UI details when changing speaker state (on/off)
          */
         void onPresenterRequestChangeSpeakerOutput(boolean isSpeakerOff);
@@ -97,11 +102,11 @@ public interface VideoContract {
         /**
          * Update UI details when changing camera state (muted/on)
          */
-        void onPresenterRequestChangeVideoSourceUI(boolean isCameraMute, boolean isToast);
+        void onPresenterRequestChangeCameraUI(boolean isCameraMute, boolean isToast);
 
         /**
          * Show or hide button stop screen sharing on UI
-         * */
+         */
         void onPresenterRequestShowHideButtonStopScreenSharing();
 
         /**
@@ -149,7 +154,7 @@ public interface VideoContract {
 
         void onViewRequestChangeVideoState();
 
-        void onViewRequestChangeVideoSourceState();
+        void onViewRequestChangeScreenState();
 
         /**
          * process change state when view resumed
@@ -193,13 +198,8 @@ public interface VideoContract {
 
         /**
          * start capturing screen
-         * */
+         */
         void onViewRequestStartScreen();
-
-        /**
-         * start video from front camera
-         * */
-        void onViewRequestStartFrontCamera();
     }
 
     interface Service extends BaseService<Presenter> {

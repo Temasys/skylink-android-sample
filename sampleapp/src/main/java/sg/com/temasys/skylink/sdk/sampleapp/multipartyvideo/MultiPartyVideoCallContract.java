@@ -44,7 +44,7 @@ public interface MultiPartyVideoCallContract {
         /**
          * Update UI details when need to add remote video view
          */
-        void onPresenterRequestAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView);
+        void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MEDIA_TYPE mediaType, SurfaceViewRenderer remoteView);
 
         /**
          * Update UI details when need to remove remote video view
@@ -63,7 +63,7 @@ public interface MultiPartyVideoCallContract {
 
         /**
          * Show or hide button stop screen sharing on UI
-         * */
+         */
         void onPresenterRequestShowHideButtonStopScreenSharing(boolean isShow);
     }
 
@@ -175,13 +175,23 @@ public interface MultiPartyVideoCallContract {
         void onViewRequestStartVideo();
 
         /**
+         * Start local video from the camera base on the default video device setting for camera (front/back)
+         */
+        void onViewRequestStartVideoCamera();
+
+        /**
+         * Start local screen video view
+         */
+        void onViewRequestStartVideoScreen();
+
+        /**
          * Start second video view
-         * */
+         */
         void onViewRequestStartSecondVideoView();
 
         /**
          * process the permission for screen sharing
-         * */
+         */
         void onViewRequestActivityResult(int requestCode, int resultCode, Intent data);
     }
 

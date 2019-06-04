@@ -23,6 +23,8 @@ public interface SettingContract {
 
         void onVideoResFHDSelected();
 
+        void onCameraNoneSelected();
+
         void onCameraCustomSelected();
 
         void onCameraFrontSelected();

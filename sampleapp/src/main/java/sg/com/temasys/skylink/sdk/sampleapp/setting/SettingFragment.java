@@ -32,7 +32,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     private TextView txt_room_setting_name, txt_key_setting_name;
     private RadioGroup rdGroupAudioOutput, rdGroupVideoOutput, rdGroupCameraOutput, rdGroupVideoResolution;
-    private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_custom, camera_front,
+    private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, camera_none, camera_custom, camera_front,
             camera_back, screen_device, rd_video_res_VGA, rd_video_res_HDR, rd_video_res_FHD;
 
 
@@ -113,6 +113,9 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
             case R.id.videoSpeaker:
                 processVideoSpeaker();
                 break;
+            case R.id.camera_none:
+                processCameraNone();
+                break;
             case R.id.camera_custom:
                 processCameraCustom();
                 break;
@@ -183,7 +186,17 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     @Override
+    public void onCameraNoneSelected() {
+        camera_none.setChecked(true);
+        camera_custom.setChecked(false);
+        camera_front.setChecked(false);
+        camera_back.setChecked(false);
+        screen_device.setChecked(false);
+    }
+
+    @Override
     public void onCameraCustomSelected() {
+        camera_none.setChecked(false);
         camera_custom.setChecked(true);
         camera_front.setChecked(false);
         camera_back.setChecked(false);
@@ -192,6 +205,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     @Override
     public void onCameraFrontSelected() {
+        camera_none.setChecked(false);
         camera_custom.setChecked(false);
         camera_front.setChecked(true);
         camera_back.setChecked(false);
@@ -200,6 +214,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     @Override
     public void onCameraBackSelected() {
+        camera_none.setChecked(false);
         camera_custom.setChecked(false);
         camera_front.setChecked(false);
         camera_back.setChecked(true);
@@ -208,6 +223,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     @Override
     public void onScreenDeviceSelected() {
+        camera_none.setChecked(false);
         camera_custom.setChecked(false);
         camera_front.setChecked(false);
         camera_back.setChecked(false);
@@ -250,6 +266,10 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     private void processVideoSpeaker() {
         mPresenter.onProcessSpeakerVideo(true);
+    }
+
+    private void processCameraNone() {
+        mPresenter.onProcessVideoDevice(null);
     }
 
     private void processCameraCustom() {
@@ -295,6 +315,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         audioSpeaker = rootView.findViewById(R.id.audioSpeaker);
         videoHeadset = rootView.findViewById(R.id.videoHeadset);
         videoSpeaker = rootView.findViewById(R.id.videoSpeaker);
+        camera_none = rootView.findViewById(R.id.camera_none);
         camera_custom = rootView.findViewById(R.id.camera_custom);
         camera_front = rootView.findViewById(R.id.camera_front);
         camera_back = rootView.findViewById(R.id.camera_back);
@@ -325,6 +346,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         audioSpeaker.setOnClickListener(this);
         videoHeadset.setOnClickListener(this);
         videoSpeaker.setOnClickListener(this);
+        camera_none.setOnClickListener(this);
         camera_custom.setOnClickListener(this);
         camera_front.setOnClickListener(this);
         camera_back.setOnClickListener(this);

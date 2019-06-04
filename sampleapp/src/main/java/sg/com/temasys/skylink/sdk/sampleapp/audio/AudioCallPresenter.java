@@ -37,7 +37,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     private PermissionUtils permissionUtils;
 
     //current audio output
-    private boolean currentAudioOutput = Utils.getDefaultAudioSpeaker();
+    private boolean currentAudioOutput = Utils.isDefaultSpeakerSettingForAudio();
 
     //constructor
     public AudioCallPresenter(Context context) {
@@ -78,7 +78,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             audioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
             //set default for audio output
-            currentAudioOutput = Utils.getDefaultAudioSpeaker();
+            currentAudioOutput = Utils.isDefaultSpeakerSettingForAudio();
 
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 

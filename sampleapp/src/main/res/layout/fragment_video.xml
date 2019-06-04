@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -20,99 +18,191 @@
         android:background="@android:color/transparent"
         android:visibility="visible"/>
 
-    <Button
-        android:id="@+id/btnStartVideo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/button_circle_trans"
-        android:padding="@dimen/dp_10dp"
-        android:text="Start video"
-        android:textColor="@color/primary"/>
-
-    <Button
-        android:id="@+id/btnStartAudio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/btnStartVideo"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/dp_20dp"
-        android:background="@drawable/button_circle_trans"
-        android:padding="@dimen/dp_10dp"
-        android:text="Start audio"
-        android:textColor="@color/primary"/>
-
-
-    <ScrollView
-        android:id="@+id/scrollViewTool"
+    <RelativeLayout
+        android:id="@+id/ll_video_tool"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true">
 
         <LinearLayout
-            android:id="@+id/ll_videos_tool"
+            android:id="@+id/ll_disconnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:orientation="horizontal">
 
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/btn_start_second_video"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/ic_start_second_video"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/btn_switch_camera_video"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/ic_switch_camera"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_speaker_video"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/ic_audio_speaker"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_audio_video"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/icon_audio_mute"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_video_video"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/icon_video_mute"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/toggle_video_device"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/ic_stop_video"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/btn_option_video"
-                style="@style/CustonmFloatingButton"
-                android:src="@drawable/ic_expand_option"
-                app:elevation="0dp"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/btn_disconnect_video"
-                android:layout_width="@dimen/dp_60dp"
-                android:layout_height="@dimen/dp_60dp"
-                android:layout_marginBottom="@dimen/dp_20dp"
+            <ImageButton
+                android:id="@+id/btn_connect_disconnect"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_10dp"
                 android:layout_marginRight="@dimen/dp_10dp"
-                android:backgroundTint="@color/call_end"
-                android:scaleType="center"
-                android:visibility="visible"
-                app:srcCompat="@drawable/ic_audio_call_end"
-                tools:ignore="VectorDrawableCompat"/>
-
-
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_connect_to_room"
+                android:src="@drawable/ic_connect_white_25dp"/>
         </LinearLayout>
-    </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/ll_audio_call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/ll_disconnect"
+            android:layout_alignParentRight="true"
+            android:layout_margin="@dimen/dp_5dp"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_audio_speaker"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_headset_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_audio_mute"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_audio_mute_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_audio_start"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_start_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_audio"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans"
+                android:src="@drawable/ic_audio_green_20dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_video_call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/ll_audio_call"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/dp_5dp"
+            android:layout_marginTop="@dimen/dp_5dp"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_video_switch_camera"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_switch_camera_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_video_mute"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_video_mute_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_video_start"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_start_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_video"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans"
+                android:src="@drawable/ic_video_green_20dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_screen_call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/ll_video_call"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/dp_5dp"
+            android:layout_marginTop="@dimen/dp_5dp"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_screen_mute"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_stop_screen_share_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_screen_start"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans_green"
+                android:src="@drawable/ic_start_white_20dp"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:id="@+id/btn_screen"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans"
+                android:src="@drawable/ic_screen_share_green_20dp"/>
+        </LinearLayout>
+    </RelativeLayout>
 
     <Button
         android:id="@+id/btn_full_screen"

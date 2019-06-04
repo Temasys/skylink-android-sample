@@ -146,12 +146,14 @@ public class Config {
         final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         // Populate room and user names with values from Preferences if they exist.
         ROOM_NAME_AUDIO = sharedPref.getString(PREF_ROOM_NAME_AUDIO, ROOM_NAME_AUDIO);
+        ROOM_NAME_VIDEO = sharedPref.getString(PREF_ROOM_NAME_VIDEO, ROOM_NAME_VIDEO);
         ROOM_NAME_CHAT = sharedPref.getString(PREF_ROOM_NAME_CHAT, ROOM_NAME_CHAT);
         ROOM_NAME_DATA = sharedPref.getString(PREF_ROOM_NAME_DATA, ROOM_NAME_DATA);
         ROOM_NAME_FILE = sharedPref.getString(PREF_ROOM_NAME_FILE, ROOM_NAME_FILE);
         ROOM_NAME_PARTY = sharedPref.getString(PREF_ROOM_NAME_PARTY, ROOM_NAME_PARTY);
 
         USER_NAME_AUDIO = sharedPref.getString(PREF_USER_NAME_AUDIO, USER_NAME_AUDIO);
+        USER_NAME_VIDEO = sharedPref.getString(PREF_USER_NAME_VIDEO, USER_NAME_VIDEO);
         USER_NAME_CHAT = sharedPref.getString(PREF_USER_NAME_CHAT, USER_NAME_CHAT);
         USER_NAME_DATA = sharedPref.getString(PREF_USER_NAME_DATA, USER_NAME_DATA);
         USER_NAME_FILE = sharedPref.getString(PREF_USER_NAME_FILE, USER_NAME_FILE);

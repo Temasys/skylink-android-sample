@@ -93,16 +93,18 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
         // Set default camera setting
         SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        switch (videoDevice) {
-            case CAMERA_FRONT:
-                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
-                break;
-            case CAMERA_BACK:
-                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-                break;
-            case CUSTOM_CAPTURER:
-                skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
-                break;
+        if (videoDevice != null) {
+            switch (videoDevice) {
+                case CAMERA_FRONT:
+                    skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+                    break;
+                case CAMERA_BACK:
+                    skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+                    break;
+                case CUSTOM_CAPTURER:
+                    skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
+                    break;
+            }
         }
 
         //Set default video resolution setting
@@ -132,10 +134,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *
      * @return True if local camera has been restarted, false if it has been stopped.
      */
-    public boolean toggleCamera(String mediaId) {
+    public void toggleCamera(String mediaId) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera(mediaId);
-        return false;
+            mSkylinkConnection.toggleCamera(mediaId);
     }
 
     /**
@@ -148,10 +149,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @param isToggle true if restart camera, false if stop camera
      * @return True if camera state had changed, false if not.
      */
-    public boolean toggleCamera(String mediaId, boolean isToggle) {
+    public void toggleCamera(String mediaId, boolean isToggle) {
         if (mSkylinkConnection != null)
-            return mSkylinkConnection.toggleCamera(mediaId, isToggle);
-        return false;
+            mSkylinkConnection.toggleCamera(mediaId, isToggle);
     }
 
     /**
@@ -168,17 +168,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
     }
 
-    public void startLocalMedia() {
-        if (mSkylinkConnection == null) {
-            return;
-        }
-        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        //Start audio.
-        mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
-        //Start video.
-        mSkylinkConnection.startLocalMedia(videoDevice);
-    }
-
     public void startLocalAudio() {
         if (mSkylinkConnection == null) {
             return;
@@ -191,9 +180,32 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         if (mSkylinkConnection == null) {
             return;
         }
-        //Start video.
+        // Start video base on the default device setting
+        // if default device setting is no_camera, start front camera
         SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        mSkylinkConnection.startLocalMedia(videoDevice);
+        if (videoDevice != null)
+            mSkylinkConnection.startLocalMedia(videoDevice);
+        else {
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+        }
+    }
+
+    public void startLocalCamera() {
+        if (mSkylinkConnection == null) {
+            return;
+        }
+        // Start video base on the default device setting for camera
+        // if default device setting is no_camera, start front camera
+        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
+
+        if (videoDevice == null) {
+            videoDevice = SkylinkConfig.VideoDevice.CAMERA_FRONT;
+        }
+        switch (videoDevice) {
+            case CAMERA_FRONT:
+            case CAMERA_BACK:
+                mSkylinkConnection.startLocalMedia(videoDevice);
+        }
     }
 
     public void startLocalFrontCamera() {

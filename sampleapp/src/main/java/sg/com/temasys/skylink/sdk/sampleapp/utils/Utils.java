@@ -641,11 +641,11 @@ public class Utils {
     }
 
 
-    public static boolean getDefaultAudioSpeaker() {
+    public static boolean isDefaultSpeakerSettingForAudio() {
         return sharedPref.getBoolean(DEFAULT_SPEAKER_AUDIO, false);
     }
 
-    public static boolean getDefaultVideoSpeaker() {
+    public static boolean isDefaultSpeakerSettingForVideo() {
         return sharedPref.getBoolean(DEFAULT_SPEAKER_VIDEO, false);
     }
 
@@ -664,12 +664,14 @@ public class Utils {
 
         // Get string value saved in sharePref.
         String savedValue = sharedPref.getString(DEFAULT_VIDEO_DEVICE, null);
-        if (savedValue != null) {
+        if (savedValue != null && !savedValue.equals(Constants.NON_VIDEO_DEVICE_DEFAULT)) {
             try {
                 defaultVideoDevice = SkylinkConfig.VideoDevice.valueOf(savedValue);
             } catch (IllegalArgumentException e) {
                 log = logTag + "The value in Shared Preference is invalid!";
             }
+        } else {
+            return null;
         }
 
         /** If defaultVideoDevice is not set in sharedPref, set it to {@link cameraFront} */
@@ -805,13 +807,28 @@ public class Utils {
         return data;
     }
 
-    public static boolean isDefaultScreenDeviceSetting() {
+    public static boolean isDefaultCameraDeviceSetting() {
         SkylinkConfig.VideoDevice videoDevice = getDefaultVideoDevice();
+        if (videoDevice == null) {
+            return false;
+        }
+
         switch (videoDevice) {
             case CAMERA_FRONT:
             case CAMERA_BACK:
-            case CUSTOM_CAPTURER:
-                return false;
+                return true;
+        }
+
+        return false;
+    }
+
+    public static boolean isDefaultScreenDeviceSetting() {
+        SkylinkConfig.VideoDevice videoDevice = getDefaultVideoDevice();
+        if (videoDevice == null) {
+            return false;
+        }
+
+        switch (videoDevice) {
             case SCREEN:
                 return true;
         }
@@ -819,4 +836,12 @@ public class Utils {
         return false;
     }
 
+    public static boolean isDefaultNoneVideoDeviceSetting() {
+        SkylinkConfig.VideoDevice videoDevice = getDefaultVideoDevice();
+        if (videoDevice == null) {
+            return true;
+        }
+
+        return false;
+    }
 }

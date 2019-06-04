@@ -3,11 +3,11 @@ package sg.com.temasys.skylink.sdk.sampleapp.video;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
@@ -17,7 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import org.webrtc.SurfaceViewRenderer;
 
@@ -43,27 +45,40 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         View.OnClickListener {
 
     private final String TAG = VideoFragment.class.getName();
+    private final String SELF_CAM_VIEW = "self_camera_video";
+    private final String SELF_SCREEN_VIEW = "self_screen_video";
+    private final String REMOTE_CAM_VIEW = "remote_camera_video";
+    private final String REMOTE_SCREEN_VIEW = "remote_screen_video";
+    private final String MAIN_VIEW = "main";
 
     // view widgets
     private LinearLayout videoViewLayout;
-    private FloatingActionButton btnDisconnect, btnOption, btnAudioMute, btnVideoMute, btnVideoStop,
-            btnSpeaker, btnStartSecondVideo, btnSwitchCamera;
-    private Button stopScreenshareFloat, btnFullScreen, btnStartVideo, btnStartAudio;
+    private LinearLayout audioLayout, videoLayout, screenLayout;
+    private RelativeLayout videoToolLayout;
     private VideoResButton btnVideoRes;
+    private ImageButton btnConnectDisconnect, btnAudioSpeaker, btnAudioMute, btnAudioStart, btnAudio,
+            btnVideoSwitchCamera, btnVideoMute, btnVideoStart, btnVideo,
+            btnScreenMute, btnScreenStart, btnScreen;
+    private Button stopScreenshareFloat, btnFullScreen;
+
     private WindowManager.LayoutParams stopScreenshareLayoutParams;
 
     // presenter instance to implement video logic
     private VideoContract.Presenter presenter;
 
-    // local variables to check views' state
-    private boolean isShowVideoOption = false;
+    // local variables to keep views' state
     private boolean isShowScreenSharing = false;
     private boolean isFullScreen = false;
     private boolean isShowVideoRes = false;
     private boolean isShareScreen = false;
 
-    private SurfaceViewRenderer localCameraView, localScreenView, remoteCameraView,
-            remoteScreenView, currentMainView;
+    private SurfaceViewRenderer localCameraView, localScreenView, remoteCameraView, remoteScreenView;
+
+    // private variables to keep the internal view states
+    private boolean toConnectToRoom = true;
+    private boolean isAudioOptionsShow = false;
+    private boolean isVideoOptionsShow = false;
+    private boolean isScreenOptionsShow = false;
 
     public static VideoFragment newInstance() {
         return new VideoFragment();
@@ -107,9 +122,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // init the UI controls
         initComponents();
 
-        //request an initiative connection
-        requestViewLayout();
-
         return rootView;
     }
 
@@ -150,29 +162,32 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             case R.id.btnRemotePeer3:
                 displayPeerInfo(3);
                 break;
-            case R.id.toggle_speaker_video:
-                presenter.onViewRequestChangeSpeakerOutput();
+            case R.id.btn_connect_disconnect:
+                processConnectDisconnect();
                 break;
-            case R.id.toggle_audio_video:
+            case R.id.btn_audio:
+                showAudioOptions();
+                break;
+            case R.id.btn_audio_start:
+                presenter.onViewRequestStartAudio();
+                break;
+            case R.id.btn_audio_mute:
                 presenter.onViewRequestChangeAudioState();
                 break;
-            case R.id.toggle_video_video:
+            case R.id.btn_audio_speaker:
+                presenter.onViewRequestChangeSpeakerOutput();
+                break;
+            case R.id.btn_video:
+                showVideoOptions();
+                break;
+            case R.id.btn_video_start:
+                presenter.onViewRequestStartVideo();
+                break;
+            case R.id.btn_video_mute:
                 presenter.onViewRequestChangeVideoState();
                 break;
-            case R.id.toggle_video_device:
-                presenter.onViewRequestChangeVideoSourceState();
-                break;
-            case R.id.btn_option_video:
-                showVideoOption();
-                break;
-            case R.id.btn_start_second_video:
-                processStartSecondVideo();
-                break;
-            case R.id.btn_switch_camera_video:
-                processSwitchCamera();
-                break;
-            case R.id.btn_disconnect_video:
-                processDisconnect();
+            case R.id.btn_video_switch_camera:
+                presenter.onViewRequestSwitchCamera();
                 break;
             case R.id.btn_full_screen:
                 processFullScreen();
@@ -183,11 +198,14 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             case R.id.ll_videos:
                 showHideVideoResolution(false);
                 break;
-            case R.id.btnStartAudio:
-                startLocalAudio();
+            case R.id.btn_screen:
+                showScreenOptions();
                 break;
-            case R.id.btnStartVideo:
-                startLocalVideo();
+            case R.id.btn_screen_start:
+                presenter.onViewRequestStartScreen();
+                break;
+            case R.id.btn_screen_mute:
+                presenter.onViewRequestChangeScreenState();
                 break;
         }
     }
@@ -218,9 +236,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      */
     @Override
     public void onPresenterRequestUpdateUIConnected(String roomId) {
+        // update the room id that has been generated by the SDK
         updateRoomInfo(roomId);
+
         // update the local peer avatar with the user name configured in default setting
         updateUILocalPeer(Config.USER_NAME_VIDEO);
+
+        // Change the connect button UI to disconnect button
+        btnConnectDisconnect.setImageResource(R.drawable.ic_disconnect_white_25dp);
+        btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_call_end));
+
+        // change variable toConnectToRoom
+        toConnectToRoom = false;
     }
 
     /**
@@ -250,19 +277,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      */
     @Override
     public void onPresenterRequestDisconnectUIChange() {
-        View self = videoViewLayout.findViewWithTag("self");
-        if (self != null) {
-            videoViewLayout.removeView(self);
-        }
-
-        View peer = videoViewLayout.findViewWithTag("peer");
-        if (peer != null) {
-            videoViewLayout.removeView(peer);
-        }
-
-        if (getActivity() != null) {
-            getActivity().finish();
-        }
+        changeUIDisconnected();
     }
 
     /**
@@ -280,15 +295,14 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     @Override
     public void onPresenterRequestLocalAudioCapture(String mediaId) {
-        btnStartAudio.setVisibility(GONE);
-
         toastLog(TAG, context, "Local audio is on with id = " + mediaId);
+
+        // change UI button
+        btnAudioStart.setImageResource(R.drawable.ic_stop_white_20dp);
     }
 
     @Override
     public void onPresenterRequestLocalVideoCapture(String mediaId) {
-        btnStartVideo.setVisibility(GONE);
-
         toastLog(TAG, context, "Local video is on with id = " + mediaId);
     }
 
@@ -302,6 +316,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     public void onPresenterRequestAddCameraSelfView(SurfaceViewRenderer videoView) {
         //save localCameraView
         localCameraView = videoView;
+
+        // change UI button
+        btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
 
         addViewToMain(videoView);
 
@@ -319,6 +336,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     public void onPresenterRequestAddScreenSelfView(SurfaceViewRenderer videoView) {
         //save localScreenView
         localScreenView = videoView;
+
+        // change UI button
+        btnScreenStart.setImageResource(R.drawable.ic_stop_white_20dp);
 
         // add local screen view as main view
         addViewToMain(videoView);
@@ -376,9 +396,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     }
 
     /**
-     * Update UI (display toast info) about remote audio state
+     * Update UI (display toast info) about local/remote audio state
      *
-     * @param isAudioMuted remote audio state
+     * @param isAudioMuted audio state
      * @param isToast      display toast or not
      */
     @Override
@@ -397,9 +417,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     }
 
     /**
-     * Update UI (display toast info) about remote video state
+     * Update UI (display toast info) about local/remote video state
      *
-     * @param isVideoMuted remote video state
+     * @param isVideoMuted video state
      * @param isToast      display toast or not
      */
     @Override
@@ -418,20 +438,41 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     }
 
     /**
+     * Update UI (display toast info) about local/remote screen state
+     *
+     * @param isScreenMuted screen video state
+     * @param isToast       display toast or not
+     */
+    @Override
+    public void onPresenterRequestUpdateScreenState(boolean isScreenMuted, boolean isToast) {
+        if (isScreenMuted) {
+            if (isToast) {
+                String log = getString(R.string.muted_screen);
+                toastLog(TAG, context, log);
+            }
+        } else {
+            if (isToast) {
+                String log = getString(R.string.enabled_screen);
+                toastLog(TAG, context, log);
+            }
+        }
+    }
+
+    /**
      * Update the audio output/speaker button when being requested from presenter
      * For example: when the phone connects to a bluetooth headset, the speaker is automatically off
      */
     @Override
     public void onPresenterRequestChangeSpeakerOutput(boolean isSpeakerOn) {
         if (isSpeakerOn) {
-            btnSpeaker.setImageResource(R.drawable.ic_headset);
+            btnAudioSpeaker.setImageResource(R.drawable.ic_headset_white_20dp);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnSpeaker.setTooltipText("Enable headset");
+                btnAudioSpeaker.setTooltipText("Enable headset");
             }
         } else {
-            btnSpeaker.setImageResource(R.drawable.ic_audio_speaker);
+            btnAudioSpeaker.setImageResource(R.drawable.ic_speaker_white_20dp);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnSpeaker.setTooltipText("Enable speaker");
+                btnAudioSpeaker.setTooltipText("Enable speaker");
             }
         }
     }
@@ -442,13 +483,13 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     @Override
     public void onPresenterRequestChangeAudioUI(boolean isAudioMute) {
         if (isAudioMute) {
-            btnAudioMute.setImageResource(R.drawable.icon_audio_active);
+            btnAudioMute.setImageResource(R.drawable.ic_audio_active_white_20dp);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 btnAudioMute.setTooltipText("Enable audio");
             }
 
         } else {
-            btnAudioMute.setImageResource(R.drawable.icon_audio_mute);
+            btnAudioMute.setImageResource(R.drawable.ic_audio_mute_white_20dp);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 btnAudioMute.setTooltipText("Mute audio");
             }
@@ -477,11 +518,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Update the video stop button UI when changing video state {stop, start}
      */
     @Override
-    public void onPresenterRequestChangeVideoSourceUI(boolean isCameraMute, boolean isToast) {
+    public void onPresenterRequestChangeCameraUI(boolean isCameraMute, boolean isToast) {
         if (isCameraMute) {
-            btnVideoStop.setImageResource(R.drawable.ic_play_video);
+            btnVideoStart.setImageResource(R.drawable.ic_start_white_20dp);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnVideoStop.setTooltipText("Play video");
+                btnVideoStart.setTooltipText("Play video");
             }
             if (isToast) {
                 String log = getString(R.string.stop_camera);
@@ -489,9 +530,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             }
 
         } else {
-            btnVideoStop.setImageResource(R.drawable.ic_stop_video);
+            btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnVideoStop.setTooltipText("Stop video");
+                btnVideoStart.setTooltipText("Stop video");
             }
             if (isToast) {
                 String log = getString(R.string.restart_camera);
@@ -519,9 +560,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 moveViewToSmallLocalScreenView(localScreenView);
                 moveViewToSmallRemoteCameraView(remoteCameraView);
                 moveViewToSmallRemoteScreenView(remoteScreenView);
-                if (isShowVideoOption) {
-                    showHideButton(btnSwitchCamera, true);
-                }
+
                 break;
             case LOCAL_SCREEN:
                 if (localScreenView != null) {
@@ -529,7 +568,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                     if (!isShowScreenSharing) {
                         showHideButton(stopScreenshareFloat, true);
                     }
-                    showHideButton(btnSwitchCamera, false);
                 }
                 moveViewToSmallLocalCameraView(localCameraView);
                 moveViewToSmallRemoteCameraView(remoteCameraView);
@@ -560,18 +598,24 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     private void getControlWidgets(View rootView) {
         videoViewLayout = rootView.findViewById(R.id.ll_videos);
-        btnSpeaker = rootView.findViewById(R.id.toggle_speaker_video);
-        btnAudioMute = rootView.findViewById(R.id.toggle_audio_video);
-        btnVideoMute = rootView.findViewById(R.id.toggle_video_video);
-        btnVideoStop = rootView.findViewById(R.id.toggle_video_device);
-        btnDisconnect = rootView.findViewById(R.id.btn_disconnect_video);
-        btnOption = rootView.findViewById(R.id.btn_option_video);
-        btnStartSecondVideo = rootView.findViewById(R.id.btn_start_second_video);
-        btnSwitchCamera = rootView.findViewById(R.id.btn_switch_camera_video);
+        videoToolLayout = rootView.findViewById(R.id.ll_video_tool);
         btnFullScreen = rootView.findViewById(R.id.btn_full_screen);
         btnVideoRes = rootView.findViewById(R.id.btn_video_res_video);
-        btnStartAudio = rootView.findViewById(R.id.btnStartAudio);
-        btnStartVideo = rootView.findViewById(R.id.btnStartVideo);
+        btnConnectDisconnect = rootView.findViewById(R.id.btn_connect_disconnect);
+        audioLayout = rootView.findViewById(R.id.ll_audio_call);
+        videoLayout = rootView.findViewById(R.id.ll_video_call);
+        screenLayout = rootView.findViewById(R.id.ll_screen_call);
+        btnAudioSpeaker = rootView.findViewById(R.id.btn_audio_speaker);
+        btnAudioMute = rootView.findViewById(R.id.btn_audio_mute);
+        btnAudioStart = rootView.findViewById(R.id.btn_audio_start);
+        btnAudio = rootView.findViewById(R.id.btn_audio);
+        btnVideoSwitchCamera = rootView.findViewById(R.id.btn_video_switch_camera);
+        btnVideoMute = rootView.findViewById(R.id.btn_video_mute);
+        btnVideoStart = rootView.findViewById(R.id.btn_video_start);
+        btnVideo = rootView.findViewById(R.id.btn_video);
+        btnScreenMute = rootView.findViewById(R.id.btn_screen_mute);
+        btnScreenStart = rootView.findViewById(R.id.btn_screen_start);
+        btnScreen = rootView.findViewById(R.id.btn_screen);
     }
 
     /**
@@ -593,30 +637,30 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnRemotePeer1.setOnClickListener(this);
         btnRemotePeer2.setOnClickListener(this);
         btnRemotePeer3.setOnClickListener(this);
-        btnSpeaker.setOnClickListener(this);
-        btnAudioMute.setOnClickListener(this);
-        btnVideoMute.setOnClickListener(this);
-        btnVideoStop.setOnClickListener(this);
-        btnDisconnect.setOnClickListener(this);
-        btnOption.setOnClickListener(this);
-        videoViewLayout.setOnClickListener(this);
-        btnStartSecondVideo.setOnClickListener(this);
-        btnSwitchCamera.setOnClickListener(this);
+
         btnFullScreen.setOnClickListener(this);
         btnVideoRes.setOnClickListener(this);
-        btnStartAudio.setOnClickListener(this);
-        btnStartVideo.setOnClickListener(this);
+        btnConnectDisconnect.setOnClickListener(this);
+        audioLayout.setOnClickListener(this);
+        videoLayout.setOnClickListener(this);
+        screenLayout.setOnClickListener(this);
+        btnAudioSpeaker.setOnClickListener(this);
+        btnAudioMute.setOnClickListener(this);
+        btnAudioStart.setOnClickListener(this);
+        btnAudio.setOnClickListener(this);
+        btnVideoSwitchCamera.setOnClickListener(this);
+        btnVideoMute.setOnClickListener(this);
+        btnVideoStart.setOnClickListener(this);
+        btnVideo.setOnClickListener(this);
+        btnScreenMute.setOnClickListener(this);
+        btnScreenStart.setOnClickListener(this);
+        btnScreen.setOnClickListener(this);
 
-        // init setting value for room name in action bar
+        // init setting value for room name and room id in action bar
+        // Update the UI when connecting to room: change the room_id
+        updateRoomInfo(getResources().getString(R.string.guide_room_id));
         txtRoomName.setText(Config.ROOM_NAME_VIDEO);
         btnVideoRes.setDirection(VideoResButton.ButtonDirection.TOP_RIGHT);
-
-        btnSpeaker.setVisibility(GONE);
-        btnAudioMute.setVisibility(GONE);
-        btnVideoMute.setVisibility(GONE);
-        btnVideoStop.setVisibility(GONE);
-        btnStartSecondVideo.setVisibility(GONE);
-        btnSwitchCamera.setVisibility(GONE);
 
         // Set init audio/video state
         setAudioBtnLabel(false, false);
@@ -656,15 +700,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             }
         });
 
-        if (Utils.isDefaultScreenDeviceSetting()) {
-            btnStartSecondVideo.setImageResource(R.drawable.icon_camera_active);
-            isShareScreen = true;
-            showHideButton(btnSwitchCamera, false);
-        } else {
-            btnStartSecondVideo.setImageResource(R.drawable.ic_start_second_video);
-            isShareScreen = false;
-        }
-
         // add tool tip for buttons
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             btnBack.setTooltipText("Back to main activity");
@@ -673,31 +708,23 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             btnRemotePeer2.setTooltipText("Remote peer");
             btnRemotePeer3.setTooltipText("Remote peer");
             btnVideoRes.setTooltipText("Video resolution setting");
-            btnSwitchCamera.setTooltipText("Switch camera");
-            if (isShareScreen) {
-                btnStartSecondVideo.setTooltipText("Start screen video");
-            } else {
-                btnStartSecondVideo.setTooltipText("Start camera video");
-            }
-            btnSpeaker.setTooltipText("Enable speaker");
-            btnAudioMute.setTooltipText("Mute audio");
-            btnVideoMute.setTooltipText("Mute video");
-            btnVideoStop.setTooltipText("Stop video");
-            btnOption.setTooltipText("Extend buttons");
-            btnDisconnect.setTooltipText("Disconnect");
             btnFullScreen.setTooltipText("Full screen");
-            btnStartAudio.setTooltipText("Start local audio");
-            btnStartVideo.setTooltipText("Start local video");
+            btnConnectDisconnect.setTooltipText("Connect to room");
+            btnAudioSpeaker.setTooltipText("Turn on speaker/headset");
+            btnAudioMute.setTooltipText("Mute/Active audio");
+            btnAudioStart.setTooltipText("Start/Stop audio");
+            btnAudio.setTooltipText("Audio setting options");
+            btnVideoSwitchCamera.setTooltipText("Switch camera");
+            btnVideoMute.setTooltipText("Mute/Active video");
+            btnVideoStart.setTooltipText("Start/Stop video");
+            btnVideo.setTooltipText("Video setting options");
+            btnScreenMute.setTooltipText("Mute/Active screen sharing view");
+            btnScreenStart.setTooltipText("Start/Stop screen sharing view");
+            btnScreen.setTooltipText("Screen sharing setting optiosn");
         }
-    }
 
-    /**
-     * request info to display on view from presenter
-     * try to connect to room if not connected
-     */
-    private void requestViewLayout() {
-        if (presenter != null) {
-            presenter.onViewRequestConnectedLayout();
+        if (Utils.isDefaultSpeakerSettingForVideo()) {
+            btnAudioSpeaker.setImageDrawable(getResources().getDrawable(R.drawable.ic_audio_speaker));
         }
     }
 
@@ -762,14 +789,14 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // If previous self video exists,
         // Set new video to size of previous self video
         // And remove old self video.
-        View self = videoViewLayout.findViewWithTag("main");
+        View self = videoViewLayout.findViewWithTag(MAIN_VIEW);
         if (self != null) {
             // Remove the old self video.
             videoViewLayout.removeView(self);
         }
 
         // Tag new video as self and add onClickListener.
-        videoView.setTag("main");
+        videoView.setTag(MAIN_VIEW);
 
         // Show new video on screen
         // Remove video from previous parent, if any.
@@ -787,8 +814,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         videoViewLayout.setOrientation(LinearLayout.VERTICAL);
 
         videoViewLayout.addView(videoView);
-
-        currentMainView = videoView;
     }
 
     private void showHideButtonStopScreenSharing() {
@@ -821,75 +846,12 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
     }
 
-    private void showVideoOption() {
-        isShowVideoOption = !isShowVideoOption;
-
-        if (isShowVideoOption) {
-            showHideView(btnVideoStop, isShowVideoOption, false);
-            showHideView(btnVideoMute, isShowVideoOption, false);
-            showHideView(btnAudioMute, isShowVideoOption, false);
-            showHideView(btnSpeaker, isShowVideoOption, false);
-            if (!isShareScreen) {
-                showHideView(btnSwitchCamera, isShowVideoOption, false);
-            }
-            showHideView(btnStartSecondVideo, isShowVideoOption, true);
-        } else {
-            showHideView(btnStartSecondVideo, isShowVideoOption, false);
-            showHideView(btnSwitchCamera, isShowVideoOption, false);
-            showHideView(btnSpeaker, isShowVideoOption, false);
-            showHideView(btnAudioMute, isShowVideoOption, false);
-            showHideView(btnVideoMute, isShowVideoOption, false);
-            showHideView(btnVideoStop, isShowVideoOption, true);
-        }
-    }
-
-    private void showHideView(View view, boolean isShow, boolean isFinalView) {
-        if (isShow) {
-            view.animate()
-                    .translationY(0)
-                    .alpha(1.0f)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            view.setVisibility(View.VISIBLE);
-                            if (isFinalView) {
-                                btnOption.setImageResource(R.drawable.ic_collapse_option);
-                                // change tool tip for button
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    btnOption.setTooltipText("Collapse buttons");
-                                }
-                            }
-                        }
-                    });
-        } else {
-            view.animate()
-                    .translationY(btnOption.getHeight())
-                    .alpha(0.0f)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            view.setVisibility(View.GONE);
-                            if (isFinalView) {
-                                btnOption.setImageResource(R.drawable.ic_expand_option);
-                                // change tool tip for button
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    btnOption.setTooltipText("Collapse buttons");
-                                }
-                            }
-                        }
-                    });
-        }
-    }
-
     private void processFullScreen() {
         isFullScreen = !isFullScreen;
         ActionBar actionBar = ((VideoActivity) getActivity()).getSupportActionBar();
 
         if (isFullScreen) {
-            showHideVideoTool(false);
-
+            videoToolLayout.setVisibility(GONE);
             btnVideoRes.setVisibility(GONE);
             ((VideoActivity) getActivity()).onShowHideLocalCameraViewFragment(false, true);
             ((VideoActivity) getActivity()).onShowHideVideoResFragment(false);
@@ -902,9 +864,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             }
 
         } else {
-            showHideVideoTool(true);
-            btnOption.setVisibility(View.VISIBLE);
-            btnDisconnect.setVisibility(View.VISIBLE);
+            videoToolLayout.setVisibility(VISIBLE);
             btnVideoRes.setVisibility(View.VISIBLE);
             ((VideoActivity) getActivity()).onShowHideLocalCameraViewFragment(true, true);
             if (isShowVideoRes) {
@@ -917,33 +877,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 btnFullScreen.setTooltipText("Full screen");
             }
-        }
-    }
-
-    private void showHideVideoTool(boolean isShow) {
-        if (isShow) {
-            if (isShowVideoOption) {
-                btnStartSecondVideo.setVisibility(VISIBLE);
-                btnSpeaker.setVisibility(VISIBLE);
-                btnAudioMute.setVisibility(VISIBLE);
-                if (!isShareScreen) {
-                    btnSwitchCamera.setVisibility(VISIBLE);
-                }
-                btnVideoMute.setVisibility(VISIBLE);
-                btnVideoStop.setVisibility(VISIBLE);
-            }
-
-            btnOption.setVisibility(VISIBLE);
-            btnDisconnect.setVisibility(VISIBLE);
-        } else {
-            btnStartSecondVideo.setVisibility(GONE);
-            btnSpeaker.setVisibility(GONE);
-            btnAudioMute.setVisibility(GONE);
-            btnSwitchCamera.setVisibility(GONE);
-            btnVideoMute.setVisibility(GONE);
-            btnVideoStop.setVisibility(GONE);
-            btnOption.setVisibility(GONE);
-            btnDisconnect.setVisibility(GONE);
         }
     }
 
@@ -976,6 +909,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         if (view == null)
             return;
 
+        view.setTag(SELF_CAM_VIEW);
+
         if (context != null && context instanceof VideoActivity) {
             ((VideoActivity) context).setLocalCameraView(view);
         }
@@ -985,19 +920,20 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         if (view == null)
             return;
 
+        view.setTag(SELF_SCREEN_VIEW);
+
         if (context != null && context instanceof VideoActivity) {
             ((VideoActivity) context).setLocalScreenView(view);
         }
 
         showHideButton(stopScreenshareFloat, false);
-        if (isShowVideoOption) {
-            showHideButton(btnSwitchCamera, true);
-        }
     }
 
     private void moveViewToSmallRemoteCameraView(SurfaceViewRenderer view) {
         if (view == null)
             return;
+
+        view.setTag(REMOTE_CAM_VIEW);
 
         if (context != null && context instanceof VideoActivity) {
             ((VideoActivity) context).setRemoteCameraView(view);
@@ -1008,45 +944,257 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         if (view == null)
             return;
 
+        view.setTag(REMOTE_SCREEN_VIEW);
+
         if (context != null && context instanceof VideoActivity) {
             ((VideoActivity) context).setRemoteScreenView(view);
         }
     }
 
-    /**
-     * Start the second video.
-     * If current video is from front/back/custom camera, then start screen video
-     * If current video is from screen video, then start video from front camera as default
-     */
-    private void processStartSecondVideo() {
-        if (!isShareScreen) {
-            if (localScreenView == null) {
-                presenter.onViewRequestStartScreen();
-            }
+    private void processConnectDisconnect() {
+        if (toConnectToRoom) {
+            if (presenter != null) {
+                presenter.onViewRequestConnectedLayout();
 
-            bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
+                // Update the UI when connecting to room: change the room_id
+                updateRoomInfo(getResources().getString(R.string.initing_room_id));
+            }
         } else {
-            presenter.onViewRequestStartFrontCamera();
-            bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+            if (presenter != null) {
+                presenter.onViewRequestDisconnectFromRoom();
+            }
         }
     }
 
-    private void processSwitchCamera() {
-        presenter.onViewRequestSwitchCamera();
+    /**
+     * Update the UI when disconnect from the room
+     */
+    private void changeUIDisconnected() {
+        // remove video views
+        View self = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
+        if (self != null) {
+            videoViewLayout.removeView(self);
+        }
+
+        View peer = videoViewLayout.findViewWithTag(REMOTE_CAM_VIEW);
+        if (peer != null) {
+            videoViewLayout.removeView(peer);
+        }
+
+        View main = videoViewLayout.findViewWithTag(MAIN_VIEW);
+        if (main != null) {
+            videoViewLayout.removeView(main);
+        }
+
+        // change the connect/disconnect button
+        btnConnectDisconnect.setImageResource(R.drawable.ic_connect_white_25dp);
+        btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_connect_to_room));
+
+        // reset the tool buttons UI
+        btnAudio.setImageResource(R.drawable.ic_audio_green_20dp);
+        btnVideo.setImageResource(R.drawable.ic_video_green_20dp);
+        btnScreen.setImageResource(R.drawable.ic_screen_share_green_20dp);
+        btnAudioStart.setImageResource(R.drawable.ic_start_white_20dp);
+        btnVideoStart.setImageResource(R.drawable.ic_start_white_20dp);
+        btnScreenStart.setImageResource(R.drawable.ic_start_white_20dp);
+        btnAudioMute.setImageResource(R.drawable.ic_audio_mute_white_20dp);
+        btnVideoMute.setImageResource(R.drawable.ic_video_mute_white_20dp);
+        btnScreenMute.setImageResource(R.drawable.ic_stop_screen_share_white_20dp);
+        btnAudioSpeaker.setImageResource(R.drawable.ic_headset_white_20dp);
+
+        // reset the room id info and local peer button
+        txtRoomId.setText(R.string.guide_room_id);
+        btnLocalPeer.setVisibility(GONE);
+
+        // reset the variable toConnectToRoom
+        toConnectToRoom = true;
     }
 
-    private void startLocalAudio() {
-        // start local audio
-        presenter.onViewRequestStartAudio();
+    /**
+     * Do clean up UI when disconnect from the room: remove self video view, remote video view, finish the activity
+     */
+    private void cleanUIWhenDisconnect() {
+        View self = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
+        if (self != null) {
+            videoViewLayout.removeView(self);
+        }
+
+        View peer = videoViewLayout.findViewWithTag(REMOTE_CAM_VIEW);
+        if (peer != null) {
+            videoViewLayout.removeView(peer);
+        }
+
+//        if (getActivity() != null) {
+//            getActivity().finish();
+//        }
     }
 
-    private void startLocalVideo() {
-        //start local video
-        presenter.onViewRequestStartVideo();
+    /**
+     * Show or Hide the audio options
+     */
+    private void showAudioOptions() {
+        isAudioOptionsShow = !isAudioOptionsShow;
+
+        if (isAudioOptionsShow) {
+            btnAudio.setImageResource(R.drawable.ic_collapse_green_20dp);
+            showHideViewAudio(btnAudioStart, true, false);
+            showHideViewAudio(btnAudioMute, true, false);
+            showHideViewAudio(btnAudioSpeaker, true, true);
+        } else {
+            showHideViewAudio(btnAudioStart, false, false);
+            showHideViewAudio(btnAudioMute, false, false);
+            showHideViewAudio(btnAudioSpeaker, false, true);
+            audioLayout.setBackgroundColor(Color.TRANSPARENT);
+        }
     }
 
-    private void processDisconnect() {
-        presenter.onViewRequestDisconnectFromRoom();
-        onPresenterRequestDisconnectUIChange();
+    /**
+     * Show or Hide the video options
+     */
+    private void showVideoOptions() {
+        isVideoOptionsShow = !isVideoOptionsShow;
+
+        if (isVideoOptionsShow) {
+            btnVideo.setImageResource(R.drawable.ic_collapse_green_20dp);
+            showHideViewVideo(btnVideoStart, true, false);
+            showHideViewVideo(btnVideoMute, true, false);
+            showHideViewVideo(btnVideoSwitchCamera, true, true);
+        } else {
+            showHideViewVideo(btnVideoStart, false, false);
+            showHideViewVideo(btnVideoMute, false, false);
+            showHideViewVideo(btnVideoSwitchCamera, false, true);
+            videoLayout.setBackgroundColor(Color.TRANSPARENT);
+        }
+    }
+
+    /**
+     * Show or Hide the screen sharing options
+     */
+    private void showScreenOptions() {
+        isScreenOptionsShow = !isScreenOptionsShow;
+
+        if (isScreenOptionsShow) {
+            btnScreen.setImageResource(R.drawable.ic_collapse_green_20dp);
+            showHideViewScreen(btnScreenMute, true, false);
+            showHideViewScreen(btnScreenStart, true, true);
+        } else {
+            showHideViewScreen(btnScreenMute, false, false);
+            showHideViewScreen(btnScreenStart, false, true);
+            screenLayout.setBackgroundColor(Color.TRANSPARENT);
+        }
+    }
+
+    private void showHideViewAudio(View view, boolean isShow, boolean isFinalView) {
+        if (isShow) {
+            view.animate()
+                    .translationX(0)
+                    .alpha(1.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            view.setVisibility(View.VISIBLE);
+                            if (isFinalView) {
+                                audioLayout.setBackground(getResources().getDrawable(R.drawable.frame_layout_round_border_tool));
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    btnAudio.setTooltipText("Collapse buttons");
+                                }
+                            }
+                        }
+                    });
+        } else {
+            view.animate()
+                    .translationX(btnAudio.getHeight())
+                    .alpha(0.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            view.setVisibility(View.GONE);
+                            if (isFinalView) {
+                                btnAudio.setImageResource(R.drawable.ic_audio_green_20dp);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    btnAudio.setTooltipText("Audio options");
+                                }
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void showHideViewVideo(View view, boolean isShow, boolean isFinalView) {
+        if (isShow) {
+            view.animate()
+                    .translationX(0)
+                    .alpha(1.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            view.setVisibility(View.VISIBLE);
+                            if (isFinalView) {
+                                videoLayout.setBackground(getResources().getDrawable(R.drawable.frame_layout_round_border_tool));
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    btnVideo.setTooltipText("Collapse buttons");
+                                }
+                            }
+                        }
+                    });
+        } else {
+            view.animate()
+                    .translationX(btnVideo.getHeight())
+                    .alpha(0.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            view.setVisibility(View.GONE);
+                            if (isFinalView) {
+                                btnVideo.setImageResource(R.drawable.ic_video_green_20dp);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    btnVideo.setTooltipText("Video options");
+                                }
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void showHideViewScreen(View view, boolean isShow, boolean isFinalView) {
+        if (isShow) {
+            view.animate()
+                    .translationX(0)
+                    .alpha(1.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            view.setVisibility(View.VISIBLE);
+                            if (isFinalView) {
+                                screenLayout.setBackground(getResources().getDrawable(R.drawable.frame_layout_round_border_tool));
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    btnScreen.setTooltipText("Collapse buttons");
+                                }
+                            }
+                        }
+                    });
+        } else {
+            view.animate()
+                    .translationX(btnScreen.getHeight())
+                    .alpha(0.0f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            view.setVisibility(View.GONE);
+                            if (isFinalView) {
+                                btnScreen.setImageResource(R.drawable.ic_screen_share_green_20dp);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    btnScreen.setTooltipText("Screen sharing options");
+                                }
+                            }
+                        }
+                    });
+        }
     }
 }

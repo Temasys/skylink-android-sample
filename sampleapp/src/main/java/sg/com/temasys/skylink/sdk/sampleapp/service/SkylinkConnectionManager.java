@@ -50,33 +50,8 @@ public class SkylinkConnectionManager {
     /**
      * Initialize a SkylinkConnection object
      */
-    public SkylinkConnection initializeSkylinkConnection() {
-
-        //Get the user config for connection
-        SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
-
-        if (skylinkConfig != null) {
-            skylinkConnection = SkylinkConnection.getInstance();
-            // Set SkylinkConnection instance in skylinkCommonService ASAP.
-            skylinkCommonService.setmSkylinkConnection(skylinkConnection);
-            // Initialize this SkylinkConnection instance.
-            skylinkConnection.init(Config.getAppKey(), skylinkConfig,
-                    context.getApplicationContext());
-        }
-
-        return skylinkConnection;
-
-    }
-
-    /**
-     * Connects to a room using a SkylinkConnectionString that caller MUST ensure is URL safe.
-     *
-     * @param typeCall      Specify which is current demo/call like audio/video/file/...
-     * @param videoCapturer Custom {@link VideoCapturer} if desired, null if not.
-     * @return SkylinkConnection
-     */
-    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
-        String logTag = "[SA][SCM][connectToRoom] ";
+    public SkylinkConnection initializeSkylinkConnection(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
+        String logTag = "[SA][SCM][initializeSkylinkConnection] ";
         String log = logTag;
 
         //check internet connection
@@ -92,15 +67,24 @@ public class SkylinkConnectionManager {
             return null;
         }
 
+        //Get the user config for connection
         SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
+
         if (skylinkConfig == null) {
             log += "Error: SkylinkConfig is null";
             Log.e(TAG, log);
             return null;
         }
 
-        // Initialize the skylink connection using SkylinkConnectionManager
-        skylinkConnection = initializeSkylinkConnection();
+        skylinkConnection = SkylinkConnection.getInstance();
+        // Set SkylinkConnection instance in skylinkCommonService ASAP.
+        skylinkCommonService.setmSkylinkConnection(skylinkConnection);
+        // Initialize this SkylinkConnection instance.
+        skylinkConnection.init(Config.getAppKey(), skylinkConfig,
+                context.getApplicationContext());
+
+        // Set Skylink listeners necessary for current demo/call
+        skylinkCommonService.setSkylinkListeners();
 
         // Set custom VideoCapturer if any.
         if (videoCapturer != null) {
@@ -109,15 +93,63 @@ public class SkylinkConnectionManager {
             skylinkConnection.setCustomVideoCapturer(videoCapturer);
         }
 
-        // Set Skylink listeners necessary for current demo/call
-        skylinkCommonService.setSkylinkListeners();
-
         // Get room name and user name in setting
         String mRoomName = Utils.getRoomNameByType(typeCall);
         String mUserName = Utils.getUserNameByType(typeCall);
 
         skylinkCommonService.setRoomName(mRoomName);
         skylinkCommonService.setUserName(mUserName);
+
+        return skylinkConnection;
+    }
+
+    /**
+     * Connects to a room using a SkylinkConnectionString that caller MUST ensure is URL safe.
+     *
+     * @param typeCall      Specify which is current demo/call like audio/video/file/...
+     * @param videoCapturer Custom {@link VideoCapturer} if desired, null if not.
+     * @return SkylinkConnection
+     */
+    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
+        String logTag = "[SA][SCM][connectToRoom] ";
+        String log = logTag;
+
+//        //check internet connection
+//        if (!Utils.isInternetOn()) {
+//            log = "Internet connection is off !";
+//            toastLog(TAG, context, log);
+//            return null;
+//        }
+//
+//        if (skylinkCommonService == null) {
+//            log += "Error: SkylinkCommonService is null";
+//            Log.e(TAG, log);
+//            return null;
+//        }
+//
+
+
+        // Initialize the skylink connection using SkylinkConnectionManager if it is not initialized
+        if (skylinkConnection == null) {
+            skylinkConnection = initializeSkylinkConnection(typeCall, videoCapturer);
+        }
+
+//        // Set custom VideoCapturer if any.
+//        if (videoCapturer != null) {
+//            log = logTag + "With Custom VideoCapturer: " + videoCapturer + ".";
+//            toastLog(TAG, context, log);
+//            skylinkConnection.setCustomVideoCapturer(videoCapturer);
+//        }
+//
+//        // Get room name and user name in setting
+        String mRoomName = Utils.getRoomNameByType(typeCall);
+        String mUserName = Utils.getUserNameByType(typeCall);
+//
+//        skylinkCommonService.setRoomName(mRoomName);
+//        skylinkCommonService.setUserName(mUserName);
+
+        SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
+
 
         // Create the Skylink connection string.
         // In production, the connection string should be generated by an external entity
@@ -148,8 +180,13 @@ public class SkylinkConnectionManager {
      * will be called.
      */
     public void disconnectFromRoom() {
+        boolean disConnectSuccess = false;
+
         if (skylinkConnection != null)
-            skylinkConnection.disconnectFromRoom();
+            disConnectSuccess = skylinkConnection.disconnectFromRoom();
+
+        if (disConnectSuccess)
+            skylinkConnection = null;
     }
 
     /**

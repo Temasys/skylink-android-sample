@@ -109,10 +109,10 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         // apply for video camera only
 
 
-//        if (videoLocalState.isCameraMute()) {
+//        if (videoLocalState.isCameraCapturerStop()) {
 //            if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
 //                multiVideoCallService.toggleCamera(null);
-//                videoLocalState.setCameraMute(false);
+//                videoLocalState.setCameraCapturerStop(false);
 //            }
 //        }
     }
@@ -124,7 +124,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
 //        if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
 //            boolean toggleCamera = multiVideoCallService.toggleCamera(null, false);
-//            videoLocalState.setCameraMute(toggleCamera);
+//            videoLocalState.setCameraCapturerStop(toggleCamera);
 //        }
     }
 
@@ -247,6 +247,16 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestStartVideo() {
         multiVideoCallService.startLocalVideo();
+    }
+
+    @Override
+    public void onViewRequestStartVideoCamera() {
+        multiVideoCallService.startLocalCamera();
+    }
+
+    @Override
+    public void onViewRequestStartVideoScreen() {
+        multiVideoCallService.startLocalScreen();
     }
 
     @Override
@@ -385,15 +395,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
-
         // add new peer button in action bar
         multiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, multiVideoCallService.getTotalPeersInRoom() - 1);
 
         // add new webRTCStats for peer
         isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
-
-        // add remote peer video view
-        processAddRemoteView(skylinkPeer.getPeerId(), null);
     }
 
     @Override
@@ -429,9 +435,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoCameraReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteMedia) {
 
-        processAddRemoteView(remotePeerId, mediaId);
+        processAddRemoteView(remotePeerId, remoteMedia.getMediaType(), remoteMedia.getVideoView());
 
         log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -514,16 +520,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
     }
 
-    private void processAddRemoteView(String remotePeerId, String mediaId) {
-        if (mediaId == null) {
-            return;
-        }
+    private void processAddRemoteView(String remotePeerId, SkylinkMedia.MEDIA_TYPE mediaType, SurfaceViewRenderer videoView) {
 
         int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId);
 
-        SurfaceViewRenderer videoView = multiVideoCallService.getVideoView(remotePeerId, mediaId);
-
-        multiVideoCallView.onPresenterRequestAddRemoteView(index, videoView);
+        multiVideoCallView.onPresenterRequestAddRemoteView(index, mediaType, videoView);
     }
 
     /**

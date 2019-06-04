@@ -77,9 +77,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     protected String roomName;
     protected String userName;
 
-    private String localAudioId, localVideoId, localScreenSharingId;
-
-    protected String mainAudioId, mainVideoId;
+    protected String localAudioId, localVideoId, localScreenSharingId;
 
     enum CameraState {
         CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
@@ -169,6 +167,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         //remove all peers in room
         if (mPeersList != null)
             mPeersList.clear();
+
+        // reset SkylinkConnection instance
+        mSkylinkConnection = null;
     }
 
     /**
@@ -287,23 +288,21 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
+        if (remoteVideo == null)
+            return;
+
         String log = "[onRemotePeerVideoReceive] ";
         log += "Received new Video (" + remoteVideo.getMediaId() + ") from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
-        if (remoteVideo == null)
-            return;
-
         if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
             addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.VIDEO);
-
-            presenter.onServiceRequestRemotePeerVideoCameraReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
         } else if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
             addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.SCREEN);
-
-            presenter.onServiceRequestRemotePeerVideoScreenReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo.getMediaId());
         }
+
+        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo);
     }
 
     /**
@@ -579,7 +578,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
         String log = "Your connection with " + peer + " has just been refreshed";
         if (wasIceRestarted) {
-            log += ", with ICE restarted.";
+            log += ", with ICE restarted.\r\n";
         } else {
             log += ".\r\n";
         }
@@ -908,6 +907,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     // Public methods helps to work with SkylinkSDK
     //----------------------------------------------------------------------------------------------
 
+    protected void initializeSkylinkConnection(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
+        this.mSkylinkConnection = skylinkConnectionManager.initializeSkylinkConnection(typeCall, videoCapturer);
+    }
+
     public boolean isConnectingOrConnected() {
         return skylinkConnectionManager.isConnectingOrConnected();
     }
@@ -937,7 +940,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
 
         SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        if (videoDevice != SkylinkConfig.VideoDevice.CUSTOM_CAPTURER) {
+        if (videoDevice != null && videoDevice != SkylinkConfig.VideoDevice.CUSTOM_CAPTURER) {
             useCustomCapturer = false;
         }
         VideoCapturer customCapturer = null;

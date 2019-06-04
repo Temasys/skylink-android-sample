@@ -39,7 +39,7 @@
                     android:id="@+id/txtUserAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtAudio"
+                    android:layout_below="@id/txtAudio"
                     android:text="UserName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -49,8 +49,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserAudio"
+                    android:layout_below="@id/txtUserAudio"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
@@ -58,7 +60,7 @@
                     android:id="@+id/txtRoomAudio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameAudio"
+                    android:layout_below="@id/edtUserNameAudio"
                     android:text="RoomName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -69,8 +71,10 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomAudio"
+                    android:layout_below="@id/txtRoomAudio"
                     android:maxLines="1"
                     android:textColor="#000000"/>
             </RelativeLayout>
@@ -79,7 +83,68 @@
                 android:id="@+id/f2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/f1"
+                android:layout_below="@id/f1"
+                android:layout_gravity="top"
+                android:layout_marginBottom="20dp"
+                android:background="@android:color/background_light"
+                android:padding="5dp">
+
+                <TextView
+                    android:id="@+id/txtVideo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:text="Video Call Config"
+                    android:textSize="18dp"/>
+
+                <TextView
+                    android:id="@+id/txtUserVideo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/txtVideo"
+                    android:text="UserName"
+                    android:textSize="16dp"
+                    tools:textColor="?attr/colorPrimary"/>
+
+                <EditText
+                    android:id="@+id/edtUserNameVideo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@id/txtUserVideo"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
+
+                <TextView
+                    android:id="@+id/txtRoomVideo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/edtUserNameVideo"
+                    android:text="RoomName"
+                    android:textSize="16dp"
+                    tools:textColor="?attr/colorPrimary"/>
+
+                <EditText
+                    android:id="@+id/edtRoomNameVideo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@id/txtRoomVideo"
+                    android:maxLines="1"
+                    android:textColor="#000000"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/f3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/f2"
                 android:layout_gravity="top"
                 android:layout_marginBottom="20dp"
                 android:background="@android:color/background_light"
@@ -98,7 +163,7 @@
                     android:id="@+id/txtUserChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtChat"
+                    android:layout_below="@id/txtChat"
                     android:text="UserName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -108,8 +173,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserChat"
+                    android:layout_below="@id/txtUserChat"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
@@ -117,7 +184,7 @@
                     android:id="@+id/txtRoomChat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameChat"
+                    android:layout_below="@id/edtUserNameChat"
                     android:text="RoomName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -127,17 +194,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomChat"
+                    android:layout_below="@id/txtRoomChat"
                     android:maxLines="1"
                     android:textColor="#000000"/>
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/f3"
+                android:id="@+id/f4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/f2"
+                android:layout_below="@id/f3"
                 android:layout_gravity="top"
                 android:layout_marginBottom="20dp"
                 android:background="@android:color/background_light"
@@ -156,7 +225,7 @@
                     android:id="@+id/txtUserData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtDataTransfer"
+                    android:layout_below="@id/txtDataTransfer"
                     android:text="UserName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -166,8 +235,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserData"
+                    android:layout_below="@id/txtUserData"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
@@ -175,7 +246,7 @@
                     android:id="@+id/txtRoomData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameData"
+                    android:layout_below="@id/edtUserNameData"
                     android:text="RoomName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -185,18 +256,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomData"
+                    android:layout_below="@id/txtRoomData"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/f4"
+                android:id="@+id/f5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/f3"
+                android:layout_below="@id/f4"
                 android:layout_gravity="top"
                 android:layout_marginBottom="20dp"
                 android:background="@android:color/background_light"
@@ -215,7 +288,7 @@
                     android:id="@+id/txtUserFile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtFileTransfer"
+                    android:layout_below="@id/txtFileTransfer"
                     android:text="UserName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -225,8 +298,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserFile"
+                    android:layout_below="@id/txtUserFile"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
@@ -234,7 +309,7 @@
                     android:id="@+id/txtRoomFile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameFile"
+                    android:layout_below="@id/edtUserNameFile"
                     android:text="RoomName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -244,18 +319,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomFile"
+                    android:layout_below="@id/txtRoomFile"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/f5"
+                android:id="@+id/f6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/f4"
+                android:layout_below="@id/f5"
                 android:layout_gravity="top"
                 android:layout_marginBottom="20dp"
                 android:background="@android:color/background_light"
@@ -274,7 +351,7 @@
                     android:id="@+id/txtUserMulti"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtMultipartyVideo"
+                    android:layout_below="@id/txtMultipartyVideo"
                     android:text="UserName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -284,8 +361,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserMulti"
+                    android:layout_below="@id/txtUserMulti"
                     android:maxLines="1"
                     android:textColor="#000000"/>
 
@@ -293,7 +372,7 @@
                     android:id="@+id/txtRoomMulti"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameParty"
+                    android:layout_below="@id/edtUserNameParty"
                     android:text="RoomName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
@@ -303,68 +382,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomMulti"
+                    android:layout_below="@id/txtRoomMulti"
                     android:maxLines="1"
                     android:textColor="#000000"/>
             </RelativeLayout>
 
-            <RelativeLayout
-                android:id="@+id/f7"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/f4"
-                android:layout_gravity="top"
-                android:layout_marginBottom="20dp"
-                android:background="@android:color/background_light"
-                android:padding="5dp">
-
-                <TextView
-                    android:id="@+id/txtVideo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:text="Screen share Config"
-                    android:textSize="18dp"/>
-
-                <TextView
-                    android:id="@+id/txtUserVideo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/txtVideo"
-                    android:text="UserName"
-                    android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameVideo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtUserVideo"
-                    android:maxLines="1"
-                    android:textColor="#000000"/>
-
-                <TextView
-                    android:id="@+id/txtRoomVideo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/edtUserNameVideo"
-                    android:text="RoomName"
-                    android:textSize="16dp"
-                    tools:textColor="?attr/colorPrimary"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameVideo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_below="@+id/txtRoomVideo"
-                    android:maxLines="1"
-                    android:textColor="#000000"/>
-            </RelativeLayout>
 
         </RelativeLayout>
     </ScrollView>

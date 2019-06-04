@@ -10,12 +10,15 @@
     <string name="title_section5"> Data Transfer </string>
     <string name="title_section6"> Multi-Party Video Call </string>
     <string name="action_configuration"> Configuration </string>
-    <string name="init_room_id">(Room_id) is being generated...</string>
+    <string name="guide_room_id">Connect to room to get generated roomId</string>
+    <string name="initing_room_id">(Room_id) is being generated...</string>
     <string name="enter_room_name">Enter Room Name</string>
     <string name="muted_audio">Muted Audio</string>
     <string name="enabled_audio">Enabled Audio</string>
     <string name="muted_video">Muted Video</string>
+    <string name="muted_screen">Muted Screen video</string>
     <string name="enabled_video">Enabled Video</string>
+    <string name="enabled_screen">Enabled Screen video</string>
     <string name="stop_camera">Stopped camera</string>
     <string name="restart_camera">Restarted camera</string>
     <string name="toggle_camera">Toggle Camera</string>
@@ -54,5 +57,6 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="no_camera">No device</string>
 
 </resources>

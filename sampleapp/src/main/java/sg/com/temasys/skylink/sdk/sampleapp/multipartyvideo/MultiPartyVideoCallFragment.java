@@ -36,7 +36,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.DoubleClickListener;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.Gravity.FILL;
@@ -65,7 +64,16 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private Button btnOptionLocal, btnOptionPeer1, btnOptionPeer2, btnOptionPeer3, btnStartAudioMulti,
             btnStartVideoMulti, stopScreenshareFloat;
 
-    private SurfaceViewRenderer localCameraView, localScreenView;
+    //    private SurfaceViewRenderer localCameraView, localScreenView, localMainView;
+    // The array of local video views (local camera, local screen sharing)
+    private SurfaceViewRenderer[] localViews;
+
+    // The array of remote video views (remote camera, remote screen sharing)
+    // Up to 3 remote peers which can have 6 remote views
+    private SurfaceViewRenderer[][] remoteViews;
+
+    private boolean isLocalCameraDisplay = false;
+    private boolean[] isRemoteCameraDisplay;
 
     private WindowManager.LayoutParams stopScreenshareLayoutParams;
 
@@ -196,6 +204,18 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            case R.id.startAudio:
+                presenter.onViewRequestStartAudio();
+                break;
+            case R.id.startVideo:
+                presenter.onViewRequestStartVideo();
+                break;
+            case R.id.startCamera:
+                presenter.onViewRequestStartVideoCamera();
+                break;
+            case R.id.startScreen:
+                presenter.onViewRequestStartVideoScreen();
+                break;
             case R.id.switchCamera:
                 presenter.onViewRequestSwitchCamera();
                 break;
@@ -282,6 +302,9 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
         // Remove any existing Peer View at index.
         // This may sometimes be the case, for e.g. in screen sharing.
+
+        //This will help in case connect to room before starting local media
+
         removePeerView(0);
 
         //Create an empty view with black background color
@@ -289,6 +312,10 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
         setLayoutParams(selfViewLayout);
         remoteViewLayouts[0].addView(selfViewLayout);
+
+        // display the context menu for local view
+        displayPeerMenuOption(0);
+
     }
 
     /**
@@ -339,19 +366,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      */
     @Override
     public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MEDIA_TYPE mediaType) {
-        if (videoView == null) {
-            return;
-        }
-
-        // Remove video from previous parent, if any.
-        Utils.removeViewFromParent(videoView);
-
-        // Remove self view if its already added
-        remoteViewLayouts[0].removeAllViews();
-
-        // Add new local videoView to frame
-        setLayoutParams(videoView);
-        remoteViewLayouts[0].addView(videoView);
 
         displayPeerMenuOption(0);
 
@@ -359,10 +373,14 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         btnStartVideoMulti.setVisibility(View.GONE);
 
         if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
-            localCameraView = videoView;
+            localViews[0] = videoView;
+            isLocalCameraDisplay = true;
         } else if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
-            localScreenView = videoView;
+            localViews[1] = videoView;
+            isLocalCameraDisplay = false;
         }
+
+        displayLocalView(videoView);
     }
 
     /**
@@ -372,20 +390,19 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * @param remoteView videoView of remoteView
      */
     @Override
-    public void onPresenterRequestAddRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
-        if (remoteView == null || peerIndex < 1 || peerIndex > remoteViewLayouts.length)
-            return;
-
-        // Remove any existing Peer View at index.
-        // This may sometimes be the case, for e.g. in screen sharing.
-        removePeerView(peerIndex);
-
-        // Add new remote videoView to frame at specific position
-        setLayoutParams(remoteView);
-        remoteViewLayouts[peerIndex].addView(remoteView);
-
+    public void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MEDIA_TYPE mediaType, SurfaceViewRenderer remoteView) {
         // display menu option button accordingly to peerIndex
         displayPeerMenuOption(peerIndex);
+
+        if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+            remoteViews[peerIndex][0] = remoteView;
+            isRemoteCameraDisplay[peerIndex] = true;
+        } else if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+            remoteViews[peerIndex][1] = remoteView;
+            isRemoteCameraDisplay[peerIndex] = false;
+        }
+
+        displayRemoteView(peerIndex, remoteView);
     }
 
     /**
@@ -532,23 +549,27 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         stopScreenshareFloat.setTextSize(getActivity().getResources().getDimension(R.dimen.sp_4sp));
         stopScreenshareFloat.setBackground(getActivity().getResources().getDrawable(R.drawable.button_stop_screen_sharing));
 
-        stopScreenshareFloat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isStopScreenShareBtnShowing = false;
-                showHideButton(stopScreenshareFloat, false);
-                onPresenterRequestAddSelfView(localCameraView, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
-            }
+        stopScreenshareFloat.setOnClickListener(view -> {
+            isStopScreenShareBtnShowing = false;
+            showHideButton(stopScreenshareFloat, false);
+            onPresenterRequestAddSelfView(localViews[0], SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
         });
 
-        // setup double click event for selfViewLayout
-        // double click on selfViewLayout to start second local video view
-        selfViewLayout.setOnClickListener(new DoubleClickListener() {
-            @Override
-            public void onDoubleClick() {
-                startSecondVideoView();
+        // init views array
+        localViews = new SurfaceViewRenderer[2];
+        remoteViews = new SurfaceViewRenderer[3][2];
+        isRemoteCameraDisplay = new boolean[3];
+
+        // setup click event for remoteViewLayouts
+        // click on the view to switch between local camera and local screen sharing
+        for (int i = 0; i < remoteViewLayouts.length; i++) {
+            int index = i;
+            if (index == 0) {
+                switchLocalView();
+            } else {
+                remoteViewLayouts[i].setOnClickListener(view -> switchRemoteView(index - 1));
             }
-        });
+        }
     }
 
     /**
@@ -700,11 +721,24 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
     /**
      * Display local peer menu option
+     * Base on the default setting for video device, we inflate the different menu layout accordingly
      */
     private void onMenuOptionLocalPeer(View view) {
         PopupMenu popup = new PopupMenu(context, view);
         popup.setOnMenuItemClickListener(this);
-        popup.inflate(R.menu.local_option_menu);
+
+        if (localViews[0] == null && localViews[1] == null) {
+            popup.inflate(R.menu.local_view_option_menu_1);
+        } else if (localViews[0] == null && localViews[1] != null && !isLocalCameraDisplay) {
+            popup.inflate(R.menu.local_view_option_menu_2);
+        } else if (localViews[0] != null && localViews[1] != null && isLocalCameraDisplay) {
+            popup.inflate(R.menu.local_view_option_menu_3);
+        } else if (localViews[0] != null && localViews[1] == null && isLocalCameraDisplay) {
+            popup.inflate(R.menu.local_view_option_menu_4);
+        } else if (localViews[0] != null && localViews[1] != null && !isLocalCameraDisplay) {
+            // currently display local screen sharing view, no context menu option
+        }
+
         popup.show();
     }
 
@@ -773,6 +807,71 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             } else {
                 view.setVisibility(GONE);
             }
+        }
+    }
+
+    /**
+     * Display local video view, using both in local camera and local screen sharing
+     */
+    private void displayLocalView(SurfaceViewRenderer videoView) {
+        if (videoView == null) {
+            return;
+        }
+
+        // Remove video from previous parent, if any.
+        Utils.removeViewFromParent(videoView);
+
+        // Remove self view if its already added
+        remoteViewLayouts[0].removeAllViews();
+
+        // Add new local videoView to frame
+        setLayoutParams(videoView);
+        remoteViewLayouts[0].addView(videoView);
+
+    }
+
+    /**
+     * Display remote video view, using both in remote camera and remote screen sharing at a specific index
+     */
+    private void displayRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
+        if (remoteView == null || peerIndex < 1 || peerIndex > remoteViewLayouts.length)
+            return;
+
+        // Remove any existing Peer View at index.
+        // This may sometimes be the case, for e.g. in screen sharing.
+        removePeerView(peerIndex);
+
+        // Add new remote videoView to frame at specific position
+        setLayoutParams(remoteView);
+        remoteViewLayouts[peerIndex].addView(remoteView);
+    }
+
+    /**
+     * Switch between local camera view and local screen sharing
+     */
+    private void switchLocalView() {
+        if (localViews == null) {
+            return;
+        }
+
+        if (isLocalCameraDisplay && localViews[1] != null) {
+            displayLocalView(localViews[1]);
+        } else if (!isLocalCameraDisplay && localViews[0] != null) {
+            displayLocalView(localViews[0]);
+        }
+    }
+
+    /**
+     * switch between remote camera view and remote screen sharing at a specific index
+     */
+    private void switchRemoteView(int index) {
+        if (remoteViews == null)
+            return;
+
+        if (isRemoteCameraDisplay[index] && remoteViews[index][1] != null) {
+            displayRemoteView(index, remoteViews[index][1]);
+        } else if (!isRemoteCameraDisplay[index] && remoteViews[index][0] != null) {
+            displayRemoteView(index, remoteViews[index][0]);
         }
     }
 }
