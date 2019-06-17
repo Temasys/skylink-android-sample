@@ -520,7 +520,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
     }
 
-    private void processAddRemoteView(String remotePeerId, SkylinkMedia.MEDIA_TYPE mediaType, SurfaceViewRenderer videoView) {
+    private void processAddRemoteView(String remotePeerId, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer videoView) {
 
         int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId);
 

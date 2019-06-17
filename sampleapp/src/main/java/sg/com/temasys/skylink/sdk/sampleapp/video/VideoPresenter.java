@@ -116,7 +116,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         // check the current camera state isCameraCapturerStop() is true if camera is currently stop
         // just process for mediaType as VIDEO_CAMERA, because we do not pause/resume view with mediaType as VIDEO_SCREEN
         if (!currentVideoLocalState.isCameraCapturerStop()) {
-            if (videoService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
+            if (videoService.getVideoView(null, SkylinkMedia.MediaType.VIDEO_CAMERA) != null) {
                 // change camera state
                 videoService.toggleCamera(null, false);
                 // change UI
@@ -321,7 +321,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             log += "VideoView is null!";
             Log.w(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = videoService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
+            SurfaceViewRenderer selfVideoView = videoService.getVideoView(null, SkylinkMedia.MediaType.VIDEO_CAMERA);
             processAddSelfView(selfVideoView);
         } else {
             log += "Adding VideoView as selfView.";
@@ -340,7 +340,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = videoService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN);
+            SurfaceViewRenderer selfVideoView = videoService.getVideoView(null, SkylinkMedia.MediaType.VIDEO_SCREEN);
             processAddSelfView(selfVideoView);
         } else {
             log += "Adding VideoView as selfView.";

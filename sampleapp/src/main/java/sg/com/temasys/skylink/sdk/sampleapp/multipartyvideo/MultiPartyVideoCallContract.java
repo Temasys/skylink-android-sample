@@ -39,12 +39,12 @@ public interface MultiPartyVideoCallContract {
         /**
          * Update UI details when need to add local video view
          */
-        void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MEDIA_TYPE mediaType);
+        void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MediaType mediaType);
 
         /**
          * Update UI details when need to add remote video view
          */
-        void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MEDIA_TYPE mediaType, SurfaceViewRenderer remoteView);
+        void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer remoteView);
 
         /**
          * Update UI details when need to remove remote video view

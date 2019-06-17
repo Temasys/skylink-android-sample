@@ -365,17 +365,30 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * @param videoView videoView of remoteView
      */
     @Override
-    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MEDIA_TYPE mediaType) {
+    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MediaType mediaType) {
+        if (videoView == null) {
+            return;
+        }
+
+        // Remove video from previous parent, if any.
+        Utils.removeViewFromParent(videoView);
+
+        // Remove self view if its already added
+        remoteViewLayouts[0].removeAllViews();
+
+        // Add new local videoView to frame
+        setLayoutParams(videoView);
+        remoteViewLayouts[0].addView(videoView);
 
         displayPeerMenuOption(0);
 
         btnStartAudioMulti.setVisibility(View.GONE);
         btnStartVideoMulti.setVisibility(View.GONE);
 
-        if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+        if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             localViews[0] = videoView;
             isLocalCameraDisplay = true;
-        } else if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+        } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
             localViews[1] = videoView;
             isLocalCameraDisplay = false;
         }
@@ -390,14 +403,14 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * @param remoteView videoView of remoteView
      */
     @Override
-    public void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MEDIA_TYPE mediaType, SurfaceViewRenderer remoteView) {
+    public void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer remoteView) {
         // display menu option button accordingly to peerIndex
         displayPeerMenuOption(peerIndex);
 
-        if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+        if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             remoteViews[peerIndex][0] = remoteView;
             isRemoteCameraDisplay[peerIndex] = true;
-        } else if (mediaType == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+        } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
             remoteViews[peerIndex][1] = remoteView;
             isRemoteCameraDisplay[peerIndex] = false;
         }
@@ -552,7 +565,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         stopScreenshareFloat.setOnClickListener(view -> {
             isStopScreenShareBtnShowing = false;
             showHideButton(stopScreenshareFloat, false);
-            onPresenterRequestAddSelfView(localViews[0], SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
+            onPresenterRequestAddSelfView(localViews[0], SkylinkMedia.MediaType.VIDEO_CAMERA);
         });
 
         // init views array

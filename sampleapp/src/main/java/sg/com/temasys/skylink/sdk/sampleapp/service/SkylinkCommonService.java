@@ -229,10 +229,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (localVideo == null)
             return;
 
-        if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA && !Utils.isDefaultScreenDeviceSetting()) {
+        if (localVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA && !Utils.isDefaultScreenDeviceSetting()) {
             presenter.onServiceRequestLocalCameraCapture(localVideo);
             localVideoId = localVideo.getMediaId();
-        } else if (localVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN || Utils.isDefaultScreenDeviceSetting()) {
+        } else if (localVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN || Utils.isDefaultScreenDeviceSetting()) {
             presenter.onServiceRequestLocalScreenCapture(localVideo);
             localScreenSharingId = localVideo.getMediaId();
         }
@@ -296,9 +296,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
-        if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) {
+        if ((remoteVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) ||
+                (remoteVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO)) {
             addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.VIDEO);
-        } else if (remoteVideo.getMediaType() == SkylinkMedia.MEDIA_TYPE.VIDEO_SCREEN) {
+            presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo);
+        } else if (remoteVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
             addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.SCREEN);
         }
 
@@ -1109,6 +1111,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     // Video resolution
 
+    // TODO: @Muoi Please include the MediaId for this method.
     /**
      * If the current local input video device is a camera,
      * change the current captured video stream to the specified resolution,
@@ -1124,7 +1127,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     public void setInputVideoResolution(int width, int height, int fps) {
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.setInputVideoResolution(width, height, fps);
+            // [HACK] To be replaced with real MediaId.
+            String mediaId = "";
+            mSkylinkConnection.setInputVideoResolution(mediaId, width, height, fps);
         }
     }
 

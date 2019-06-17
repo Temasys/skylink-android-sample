@@ -136,22 +136,22 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public void toggleCamera(String mediaId) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.toggleCamera(mediaId);
+            mSkylinkConnection.toggleVideo(mediaId);
     }
 
     /**
-     * Stop or restart the local camera based on the parameter |isToggle|,
+     * Stop or restart the local camera based on the parameter |toRestart|,
      * <p>
      * Trigger {@link SkylinkCommonService#onWarning(int, String)} if an error occurs, for e.g. with:
      * errorCode {@link sg.com.temasys.skylink.sdk.rtc.Errors#VIDEO_UNABLE_TO_SWITCH_CAMERA_ERROR}
      * if local video source is not available.
      *
-     * @param isToggle true if restart camera, false if stop camera
+     * @param toRestart true if restart camera, false if stop camera
      * @return True if camera state had changed, false if not.
      */
-    public void toggleCamera(String mediaId, boolean isToggle) {
+    public void toggleCamera(String mediaId, boolean toRestart) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.toggleCamera(mediaId, isToggle);
+            mSkylinkConnection.toggleVideo(mediaId, toRestart);
     }
 
     /**
@@ -437,7 +437,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @param remotePeerId PeerId of the Peer whose videoView to be returned.
      * @return Video View of Peer or null if none present.
      */
-    public SurfaceViewRenderer getVideoView(String remotePeerId, SkylinkMedia.MEDIA_TYPE mediaType) {
+    public SurfaceViewRenderer getVideoView(String remotePeerId, SkylinkMedia.MediaType mediaType) {
         if (mSkylinkConnection != null)
             return mSkylinkConnection.getVideoView(remotePeerId, mediaType);
 
@@ -456,7 +456,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public SurfaceViewRenderer getVideoViewByIndex(int peerIndex) {
         if (peerIndex == -1) {
-            return mSkylinkConnection.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA);
+            return mSkylinkConnection.getVideoView(null, SkylinkMedia.MediaType.VIDEO_CAMERA);
         }
 
         if (mSkylinkConnection != null && peerIndex < mPeersList.size()) {

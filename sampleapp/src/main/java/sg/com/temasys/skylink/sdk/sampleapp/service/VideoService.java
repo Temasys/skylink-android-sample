@@ -51,7 +51,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      */
     public void toggleCamera(String mediaId, boolean isToggle) {
         if (mSkylinkConnection != null)
-            mSkylinkConnection.toggleCamera(mediaId, !isToggle);
+            mSkylinkConnection.toggleVideo(mediaId, !isToggle);
     }
 
     /**
@@ -114,7 +114,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * @param mediaType Type the the media
      * @return Video View of Peer or null if none present.
      */
-    public SurfaceViewRenderer getVideoView(String peerId, SkylinkMedia.MEDIA_TYPE mediaType) {
+    public SurfaceViewRenderer getVideoView(String peerId, SkylinkMedia.MediaType mediaType) {
         if (mSkylinkConnection != null)
             return mSkylinkConnection.getVideoView(peerId, mediaType);
 
