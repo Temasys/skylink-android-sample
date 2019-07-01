@@ -5,6 +5,7 @@ import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.SkylinkCommonService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
@@ -44,6 +45,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
 
     // The array of SkylinkCaptureFormats support by the current camera.
     private SkylinkCaptureFormat[] captureFormats;
+    private SkylinkMedia.MediaType currentMainVideoTypeSelected;
 
     public VideoResolutionPresenter(Context context) {
         this.context = context;
@@ -124,7 +126,17 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     public void onViewRequestGetVideoResolutions() {
         // get the remote peer id
         String peerId = videoService.getPeerId(1);
-        videoService.getVideoResolutions(peerId);
+        videoService.getVideoResolutions(this.currentMainVideoTypeSelected, peerId);
+    }
+
+    @Override
+    public void onViewRequestChooseVideoCamera() {
+        this.currentMainVideoTypeSelected = SkylinkMedia.MediaType.VIDEO_CAMERA;
+    }
+
+    @Override
+    public void onViewRequestChooseVideoScreen() {
+        this.currentMainVideoTypeSelected = SkylinkMedia.MediaType.VIDEO_SCREEN;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -133,7 +145,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         processInputVideoResolutions(width, height, fps, captureFormat);
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
@@ -148,19 +160,19 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     }
 
     @Override
-    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
         processReceivedVideoResolutions(width, height, fps);
 
-        String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
+        String log = "[SA][VideoResRecv] The video (" + mediaType.toString() + ") received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
     }
 
     @Override
-    public void onServiceRequestSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+    public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
         processSentVideoResolutions(width, height, fps);
 
-        String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
+        String log = "[SA][VideoResSent] The video (" + mediaType.toString() + ") sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
     }
@@ -287,7 +299,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
             return false;
         }
 
-        videoService.setInputVideoResolution(width, height, fpsNew);
+        videoService.setInputVideoResolution(currentMainVideoTypeSelected, width, height, fpsNew);
 
         // save new res as current video resolution
         currentVideoRes.setWidth(width);

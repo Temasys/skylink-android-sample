@@ -16,14 +16,40 @@
         android:background="@drawable/button_circle_trans"
         android:src="@drawable/ic_get_video_res"/>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:orientation="horizontal"
+        android:paddingRight="@dimen/dp_10dp">
+
+        <ImageButton
+            android:id="@+id/btnVideoCamera"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginBottom="@dimen/dp_5dp"
+            android:layout_marginTop="@dimen/dp_5dp"
+            android:layout_toLeftOf="@id/btnVideoScreen"
+            android:background="@drawable/button_circle_trans"
+            android:src="@drawable/ic_camera_green_24dp"/>
+
+        <ImageButton
+            android:id="@+id/btnVideoScreen"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_margin="@dimen/dp_5dp"
+            android:background="@drawable/button_circle_trans"
+            android:src="@drawable/ic_screen_share_green_24dp"/>
+    </LinearLayout>
+
     <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
         android:id="@+id/seekBarResWidthHeight"
         android:layout_width="@dimen/custom_seekbar_width"
         android:layout_height="@dimen/custom_seekbar_height"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/dp_40dp"
         android:paddingLeft="30dp"
         android:paddingRight="30dp"
-        android:layout_marginTop="@dimen/dp_40dp"
         android:progressBackgroundTint="@color/color_white"
         android:progressTint="@android:color/transparent"
         android:visibility="visible"

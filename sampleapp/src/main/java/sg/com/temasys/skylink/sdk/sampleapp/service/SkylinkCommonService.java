@@ -77,7 +77,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     protected String roomName;
     protected String userName;
 
-    protected String localAudioId, localVideoId, localScreenSharingId;
+    protected String localAudioId, localVideoId, localScreenSharingId, localMainVideoId;
 
     enum CameraState {
         CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
@@ -129,11 +129,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             SkylinkPeer selfPeer = new SkylinkPeer(localPeerId, userName);
 
             if (localAudioId != null) {
-                selfPeer.addMediaId(localAudioId, SkylinkPeer.MEDIA_TYPE.AUDIO);
+                selfPeer.addMediaId(localAudioId, SkylinkMedia.MediaType.AUDIO);
             }
 
             if (localVideoId != null) {
-                selfPeer.addMediaId(localVideoId, SkylinkPeer.MEDIA_TYPE.VIDEO);
+                selfPeer.addMediaId(localVideoId, SkylinkMedia.MediaType.VIDEO_CAMERA);
+            }
+
+            if (localScreenSharingId != null) {
+                selfPeer.addMediaId(localVideoId, SkylinkMedia.MediaType.VIDEO_SCREEN);
             }
 
             mPeersList.add(selfPeer);
@@ -273,9 +277,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
         // add audio id for the peer
-        addPeerMedia(remotePeerId, remoteAudio.getMediaId(), SkylinkPeer.MEDIA_TYPE.AUDIO);
+        addPeerMedia(remotePeerId, remoteAudio.getMediaId(), SkylinkMedia.MediaType.AUDIO);
 
-        presenter.onServiceRequestRemotePeerAudioReceive(log, remotePeerUserInfo, remotePeerId, remoteAudio.getMediaId());
+        presenter.onServiceRequestRemotePeerAudioReceive(log, remotePeerUserInfo, remotePeerId, remoteAudio);
     }
 
     /**
@@ -283,28 +287,26 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * if the connection is configured to have a video call.
      * This will only be triggered after onRemotePeerJoin has triggered.
      *
-     * @param remotePeerId The id of the peer
-     * @param remoteVideo  the received video object
+     * @param remotePeerId The id of the remote peer
+     * @param remoteMedia  the received video object, can be video or screen share
      */
     @Override
-    public void onRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
-        if (remoteVideo == null)
+    public void onRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteMedia) {
+        if (remoteMedia == null)
             return;
 
         String log = "[onRemotePeerVideoReceive] ";
-        log += "Received new Video (" + remoteVideo.getMediaId() + ") from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
+        log += "Received new Video (" + remoteMedia.getMediaId() + ") from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
 
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
-        if ((remoteVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) ||
-                (remoteVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO)) {
-            addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.VIDEO);
-            presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo);
-        } else if (remoteVideo.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
-            addPeerMedia(remotePeerId, remoteVideo.getMediaId(), SkylinkPeer.MEDIA_TYPE.SCREEN);
+        if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+            addPeerMedia(remotePeerId, remoteMedia.getMediaId(), SkylinkMedia.MediaType.VIDEO_CAMERA);
+        } else if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+            addPeerMedia(remotePeerId, remoteMedia.getMediaId(), SkylinkMedia.MediaType.VIDEO_SCREEN);
         }
 
-        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteVideo);
+        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteMedia);
     }
 
     /**
@@ -320,19 +322,27 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * If a particular value is not available, , e.g. if video is not capturing,
      * a negative integer or a null value will be provided.
      *
+     * @param videoId       Id of the local video object
      * @param width         Video width in pixels of local captured video.
      * @param height        Video height in pixels of local captured video.
      * @param fps           Video frame per second of local captured video.
      * @param captureFormat The SkylinkCaptureFormat that is currently used by the camera.
      */
     @Override
-    public void onInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    public void onInputVideoResolutionObtained(String videoId, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         Log.d(TAG, "[onInputVideoResolutionObtained]");
 
-        if (videoResPresenter != null)
-            videoResPresenter.onServiceRequestInputVideoResolutionObtained(width, height, fps, captureFormat);
-    }
+        SkylinkMedia.MediaType mediaType = null;
+        // get the video type from videoId
+        if (videoId.equals(localVideoId)) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
+        } else if (videoId.equals(localScreenSharingId)) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
+        }
 
+        if (videoResPresenter != null)
+            videoResPresenter.onServiceRequestInputVideoResolutionObtained(mediaType, width, height, fps, captureFormat);
+    }
 
     /**
      * This is triggered from SkylinkSDK when we receive a remote Peer's video,
@@ -343,17 +353,30 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * The current resolution of the video received from a specific Peer will be provided.
      * If a particular value is not available, a negative integer will be provided.
      *
-     * @param peerId PeerId of the remote Peer whose Video Resolution we are obtaining.
-     * @param width  Video width in pixels of remote Peer's video received by us.
-     * @param height Video height in pixels of remote Peer's video received by us.
-     * @param fps    Video frame per second of remote Peer's video received by us.
+     * @param peerId  PeerId of the remote Peer whose Video Resolution we are obtaining.
+     * @param videoId id of the remote video that video resolutionc comes from
+     * @param width   Video width in pixels of remote Peer's video received by us.
+     * @param height  Video height in pixels of remote Peer's video received by us.
+     * @param fps     Video frame per second of remote Peer's video received by us.
      */
     @Override
-    public void onReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+    public void onReceivedVideoResolutionObtained(String peerId, String videoId, int width, int height, int fps) {
         Log.d(TAG, "[onReceivedVideoResolutionObtained]");
 
-        if (videoResPresenter != null)
-            videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(peerId, width, height, fps);
+        SkylinkMedia.MediaType mediaType = null;
+
+        for (SkylinkPeer peer : mPeersList) {
+            if (peer.getPeerId().equals(peerId)) {
+                Map<String, SkylinkMedia.MediaType> remoteMedia = peer.getMediaIds();
+                if (remoteMedia != null && remoteMedia.size() > 0) {
+                    mediaType = remoteMedia.get(videoId);
+                    break;
+                }
+            }
+        }
+
+        if (videoResPresenter != null && mediaType != null)
+            videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(peerId, mediaType, width, height, fps);
     }
 
     /**
@@ -364,32 +387,42 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * It can also be triggered by calling {@link SkylinkConnection#getSentVideoResolution}.
      * The current resolution of the video being sent to a specific Peer will be provided.
      *
-     * @param peerId PeerId of the remote Peer whom we are obtaining Video Resolution
-     *               for the video we are sending.
-     * @param width  Video width in pixels of local video sent to remote Peer.
-     * @param height Video height in pixels of local video sent to remote Peer.
-     * @param fps    Video frame per second of local video sent to remote Peer.
+     * @param peerId  PeerId of the remote Peer whom we are obtaining Video Resolution
+     *                for the video we are sending.
+     * @param videoId id of the video that video resolution comes from
+     * @param width   Video width in pixels of local video sent to remote Peer.
+     * @param height  Video height in pixels of local video sent to remote Peer.
+     * @param fps     Video frame per second of local video sent to remote Peer.
      */
     @Override
-    public void onSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+    public void onSentVideoResolutionObtained(String peerId, String videoId, int width, int height, int fps) {
         Log.d(TAG, "[onSentVideoResolutionObtained]");
 
+        SkylinkMedia.MediaType mediaType = null;
+        // get the video type from videoId
+        if (videoId.equals(localVideoId)) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
+        } else if (videoId.equals(localScreenSharingId)) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
+        }
+
         if (videoResPresenter != null)
-            videoResPresenter.onServiceRequestSentVideoResolutionObtained(peerId, width, height, fps);
+            videoResPresenter.onServiceRequestSentVideoResolutionObtained(peerId, mediaType, width, height, fps);
     }
 
     /**
      * This is triggered from SkylinkSDK when any of the given video streams' frame size changes. It includes the
      * self stream also.
      *
-     * @param peerId The id of the peer. If null, it indicates self stream.
-     * @param size   Size of the video frame
+     * @param peerId  The id of the peer. If null, it indicates self stream.
+     * @param videoId Id of the video
+     * @param size    Size of the video frame
      */
     @Override
-    public void onVideoSizeChange(String peerId, Point size) {
+    public void onVideoSizeChange(String peerId, String videoId, Point size) {
         Log.d(TAG, "[onVideoSizeChange]");
 
-        presenter.onServiceRequestVideoSizeChange(peerId, size);
+        presenter.onServiceRequestVideoSizeChange(peerId, videoId, size);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -558,8 +591,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         logTag += "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
         toastLog(TAG, context, logTag);
-
-
     }
 
     /**
@@ -634,6 +665,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         //remove remote peer and keep the index of remote peer for multi party video call function
         int removeIndex = -1;
         SkylinkPeer removedPeer = null;
+
+        // re-fill all peers, except local peer
         for (int i = 0; i < mPeersList.size(); i++) {
             if (mPeersList.get(i).getPeerId().equals(remotePeerId)) {
                 removedPeer = mPeersList.get(i);
@@ -881,13 +914,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param peerId         PeerId of the remote Peer for which we are getting stats on.
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on
      * @param mediaType      Integer that defines the type(s) of media reported on
+     * @param mediaId        Media id of the SkylinkMedia object that transfer speed comes from
      * @param transferSpeed  Transfer speed in kilobit per second (kbps).
      */
     @Override
-    public void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed) {
+    public void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, String mediaId, double transferSpeed) {
         Log.d(TAG, "[onTransferSpeedReceived]");
 
-        presenter.onServiceRequestTransferSpeedReceived(peerId, mediaDirection, mediaType, transferSpeed);
+        presenter.onServiceRequestTransferSpeedReceived(peerId, mediaDirection, mediaType, mediaId, transferSpeed);
     }
 
     /**
@@ -896,13 +930,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param peerId         PeerId of the remote Peer for which we are getting stats on.
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on
      * @param mediaType      Integer that defines the type(s) of media reported on
+     * @param mediaId        id of the media object
      * @param stats          Map containing WebRTC provided statistics on the specified media.
      */
     @Override
-    public void onWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, HashMap<String, String> stats) {
+    public void onWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, String mediaId, HashMap<String, String> stats) {
         Log.d(TAG, "[onWebrtcStatsReceived]");
 
-        presenter.onServiceRequestWebrtcStatsReceived(peerId, mediaDirection, mediaType, stats);
+        presenter.onServiceRequestWebrtcStatsReceived(peerId, mediaDirection, mediaType, mediaId, stats);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -981,7 +1016,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             return null;
         }
         return peerIdList[index];
-//        return mPeersList.get(index).getPeerId();
     }
 
     /**
@@ -1016,12 +1050,13 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @return SkylinkPeer
      */
     public SkylinkPeer getPeerById(String peerId) {
-        if (mPeersList == null)
+        if (mPeersList == null || mPeersList.size() == 0)
             return null;
 
-        for (int i = 0; i < mPeersList.size(); i++) {
-            if (mPeersList.get(i).getPeerId().equals(peerId))
-                return mPeersList.get(i);
+        for (SkylinkPeer peer : mPeersList) {
+            if (peer.getPeerId().equals(peerId)) {
+                return peer;
+            }
         }
 
         return null;
@@ -1110,8 +1145,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     // Video resolution
-
-    // TODO: @Muoi Please include the MediaId for this method.
     /**
      * If the current local input video device is a camera,
      * change the current captured video stream to the specified resolution,
@@ -1121,16 +1154,19 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * There is no guarantee that a specific camera resolution will be maintained
      * as WebRTC may adjust the resolution dynamically to match its bandwidth criteria.
      *
+     * @param mediaType the current type of video to set video resolution
      * @param width
      * @param height
      * @param fps
      */
-    public void setInputVideoResolution(int width, int height, int fps) {
-        if (mSkylinkConnection != null) {
-            // [HACK] To be replaced with real MediaId.
-            String mediaId = "";
-            mSkylinkConnection.setInputVideoResolution(mediaId, width, height, fps);
-        }
+    public void setInputVideoResolution(SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+        if (mSkylinkConnection == null)
+            return;
+
+        // get video id
+        String mainVideoId = getProperVideoId(mediaType);
+
+        mSkylinkConnection.setInputVideoResolution(mainVideoId, width, height, fps);
     }
 
     /**
@@ -1208,24 +1244,28 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     /**
-     * Get the input/sent/received video resolution of a specified peer
+     * Get the input/sent/received video resolution of a specified peer with specific media type (video or screen)
      * Note:
      * - Resolution may not always be available, e.g. if no video is captured.
      * - If resolution are available, they will be returned in
      * {@link SkylinkCommonService#onInputVideoResolutionObtained} for input video resolution
      * {@link SkylinkCommonService#onReceivedVideoResolutionObtained} for received video resolution
      * {@link SkylinkCommonService#onSentVideoResolutionObtained} for sent video resolution
+     *
+     * @param mediaType the type of the video (video or screen)
+     * @param peerId    id of the peer that video belongs to
      */
-    public void getVideoResolutions(String peerId) {
-        if (mSkylinkConnection == null) {
+    public void getVideoResolutions(SkylinkMedia.MediaType mediaType, String peerId) {
+        if (mSkylinkConnection == null)
             return;
-        }
 
-        mSkylinkConnection.getInputVideoResolution();
+        String mainVideoId = getProperVideoId(mediaType);
+
+        mSkylinkConnection.getInputVideoResolution(mainVideoId);
 
         if (peerId != null) {
-            mSkylinkConnection.getSentVideoResolution(peerId);
-            mSkylinkConnection.getReceivedVideoResolution(peerId);
+            mSkylinkConnection.getSentVideoResolution(peerId, mainVideoId);
+            mSkylinkConnection.getReceivedVideoResolution(peerId, mainVideoId);
         }
     }
 
@@ -1467,7 +1507,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param remotePeerId remote peer id that media belongs to
      * @param mediaId      the id of the remote video view
      */
-    private void addPeerMedia(String remotePeerId, String mediaId, SkylinkPeer.MEDIA_TYPE mediaType) {
+    private void addPeerMedia(String remotePeerId, String mediaId, SkylinkMedia.MediaType mediaType) {
         String logTag = "[SCS][addPeerMedia] ";
         String log = logTag;
 
@@ -1483,7 +1523,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         // create a new mediaIds list if it is not existed
         if (remotePeer.getMediaIds() == null) {
-            Map<String, SkylinkPeer.MEDIA_TYPE> mediaIds = new HashMap<String, SkylinkPeer.MEDIA_TYPE>();
+            Map<String, SkylinkMedia.MediaType> mediaIds = new HashMap<String, SkylinkMedia.MediaType>();
             remotePeer.setMediaIds(mediaIds);
         }
 
@@ -1491,5 +1531,25 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         log = logTag + "Successfully add media " + mediaId + " for peer" + remotePeerId;
         Log.d(TAG, log);
         toastLog(TAG, context, log);
+    }
+
+    /**
+     * Get proper video id for input to SDK to get video resolution or video stats
+     */
+    private String getProperVideoId(SkylinkMedia.MediaType mediaType) {
+        String mainVideoId = null;
+        // default main video id from current local video
+        if (localVideoId != null) {
+            mainVideoId = localVideoId;
+        } else if (localScreenSharingId != null) {
+            mainVideoId = localVideoId;
+        }
+
+        // change main video id if user choose screen
+        if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN && localScreenSharingId != null) {
+            mainVideoId = localScreenSharingId;
+        }
+
+        return mainVideoId;
     }
 }

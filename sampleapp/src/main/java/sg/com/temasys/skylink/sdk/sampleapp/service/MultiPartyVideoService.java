@@ -6,6 +6,7 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
@@ -131,8 +132,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * Trigger {@link SkylinkCommonService#onWarning(int, String)} if an error occurs, for e.g. with:
      * errorCode {@link sg.com.temasys.skylink.sdk.rtc.Errors#VIDEO_UNABLE_TO_SWITCH_CAMERA_ERROR}
      * if local video source is not available.
-     *
-     * @return True if local camera has been restarted, false if it has been stopped.
      */
     public void toggleCamera(String mediaId) {
         if (mSkylinkConnection != null)
@@ -273,7 +272,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * Get the current resolution of the input video being captured by the local camera
      * and the SkylinkCaptureFormat used.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#onServiceRequestInputVideoResolutionObtained(int, int, int, SkylinkCaptureFormat)}.
+     * {@link BasePresenter#onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int, int, int, SkylinkCaptureFormat)}.
      * Note:
      * - Resolution may not always be available, e.g. if no video is captured.
      * - This might be different from the resolution of the video actually sent to Peers as
@@ -288,17 +287,19 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     /**
      * Get the current resolution of the video being sent to a specific Peer.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#onServiceRequestSentVideoResolutionObtained(String, int, int, int)}
+     * {@link BasePresenter#onServiceRequestSentVideoResolutionObtained(String, SkylinkMedia.MediaType mediaType, int, int, int)}
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get sent video resolution.
      *                  Use -1 to get sent video resolutions of all connected remote Peers.
+     * @param videoId   id of the SkylinkMedia video object that to get video resolution
+     *                  input null for local camera video
      */
-    public void getSentVideoResolution(int peerIndex) {
+    public void getSentVideoResolution(int peerIndex, String videoId) {
         if (mSkylinkConnection != null) {
             if (peerIndex == -1) {
-                mSkylinkConnection.getSentVideoResolution(null);
+                mSkylinkConnection.getSentVideoResolution(null, videoId);
             } else {
-                mSkylinkConnection.getSentVideoResolution(mPeersList.get(peerIndex).getPeerId());
+                mSkylinkConnection.getSentVideoResolution(mPeersList.get(peerIndex).getPeerId(), videoId);
             }
         }
     }
@@ -306,17 +307,19 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     /**
      * Get the current resolution of the video received from a specific Peer's index.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#onServiceRequestReceivedVideoResolutionObtained(String, int, int, int)}
+     * {@link BasePresenter#onServiceRequestReceivedVideoResolutionObtained(String, SkylinkMedia.MediaType, int, int, int)}
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get received video resolution.
      *                  Use -1 to get received video resolutions of all connected remote Peers.
+     * @param videoId   id of the SkylinkMedia video object to get received video resolution
+     *                  input null for remote camera video
      */
-    public void getReceivedVideoResolution(int peerIndex) {
+    public void getReceivedVideoResolution(int peerIndex, String videoId) {
         if (mSkylinkConnection != null) {
             if (peerIndex == -1) {
-                mSkylinkConnection.getReceivedVideoResolution(null);
+                mSkylinkConnection.getReceivedVideoResolution(null, videoId);
             } else {
-                mSkylinkConnection.getReceivedVideoResolution(mPeersList.get(peerIndex).getPeerId());
+                mSkylinkConnection.getReceivedVideoResolution(mPeersList.get(peerIndex).getPeerId(), videoId);
             }
         }
     }
@@ -324,7 +327,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     /**
      * Request for WebRTC statistics of the specified media stream.
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestWebrtcStatsReceived(String, int, int, HashMap)}
+     * {@link BasePresenter#onServiceRequestWebrtcStatsReceived(String, int, int, String, HashMap)}
      *
      * @param peerId         PeerId of the remote Peer for which we are getting stats on.
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on, such as
@@ -335,17 +338,19 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_AUDIO audio},
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_VIDEO video} or
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_ALL all}.
+     * @param mediaId        id of the SkylinkMedia object that stats comes from
+     *                       input null for default audio object or camera video object
      */
-    public void getWebrtcStats(String peerId, int mediaDirection, int mediaType) {
+    public void getWebrtcStats(String peerId, int mediaDirection, int mediaType, String mediaId) {
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.getWebrtcStats(peerId, mediaDirection, mediaType);
+            mSkylinkConnection.getWebrtcStats(peerId, mediaDirection, mediaType, mediaId);
         }
     }
 
     /**
      * Request for the instantaneous transfer speed(s) of media stream(s), at the moment of request.
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(String, int, int, double)}
+     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(String, int, int, String, double)}
      *
      * @param peerIndex      Index of the remote Peer in frame for which we are getting transfer speed on.
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on, such as
@@ -356,8 +361,11 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_AUDIO audio},
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_VIDEO video} or
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_ALL all}.
+     * @param mediaId        id of the SkylinkMedia object to get transfer speed info
+     *                       input null for default audio object or camera video object
      */
-    public void getTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
+    public void getTransferSpeeds(int peerIndex, int mediaDirection, int mediaType, String
+            mediaId) {
 
         String peerId = mPeersList.get(peerIndex).getPeerId();
 
@@ -365,7 +373,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             return;
 
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.getTransferSpeeds(peerId, mediaDirection, mediaType);
+            mSkylinkConnection.getTransferSpeeds(peerId, mediaDirection, mediaType, mediaId);
         }
     }
 
@@ -424,8 +432,12 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return Video View of Peer or null if none present.
      */
     public SurfaceViewRenderer getVideoView(String remotePeerId, String mediaId) {
-        if (mSkylinkConnection != null)
-            return mSkylinkConnection.getVideoView(remotePeerId, mediaId);
+        if (mSkylinkConnection != null) {
+            SkylinkMedia media = mSkylinkConnection.getSkylinkMedia(remotePeerId, mediaId);
+            if (media != null) {
+                return media.getVideoView();
+            }
+        }
 
         return null;
     }
@@ -437,9 +449,17 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @param remotePeerId PeerId of the Peer whose videoView to be returned.
      * @return Video View of Peer or null if none present.
      */
-    public SurfaceViewRenderer getVideoView(String remotePeerId, SkylinkMedia.MediaType mediaType) {
-        if (mSkylinkConnection != null)
-            return mSkylinkConnection.getVideoView(remotePeerId, mediaType);
+    public SurfaceViewRenderer getVideoView(String remotePeerId, SkylinkMedia.MediaType
+            mediaType) {
+        if (mSkylinkConnection != null) {
+            if (remotePeerId == null) {
+                remotePeerId = mSkylinkConnection.getPeerId();
+            }
+            List<SkylinkMedia> media = mSkylinkConnection.getSkylinkMediaList(remotePeerId, mediaType);
+            if (media != null) {
+                return media.get(0).getVideoView();
+            }
+        }
 
         return null;
     }
@@ -456,7 +476,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public SurfaceViewRenderer getVideoViewByIndex(int peerIndex) {
         if (peerIndex == -1) {
-            return mSkylinkConnection.getVideoView(null, SkylinkMedia.MediaType.VIDEO_CAMERA);
+            return getVideoView(null, SkylinkMedia.MediaType.VIDEO);
         }
 
         if (mSkylinkConnection != null && peerIndex < mPeersList.size()) {
@@ -464,7 +484,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             if (skylinkPeer.getMediaIds() != null) {
                 for (int i = 0; i < skylinkPeer.getMediaIds().size(); i++) {
                     // return the first video view of the remote peer
-                    Map<String, SkylinkPeer.MEDIA_TYPE> mediaIds = skylinkPeer.getMediaIds();
+                    Map<String, SkylinkMedia.MediaType> mediaIds = skylinkPeer.getMediaIds();
 
                     if (mediaIds == null) {
                         return null;
@@ -472,12 +492,12 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
                     String trackId = null;
                     for (String key : mediaIds.keySet()) {
-                        if (mediaIds.get(key) == SkylinkPeer.MEDIA_TYPE.VIDEO) {
+                        if (mediaIds.get(key) == SkylinkMedia.MediaType.VIDEO) {
                             trackId = key;
                         }
                     }
 
-                    return mSkylinkConnection.getVideoView(skylinkPeer.getPeerId(), trackId);
+                    return getVideoView(skylinkPeer.getPeerId(), trackId);
                 }
             }
         }
@@ -551,6 +571,4 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
     }
-
-
 }

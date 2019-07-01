@@ -4,6 +4,8 @@ import android.content.Context;
 
 import org.webrtc.SurfaceViewRenderer;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
@@ -46,8 +48,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * state, then no change will be effected.
      * Trigger LifeCycleListener.onWarning if an error occurs, for example:
      * if local video source is not available.
-     *
-     * @return True if camera state had changed, false if not.
      */
     public void toggleCamera(String mediaId, boolean isToggle) {
         if (mSkylinkConnection != null)
@@ -97,8 +97,12 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * @return Video View of Peer or null if none present.
      */
     public SurfaceViewRenderer getVideoView(String peerId, String mediaId) {
-        if (mSkylinkConnection != null)
-            return mSkylinkConnection.getVideoView(peerId, mediaId);
+        if (mSkylinkConnection != null) {
+            SkylinkMedia media = mSkylinkConnection.getSkylinkMedia(peerId, mediaId);
+            if (media != null) {
+                return media.getVideoView();
+            }
+        }
 
         return null;
     }
@@ -115,8 +119,15 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * @return Video View of Peer or null if none present.
      */
     public SurfaceViewRenderer getVideoView(String peerId, SkylinkMedia.MediaType mediaType) {
-        if (mSkylinkConnection != null)
-            return mSkylinkConnection.getVideoView(peerId, mediaType);
+        if (mSkylinkConnection != null) {
+            if (peerId == null) {
+                peerId = mSkylinkConnection.getPeerId();
+            }
+            List<SkylinkMedia> media = mSkylinkConnection.getSkylinkMediaList(peerId, mediaType);
+            if (media != null) {
+                return media.get(0).getVideoView();
+            }
+        }
 
         return null;
     }
@@ -241,5 +252,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             //Start video.
             mSkylinkConnection.startLocalMedia(videoDevice);
         }
+    }
+
+    public void setLocalVideoIdMain(String localVideoIdMain) {
+        super.localMainVideoId = localMainVideoId;
     }
 }

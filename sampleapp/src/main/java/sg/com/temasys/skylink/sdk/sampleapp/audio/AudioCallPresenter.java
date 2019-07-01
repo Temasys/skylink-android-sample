@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
@@ -131,12 +132,12 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             // change UI to connected to room, but not connected to any peer
             processUpdateStateConnected();
 
-            //start audio routing if has audio config
-            SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
-            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-                AudioRouter.setPresenter(this);
-                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
-            }
+//            //start audio routing if has audio config
+//            SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
+//            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+//                AudioRouter.setPresenter(this);
+//                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
+//            }
         }
     }
 
@@ -175,7 +176,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     }
 
     @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }

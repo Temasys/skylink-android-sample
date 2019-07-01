@@ -20,7 +20,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
@@ -47,8 +46,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     private PermissionUtils permissionUtils;
 
     private Context context;
-
-    private VideoLocalState videoLocalState = new VideoLocalState();
 
     // Map with PeerId as key for boolean state
     // that indicates if currently getting WebRTC stats for Peer.
@@ -161,13 +158,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestGetSentVideoResolution(int peerIndex) {
         // get video resolution sent to remote peer(s)
-        multiVideoCallService.getSentVideoResolution(peerIndex);
+        multiVideoCallService.getSentVideoResolution(peerIndex, null);
     }
 
     @Override
     public void onViewRequestGetReceivedVideoResolution(int peerIndex) {
         //get received video resolution from remote peer(s)
-        multiVideoCallService.getReceivedVideoResolution(peerIndex);
+        multiVideoCallService.getReceivedVideoResolution(peerIndex, null);
     }
 
     @Override
@@ -198,7 +195,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onViewRequestGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
-        multiVideoCallService.getTransferSpeeds(peerIndex, mediaDirection, mediaType);
+        multiVideoCallService.getTransferSpeeds(peerIndex, mediaDirection, mediaType, null);
     }
 
     @Override
@@ -370,24 +367,24 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-        String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
+    public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+        String log = "[SA][VideoResInput] The video (" + mediaType.toString() + ") input has width x height, fps: " +
                 width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
 //        toastLogLong(TAG, context, log);
     }
 
     @Override
-    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
-        String log = "[SA][VideoResRecv] The current video received from Peer " + peerId +
+    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+        String log = "[SA][VideoResRecv] The video (" + mediaType.toString() + ") received from Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
 //        toastLogLong(TAG, context, log);
     }
 
     @Override
-    public void onServiceRequestSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
-        String log = "[SA][VideoResSent] The current video sent to Peer " + peerId +
+    public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+        String log = "[SA][VideoResSent] The video (" + mediaType.toString() + ") sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
 //        toastLogLong(TAG, context, log);
@@ -428,7 +425,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
@@ -517,7 +514,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     private void processGetWebrtcStats(String peerId, int mediaDirection, int mediaType) {
-        multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType);
+        multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType, null);
     }
 
     private void processAddRemoteView(String remotePeerId, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer videoView) {

@@ -4,21 +4,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
+
 public class SkylinkPeer implements Serializable {
     private String peerId;
     private String peerName;
 
-    public enum MEDIA_TYPE {
-        AUDIO,
-        VIDEO,
-        SCREEN
-    }
-
-
-    // The list to keep track of media ids to manage by the peer
-    // For local peer, just have video id(s)
-    // For remote peer, have both audio id(s) and video id(s)
-    private Map<String, MEDIA_TYPE> mediaIds;
+    // The list to keep track of media(audio, video, screen) ids to manage by the peer
+    private Map<String, SkylinkMedia.MediaType> mediaIds;
 
     public SkylinkPeer() {
     }
@@ -48,11 +41,11 @@ public class SkylinkPeer implements Serializable {
         this.peerName = peerName;
     }
 
-    public Map<String, MEDIA_TYPE> getMediaIds() {
+    public Map<String, SkylinkMedia.MediaType> getMediaIds() {
         return mediaIds;
     }
 
-    public void setMediaIds(Map<String, MEDIA_TYPE> mediaIds) {
+    public void setMediaIds(Map<String, SkylinkMedia.MediaType> mediaIds) {
         this.mediaIds = mediaIds;
     }
 
@@ -61,16 +54,16 @@ public class SkylinkPeer implements Serializable {
         return peerName + "(" + peerId + ")";
     }
 
-    public void addMediaId(String mediaId, MEDIA_TYPE mediaType) {
+    public void addMediaId(String mediaId, SkylinkMedia.MediaType mediaType) {
         if (mediaIds == null) {
-            mediaIds = new HashMap<String, MEDIA_TYPE>();
+            mediaIds = new HashMap<String, SkylinkMedia.MediaType>();
         }
 
         mediaIds.put(mediaId, mediaType);
     }
 
-    public MEDIA_TYPE removeMediaId(String mediaId) {
-        if(mediaIds == null){
+    public SkylinkMedia.MediaType removeMediaId(String mediaId) {
+        if (mediaIds == null) {
             return null;
         }
         return mediaIds.remove(mediaId);

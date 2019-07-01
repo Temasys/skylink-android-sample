@@ -124,7 +124,7 @@ public class CustomActionBar extends Fragment {
      * Display information about list of remote peers in the room
      * The local peer is already displayed in updateUILocalPeer method
      *
-     * @param peersList
+     * @param peersList the total peer left in the room
      */
     protected void processFillPeers(List<SkylinkPeer> peersList) {
         // reset the peers first
@@ -134,7 +134,10 @@ public class CustomActionBar extends Fragment {
         for (int index = 0; index < peersList.size(); index++) {
             SkylinkPeer peer = peersList.get(index);
 
-            String peerAvatar = peer.getPeerName().charAt(0) + "";
+            String peerAvatar = "";
+            if (peer.getPeerName() != null && peer.getPeerName().length() > 0) {
+                peerAvatar = peer.getPeerName().charAt(0) + "";
+            }
 
             switch (index) {
                 case 1:
@@ -236,6 +239,7 @@ public class CustomActionBar extends Fragment {
      */
     protected void displayPeerDlg(View viewContainer, SkylinkPeer remotePeer) {
         Button btnAvatar = viewContainer.findViewById(R.id.btnPeerInfoAvatar);
+
         btnAvatar.setText(remotePeer.getPeerName().charAt(0) + "");
 
         TextView txtLocalPeerName = viewContainer.findViewById(R.id.txtPeerInfoUserName);

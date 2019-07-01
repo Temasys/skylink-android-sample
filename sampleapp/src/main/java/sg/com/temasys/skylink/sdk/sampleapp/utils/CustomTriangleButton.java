@@ -15,7 +15,7 @@ import android.util.AttributeSet;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
-public class VideoResButton extends AppCompatButton {
+public class CustomTriangleButton extends AppCompatButton {
 
     private Context context;
     private Paint iconPaint, backgroundNormalPaint, backgroundClickedMainPaint;
@@ -34,19 +34,19 @@ public class VideoResButton extends AppCompatButton {
         BOTTOM_RIGHT
     }
 
-    public VideoResButton(Context context) {
+    public CustomTriangleButton(Context context) {
         super(context);
         this.context = context;
         init(null, context);
     }
 
-    public VideoResButton(Context context, AttributeSet attrs) {
+    public CustomTriangleButton(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
         init(attrs, context);
     }
 
-    public VideoResButton(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CustomTriangleButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
         init(attrs, context);

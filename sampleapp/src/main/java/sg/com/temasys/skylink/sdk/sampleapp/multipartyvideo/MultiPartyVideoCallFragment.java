@@ -350,12 +350,12 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * Update information about remote peer left the room
      * Re-fill the peers list in order to display correct order of peers in room
      *
-     * @param peersList
+     * @param peerList
      */
     @Override
-    public void onPresenterRequestChangeUIRemotePeerLeft(int peerIndex, List<SkylinkPeer> peersList) {
+    public void onPresenterRequestChangeUIRemotePeerLeft(int peerIndex, List<SkylinkPeer> peerList) {
         // re fill the peers buttons in the action bar to show the peer correctly order
-        processFillPeers(peersList);
+        processFillPeers(peerList);
     }
 
     /**
@@ -366,19 +366,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      */
     @Override
     public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MediaType mediaType) {
-        if (videoView == null) {
-            return;
-        }
-
-        // Remove video from previous parent, if any.
-        Utils.removeViewFromParent(videoView);
-
-        // Remove self view if its already added
-        remoteViewLayouts[0].removeAllViews();
-
-        // Add new local videoView to frame
-        setLayoutParams(videoView);
-        remoteViewLayouts[0].addView(videoView);
 
         displayPeerMenuOption(0);
 
@@ -840,6 +827,9 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         // Add new local videoView to frame
         setLayoutParams(videoView);
         remoteViewLayouts[0].addView(videoView);
+
+        remoteViewLayouts[0].setRotationX(180);
+        remoteViewLayouts[0].setRotationY(180);
 
     }
 

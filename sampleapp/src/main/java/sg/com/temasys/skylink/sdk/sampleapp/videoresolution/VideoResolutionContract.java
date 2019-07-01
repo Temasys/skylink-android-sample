@@ -67,6 +67,9 @@ public interface VideoResolutionContract {
 
         void onViewRequestGetVideoResolutions();
 
+        void onViewRequestChooseVideoCamera();
+
+        void onViewRequestChooseVideoScreen();
     }
 
     interface Service extends BaseService<VideoResolutionContract.Presenter> {

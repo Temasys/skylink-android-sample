@@ -271,12 +271,12 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         if (isSuccessful) {
             processUpdateStateConnected();
 
-            //start audio routing if has audio config
-            SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
-            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-                AudioRouter.setPresenter(this);
-                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
-            }
+//            //start audio routing if has audio config
+//            SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
+//            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+//                AudioRouter.setPresenter(this);
+//                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+//            }
 
         } else {
             processDisconnectUIChange();
@@ -310,6 +310,13 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
         String log = "[SA][onServiceRequestLocalAudioCapture] ";
 
+        //start audio routing if has audio config
+        SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.setPresenter(this);
+            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+        }
+
         //notify view to change the UI
         mainView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
     }
@@ -317,45 +324,45 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
         String log = "[SA][onServiceRequestLocalCameraCapture] ";
-        if (localVideo.getVideoView() == null) {
-            log += "VideoView is null!";
+        SurfaceViewRenderer selfVideoView = localVideo.getVideoView();
+
+        if (selfVideoView == null) {
+            log += "VideoView is null! Try to get video from SDK";
             Log.w(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = videoService.getVideoView(null, SkylinkMedia.MediaType.VIDEO_CAMERA);
-            processAddSelfView(selfVideoView);
+            selfVideoView = videoService.getVideoView(null, localVideo.getMediaId());
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            processAddSelfView(localVideo.getVideoView());
         }
 
         //notify view to change the UI
-        mainView.onPresenterRequestLocalVideoCapture(localVideo.getMediaId());
+        mainView.onPresenterRequestAddCameraSelfView(localVideo.getMediaId(), selfVideoView);
     }
 
     @Override
-    public void onServiceRequestLocalScreenCapture(SkylinkMedia localVideo) {
+    public void onServiceRequestLocalScreenCapture(SkylinkMedia localScreen) {
         String log = "[SA][onServiceRequestLocalScreenCapture] ";
-        if (localVideo.getVideoView() == null) {
-            log += "VideoView is null!";
-            Log.d(TAG, log);
+        SurfaceViewRenderer selfVideoView = localScreen.getVideoView();
 
-            SurfaceViewRenderer selfVideoView = videoService.getVideoView(null, SkylinkMedia.MediaType.VIDEO_SCREEN);
-            processAddSelfView(selfVideoView);
+        if (selfVideoView == null) {
+            log += "VideoView is null! Try to get video from SDK";
+            Log.w(TAG, log);
+
+            selfVideoView = videoService.getVideoView(null, localScreen.getMediaId());
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            processAddSelfScreenView(localVideo.getVideoView());
         }
 
         //notify view to change the UI
-        mainView.onPresenterRequestLocalVideoCapture(localVideo.getMediaId());
+        mainView.onPresenterRequestAddScreenSelfView(localScreen.getMediaId(), selfVideoView);
     }
 
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
         // Fill the new peer in button in custom bar
-        processAddNewPeer(remotePeer, videoService.getTotalPeersInRoom() - 1);
+        mainView.onPresenterRequestChangeUiRemotePeerJoin(remotePeer, videoService.getTotalPeersInRoom() - 1);
     }
 
     @Override
@@ -365,7 +372,10 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             return;
 
         // Remove the peer in button in custom bar
-        processRemoveRemotePeer();
+        mainView.onPresenterRequestChangeUiRemotePeerLeft(videoService.getPeersList());
+
+        // remove the remote peer video view
+        mainView.onPresenterRequestRemoveRemotePeer();
     }
 
     @Override
@@ -375,12 +385,11 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
         toastLog(TAG, context, log);
-        // do anything properly
     }
 
     @Override
     public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo,
-                                                       String remotePeerId, String mediaId) {
+                                                       String remotePeerId, SkylinkMedia remoteAudio) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
@@ -388,9 +397,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo,
-                                                       String remotePeerId, SkylinkMedia remoteMedia) {
+                                                       String remotePeerId, SkylinkMedia remoteVideo) {
         // add the remote video view in to the view
-        processAddRemoteView(remotePeerId, remoteMedia);
+        processAddRemoteView(remotePeerId, remoteVideo);
 
         log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -509,20 +518,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     /**
-     * Add local video view into the layout
-     */
-    private void processAddSelfView(SurfaceViewRenderer videoView) {
-        mainView.onPresenterRequestAddCameraSelfView(videoView);
-    }
-
-    /**
-     * Add local video view into the layout
-     */
-    private void processAddSelfScreenView(SurfaceViewRenderer videoView) {
-        mainView.onPresenterRequestAddScreenSelfView(videoView);
-    }
-
-    /**
      * Add remote video view into the layout
      */
     private void processAddRemoteView(String remotePeerId, SkylinkMedia remoteMedia) {
@@ -539,7 +534,11 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         // setTag for the remote video view
         videoView.setTag(remoteMedia.getMediaId());
 
-        mainView.onPresenterRequestAddCameraRemoteView(videoView);
+        if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+            mainView.onPresenterRequestAddCameraRemoteView(videoView);
+        } else if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+            mainView.onPresenterRequestAddScreenRemoteView(videoView);
+        }
     }
 
     /**

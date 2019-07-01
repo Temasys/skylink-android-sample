@@ -30,8 +30,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTriangleButton;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -55,7 +55,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private LinearLayout videoViewLayout;
     private LinearLayout audioLayout, videoLayout, screenLayout;
     private RelativeLayout videoToolLayout;
-    private VideoResButton btnVideoRes;
+    private CustomTriangleButton btnVideoRes;
     private ImageButton btnConnectDisconnect, btnAudioSpeaker, btnAudioMute, btnAudioStart, btnAudio,
             btnVideoSwitchCamera, btnVideoMute, btnVideoStart, btnVideo,
             btnScreenMute, btnScreenStart, btnScreen;
@@ -265,11 +265,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Update information about remote peer left the room
      * Re-fill the peers list in order to display correct order of peers in room
      *
-     * @param peersList the list of left peer(s) in the room
+     * @param peerList the list of left peer(s) in the room
      */
     @Override
-    public void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList) {
-        processFillPeers(peersList);
+    public void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peerList) {
+        processFillPeers(peerList);
     }
 
     /**
@@ -301,8 +301,28 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnAudioStart.setImageResource(R.drawable.ic_stop_white_20dp);
     }
 
+    /**
+     * Add or update our self VideoView into the view layout when local peer connected to room and
+     * local video view is ready
+     *
+     * @param mediaId   id of the media object
+     * @param videoView local video view from camera
+     */
     @Override
-    public void onPresenterRequestLocalVideoCapture(String mediaId) {
+    public void onPresenterRequestAddCameraSelfView(String mediaId, SurfaceViewRenderer videoView) {
+        //save localCameraView
+        localCameraView = videoView;
+
+        // change UI button
+        btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
+
+        // add videoView to main view
+        addViewToMain(videoView);
+
+        // move other views to small view, display the local camera view to main view
+        bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+
+        // notice user about id of the local media
         toastLog(TAG, context, "Local video is on with id = " + mediaId);
     }
 
@@ -310,41 +330,25 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Add or update our self VideoView into the view layout when local peer connected to room and
      * local video view is ready
      *
-     * @param videoView local video view
+     * @param mediaId    id of the media object
+     * @param screenView local video view from screen
      */
     @Override
-    public void onPresenterRequestAddCameraSelfView(SurfaceViewRenderer videoView) {
-        //save localCameraView
-        localCameraView = videoView;
-
-        // change UI button
-        btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
-
-        addViewToMain(videoView);
-
-        // move other views to small view
-        bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
-    }
-
-    /**
-     * Add or update our self VideoView into the view layout when local peer connected to room and
-     * local video view is ready
-     *
-     * @param videoView local video view
-     */
-    @Override
-    public void onPresenterRequestAddScreenSelfView(SurfaceViewRenderer videoView) {
+    public void onPresenterRequestAddScreenSelfView(String mediaId, SurfaceViewRenderer screenView) {
         //save localScreenView
-        localScreenView = videoView;
+        localScreenView = screenView;
 
         // change UI button
         btnScreenStart.setImageResource(R.drawable.ic_stop_white_20dp);
 
         // add local screen view as main view
-        addViewToMain(videoView);
+        addViewToMain(screenView);
 
         // move other views to small view
         bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
+
+        // notice user about id of the local media
+        toastLog(TAG, context, "Local video is on with id = " + mediaId);
     }
 
     /**
@@ -660,7 +664,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // Update the UI when connecting to room: change the room_id
         updateRoomInfo(getResources().getString(R.string.guide_room_id));
         txtRoomName.setText(Config.ROOM_NAME_VIDEO);
-        btnVideoRes.setDirection(VideoResButton.ButtonDirection.TOP_RIGHT);
+        btnVideoRes.setDirection(CustomTriangleButton.ButtonDirection.TOP_RIGHT);
 
         // Set init audio/video state
         setAudioBtnLabel(false, false);
@@ -886,9 +890,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         ((VideoActivity) getActivity()).onShowHideVideoResFragment(isShowVideoRes);
 
         if (isShowVideoRes) {
-            btnVideoRes.setState(VideoResButton.ButtonState.CLICKED);
+            btnVideoRes.setState(CustomTriangleButton.ButtonState.CLICKED);
         } else {
-            btnVideoRes.setState(VideoResButton.ButtonState.NORMAL);
+            btnVideoRes.setState(CustomTriangleButton.ButtonState.NORMAL);
         }
     }
 
@@ -898,9 +902,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         ((VideoActivity) getActivity()).onShowHideVideoResFragment(isShow);
 
         if (isShow) {
-            btnVideoRes.setState(VideoResButton.ButtonState.CLICKED);
+            btnVideoRes.setState(CustomTriangleButton.ButtonState.CLICKED);
         } else {
-            btnVideoRes.setState(VideoResButton.ButtonState.NORMAL);
+            btnVideoRes.setState(CustomTriangleButton.ButtonState.NORMAL);
         }
 
     }

@@ -10,7 +10,7 @@
         android:background="@color/color_black"
         android:orientation="vertical"></LinearLayout>
 
-    <sg.com.temasys.skylink.sdk.sampleapp.utils.VideoResButton
+    <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTriangleButton
         android:id="@+id/btn_video_res_video"
         android:layout_width="@dimen/dp_40dp"
         android:layout_height="@dimen/dp_40dp"

@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.media.audiofx.NoiseSuppressor;
+import android.os.Build;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
@@ -32,6 +35,8 @@ public class AudioRouter {
     private static boolean isAudioOnSpeaker;
 
     private static Constants.CONFIG_TYPE callType;
+
+    private static AudioTrack audioTrack = null;
 
     private AudioRouter() {
         headsetBroadcastReceiver = new BroadcastReceiver() {
@@ -121,6 +126,13 @@ public class AudioRouter {
         this.bluetoothAdapter = bluetoothAdapter;
     }
 
+    public static boolean isNoiseSuppressorAvailable() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            return NoiseSuppressor.isAvailable();
+        }
+        return false;
+    }
+
     /**
      * Initialize AudioRouter and
      * start routing audio to headset if plugged, else to the speaker phone
@@ -140,6 +152,8 @@ public class AudioRouter {
             Log.d(TAG, log);
             return;
         }
+
+        boolean isNoiseSuppressorAvailable = isNoiseSuppressorAvailable();
 
         log = logTag + "Initializing Audio Router...";
         Log.d(TAG, log);
@@ -271,6 +285,14 @@ public class AudioRouter {
         getInstance();
 
         AudioManager audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
+        audioManager.setMode(AudioManager.MODE_NORMAL);
+        audioManager.setParameters("noise_suppression=on");
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            NoiseSuppressor.create(audioTrack.getAudioSessionId());
+        }
+
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         instance.init(audioManager, bluetoothAdapter);
@@ -287,12 +309,27 @@ public class AudioRouter {
         //turn on speaker if no have plug headset or bluetooth headset
         if (!isSpeakerphoneOn) {
             isAudioOnSpeaker = false;
+//            audioManager.setSpeakerphoneOn(false);
+            presenter.onServiceRequestAudioOutputChanged(false);
+
+            audioManager.setMode(AudioManager.MODE_NORMAL);
+            audioManager.abandonAudioFocus(null);
             audioManager.setSpeakerphoneOn(false);
+
             presenter.onServiceRequestAudioOutputChanged(false);
 
         } else {
             isAudioOnSpeaker = true;
+//            audioManager.setSpeakerphoneOn(true);
+//            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+
+
+            audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             audioManager.setSpeakerphoneOn(true);
+
             presenter.onServiceRequestAudioOutputChanged(true);
         }
     }

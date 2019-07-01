@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
+import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
@@ -32,12 +33,12 @@ public interface VideoContract {
         /**
          * Update UI details when adding local video view
          */
-        void onPresenterRequestAddCameraSelfView(SurfaceViewRenderer videoView);
+        void onPresenterRequestAddCameraSelfView(String mediaId, SurfaceViewRenderer videoView);
 
         /**
          * Update UI details when adding local video view
          */
-        void onPresenterRequestAddScreenSelfView(SurfaceViewRenderer videoView);
+        void onPresenterRequestAddScreenSelfView(String mediaId, SurfaceViewRenderer videoView);
 
         /**
          * Update UI details when adding remote camera video view
@@ -67,7 +68,7 @@ public interface VideoContract {
         /**
          * Update UI details when peers are in room
          */
-        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
+        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peerList);
 
         /**
          * Update audio state (muted/on)
@@ -114,10 +115,6 @@ public interface VideoContract {
          */
         void onPresenterRequestLocalAudioCapture(String mediaId);
 
-        /**
-         * Update UI details when local video is on
-         */
-        void onPresenterRequestLocalVideoCapture(String mediaId);
     }
 
     interface Presenter {

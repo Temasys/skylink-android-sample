@@ -57,28 +57,28 @@ public abstract class BasePresenter {
     // Methods which are from MediaListener need to be implemented for audio and video
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, String mediaId) {
+    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
     }
 
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteMedia) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteVideo) {
     }
 
-    public void onServiceRequestInputVideoResolutionObtained(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
     }
 
-    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, int width, int height, int fps) {
+    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
     }
 
-    public void onServiceRequestSentVideoResolutionObtained(String peerId, int width, int height, int fps) {
+    public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
     }
 
-    public void onServiceRequestVideoSizeChange(String peerId, Point size) {
+    public void onServiceRequestVideoSizeChange(String peerId, String videoId, Point size) {
         String peer = "Peer " + peerId;
         // If peerId is null, this call is for our local video.
         if (peerId == null) {
             peer = "We've";
         }
-        Log.d("VideoCall", peer + " got video size changed to: " + size.toString() + ".");
+        Log.d("VideoCall (" + videoId + ") ", peer + " got video size changed to: " + size.toString() + ".");
     }
 
     //----------------------------------------------------------------------------------------------
@@ -188,21 +188,22 @@ public abstract class BasePresenter {
     // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, double transferSpeed) {
+    public void onServiceRequestTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, String mediaId, double transferSpeed) {
         String direction = "Send";
         if (Info.MEDIA_DIRECTION_RECV == mediaDirection) {
             direction = "Recv";
         }
         // Log the transfer speeds.
-        String log = "[SA][TransSpeed] Transfer speed for Peer " + peerId + ": " +
+        String log = "[SA][TransSpeed] Transfer speed for Peer " + peerId + ": " + " MediaId(" + mediaId + ") " +
                 Info.getInfoString(mediaType) + " " + direction + " = " + transferSpeed + " kbps";
         Log.d("MultiPartyVideoCall", log);
     }
 
-    public void onServiceRequestWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, HashMap<String, String> stats) {
+    public void onServiceRequestWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, String mediaId, HashMap<String, String> stats) {
         // Log the WebRTC stats.
         StringBuilder log =
-                new StringBuilder("[SA][WStatsRecv] Received for Peer " + peerId + ":\r\n");
+                new StringBuilder("[SA][WStatsRecv] Received for Peer " + peerId + " MediaId(" + mediaId + ") " +
+                        ":\r\n ");
         for (Map.Entry<String, String> entry : stats.entrySet()) {
             log.append(entry.getKey()).append(": ").append(entry.getValue()).append(".\r\n");
         }
