@@ -195,7 +195,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onViewRequestGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
-        multiVideoCallService.getTransferSpeeds(peerIndex, mediaDirection, mediaType, null);
+        multiVideoCallService.getTransferSpeeds(peerIndex, null, mediaDirection, mediaType);
     }
 
     @Override
@@ -514,7 +514,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     private void processGetWebrtcStats(String peerId, int mediaDirection, int mediaType) {
-        multiVideoCallService.getWebrtcStats(peerId, mediaDirection, mediaType, null);
+        multiVideoCallService.getWebrtcStats(peerId, null, mediaDirection, mediaType);
     }
 
     private void processAddRemoteView(String remotePeerId, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer videoView) {

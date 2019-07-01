@@ -188,7 +188,7 @@ public abstract class BasePresenter {
     // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, String mediaId, double transferSpeed) {
+    public void onServiceRequestTransferSpeedReceived(String peerId, String mediaId, int mediaDirection, int mediaType, double transferSpeed) {
         String direction = "Send";
         if (Info.MEDIA_DIRECTION_RECV == mediaDirection) {
             direction = "Recv";

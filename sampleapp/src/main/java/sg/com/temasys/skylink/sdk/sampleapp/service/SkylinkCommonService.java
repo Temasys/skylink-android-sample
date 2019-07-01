@@ -314,7 +314,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * if {@link SkylinkConfig#isReportVideoResolutionOnVideoChange()} is true;
      * or when its currently reporting and video resolution is not yet stable,
      * if {@link SkylinkConfig#isReportVideoResolutionUntilStable()} is true;
-     * It can also be triggered by calling {@link SkylinkConnection#getInputVideoResolution()}.
+     * It can also be triggered by calling {@link SkylinkConnection#getInputVideoResolution(String videoId)}.
      * The current resolution of the video being captured by the local camera
      * and the SkylinkCaptureFormat used will be provided.
      * Note: This might be different from the resolution of the video actually sent to Peers as
@@ -687,6 +687,23 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
     }
 
+    /**
+     * This is triggered when having fail connection with a remote peer
+     * When user get this callback, they can reconnect or refresh the connection with the remote peer,
+     * or simply ignore this peer
+     *
+     * @param remotePeerId The id of the peer
+     * @param userInfo     User info of the remote peer
+     * @param errorCode    the error code for fail connection
+     */
+    @Override
+    public void onRemotePeerConnectionFailed(String remotePeerId, UserInfo userInfo, int errorCode) {
+        String log = "Your connection with the peer (" + remotePeerId + ") is NOT successful. " +
+                "ErrorCode = " + errorCode;
+        toastLog(TAG, context, log);
+        Log.e(TAG, log);
+    }
+
     //----------------------------------------------------------------------------------------------
     // Methods which are from DataTransferListener need to be implemented for dataTransfer function
     //----------------------------------------------------------------------------------------------
@@ -912,29 +929,29 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * at the moment of request, is available.
      *
      * @param peerId         PeerId of the remote Peer for which we are getting stats on.
+     * @param mediaId        Media id of the SkylinkMedia object that transfer speed comes from
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on
      * @param mediaType      Integer that defines the type(s) of media reported on
-     * @param mediaId        Media id of the SkylinkMedia object that transfer speed comes from
      * @param transferSpeed  Transfer speed in kilobit per second (kbps).
      */
     @Override
-    public void onTransferSpeedReceived(String peerId, int mediaDirection, int mediaType, String mediaId, double transferSpeed) {
+    public void onTransferSpeedReceived(String peerId, String mediaId, int mediaDirection, int mediaType, double transferSpeed) {
         Log.d(TAG, "[onTransferSpeedReceived]");
 
-        presenter.onServiceRequestTransferSpeedReceived(peerId, mediaDirection, mediaType, mediaId, transferSpeed);
+        presenter.onServiceRequestTransferSpeedReceived(peerId, mediaId, mediaDirection, mediaType, transferSpeed);
     }
 
     /**
      * This is triggered when WebRTC statistics of the specified media stream are available.
      *
      * @param peerId         PeerId of the remote Peer for which we are getting stats on.
+     * @param mediaId        id of the media object
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on
      * @param mediaType      Integer that defines the type(s) of media reported on
-     * @param mediaId        id of the media object
      * @param stats          Map containing WebRTC provided statistics on the specified media.
      */
     @Override
-    public void onWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, String mediaId, HashMap<String, String> stats) {
+    public void onWebrtcStatsReceived(String peerId, String mediaId, int mediaDirection, int mediaType, HashMap<String, String> stats) {
         Log.d(TAG, "[onWebrtcStatsReceived]");
 
         presenter.onServiceRequestWebrtcStatsReceived(peerId, mediaDirection, mediaType, mediaId, stats);
@@ -1145,6 +1162,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     // Video resolution
+
     /**
      * If the current local input video device is a camera,
      * change the current captured video stream to the specified resolution,

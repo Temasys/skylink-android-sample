@@ -280,7 +280,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public void getInputVideoResolution() {
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.getInputVideoResolution();
+            mSkylinkConnection.getInputVideoResolution(null);
         }
     }
 
@@ -330,6 +330,10 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * {@link BasePresenter#onServiceRequestWebrtcStatsReceived(String, int, int, String, HashMap)}
      *
      * @param peerId         PeerId of the remote Peer for which we are getting stats on.
+     * @param mediaId        id of the local media object to get resolution
+     *                       input null as current local media if there is only 1 local media at the moment
+     *                       OR the camera video as default video if there are more than 1 local video at the moment.
+     *                       OR the default audio if there are more than 1 local audio at the moment
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on, such as
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_DIRECTION_SEND sending},
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_DIRECTION_RECV receiving} or
@@ -338,21 +342,23 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_AUDIO audio},
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_VIDEO video} or
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_ALL all}.
-     * @param mediaId        id of the SkylinkMedia object that stats comes from
-     *                       input null for default audio object or camera video object
      */
-    public void getWebrtcStats(String peerId, int mediaDirection, int mediaType, String mediaId) {
+    public void getWebrtcStats(String peerId, String mediaId, int mediaDirection, int mediaType) {
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.getWebrtcStats(peerId, mediaDirection, mediaType, mediaId);
+            mSkylinkConnection.getWebrtcStats(peerId, mediaId, mediaDirection, mediaType);
         }
     }
 
     /**
      * Request for the instantaneous transfer speed(s) of media stream(s), at the moment of request.
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(String, int, int, String, double)}
+     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(String, String, int, int, double)}
      *
      * @param peerIndex      Index of the remote Peer in frame for which we are getting transfer speed on.
+     * @param mediaId        id of the local media object to get resolution
+     *                       input null as current local media if there is only 1 local media at the moment
+     *                       OR the camera video as default video if there are more than 1 local video at the moment.
+     *                       OR the default audio if there are more than 1 local audio at the moment
      * @param mediaDirection Integer that defines the direction of media stream(s) reported on, such as
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_DIRECTION_SEND sending},
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_DIRECTION_RECV receiving} or
@@ -361,11 +367,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_AUDIO audio},
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_VIDEO video} or
      *                       {@link sg.com.temasys.skylink.sdk.rtc.Info#MEDIA_ALL all}.
-     * @param mediaId        id of the SkylinkMedia object to get transfer speed info
-     *                       input null for default audio object or camera video object
      */
-    public void getTransferSpeeds(int peerIndex, int mediaDirection, int mediaType, String
-            mediaId) {
+    public void getTransferSpeeds(int peerIndex, String mediaId, int mediaDirection, int mediaType) {
 
         String peerId = mPeersList.get(peerIndex).getPeerId();
 
@@ -373,7 +376,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             return;
 
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.getTransferSpeeds(peerId, mediaDirection, mediaType, mediaId);
+            mSkylinkConnection.getTransferSpeeds(peerId, mediaId, mediaDirection, mediaType);
         }
     }
 
