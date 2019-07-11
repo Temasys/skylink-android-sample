@@ -8,6 +8,7 @@ import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
@@ -25,12 +26,16 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTriangleButton;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.SmallVideoViewFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.View.GONE;
@@ -70,7 +75,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private boolean isShowScreenSharing = false;
     private boolean isFullScreen = false;
     private boolean isShowVideoRes = false;
-    private boolean isShareScreen = false;
 
     private SurfaceViewRenderer localCameraView, localScreenView, remoteCameraView, remoteScreenView;
 
@@ -128,19 +132,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     @Override
     public void onResume() {
         super.onResume();
+
         // just process resume for video camera, not apply for video screen
-        if (!isShareScreen) {
-            presenter.onViewRequestResume();
-        }
+        // TODO @Muoi need to implement for video camera and avoid mediaStateChange for local media
+//        presenter.onViewRequestResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         // just process pause for video camera, not apply for video screen
-        if (!isShareScreen) {
-            presenter.onViewRequestPause();
-        }
+        // TODO @Muoi need to implement for video camera and avoid mediaStateChange for local media
+//        presenter.onViewRequestPause();
     }
 
     @Override
@@ -181,7 +184,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 showVideoOptions();
                 break;
             case R.id.btn_video_start:
-                presenter.onViewRequestStartVideo();
+                presenter.onViewRequestToggleVideo();
                 break;
             case R.id.btn_video_mute:
                 presenter.onViewRequestChangeVideoState();
@@ -202,7 +205,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 showScreenOptions();
                 break;
             case R.id.btn_screen_start:
-                presenter.onViewRequestStartScreen();
+                presenter.onViewRequestToggleScreen();
                 break;
             case R.id.btn_screen_mute:
                 presenter.onViewRequestChangeScreenState();
@@ -223,6 +226,19 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             }
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.e("muoipt", "onRequestPermissionsResult");
+
+        // delegate presenter to implement the permission results
+        presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PermissionUtils.REQUEST_BUTTON_OVERLAY_CODE) {
+            int grant = grantResults[0];
+        }
+    }
+
 
     //----------------------------------------------------------------------------------------------
     // Methods invoked from the Presenter to update UI
@@ -289,16 +305,85 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     }
 
     @Override
-    public void onPresenterRequestShowHideButtonStopScreenSharing() {
-        showHideButtonStopScreenSharing();
+    public void onPresenterRequestShowButtonStopScreenSharing() {
+        if (!isShowScreenSharing) {
+            showHideButton(stopScreenshareFloat, true);
+        }
     }
 
     @Override
     public void onPresenterRequestLocalAudioCapture(String mediaId) {
         toastLog(TAG, context, "Local audio is on with id = " + mediaId);
 
+        btnAudioMute.setEnabled(true);
+
+        // set disable for btnAudioStart because we do not support stop audio atm
+        btnAudioStart.setEnabled(false);
+
         // change UI button
         btnAudioStart.setImageResource(R.drawable.ic_stop_white_20dp);
+    }
+
+    @Override
+    public void onPresenterRequestMediaStateChange(SkylinkMedia.MediaType mediaType, SkylinkMedia.MediaState mediaState, boolean isLocal) {
+        switch (mediaState) {
+            case ACTIVE:
+                if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+                    changeVideoMuteUI(false);
+                    changeVideoStartUI(true, false);
+                    btnVideoMute.setEnabled(true);
+                    bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+                } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+                    changeScreenMuteUI(false);
+                    changeScreenStartUI(true, false);
+                    btnScreenMute.setEnabled(true);
+                    bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
+                    if (!isShowScreenSharing) {
+                        showHideButton(stopScreenshareFloat, true);
+                    }
+                } else if (mediaType == SkylinkMedia.MediaType.AUDIO) {
+                    changeAudioMuteUI(false);
+                    btnAudioMute.setEnabled(true);
+                }
+                break;
+            case MUTED:
+                if (mediaType == SkylinkMedia.MediaType.AUDIO) {
+                    changeAudioMuteUI(true);
+                } else if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+                    changeVideoMuteUI(true);
+                } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+                    changeScreenMuteUI(true);
+                }
+                break;
+            case STOPPED:
+                if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+                    changeVideoStartUI(false, false);
+                    btnVideoMute.setEnabled(false);
+                    moveViewToSmallLocalCameraView(localCameraView);
+                } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+                    changeScreenStartUI(false, false);
+                    btnScreenMute.setEnabled(false);
+                    if (isShowScreenSharing) {
+                        showHideButton(stopScreenshareFloat, false);
+                    }
+                }
+                break;
+            case UNAVAILABLE:
+                if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+                    changeVideoStartUI(false, false);
+                    btnVideoMute.setEnabled(false);
+                } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+                    changeScreenStartUI(false, false);
+                    btnScreenMute.setEnabled(false);
+                    if (isShowScreenSharing) {
+                        showHideButton(stopScreenshareFloat, false);
+                    }
+                } else if (mediaType == SkylinkMedia.MediaType.AUDIO) {
+                    btnAudioMute.setEnabled(false);
+                    btnAudioStart.setImageResource(R.drawable.ic_start_white_20dp);
+                }
+                break;
+        }
     }
 
     /**
@@ -314,10 +399,10 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         localCameraView = videoView;
 
         // change UI button
-        btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
+        changeVideoStartUI(true, false);
 
-        // add videoView to main view
-        addViewToMain(videoView);
+        btnVideoMute.setEnabled(true);
+        btnVideoSwitchCamera.setEnabled(true);
 
         // move other views to small view, display the local camera view to main view
         bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
@@ -339,16 +424,15 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         localScreenView = screenView;
 
         // change UI button
-        btnScreenStart.setImageResource(R.drawable.ic_stop_white_20dp);
+        changeScreenStartUI(true, false);
 
-        // add local screen view as main view
-        addViewToMain(screenView);
+        btnScreenMute.setEnabled(true);
 
         // move other views to small view
         bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
 
         // notice user about id of the local media
-        toastLog(TAG, context, "Local video is on with id = " + mediaId);
+        toastLog(TAG, context, "Local screen sharing is on with id = " + mediaId);
     }
 
     /**
@@ -360,9 +444,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     public void onPresenterRequestAddCameraRemoteView(SurfaceViewRenderer remoteVideoView) {
         //save localScreenView
         remoteCameraView = remoteVideoView;
-
-        // add local screen view as main view
-        addViewToMain(remoteVideoView);
 
         // move other views to small view
         bringSmallViewToMainView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
@@ -377,9 +458,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     public void onPresenterRequestAddScreenRemoteView(SurfaceViewRenderer remoteScreenView) {
         //save localScreenView
         this.remoteScreenView = remoteScreenView;
-
-        // add local screen view as main view
-        addViewToMain(remoteScreenView);
 
         // move other views to small view
         bringSmallViewToMainView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
@@ -397,69 +475,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
         // bring local camera view to main big view
         bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
-    }
-
-    /**
-     * Update UI (display toast info) about local/remote audio state
-     *
-     * @param isAudioMuted audio state
-     * @param isToast      display toast or not
-     */
-    @Override
-    public void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast) {
-        if (isAudioMuted) {
-            if (isToast) {
-                String log = getString(R.string.muted_audio);
-                toastLog(TAG, context, log);
-            }
-        } else {
-            if (isToast) {
-                String log = getString(R.string.enabled_audio);
-                toastLog(TAG, context, log);
-            }
-        }
-    }
-
-    /**
-     * Update UI (display toast info) about local/remote video state
-     *
-     * @param isVideoMuted video state
-     * @param isToast      display toast or not
-     */
-    @Override
-    public void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast) {
-        if (isVideoMuted) {
-            if (isToast) {
-                String log = getString(R.string.muted_video);
-                toastLog(TAG, context, log);
-            }
-        } else {
-            if (isToast) {
-                String log = getString(R.string.enabled_video);
-                toastLog(TAG, context, log);
-            }
-        }
-    }
-
-    /**
-     * Update UI (display toast info) about local/remote screen state
-     *
-     * @param isScreenMuted screen video state
-     * @param isToast       display toast or not
-     */
-    @Override
-    public void onPresenterRequestUpdateScreenState(boolean isScreenMuted, boolean isToast) {
-        if (isScreenMuted) {
-            if (isToast) {
-                String log = getString(R.string.muted_screen);
-                toastLog(TAG, context, log);
-            }
-        } else {
-            if (isToast) {
-                String log = getString(R.string.enabled_screen);
-                toastLog(TAG, context, log);
-            }
-        }
     }
 
     /**
@@ -481,118 +496,22 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
     }
 
-    /**
-     * Update the audio button UI when changing audio state
-     */
     @Override
-    public void onPresenterRequestChangeAudioUI(boolean isAudioMute) {
-        if (isAudioMute) {
-            btnAudioMute.setImageResource(R.drawable.ic_audio_active_white_20dp);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnAudioMute.setTooltipText("Enable audio");
-            }
-
-        } else {
-            btnAudioMute.setImageResource(R.drawable.ic_audio_mute_white_20dp);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnAudioMute.setTooltipText("Mute audio");
-            }
-        }
+    public void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
+        Config.setPrefString(Config.DEFAULT_VIDEO_DEVICE, videoDevice.getDeviceName(), (VideoActivity) context);
     }
 
-    /**
-     * Update the video button UI when changing video state
-     */
     @Override
-    public void onPresenterRequestChangeVideoUI(boolean isVideoMute) {
-        if (isVideoMute) {
-            btnVideoMute.setImageResource(R.drawable.icon_video_active);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnVideoMute.setTooltipText("Enable video");
-            }
+    public void onPresenterRequestShowHideSmallView(SkylinkMedia.MediaType mediaType, boolean isShow) {
+        //show/hide all small views if mediaType is null
+        if (mediaType == null) {
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, isShow);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, isShow);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, isShow);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, isShow);
         } else {
-            btnVideoMute.setImageResource(R.drawable.icon_video_mute);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnVideoMute.setTooltipText("Mute video");
-            }
-        }
-    }
-
-    /**
-     * Update the video stop button UI when changing video state {stop, start}
-     */
-    @Override
-    public void onPresenterRequestChangeCameraUI(boolean isCameraMute, boolean isToast) {
-        if (isCameraMute) {
-            btnVideoStart.setImageResource(R.drawable.ic_start_white_20dp);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnVideoStart.setTooltipText("Play video");
-            }
-            if (isToast) {
-                String log = getString(R.string.stop_camera);
-                toastLog(TAG, context, log);
-            }
-
-        } else {
-            btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                btnVideoStart.setTooltipText("Stop video");
-            }
-            if (isToast) {
-                String log = getString(R.string.restart_camera);
-                toastLog(TAG, context, log);
-            }
-        }
-    }
-
-    //----------------------------------------------------------------------------------------------
-    // public methods
-    //----------------------------------------------------------------------------------------------
-
-    /**
-     * Bring the small available on small view to main big view
-     * and move all other views to small views
-     *
-     * @param video_type the type of small view to move to main big view
-     */
-    public void bringSmallViewToMainView(Constants.VIDEO_TYPE video_type) {
-        switch (video_type) {
-            case LOCAL_CAMERA:
-                if (localCameraView != null) {
-                    addViewToMain(localCameraView);
-                }
-                moveViewToSmallLocalScreenView(localScreenView);
-                moveViewToSmallRemoteCameraView(remoteCameraView);
-                moveViewToSmallRemoteScreenView(remoteScreenView);
-
-                break;
-            case LOCAL_SCREEN:
-                if (localScreenView != null) {
-                    addViewToMain(localScreenView);
-                    if (!isShowScreenSharing) {
-                        showHideButton(stopScreenshareFloat, true);
-                    }
-                }
-                moveViewToSmallLocalCameraView(localCameraView);
-                moveViewToSmallRemoteCameraView(remoteCameraView);
-                moveViewToSmallRemoteScreenView(remoteScreenView);
-                break;
-            case REMOTE_CAMERA:
-                if (remoteCameraView != null) {
-                    addViewToMain(remoteCameraView);
-                }
-                moveViewToSmallLocalCameraView(localCameraView);
-                moveViewToSmallLocalScreenView(localScreenView);
-                moveViewToSmallRemoteScreenView(remoteScreenView);
-                break;
-            case REMOTE_SCREEN:
-                if (remoteScreenView != null) {
-                    addViewToMain(remoteScreenView);
-                }
-                moveViewToSmallLocalCameraView(localCameraView);
-                moveViewToSmallLocalScreenView(localScreenView);
-                moveViewToSmallRemoteCameraView(remoteCameraView);
-                break;
+            showHideSmallFragment(mediaType, true, isShow);
+            showHideSmallFragment(mediaType, false, isShow);
         }
     }
 
@@ -670,6 +589,12 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         setAudioBtnLabel(false, false);
         setVideoBtnLabel(false, false);
 
+        // set disable for some buttons
+        btnAudioMute.setEnabled(false);
+        btnVideoMute.setEnabled(false);
+        btnScreenMute.setEnabled(false);
+        btnVideoSwitchCamera.setEnabled(false);
+
         // Add an system overlay button for stop screen share
         stopScreenshareFloat = new Button(getActivity());
         stopScreenshareFloat.setText(getActivity().getResources().getText(R.string.stop_screenShare));
@@ -698,9 +623,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         stopScreenshareFloat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isShowScreenSharing = true;
-                showHideButtonStopScreenSharing();
-                bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+                // stop capturing screen
+                presenter.onViewRequestToggleScreen(false);
             }
         });
 
@@ -730,6 +654,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         if (Utils.isDefaultSpeakerSettingForVideo()) {
             btnAudioSpeaker.setImageDrawable(getResources().getDrawable(R.drawable.ic_audio_speaker));
         }
+
+        // start a local video base on default device setting
+        presenter.onViewRequestStartLocalMediaIfConfigAllow();
     }
 
     /**
@@ -820,26 +747,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         videoViewLayout.addView(videoView);
     }
 
-    private void showHideButtonStopScreenSharing() {
-        isShowScreenSharing = !isShowScreenSharing;
-        WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-        if (isShowScreenSharing) {
-            windowManager.addView(stopScreenshareFloat, stopScreenshareLayoutParams);
-        } else {
-            windowManager.removeView(stopScreenshareFloat);
-        }
-    }
-
     private void showHideButton(View view, boolean isShow) {
         if (view == null)
             return;
 
         if (view == stopScreenshareFloat) {
             WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-            if (isShow) {
+            if (isShow && !isShowScreenSharing) {
                 windowManager.addView(stopScreenshareFloat, stopScreenshareLayoutParams);
-            } else {
+                isShowScreenSharing = true;
+            } else if (!isShow && isShowScreenSharing) {
                 windowManager.removeView(stopScreenshareFloat);
+                isShowScreenSharing = false;
             }
         } else {
             if (isShow) {
@@ -857,7 +776,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         if (isFullScreen) {
             videoToolLayout.setVisibility(GONE);
             btnVideoRes.setVisibility(GONE);
-            ((VideoActivity) getActivity()).onShowHideLocalCameraViewFragment(false, true);
+
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, false);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, false);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, false, false);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, false);
             ((VideoActivity) getActivity()).onShowHideVideoResFragment(false);
             btnFullScreen.setBackground(getActivity().getResources().getDrawable(R.drawable.ic_full_screen_exit));
             actionBar.hide();
@@ -870,7 +793,10 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         } else {
             videoToolLayout.setVisibility(VISIBLE);
             btnVideoRes.setVisibility(View.VISIBLE);
-            ((VideoActivity) getActivity()).onShowHideLocalCameraViewFragment(true, true);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, true);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, true);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, false, true);
+            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, true);
             if (isShowVideoRes) {
                 ((VideoActivity) getActivity()).onShowHideVideoResFragment(true);
             }
@@ -909,6 +835,54 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     }
 
+    /**
+     * Bring the small available on small view to main big view
+     * and move all other views to small views
+     *
+     * @param video_type the type of small view to move to main big view
+     */
+    public void bringSmallViewToMainView(Constants.VIDEO_TYPE video_type) {
+        switch (video_type) {
+            case LOCAL_CAMERA:
+                if (localCameraView != null) {
+                    addViewToMain(localCameraView);
+                    showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, false);
+                }
+                moveViewToSmallLocalScreenView(localScreenView);
+                moveViewToSmallRemoteCameraView(remoteCameraView);
+                moveViewToSmallRemoteScreenView(remoteScreenView);
+
+                break;
+            case LOCAL_SCREEN:
+                if (localScreenView != null) {
+                    addViewToMain(localScreenView);
+                    showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, false);
+                }
+                moveViewToSmallLocalCameraView(localCameraView);
+                moveViewToSmallRemoteCameraView(remoteCameraView);
+                moveViewToSmallRemoteScreenView(remoteScreenView);
+                break;
+            case REMOTE_CAMERA:
+                if (remoteCameraView != null) {
+                    addViewToMain(remoteCameraView);
+                    showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, false, false);
+                }
+                moveViewToSmallLocalCameraView(localCameraView);
+                moveViewToSmallLocalScreenView(localScreenView);
+                moveViewToSmallRemoteScreenView(remoteScreenView);
+                break;
+            case REMOTE_SCREEN:
+                if (remoteScreenView != null) {
+                    addViewToMain(remoteScreenView);
+                    showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, false);
+                }
+                moveViewToSmallLocalCameraView(localCameraView);
+                moveViewToSmallLocalScreenView(localScreenView);
+                moveViewToSmallRemoteCameraView(remoteCameraView);
+                break;
+        }
+    }
+
     private void moveViewToSmallLocalCameraView(SurfaceViewRenderer view) {
         if (view == null)
             return;
@@ -929,8 +903,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         if (context != null && context instanceof VideoActivity) {
             ((VideoActivity) context).setLocalScreenView(view);
         }
-
-        showHideButton(stopScreenshareFloat, false);
     }
 
     private void moveViewToSmallRemoteCameraView(SurfaceViewRenderer view) {
@@ -1006,31 +978,16 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnScreenMute.setImageResource(R.drawable.ic_stop_screen_share_white_20dp);
         btnAudioSpeaker.setImageResource(R.drawable.ic_headset_white_20dp);
 
+        if (isShowScreenSharing) {
+            showHideButton(stopScreenshareFloat, false);
+        }
+
         // reset the room id info and local peer button
         txtRoomId.setText(R.string.guide_room_id);
         btnLocalPeer.setVisibility(GONE);
 
         // reset the variable toConnectToRoom
         toConnectToRoom = true;
-    }
-
-    /**
-     * Do clean up UI when disconnect from the room: remove self video view, remote video view, finish the activity
-     */
-    private void cleanUIWhenDisconnect() {
-        View self = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
-        if (self != null) {
-            videoViewLayout.removeView(self);
-        }
-
-        View peer = videoViewLayout.findViewWithTag(REMOTE_CAM_VIEW);
-        if (peer != null) {
-            videoViewLayout.removeView(peer);
-        }
-
-//        if (getActivity() != null) {
-//            getActivity().finish();
-//        }
     }
 
     /**
@@ -1201,4 +1158,142 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                     });
         }
     }
+
+    private void showHideSmallFragment(SkylinkMedia.MediaType mediaType, boolean isLocal, boolean isShow) {
+        if (context == null || !(context instanceof VideoActivity)) {
+            return;
+        }
+
+        SmallVideoViewFragment localVideoFragment = null;
+
+        switch (mediaType) {
+            case VIDEO_CAMERA:
+                if (isLocal)
+                    localVideoFragment = ((VideoActivity) context).getLocalVideoCameraFragment();
+                else
+                    localVideoFragment = ((VideoActivity) context).getRemoteVideoCameraFragment();
+                break;
+            case VIDEO_SCREEN:
+                if (isLocal)
+                    localVideoFragment = ((VideoActivity) context).getLocalVideoScreenFragment();
+                else
+                    localVideoFragment = ((VideoActivity) context).getRemoteVideoScreenFragment();
+                break;
+        }
+
+        if (localVideoFragment == null) {
+            return;
+        }
+
+        if (isShow) {
+            ((VideoActivity) context).attachSmallView(localVideoFragment);
+        } else {
+            ((VideoActivity) context).detachSmallView(localVideoFragment);
+        }
+    }
+
+    /**
+     * Update the audio button UI when changing audio state between active and mute
+     */
+    private void changeAudioMuteUI(boolean isAudioMute) {
+        if (isAudioMute) {
+            btnAudioMute.setImageResource(R.drawable.ic_audio_active_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnAudioMute.setTooltipText("Enable audio");
+            }
+
+        } else {
+            btnAudioMute.setImageResource(R.drawable.ic_audio_mute_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnAudioMute.setTooltipText("Mute audio");
+            }
+        }
+    }
+
+    /**
+     * Update the video button UI when changing video state between active and mute
+     */
+    private void changeVideoMuteUI(boolean isVideoMute) {
+        if (isVideoMute) {
+            btnVideoMute.setImageResource(R.drawable.icon_video_active);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnVideoMute.setTooltipText("Enable video");
+            }
+        } else {
+            btnVideoMute.setImageResource(R.drawable.icon_video_mute);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnVideoMute.setTooltipText("Mute video");
+            }
+        }
+    }
+
+    /**
+     * Update the video button UI when changing video state between active and mute
+     */
+    private void changeScreenMuteUI(boolean isScreenMute) {
+        if (isScreenMute) {
+            btnScreenMute.setImageResource(R.drawable.ic_start_screen_share_white_24dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnScreenMute.setTooltipText("Enable screen");
+            }
+        } else {
+            btnScreenMute.setImageResource(R.drawable.ic_stop_screen_share_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnScreenMute.setTooltipText("Mute screen");
+            }
+        }
+    }
+
+    /**
+     * Update the video stop button UI when changing video state {stop, start}
+     */
+    private void changeVideoStartUI(boolean isCameraStart, boolean isToast) {
+        if (!isCameraStart) {
+            btnVideoStart.setImageResource(R.drawable.ic_start_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnVideoStart.setTooltipText("Play video camera");
+            }
+            if (isToast) {
+                String log = getString(R.string.stop_camera);
+                toastLog(TAG, context, log);
+            }
+
+        } else {
+            btnVideoStart.setImageResource(R.drawable.ic_stop_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnVideoStart.setTooltipText("Stop video camera");
+            }
+            if (isToast) {
+                String log = getString(R.string.restart_camera);
+                toastLog(TAG, context, log);
+            }
+        }
+    }
+
+    /**
+     * Update the video stop button UI when changing screen state {stop, start}
+     */
+    private void changeScreenStartUI(boolean isScreenStart, boolean isToast) {
+        if (!isScreenStart) {
+            btnScreenStart.setImageResource(R.drawable.ic_start_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnScreenStart.setTooltipText("Play video screen");
+            }
+            if (isToast) {
+                String log = getString(R.string.stop_screenShare);
+                toastLog(TAG, context, log);
+            }
+
+        } else {
+            btnScreenStart.setImageResource(R.drawable.ic_stop_white_20dp);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                btnScreenStart.setTooltipText("Stop video screen");
+            }
+            if (isToast) {
+                String log = getString(R.string.enabled_screen);
+                toastLog(TAG, context, log);
+            }
+        }
+    }
+
 }

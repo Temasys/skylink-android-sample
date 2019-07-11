@@ -26,7 +26,12 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.Camera1Enumerator;
+import org.webrtc.Camera2Enumerator;
+import org.webrtc.CameraEnumerator;
+import org.webrtc.CameraVideoCapturer;
 import org.webrtc.SurfaceViewRenderer;
+import org.webrtc.VideoCapturer;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -292,6 +297,19 @@ public class Utils {
         skylinkConfig.setAllowStun(false);
 */
         skylinkConfig.setTimeout(Constants.TIME_OUT);
+
+        // Add following advanced options during development to catch errors and for better debugging:
+        // To enable logs from Skylink SDK (e.g. during debugging):
+        // Do not enable logs for production apps!
+        skylinkConfig.setEnableLogs(true);
+        // SDK_DETAILED_LOGGING
+        skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)!", new Boolean(true));
+        // OFF_ANS_VIA_USER_DATA
+        skylinkConfig.getAdvancedOptions().put("OffererAnswererViaUserData", new Boolean(true));
+        // SDK_RUNTIME_CRASH
+        skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)@", new Boolean(true));
+        // SDK_LOCK_LOG
+        // skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)#", new Boolean(true));
 
         return skylinkConfig;
     }
@@ -653,41 +671,70 @@ public class Utils {
      * Get the default {@link SkylinkConfig.VideoDevice} that is used.
      * {@link SkylinkConfig.VideoDevice#CAMERA_FRONT} is set and used if none are set.
      *
-     * @return
+     * @return {@link SkylinkConfig.VideoDevice} OR null if user selected camera custom or no device
      */
     public static SkylinkConfig.VideoDevice getDefaultVideoDevice() {
-        String logTag = "[Utils][getDefaultCameraOutput] ";
+        String logTag = "[Utils][getDefaultVideoDevice] ";
         String log = logTag + "The value in Shared Preference is not set!";
         /** Default VideoDevice is {@link SkylinkConfig.VideoDevice#CAMERA_FRONT} */
-        final SkylinkConfig.VideoDevice cameraFront = SkylinkConfig.VideoDevice.CAMERA_FRONT;
         SkylinkConfig.VideoDevice defaultVideoDevice = null;
 
         // Get string value saved in sharePref.
         String savedValue = sharedPref.getString(DEFAULT_VIDEO_DEVICE, null);
-        if (savedValue != null && !savedValue.equals(Constants.NON_VIDEO_DEVICE_DEFAULT)) {
-            try {
-                defaultVideoDevice = SkylinkConfig.VideoDevice.valueOf(savedValue);
-            } catch (IllegalArgumentException e) {
-                log = logTag + "The value in Shared Preference is invalid!";
-            }
-        } else {
-            return null;
+
+        // Using front camera as default video device if user has not set
+        if (savedValue == null) {
+            savedValue = Constants.DEFAULT_VIDEO_DEVICE_FRONT_CAMERA;
         }
 
-        /** If defaultVideoDevice is not set in sharedPref, set it to {@link cameraFront} */
-        if (defaultVideoDevice == null) {
-            Log.d(TAG, log);
-            defaultVideoDevice = cameraFront;
-            Config.setPrefString(DEFAULT_VIDEO_DEVICE,
-                    cameraFront.name(), (Activity) context);
-            log = logTag + "Set Shared Preference to " + defaultVideoDevice + ".";
-            Log.d(TAG, log);
+        switch (savedValue) {
+            case Constants.DEFAULT_VIDEO_DEVICE_FRONT_CAMERA:
+                defaultVideoDevice = SkylinkConfig.VideoDevice.CAMERA_FRONT;
+                break;
+            case Constants.DEFAULT_VIDEO_DEVICE_BACK_CAMERA:
+                defaultVideoDevice = SkylinkConfig.VideoDevice.CAMERA_BACK;
+                break;
+            case Constants.DEFAULT_VIDEO_DEVICE_SCREEN:
+                defaultVideoDevice = SkylinkConfig.VideoDevice.SCREEN;
+                break;
         }
 
         log = logTag + "Shared Preference value: " + defaultVideoDevice + ".";
         Log.d(TAG, log);
 
         return defaultVideoDevice;
+    }
+
+    /**
+     * Get the default string value of {@link SkylinkConfig.VideoDevice} that is used.
+     * {@link SkylinkConfig.VideoDevice#CAMERA_FRONT} is set and used if none are set.
+     * if user set default video device as custom camera and no device, return a representative string for it
+     *
+     * @return
+     */
+    public static String getDefaultVideoDeviceString() {
+        String logTag = "[Utils][getDefaultVideoDeviceString] ";
+        String log = logTag + "The value in Shared Preference is not set!";
+        /** Default VideoDevice is {@link SkylinkConfig.VideoDevice#CAMERA_FRONT} */
+        final String cameraFront = SkylinkConfig.VideoDevice.CAMERA_FRONT.getDeviceName();
+
+        // Get string value saved in sharePref.
+        String savedValue = sharedPref.getString(DEFAULT_VIDEO_DEVICE, null);
+
+        /** If defaultVideoDevice is not set in sharedPref, set it to {@link cameraFront} */
+        if (savedValue == null) {
+            Log.d(TAG, log);
+            savedValue = cameraFront;
+            Config.setPrefString(DEFAULT_VIDEO_DEVICE,
+                    savedValue, (Activity) context);
+            log = logTag + "Set Shared Preference to " + savedValue + ".";
+            Log.d(TAG, log);
+        }
+
+        log = logTag + "Shared Preference value: " + savedValue + ".";
+        Log.d(TAG, log);
+
+        return savedValue;
     }
 
     public static String getDefaultVideoResolution() {
@@ -776,7 +823,6 @@ public class Utils {
         return false;
     }
 
-
     /**
      * Get the bitmap from Uri
      */
@@ -836,12 +882,208 @@ public class Utils {
         return false;
     }
 
-    public static boolean isDefaultNoneVideoDeviceSetting() {
-        SkylinkConfig.VideoDevice videoDevice = getDefaultVideoDevice();
-        if (videoDevice == null) {
+    public static boolean isDefaultCustomVideoDeviceSetting() {
+        String defaultVideo = getDefaultVideoDeviceString();
+        if (defaultVideo.equals(Constants.DEFAULT_VIDEO_DEVICE_CUSTOM)) {
             return true;
         }
 
         return false;
+    }
+
+    public static boolean isDefaultNoneVideoDeviceSetting() {
+        String defaultVideo = getDefaultVideoDeviceString();
+        if (defaultVideo.equals(Constants.DEFAULT_VIDEO_DEVICE_NONE)) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /////////////////////////////Create custom video capturer from camera///////////////////////////
+
+    enum CameraState {
+        CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
+    }
+
+    /**
+     * Check if able to use android.hardware.camera2 (Lollipop and above).
+     *
+     * @return null if unable to perform check, e.g. if context is null.
+     */
+    public static Boolean isUseCamera2() {
+        String logTag = "[SMS][isUseCam2] ";
+        String log = logTag;
+
+        Context applicationContext = context.getApplicationContext();
+        if (applicationContext == null) {
+            log += "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean result = Camera2Enumerator.isSupported(applicationContext);
+        log += "Camera2 is supported: " + result + ".";
+        Log.d(TAG, log);
+        return result;
+    }
+
+    /**
+     * Get the CameraEnumerator to use.
+     * If Camera2 is supported, use Camera2Enumerator.
+     * Otherwise use Camera1Enumerator.
+     *
+     * @return
+     */
+    public static CameraEnumerator getCameraEnumerator() {
+        String logTag = "[SMS][getCamEnum] ";
+        String log = logTag;
+
+        Context applicationContext = context.getApplicationContext();
+        if (applicationContext == null) {
+            log = logTag + "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean canUseCamera2 = isUseCamera2();
+        if (canUseCamera2 == null) {
+            log += "Unable to get CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        CameraEnumerator enumerator;
+        if (canUseCamera2) {
+            enumerator = new Camera2Enumerator(applicationContext);
+            Log.d(TAG, "Using camera2 enumerator.");
+        } else {
+            enumerator = new Camera1Enumerator();
+            Log.d(TAG, "Using camera1 enumerator.");
+        }
+        return enumerator;
+    }
+
+    /**
+     * Create a {@link org.webrtc.CameraVideoCapturer}.
+     *
+     * @return Null if unable to create capturer.
+     */
+    public static VideoCapturer createCustomVideoCapturerFromCamera() {
+        String logTag = "";
+        String log;
+        CameraEnumerator cameraEnumerator = getCameraEnumerator();
+        if (cameraEnumerator == null) {
+            log = logTag + "Unable to create cameraVideoCapturer as we could not get a CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+        String[] cameraNames = cameraEnumerator.getDeviceNames();
+        if (cameraNames == null || cameraNames.length < 1) {
+            log = logTag + "Unable to create cameraVideoCapturer as no camera was detected!";
+            Log.d(TAG, log);
+            return null;
+        }
+        // Start with the first named camera.
+        String cameraName = cameraNames[0];
+        CameraVideoCapturer.CameraEventsHandler cameraEventsHandler =
+                new CameraVideoCapturer.CameraEventsHandler() {
+                    String logTag = "[SA][CameraEventsHandler] ";
+                    String log;
+
+                    CameraState cameraState = CameraState.CAMERA_CLOSED;
+                    final String cameraNameNone = "No camera opened.";
+                    String cameraNameCurrent = cameraNameNone;
+                    String cameraNamePrevious = cameraNameNone;
+
+                    @Override
+                    public void onCameraError(String errorDescription) {
+                        log = logTag + "Camera had an error! Error: " + errorDescription
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraDisconnected() {
+                        log = logTag + "Camera disconnected"
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraFreezed(String errorDescription) {
+                        log = logTag + "Camera frozed! Error: " + errorDescription
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraOpening(String cameraName) {
+                        log = logTag + "Camera was ";
+                        switch (cameraState) {
+
+                            case CAMERA_OPENED:
+                                // Camera opened from an opened state => Switched camera.
+                                cameraState = CameraState.CAMERA_SWITCHED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraName;
+                                log += "switched from: " + cameraNamePrevious +
+                                        " to: " + cameraNameCurrent + ".";
+                                break;
+                            case CAMERA_CLOSED:
+                                // Camera opened from a closed state => New camera just opened.
+                                cameraState = CameraState.CAMERA_OPENED;
+                                cameraNameCurrent = cameraName;
+                                log += "just opened to: " + cameraNameCurrent + ".";
+                                break;
+                            case CAMERA_SWITCHED:
+                                cameraState = CameraState.CAMERA_OPENED;
+                                log += "opened from State:" + CameraState.CAMERA_SWITCHED.name()
+                                        + " to: " + cameraName + " => Error!";
+                                break;
+                        }
+
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onFirstFrameAvailable() {
+                        log = logTag + "Camera (" + cameraNameCurrent + ") first frame available,"
+                                + " from State: " + cameraState.name() + ".";
+                        Log.d(TAG, log);
+                    }
+
+                    @Override
+                    public void onCameraClosed() {
+                        log = logTag;
+                        switch (cameraState) {
+                            case CAMERA_OPENED:
+                                cameraState = CameraState.CAMERA_CLOSED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraNameNone;
+                                log += "Closing all cameras. Last active ";
+                                break;
+                            case CAMERA_CLOSED:
+                                cameraState = CameraState.CAMERA_CLOSED;
+                                cameraNamePrevious = cameraNameCurrent;
+                                cameraNameCurrent = cameraNameNone;
+                                log += "Error! From State: " + cameraState.name() + ", ";
+                                break;
+                            case CAMERA_SWITCHED:
+                                cameraState = CameraState.CAMERA_OPENED;
+                                log += "Switch is complete. Previous ";
+                                break;
+                        }
+                        log += "camera (" + cameraNamePrevious + ") was just closed.";
+                        Log.d(TAG, log);
+                    }
+                };
+
+        VideoCapturer cameraVideoCapturer =
+                cameraEnumerator.createCapturer(cameraName, cameraEventsHandler);
+        log = logTag + "Created CameraVideoCapturer: " + cameraVideoCapturer;
+        Log.d(TAG, log);
+        return cameraVideoCapturer;
     }
 }

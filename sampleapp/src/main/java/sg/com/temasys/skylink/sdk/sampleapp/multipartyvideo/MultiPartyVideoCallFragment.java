@@ -31,6 +31,7 @@ import org.webrtc.SurfaceViewRenderer;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -210,9 +211,11 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             case R.id.startVideo:
                 presenter.onViewRequestStartVideo();
                 break;
-            case R.id.startCamera:
-                presenter.onViewRequestStartVideoCamera();
-                break;
+//            case R.id.startVideoCustom:
+//                presenter.onViewRequestStartVideoCustom();
+//            case R.id.startCamera:
+//                presenter.onViewRequestStartVideoCamera();
+//                break;
             case R.id.startScreen:
                 presenter.onViewRequestStartVideoScreen();
                 break;
@@ -303,19 +306,16 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         // Remove any existing Peer View at index.
         // This may sometimes be the case, for e.g. in screen sharing.
 
-        //This will help in case connect to room before starting local media
-
-        removePeerView(0);
-
         //Create an empty view with black background color
-        selfViewLayout = new FrameLayout(context);
-        selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
-        setLayoutParams(selfViewLayout);
-        remoteViewLayouts[0].addView(selfViewLayout);
-
-        // display the context menu for local view
-        displayPeerMenuOption(0);
-
+        if (Utils.isDefaultNoneVideoDeviceSetting()) {
+            removePeerView(0);
+            selfViewLayout = new FrameLayout(context);
+            selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
+            setLayoutParams(selfViewLayout);
+            remoteViewLayouts[0].addView(selfViewLayout);
+            // display the context menu for local view
+            displayPeerMenuOption(0);
+        }
     }
 
     /**
@@ -457,15 +457,24 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     }
 
     @Override
-    public void onPresenterRequestShowHideButtonStopScreenSharing(boolean isShow) {
-        isStopScreenShareBtnShowing = isShow;
+    public void onPresenterRequestShowButtonStopScreenSharing() {
+        if (isStopScreenShareBtnShowing) {
+            return;
+        }
+
+        isStopScreenShareBtnShowing = true;
 
         WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-        if (isShow) {
+        if (true) {
             windowManager.addView(stopScreenshareFloat, stopScreenshareLayoutParams);
         } else {
             windowManager.removeView(stopScreenshareFloat);
         }
+    }
+
+    @Override
+    public void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
+        Config.setPrefString(Config.DEFAULT_VIDEO_DEVICE, videoDevice.getDeviceName(), (MultiPartyVideoCallActivity) context);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -553,6 +562,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             isStopScreenShareBtnShowing = false;
             showHideButton(stopScreenshareFloat, false);
             onPresenterRequestAddSelfView(localViews[0], SkylinkMedia.MediaType.VIDEO_CAMERA);
+
+            presenter.onViewRequestStopScreenSharing();
         });
 
         // init views array
@@ -615,6 +626,8 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private void requestViewLayout() {
         if (presenter != null) {
             presenter.onViewRequestConnectedLayout();
+            // start a local video base on default device setting
+            presenter.onViewRequestStartLocalMediaIfConfigAllow();
         }
     }
 
@@ -727,17 +740,19 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         PopupMenu popup = new PopupMenu(context, view);
         popup.setOnMenuItemClickListener(this);
 
-        if (localViews[0] == null && localViews[1] == null) {
-            popup.inflate(R.menu.local_view_option_menu_1);
-        } else if (localViews[0] == null && localViews[1] != null && !isLocalCameraDisplay) {
-            popup.inflate(R.menu.local_view_option_menu_2);
-        } else if (localViews[0] != null && localViews[1] != null && isLocalCameraDisplay) {
-            popup.inflate(R.menu.local_view_option_menu_3);
-        } else if (localViews[0] != null && localViews[1] == null && isLocalCameraDisplay) {
-            popup.inflate(R.menu.local_view_option_menu_4);
-        } else if (localViews[0] != null && localViews[1] != null && !isLocalCameraDisplay) {
-            // currently display local screen sharing view, no context menu option
-        }
+        popup.inflate(R.menu.local_view_option_menu_1);
+//
+//        if (localViews[0] == null && localViews[1] == null) {
+//            popup.inflate(R.menu.local_view_option_menu_1);
+//        } else if (localViews[0] == null && localViews[1] != null && !isLocalCameraDisplay) {
+//            popup.inflate(R.menu.local_view_option_menu_2);
+//        } else if (localViews[0] != null && localViews[1] != null && isLocalCameraDisplay) {
+//            popup.inflate(R.menu.local_view_option_menu_3);
+//        } else if (localViews[0] != null && localViews[1] == null && isLocalCameraDisplay) {
+//            popup.inflate(R.menu.local_view_option_menu_4);
+//        } else if (localViews[0] != null && localViews[1] != null && !isLocalCameraDisplay) {
+//            // currently display local screen sharing view, no context menu option
+//        }
 
         popup.show();
     }

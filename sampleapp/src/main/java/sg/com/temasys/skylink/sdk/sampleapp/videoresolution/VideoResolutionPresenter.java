@@ -45,7 +45,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
 
     // The array of SkylinkCaptureFormats support by the current camera.
     private SkylinkCaptureFormat[] captureFormats;
-    private SkylinkMedia.MediaType currentMainVideoTypeSelected;
+    private SkylinkMedia.MediaType currentMainVideoTypeSelected = SkylinkMedia.MediaType.VIDEO_CAMERA;
 
     public VideoResolutionPresenter(Context context) {
         this.context = context;
@@ -172,7 +172,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
         processSentVideoResolutions(width, height, fps);
 
-        String log = "[SA][VideoResSent] The video (" + mediaType.toString() + ") sent to Peer " + peerId +
+        String log = "[SA][VideoResSent] The video (" + mediaType + ") sent to Peer " + peerId +
                 " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
         Log.d(TAG, log);
     }

@@ -288,7 +288,7 @@ public class SmallVideoViewFragment extends Fragment implements
 
     private void processBringViewToMain() {
         if (context != null && context instanceof VideoActivity) {
-            ((VideoActivity) getActivity()).processBringLocalCameraToMain(type);
+            ((VideoActivity) getActivity()).processBringSmallViewToMainView(type);
         }
     }
 

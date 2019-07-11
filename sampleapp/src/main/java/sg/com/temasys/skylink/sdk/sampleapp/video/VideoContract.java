@@ -6,8 +6,9 @@ import android.support.v4.app.Fragment;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
-import java.util.Map;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -71,50 +72,25 @@ public interface VideoContract {
         void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peerList);
 
         /**
-         * Update audio state (muted/on)
-         */
-        void onPresenterRequestUpdateAudioState(boolean isAudioMuted, boolean isToast);
-
-        /**
-         * Update video state (muted/on)
-         */
-        void onPresenterRequestUpdateVideoState(boolean isVideoMuted, boolean isToast);
-
-        /**
-         * Update screen video state (muted/on)
-         */
-        void onPresenterRequestUpdateScreenState(boolean isScreenMuted, boolean isToast);
-
-        /**
          * Update UI details when changing speaker state (on/off)
          */
         void onPresenterRequestChangeSpeakerOutput(boolean isSpeakerOff);
 
         /**
-         * Update UI details when changing audio state (muted/on)
-         */
-        void onPresenterRequestChangeAudioUI(boolean isAudioMute);
-
-        /**
-         * Update UI details when changing video state (muted/on)
-         */
-        void onPresenterRequestChangeVideoUI(boolean isVideoMute);
-
-        /**
-         * Update UI details when changing camera state (muted/on)
-         */
-        void onPresenterRequestChangeCameraUI(boolean isCameraMute, boolean isToast);
-
-        /**
          * Show or hide button stop screen sharing on UI
          */
-        void onPresenterRequestShowHideButtonStopScreenSharing();
+        void onPresenterRequestShowButtonStopScreenSharing();
 
         /**
          * Update UI details when local audio is on
          */
         void onPresenterRequestLocalAudioCapture(String mediaId);
 
+        void onPresenterRequestMediaStateChange(SkylinkMedia.MediaType mediaType, SkylinkMedia.MediaState mediaState, boolean isLocal);
+
+        void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice);
+
+        void onPresenterRequestShowHideSmallView(SkylinkMedia.MediaType mediaType, boolean isShow);
     }
 
     interface Presenter {
@@ -197,6 +173,17 @@ public interface VideoContract {
          * start capturing screen
          */
         void onViewRequestStartScreen();
+
+        void onViewRequestStartLocalMediaIfConfigAllow();
+
+        void onViewRequestStopVideo();
+
+        void onViewRequestToggleVideo();
+
+        void onViewRequestToggleScreen();
+
+
+        void onViewRequestToggleScreen(boolean start);
     }
 
     interface Service extends BaseService<Presenter> {

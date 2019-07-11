@@ -269,23 +269,23 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     private void processCameraNone() {
-        mPresenter.onProcessVideoDevice(null);
+        mPresenter.onProcessVideoDevice(getString(R.string.no_camera));
     }
 
     private void processCameraCustom() {
-        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CUSTOM_CAPTURER);
+        mPresenter.onProcessVideoDevice(getString(R.string.camera_custom));
     }
 
     private void processCameraFront() {
-        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_FRONT.getDeviceName());
     }
 
     private void processCameraBack() {
-        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK.getDeviceName());
     }
 
     private void processScreenDevice() {
-        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.SCREEN);
+        mPresenter.onProcessVideoDevice(SkylinkConfig.VideoDevice.SCREEN.getDeviceName());
     }
 
     private void processVideoResVGA() {

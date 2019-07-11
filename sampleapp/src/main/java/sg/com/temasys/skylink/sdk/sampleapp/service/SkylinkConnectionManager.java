@@ -3,8 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 import android.util.Log;
 
-import org.webrtc.VideoCapturer;
-
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -50,7 +48,7 @@ public class SkylinkConnectionManager {
     /**
      * Initialize a SkylinkConnection object
      */
-    public SkylinkConnection initializeSkylinkConnection(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
+    public SkylinkConnection initializeSkylinkConnection(Constants.CONFIG_TYPE typeCall) {
         String logTag = "[SA][SCM][initializeSkylinkConnection] ";
         String log = logTag;
 
@@ -86,13 +84,6 @@ public class SkylinkConnectionManager {
         // Set Skylink listeners necessary for current demo/call
         skylinkCommonService.setSkylinkListeners();
 
-        // Set custom VideoCapturer if any.
-        if (videoCapturer != null) {
-            log = logTag + "With Custom VideoCapturer: " + videoCapturer + ".";
-            toastLog(TAG, context, log);
-            skylinkConnection.setCustomVideoCapturer(videoCapturer);
-        }
-
         // Get room name and user name in setting
         String mRoomName = Utils.getRoomNameByType(typeCall);
         String mUserName = Utils.getUserNameByType(typeCall);
@@ -106,47 +97,34 @@ public class SkylinkConnectionManager {
     /**
      * Connects to a room using a SkylinkConnectionString that caller MUST ensure is URL safe.
      *
-     * @param typeCall      Specify which is current demo/call like audio/video/file/...
-     * @param videoCapturer Custom {@link VideoCapturer} if desired, null if not.
+     * @param typeCall Specify which is current demo/call like audio/video/file/...
      * @return SkylinkConnection
      */
-    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall, VideoCapturer videoCapturer) {
+    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall) {
         String logTag = "[SA][SCM][connectToRoom] ";
         String log = logTag;
 
-//        //check internet connection
-//        if (!Utils.isInternetOn()) {
-//            log = "Internet connection is off !";
-//            toastLog(TAG, context, log);
-//            return null;
-//        }
-//
-//        if (skylinkCommonService == null) {
-//            log += "Error: SkylinkCommonService is null";
-//            Log.e(TAG, log);
-//            return null;
-//        }
-//
+        //check internet connection
+        if (!Utils.isInternetOn()) {
+            log = "Internet connection is off !";
+            toastLog(TAG, context, log);
+            return null;
+        }
 
+        if (skylinkCommonService == null) {
+            log += "Error: SkylinkCommonService is null";
+            Log.e(TAG, log);
+            return null;
+        }
 
         // Initialize the skylink connection using SkylinkConnectionManager if it is not initialized
         if (skylinkConnection == null) {
-            skylinkConnection = initializeSkylinkConnection(typeCall, videoCapturer);
+            skylinkConnection = initializeSkylinkConnection(typeCall);
         }
 
-//        // Set custom VideoCapturer if any.
-//        if (videoCapturer != null) {
-//            log = logTag + "With Custom VideoCapturer: " + videoCapturer + ".";
-//            toastLog(TAG, context, log);
-//            skylinkConnection.setCustomVideoCapturer(videoCapturer);
-//        }
-//
-//        // Get room name and user name in setting
+        // Get room name and user name in setting
         String mRoomName = Utils.getRoomNameByType(typeCall);
         String mUserName = Utils.getUserNameByType(typeCall);
-//
-//        skylinkCommonService.setRoomName(mRoomName);
-//        skylinkCommonService.setUserName(mUserName);
 
         SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
 
@@ -179,7 +157,7 @@ public class SkylinkConnectionManager {
      * Once disconnect is complete, {@link SkylinkCommonService#onDisconnect(int, String)}
      * will be called.
      */
-    public void disconnectFromRoom() {
+    public boolean disconnectFromRoom() {
         boolean disConnectSuccess = false;
 
         if (skylinkConnection != null)
@@ -187,6 +165,8 @@ public class SkylinkConnectionManager {
 
         if (disConnectSuccess)
             skylinkConnection = null;
+
+        return disConnectSuccess;
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -233,5 +234,11 @@ public abstract class BasePresenter {
     }
 
     public void onServiceRequestLocalScreenCapture(SkylinkMedia localVideo) {
+    }
+
+    public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
+    }
+
+    public void onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice cameraBack) {
     }
 }

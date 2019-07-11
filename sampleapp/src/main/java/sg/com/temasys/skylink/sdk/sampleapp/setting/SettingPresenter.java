@@ -2,8 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
 import android.content.Context;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingContract.Presenter;
+import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -15,7 +14,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTI
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 
-public class SettingPresenter implements Presenter {
+public class SettingPresenter extends BasePresenter implements SettingContract.Presenter {
 
     private Context mContext;
 
@@ -54,24 +53,25 @@ public class SettingPresenter implements Presenter {
             mSettingView.onVideoSpeakerSelected();
         }
 
-        SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
-        if (videoDevice == null) {
-            mSettingView.onCameraNoneSelected();
-        } else {
-            switch (videoDevice) {
-                case CAMERA_FRONT:
-                    mSettingView.onCameraFrontSelected();
-                    break;
-                case CAMERA_BACK:
-                    mSettingView.onCameraBackSelected();
-                    break;
-                case SCREEN:
-                    mSettingView.onScreenDeviceSelected();
-                    break;
-                case CUSTOM_CAPTURER:
-                    mSettingView.onCameraCustomSelected();
-                    break;
-            }
+        String videoDevice = Utils.getDefaultVideoDeviceString();
+        switch (videoDevice) {
+            case Constants.DEFAULT_VIDEO_DEVICE_FRONT_CAMERA:
+                mSettingView.onCameraFrontSelected();
+                break;
+            case Constants.DEFAULT_VIDEO_DEVICE_BACK_CAMERA:
+                mSettingView.onCameraBackSelected();
+                break;
+            case Constants.DEFAULT_VIDEO_DEVICE_SCREEN:
+                mSettingView.onScreenDeviceSelected();
+                break;
+            case Constants.DEFAULT_VIDEO_DEVICE_CUSTOM:
+                mSettingView.onCameraCustomSelected();
+                break;
+            case Constants.DEFAULT_VIDEO_DEVICE_NONE:
+                mSettingView.onCameraNoneSelected();
+                break;
+            default:
+                mSettingView.onCameraFrontSelected();
         }
 
         String defaultVideoResolution = Utils.getDefaultVideoResolution();
@@ -105,14 +105,9 @@ public class SettingPresenter implements Presenter {
     }
 
     @Override
-    public void onProcessVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
+    public void onProcessVideoDevice(String videoDevice) {
         //save default camera output to save sharePreference
-        //value true is camera back, false is camera front
-        if (videoDevice != null) {
-            Config.setPrefString(DEFAULT_VIDEO_DEVICE, videoDevice.name(), (SettingActivity) mContext);
-        } else {
-            Config.setPrefString(DEFAULT_VIDEO_DEVICE, Constants.NON_VIDEO_DEVICE_DEFAULT, (SettingActivity) mContext);
-        }
+        Config.setPrefString(DEFAULT_VIDEO_DEVICE, videoDevice, (SettingActivity) mContext);
     }
 
     @Override

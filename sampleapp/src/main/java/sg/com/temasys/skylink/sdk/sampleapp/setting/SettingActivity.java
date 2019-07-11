@@ -1,5 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -55,4 +56,5 @@ public class SettingActivity extends AppCompatActivity {
         //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, SETTING_FRAGMENT_TAG, mSettingFragment);
     }
+
 }

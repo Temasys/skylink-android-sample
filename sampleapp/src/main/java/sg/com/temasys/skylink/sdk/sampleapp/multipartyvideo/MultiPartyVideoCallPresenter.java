@@ -94,6 +94,42 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
+    public void onViewRequestStartLocalMediaIfConfigAllow() {
+        String log = "[SA][onViewRequestStartLocalMediaIfConfigAllow] ";
+        if (Utils.isDefaultNoneVideoDeviceSetting()) {
+            log += " Default video device setting is No device. So do not start any local media automatically! ";
+            Log.w(TAG, log);
+            return;
+        }
+
+        // start local audio
+        multiVideoCallService.startLocalAudio();
+
+        // check the default setting for video device and start local video accordingly
+        if (Utils.isDefaultCameraDeviceSetting()) {
+            multiVideoCallService.startLocalVideo();
+            return;
+        }
+
+        if (Utils.isDefaultScreenDeviceSetting()) {
+            multiVideoCallService.startLocalScreen();
+            return;
+        }
+
+        // we create a custom video device from back camera of the device, so start custom video device
+        // will similarly start back camera
+        if (Utils.isDefaultCustomVideoDeviceSetting()) {
+            multiVideoCallService.startLocalCustomVideo();
+            return;
+        }
+    }
+
+    @Override
+    public void onViewRequestStopScreenSharing() {
+        multiVideoCallService.toggleScreen();
+    }
+
+    @Override
     public void onViewRequestExit() {
         //process disconnect from room
         multiVideoCallService.disconnectFromRoom();
@@ -108,7 +144,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
 //        if (videoLocalState.isCameraCapturerStop()) {
 //            if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
-//                multiVideoCallService.toggleCamera(null);
+//                multiVideoCallService.toggleVideo(null);
 //                videoLocalState.setCameraCapturerStop(false);
 //            }
 //        }
@@ -120,8 +156,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         // apply for video camera only
 
 //        if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
-//            boolean toggleCamera = multiVideoCallService.toggleCamera(null, false);
-//            videoLocalState.setCameraCapturerStop(toggleCamera);
+//            boolean toggleVideo = multiVideoCallService.toggleVideo(null, false);
+//            videoLocalState.setCameraCapturerStop(toggleVideo);
 //        }
     }
 
@@ -247,8 +283,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
+    public void onViewRequestStartVideoCustom() {
+        multiVideoCallService.startLocalCustomVideo();
+    }
+
+    @Override
     public void onViewRequestStartVideoCamera() {
-        multiVideoCallService.startLocalCamera();
+        multiVideoCallService.startLocalVideo();
     }
 
     @Override
@@ -263,7 +304,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             multiVideoCallService.startLocalScreen();
         } else {
             // start front camera
-            multiVideoCallService.startLocalFrontCamera();
+            multiVideoCallService.startLocalVideo();
         }
     }
 
@@ -281,7 +322,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         // or warning dialog if permission is deny
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(context)) {
-                multiVideoCallView.onPresenterRequestShowHideButtonStopScreenSharing(true);
+                multiVideoCallView.onPresenterRequestShowButtonStopScreenSharing();
             } else {
                 permissionUtils.displayOverlayButtonPermissionWarning(context);
             }
@@ -338,7 +379,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType());
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType(), true);
             multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
 
         } else {
@@ -356,7 +397,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType());
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType(), true);
             multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
 
         } else {
@@ -458,6 +499,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         permissionUtils.onPermissionRequiredHandler(info, TAG, context, multiVideoCallView.onPresenterRequestGetFragmentInstance());
+    }
+
+    @Override
+    public void onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
+        multiVideoCallView.onPresenterRequestChangeDefaultVideoDevice(videoDevice);
     }
 
     //----------------------------------------------------------------------------------------------

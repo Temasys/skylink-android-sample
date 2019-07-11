@@ -686,6 +686,7 @@ public class PermissionUtils {
      * @return true if the permission already grant before
      */
     public static boolean requestButtonOverlayPermission(Context context, Fragment fragmentInstance) {
+        Log.e("muoipt", "requestButtonOverlayPermission");
         /** check if we already  have permission to draw over other apps */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(context)) {

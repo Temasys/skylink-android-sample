@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -145,6 +146,8 @@ public class VideoActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e("muoipt", "onActivityResult");
+
         videoPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
     }
 
@@ -230,6 +233,8 @@ public class VideoActivity extends AppCompatActivity {
                         .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                         .show(remoteVideoCameraFragment)
                         .commit();
+                remoteVideoCameraFragment.displayView();
+                contentFrameRemoteCameraView.setVisibility(View.VISIBLE);
             }
         } else {
             if (isFullscreenMode) {
@@ -241,6 +246,8 @@ public class VideoActivity extends AppCompatActivity {
                         .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
                         .hide(remoteVideoCameraFragment)
                         .commit();
+                remoteVideoCameraFragment.hide();
+                contentFrameRemoteCameraView.setVisibility(View.GONE);
             }
         }
     }
@@ -303,7 +310,7 @@ public class VideoActivity extends AppCompatActivity {
         view.setLayoutParams(layoutParams);
     }
 
-    public void processBringLocalCameraToMain(VIDEO_TYPE type) {
+    public void processBringSmallViewToMainView(VIDEO_TYPE type) {
         videoMainFragment.bringSmallViewToMainView(type);
 
         switch (type) {
@@ -360,5 +367,46 @@ public class VideoActivity extends AppCompatActivity {
 
     public FrameLayout getContentFrameRemoteScreenView() {
         return contentFrameRemoteScreenView;
+    }
+
+    public SmallVideoViewFragment getLocalVideoCameraFragment() {
+        return localVideoCameraFragment;
+    }
+
+    public SmallVideoViewFragment getLocalVideoScreenFragment() {
+        return localVideoScreenFragment;
+    }
+
+    public SmallVideoViewFragment getRemoteVideoCameraFragment() {
+        return remoteVideoCameraFragment;
+    }
+
+    public SmallVideoViewFragment getRemoteVideoScreenFragment() {
+        return remoteVideoScreenFragment;
+    }
+
+    public void detachSmallView(SmallVideoViewFragment smallVideoViewFragment) {
+        if (smallVideoViewFragment == localVideoCameraFragment) {
+            onShowHideLocalCameraViewFragment(false, false);
+        } else if (smallVideoViewFragment == localVideoScreenFragment) {
+            onShowHideLocalScreenViewFragment(false, false);
+        } else if (smallVideoViewFragment == remoteVideoCameraFragment) {
+            onShowHideRemoteCameraViewFragment(false, false);
+        } else if (smallVideoViewFragment == remoteVideoScreenFragment) {
+            onShowHideRemoteScreenViewFragment(false, false);
+        }
+    }
+
+    public void attachSmallView(SmallVideoViewFragment smallVideoViewFragment) {
+        if (smallVideoViewFragment == localVideoCameraFragment) {
+            onShowHideLocalCameraViewFragment(true, false);
+        } else if (smallVideoViewFragment == localVideoScreenFragment) {
+            onShowHideLocalScreenViewFragment(true, false);
+        } else if (smallVideoViewFragment == remoteVideoCameraFragment) {
+            onShowHideRemoteCameraViewFragment(true, false);
+        } else if (smallVideoViewFragment == remoteVideoScreenFragment) {
+            onShowHideRemoteScreenViewFragment(true, false);
+        }
+
     }
 }

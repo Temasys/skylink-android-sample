@@ -7,6 +7,7 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
@@ -64,7 +65,9 @@ public interface MultiPartyVideoCallContract {
         /**
          * Show or hide button stop screen sharing on UI
          */
-        void onPresenterRequestShowHideButtonStopScreenSharing(boolean isShow);
+        void onPresenterRequestShowButtonStopScreenSharing();
+
+        void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice);
     }
 
     interface Presenter {
@@ -174,6 +177,8 @@ public interface MultiPartyVideoCallContract {
          */
         void onViewRequestStartVideo();
 
+        void onViewRequestStartVideoCustom();
+
         /**
          * Start local video from the camera base on the default video device setting for camera (front/back)
          */
@@ -193,6 +198,10 @@ public interface MultiPartyVideoCallContract {
          * process the permission for screen sharing
          */
         void onViewRequestActivityResult(int requestCode, int resultCode, Intent data);
+
+        void onViewRequestStartLocalMediaIfConfigAllow();
+
+        void onViewRequestStopScreenSharing();
     }
 
     interface Service extends BaseService<Presenter> {

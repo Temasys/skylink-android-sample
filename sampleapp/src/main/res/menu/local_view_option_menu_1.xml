@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-<item
-    android:id="@+id/startAudio"
-    android:title="Start audio"/>
-<item
-    android:id="@+id/startVideo"
-    android:title="Start video"/>
+    <item
+        android:id="@+id/startAudio"
+        android:title="Start audio"/>
+    <item
+        android:id="@+id/startVideo"
+        android:title="Start video"/>
+    <item
+        android:id="@+id/startScreen"
+        android:title="Start Screen"/>
+    <item
+        android:id="@+id/switchCamera"
+        android:title="Switch camera"/>
+    <item
+        android:id="@+id/inputVideoRes"
+        android:title="Input video resolution"/>
 </menu>
