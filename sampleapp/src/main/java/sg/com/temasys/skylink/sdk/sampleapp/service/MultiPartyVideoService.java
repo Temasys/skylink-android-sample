@@ -207,8 +207,10 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
     }
 
-    public void stopLocalVideo() {
-        mSkylinkConnection.toggleVideo(localVideoId);
+    public void toggleVideo(boolean isRestart) {
+        if (mSkylinkConnection != null && localVideoId != null) {
+            mSkylinkConnection.toggleVideo(localVideoId, isRestart);
+        }
     }
 
     public void startLocalScreen() {
@@ -320,15 +322,14 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get sent video resolution.
      *                  Use -1 to get sent video resolutions of all connected remote Peers.
-     * @param videoId   id of the SkylinkMedia video object that to get video resolution
-     *                  input null for local camera video
+     * @param videoType Type of the SkylinkMedia video object that to get video resolution
      */
-    public void getSentVideoResolution(int peerIndex, String videoId) {
+    public void getSentVideoResolution(int peerIndex, SkylinkMedia.MediaType videoType) {
         if (mSkylinkConnection != null) {
             if (peerIndex == -1) {
-                mSkylinkConnection.getSentVideoResolutionByVideoId(null, videoId);
+                mSkylinkConnection.getSentVideoResolutionByVideoType(null, videoType);
             } else {
-                mSkylinkConnection.getSentVideoResolutionByVideoId(mPeersList.get(peerIndex).getPeerId(), videoId);
+                mSkylinkConnection.getSentVideoResolutionByVideoType(mPeersList.get(peerIndex).getPeerId(), videoType);
             }
         }
     }
@@ -340,15 +341,14 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get received video resolution.
      *                  Use -1 to get received video resolutions of all connected remote Peers.
-     * @param videoId   id of the SkylinkMedia video object to get received video resolution
-     *                  input null for remote camera video
+     * @param videoType type of the SkylinkMedia video object to get received video resolution
      */
-    public void getReceivedVideoResolution(int peerIndex, String videoId) {
+    public void getReceivedVideoResolution(int peerIndex, SkylinkMedia.MediaType videoType) {
         if (mSkylinkConnection != null) {
             if (peerIndex == -1) {
-                mSkylinkConnection.getReceivedVideoResolutionByVideoId(null, videoId);
+                mSkylinkConnection.getReceivedVideoResolutionByVideoType(null, videoType);
             } else {
-                mSkylinkConnection.getReceivedVideoResolutionByVideoId(mPeersList.get(peerIndex).getPeerId(), videoId);
+                mSkylinkConnection.getReceivedVideoResolutionByVideoType(mPeersList.get(peerIndex).getPeerId(), videoType);
             }
         }
     }
@@ -605,8 +605,16 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         return mPeersList.get(index);
     }
 
-    enum CameraState {
-        CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED
+    public String localAudioId() {
+        return localAudioId;
+    }
+
+    public String getLocalVideoId() {
+        return localVideoId;
+    }
+
+    public String getLocalScreenId() {
+        return localScreenSharingId;
     }
 
 }

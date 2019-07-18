@@ -660,7 +660,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         SkylinkPeer removedPeer = null;
 
         // re-fill all peers, except local peer
-        for (int i = 0; i < mPeersList.size(); i++) {
+        for (int i = 1; i < mPeersList.size(); i++) {
             if (mPeersList.get(i).getPeerId().equals(remotePeerId)) {
                 removedPeer = mPeersList.get(i);
                 mPeersList.remove(i);
@@ -670,7 +670,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
 
         //update UI when remote peer lelf the room
-        presenter.onServiceRequestRemotePeerLeave(removedPeer, removeIndex);
+        presenter.onServiceRequestRemotePeerLeave(removedPeer, removeIndex - 1);
 
         int numRemotePeers = mPeersList.size() - 1;
         if (numRemotePeers >= 0) {
@@ -1366,7 +1366,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         return mainVideoId;
     }
 
-    protected void clearInstance(){
+    protected void clearInstance() {
         //remove all peers in room
         if (mPeersList != null)
             mPeersList.clear();

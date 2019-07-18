@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -12,10 +11,11 @@ import android.widget.RelativeLayout;
 import org.webrtc.SurfaceViewRenderer;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.VIDEO_TYPE;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.SmallVideoViewFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionPresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.*;
 
 /**
  * Created by muoi.pham on 04/04/19.
@@ -146,8 +146,6 @@ public class VideoActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e("muoipt", "onActivityResult");
-
         videoPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
     }
 
@@ -166,6 +164,9 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     public void onShowHideLocalCameraViewFragment(boolean isVisible, boolean isFullscreenMode) {
+        if (localVideoCameraFragment.getView() == null)
+            return;
+
         if (isVisible) {
             if (isFullscreenMode) {
                 localVideoCameraFragment.displayView();
@@ -195,6 +196,9 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     public void onShowHideLocalScreenViewFragment(boolean isVisible, boolean isFullscreenMode) {
+        if (localVideoScreenFragment.getView() == null)
+            return;
+
         if (isVisible) {
             if (isFullscreenMode) {
                 localVideoScreenFragment.displayView();
@@ -224,6 +228,9 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     public void onShowHideRemoteCameraViewFragment(boolean isVisible, boolean isFullscreenMode) {
+        if (remoteVideoCameraFragment.getView() == null)
+            return;
+
         if (isVisible) {
             if (isFullscreenMode) {
                 remoteVideoCameraFragment.displayView();
@@ -253,6 +260,9 @@ public class VideoActivity extends AppCompatActivity {
     }
 
     public void onShowHideRemoteScreenViewFragment(boolean isVisible, boolean isFullscreenMode) {
+        if (remoteVideoScreenFragment.getView() == null)
+            return;
+
         if (isVisible) {
             if (isFullscreenMode) {
                 remoteVideoScreenFragment.displayView();
@@ -408,5 +418,33 @@ public class VideoActivity extends AppCompatActivity {
             onShowHideRemoteScreenViewFragment(true, false);
         }
 
+    }
+
+    public void resetResolution() {
+        videoResolutionFragment.resetResolution();
+    }
+
+    public void resetSmallViews() {
+        onShowHideLocalCameraViewFragment(false, false);
+        onShowHideLocalScreenViewFragment(false, false);
+        onShowHideRemoteCameraViewFragment(false, false);
+        onShowHideRemoteScreenViewFragment(false, false);
+    }
+
+    public void removeView(Constants.VIDEO_TYPE videoType) {
+        switch (videoType) {
+            case LOCAL_CAMERA:
+                localVideoCameraFragment.setView(null);
+                break;
+            case LOCAL_SCREEN:
+                localVideoScreenFragment.setView(null);
+                break;
+            case REMOTE_CAMERA:
+                remoteVideoCameraFragment.setView(null);
+                break;
+            case REMOTE_SCREEN:
+                remoteVideoScreenFragment.setView(null);
+                break;
+        }
     }
 }

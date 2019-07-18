@@ -136,16 +136,18 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onResume() {
         super.onResume();
 
-        // Toggle camera back to previous state if required.
-        presenter.onViewRequestResume();
+        // just in case that user are not sharing screen, then stop the camera
+        if (localViews[1] == null || !isStopScreenShareBtnShowing) {
+            presenter.onViewRequestResume();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        // Stop local video source only if not changing orientation
-        if (!((MultiPartyVideoCallActivity) context).isChangingConfigurations()) {
+        // just in case that user are not sharing screen, then stop the camera
+        if (localViews[1] == null || !isStopScreenShareBtnShowing) {
             presenter.onViewRequestPause();
         }
     }
@@ -312,7 +314,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             selfViewLayout = new FrameLayout(context);
             selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
             setLayoutParams(selfViewLayout);
-            remoteViewLayouts[0].addView(selfViewLayout);
+            selfViewLayout.addView(selfViewLayout);
             // display the context menu for local view
             displayPeerMenuOption(0);
         }
@@ -330,7 +332,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         updateUiRemotePeerJoin(newPeer, index);
 
         // add emty black view to layout
-        if (index < 1 || index > remoteViewLayouts.length)
+        if (index < 0 || index >= remoteViewLayouts.length)
             return;
 
         // Remove any existing Peer View at index.
@@ -487,7 +489,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         FrameLayout peer2Layout = rootView.findViewById(R.id.peer_2);
         FrameLayout peer3Layout = rootView.findViewById(R.id.peer_3);
 
-        remoteViewLayouts = new FrameLayout[]{selfViewLayout, peer1Layout, peer2Layout, peer3Layout};
+        remoteViewLayouts = new FrameLayout[]{peer1Layout, peer2Layout, peer3Layout};
 
         btnOptionLocal = rootView.findViewById(R.id.btnLocalPeerMenu);
         btnOptionPeer1 = rootView.findViewById(R.id.btnPeer1Menu);
@@ -571,15 +573,13 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         remoteViews = new SurfaceViewRenderer[3][2];
         isRemoteCameraDisplay = new boolean[3];
 
+        // click on the view to switch between camera view and screen sharing view
+        selfViewLayout.setOnClickListener(view -> switchLocalView());
+
         // setup click event for remoteViewLayouts
-        // click on the view to switch between local camera and local screen sharing
-        for (int i = 0; i < remoteViewLayouts.length; i++) {
-            int index = i;
-            if (index == 0) {
-                switchLocalView();
-            } else {
-                remoteViewLayouts[i].setOnClickListener(view -> switchRemoteView(index - 1));
-            }
+        for (int index = 0; index < remoteViewLayouts.length; index++) {
+            int finalIndex = index;
+            remoteViewLayouts[finalIndex].setOnClickListener(view -> switchRemoteView(finalIndex));
         }
     }
 
@@ -741,18 +741,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         popup.setOnMenuItemClickListener(this);
 
         popup.inflate(R.menu.local_view_option_menu_1);
-//
-//        if (localViews[0] == null && localViews[1] == null) {
-//            popup.inflate(R.menu.local_view_option_menu_1);
-//        } else if (localViews[0] == null && localViews[1] != null && !isLocalCameraDisplay) {
-//            popup.inflate(R.menu.local_view_option_menu_2);
-//        } else if (localViews[0] != null && localViews[1] != null && isLocalCameraDisplay) {
-//            popup.inflate(R.menu.local_view_option_menu_3);
-//        } else if (localViews[0] != null && localViews[1] == null && isLocalCameraDisplay) {
-//            popup.inflate(R.menu.local_view_option_menu_4);
-//        } else if (localViews[0] != null && localViews[1] != null && !isLocalCameraDisplay) {
-//            // currently display local screen sharing view, no context menu option
-//        }
 
         popup.show();
     }
@@ -836,31 +824,27 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         // Remove video from previous parent, if any.
         Utils.removeViewFromParent(videoView);
 
-        // Remove self view if its already added
-        remoteViewLayouts[0].removeAllViews();
+        selfViewLayout.removeAllViews();
 
-        // Add new local videoView to frame
         setLayoutParams(videoView);
-        remoteViewLayouts[0].addView(videoView);
 
-        remoteViewLayouts[0].setRotationX(180);
-        remoteViewLayouts[0].setRotationY(180);
-
+        selfViewLayout.addView(videoView);
     }
 
     /**
      * Display remote video view, using both in remote camera and remote screen sharing at a specific index
      */
     private void displayRemoteView(int peerIndex, SurfaceViewRenderer remoteView) {
-        if (remoteView == null || peerIndex < 1 || peerIndex > remoteViewLayouts.length)
+        if (remoteView == null || peerIndex < 0 || peerIndex >= remoteViewLayouts.length)
             return;
 
-        // Remove any existing Peer View at index.
-        // This may sometimes be the case, for e.g. in screen sharing.
-        removePeerView(peerIndex);
+        // Remove video from previous parent, if any.
+        Utils.removeViewFromParent(remoteView);
 
-        // Add new remote videoView to frame at specific position
+        remoteViewLayouts[peerIndex].removeAllViews();
+
         setLayoutParams(remoteView);
+
         remoteViewLayouts[peerIndex].addView(remoteView);
     }
 
@@ -868,7 +852,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * Switch between local camera view and local screen sharing
      */
     private void switchLocalView() {
-        if (localViews == null) {
+        if (localViews == null || localViews[0] == null || localViews[1] == null) {
             return;
         }
 
@@ -877,13 +861,16 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         } else if (!isLocalCameraDisplay && localViews[0] != null) {
             displayLocalView(localViews[0]);
         }
+
+        isLocalCameraDisplay = !isLocalCameraDisplay;
+
     }
 
     /**
      * switch between remote camera view and remote screen sharing at a specific index
      */
     private void switchRemoteView(int index) {
-        if (remoteViews == null)
+        if (remoteViews == null || remoteViews[index][0] == null || remoteViews[index][1] == null)
             return;
 
         if (isRemoteCameraDisplay[index] && remoteViews[index][1] != null) {
@@ -891,5 +878,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         } else if (!isRemoteCameraDisplay[index] && remoteViews[index][0] != null) {
             displayRemoteView(index, remoteViews[index][0]);
         }
+
+        isRemoteCameraDisplay[index] = !isRemoteCameraDisplay[index];
     }
 }

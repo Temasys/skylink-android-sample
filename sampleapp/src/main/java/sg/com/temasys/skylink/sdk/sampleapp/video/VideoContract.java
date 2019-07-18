@@ -111,11 +111,6 @@ public interface VideoContract {
         void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
         /**
-         * process logic when user deny the permission for overlay button
-         */
-        void onViewRequestOverlayPermissionDeny();
-
-        /**
          * process change audio output between headset and speaker
          */
         void onViewRequestChangeSpeakerOutput();
@@ -164,19 +159,7 @@ public interface VideoContract {
          */
         void onViewRequestStartAudio();
 
-        /**
-         * start local video base on the default video device setting
-         */
-        void onViewRequestStartVideo();
-
-        /**
-         * start capturing screen
-         */
-        void onViewRequestStartScreen();
-
         void onViewRequestStartLocalMediaIfConfigAllow();
-
-        void onViewRequestStopVideo();
 
         void onViewRequestToggleVideo();
 

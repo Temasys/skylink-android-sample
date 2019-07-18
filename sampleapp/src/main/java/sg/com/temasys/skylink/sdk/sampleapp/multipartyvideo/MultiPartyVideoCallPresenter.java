@@ -138,27 +138,16 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onViewRequestResume() {
-        // Toggle camera back to previous state if required.
-        // apply for video camera only
-
-
-//        if (videoLocalState.isCameraCapturerStop()) {
-//            if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
-//                multiVideoCallService.toggleVideo(null);
-//                videoLocalState.setCameraCapturerStop(false);
-//            }
-//        }
+        // restart camera to continue capturing when resume
+        multiVideoCallService.toggleVideo(true);
     }
 
     @Override
     public void onViewRequestPause() {
-        // Stop camera while view paused
-        // apply for video camera only
+        //stop camera when pausing so that camera will be available for the others to use
+        // just in case that user are not sharing screen
 
-//        if (multiVideoCallService.getVideoView(null, SkylinkMedia.MEDIA_TYPE.VIDEO_CAMERA) != null) {
-//            boolean toggleVideo = multiVideoCallService.toggleVideo(null, false);
-//            videoLocalState.setCameraCapturerStop(toggleVideo);
-//        }
+        multiVideoCallService.toggleVideo(false);
     }
 
     @Override
@@ -194,13 +183,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onViewRequestGetSentVideoResolution(int peerIndex) {
         // get video resolution sent to remote peer(s)
-        multiVideoCallService.getSentVideoResolution(peerIndex, null);
+        multiVideoCallService.getSentVideoResolution(peerIndex, SkylinkMedia.MediaType.VIDEO_CAMERA);
     }
 
     @Override
     public void onViewRequestGetReceivedVideoResolution(int peerIndex) {
         //get received video resolution from remote peer(s)
-        multiVideoCallService.getReceivedVideoResolution(peerIndex, null);
+        multiVideoCallService.getReceivedVideoResolution(peerIndex, SkylinkMedia.MediaType.VIDEO_CAMERA);
     }
 
     @Override
@@ -434,7 +423,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
         // add new peer button in action bar
-        multiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, multiVideoCallService.getTotalPeersInRoom() - 1);
+        multiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, multiVideoCallService.getTotalPeersInRoom() - 2);
 
         // add new webRTCStats for peer
         isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
@@ -565,7 +554,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     private void processAddRemoteView(String remotePeerId, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer videoView) {
 
-        int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId);
+        int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId) - 1;
 
         multiVideoCallView.onPresenterRequestAddRemoteView(index, mediaType, videoView);
     }

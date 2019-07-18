@@ -13,20 +13,20 @@ public class VideoLocalState implements Serializable {
     // current video state
     private boolean videoMute;
 
-    // current camera state
+    // current state of camera capturer;
     private boolean cameraCapturerStop;
 
     // current screen state
     private boolean screenMute;
 
-    // current screen capturer;
+    // current state of screen capturer;
     private boolean screenCapturerStop;
 
     public VideoLocalState() {
         this.audioMute = false;
         this.videoMute = false;
-        this.cameraCapturerStop = false;
         this.screenMute = false;
+        this.cameraCapturerStop = false;
         this.screenCapturerStop = false;
     }
 

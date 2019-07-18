@@ -61,6 +61,10 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         this.videoService = new VideoService(context);
         this.videoService.setPresenter(this);
         this.permissionUtils = new PermissionUtils();
+
+        // set the init state of currentVideoLocalState, so we can start capturing later
+        currentVideoLocalState.setCameraCapturerStop(true);
+        currentVideoLocalState.setScreenCapturerStop(true);
     }
 
     public void setMainView(VideoContract.MainView view) {
@@ -102,8 +106,17 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onViewRequestResume() {
-        // restart camera when view is displayed (again)
-        videoService.toggleVideo(true);
+
+        // do not process if user has not started video from camera
+        if (videoService.getLocalVideoId() == null) {
+            return;
+        }
+
+        // turn back camera to previous state
+        boolean localCameraStop = currentVideoLocalState.isCameraCapturerStop();
+
+        videoService.toggleVideo(!localCameraStop);
+
     }
 
     @Override
@@ -132,6 +145,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         boolean isAudioMute = currentVideoLocalState.isAudioMute();
 
         processAudioStateChanged(!isAudioMute);
+
+        currentVideoLocalState.setAudioMute(!isAudioMute);
     }
 
     @Override
@@ -139,6 +154,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         boolean isVideoMute = currentVideoLocalState.isVideoMute();
 
         processVideoStateChanged(!isVideoMute);
+
+        currentVideoLocalState.setVideoMute(!isVideoMute);
     }
 
     @Override
@@ -146,6 +163,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         boolean isScreenMute = currentVideoLocalState.isScreenMute();
 
         processScreenStateChanged(!isScreenMute);
+
+        currentVideoLocalState.setScreenMute(!isScreenMute);
     }
 
     @Override
@@ -165,34 +184,28 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onViewRequestActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e("muoipt", "onViewRequestActivityResult");
-
         permissionUtils.onRequestActivityResultHandler(requestCode, resultCode, data);
 
+        // for displaying overlay button permission
         if (resultCode == Activity.RESULT_OK && data != null) {
-            //show the stop screen share button
+            // send request permission for displaying overlay button
             if (requestButtonOverlayPermission()) {
-                Log.e("muoipt", "requestButtonOverlayPermission return true, now can process later");
+                mainView.onPresenterRequestShowButtonStopScreenSharing();
             }
+            return;
         }
 
-        // display overlay button if permission is grant
-        // or warning dialog if permission is deny
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(context)) {
                 mainView.onPresenterRequestShowButtonStopScreenSharing();
             } else {
-                onViewRequestOverlayPermissionDeny();
+                if (permissionUtils.isSendOverlayAlready()) {
+                    permissionUtils.displayOverlayButtonPermissionWarning(context);
+                } else {
+                    requestButtonOverlayPermission();
+                }
             }
         }
-    }
-
-    /**
-     * display a warning if user deny the file permission
-     */
-    @Override
-    public void onViewRequestOverlayPermissionDeny() {
-        permissionUtils.displayOverlayButtonPermissionWarning(context);
     }
 
     /**
@@ -214,35 +227,30 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestStartVideo() {
-        videoService.startLocalVideo();
-    }
-
-    @Override
-    public void onViewRequestStopVideo() {
-        videoService.stopLocalVideo();
-    }
-
-    @Override
     public void onViewRequestToggleVideo() {
         // implement start or stop video base on the state of the current video from camera
-        videoService.toggleVideo();
+        boolean isCameraStart = currentVideoLocalState.isCameraCapturerStop();
+
+        videoService.toggleVideo(isCameraStart);
+
+        currentVideoLocalState.setCameraCapturerStop(!isCameraStart);
     }
 
     @Override
     public void onViewRequestToggleScreen() {
-        videoService.toggleScreen();
+        boolean isScreenStart = currentVideoLocalState.isScreenCapturerStop();
+
+        videoService.toggleScreen(isScreenStart);
+
+        currentVideoLocalState.setScreenCapturerStop(!isScreenStart);
     }
 
     @Override
     public void onViewRequestToggleScreen(boolean start) {
         // implement start or stop video base on the state of the current screen video
         videoService.toggleScreen(start);
-    }
 
-    @Override
-    public void onViewRequestStartScreen() {
-        videoService.startLocalScreen();
+        currentVideoLocalState.setScreenCapturerStop(!start);
     }
 
     @Override
@@ -350,6 +358,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //notify view to change the UI
         mainView.onPresenterRequestAddCameraSelfView(localVideo.getMediaId(), selfVideoView);
+
+        // change state of currentVideoLocalState
+        currentVideoLocalState.setCameraCapturerStop(false);
     }
 
     @Override
@@ -369,6 +380,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //notify view to change the UI
         mainView.onPresenterRequestAddScreenSelfView(localScreen.getMediaId(), selfVideoView);
+
+        // change state of currentVideoLocalState
+        currentVideoLocalState.setScreenCapturerStop(false);
     }
 
     @Override
@@ -401,7 +415,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
+    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo
+            remotePeerUserInfo) {
         log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
                 "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
                 "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
@@ -455,11 +470,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //connect to SDK
         videoService.connectToRoom(Constants.CONFIG_TYPE.VIDEO);
-
-        //Refresh currentVideoLocalState
-        currentVideoLocalState.setAudioMute(false);
-        currentVideoLocalState.setVideoMute(false);
-        currentVideoLocalState.setCameraCapturerStop(false);
     }
 
     /**
@@ -480,30 +490,18 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     // If audio is enabled, mute audio and if audio is mute, then enable it
     private void processAudioStateChanged(boolean isAudioMuted) {
-
-        //save audioMuted for other usage
-        currentVideoLocalState.setAudioMute(isAudioMuted);
-
         //set mute audio to sdk
         videoService.muteLocalAudio(isAudioMuted);
     }
 
     // If audio is enabled, mute audio and if audio is mute, then enable it
     private void processVideoStateChanged(boolean isVideoMuted) {
-
-        //save audioMuted for other usage
-        currentVideoLocalState.setVideoMute(isVideoMuted);
-
         //set mute audio to sdk
         videoService.muteLocalVideo(isVideoMuted);
     }
 
     // If screen video is enabled, mute screen video and if screen video is mute, then enable it
     private void processScreenStateChanged(boolean isScreenMuted) {
-
-        //save audioMuted for other usage
-        currentVideoLocalState.setScreenMute(isScreenMuted);
-
         //set mute screen video to sdk
         videoService.muteLocalScreen(isScreenMuted);
     }

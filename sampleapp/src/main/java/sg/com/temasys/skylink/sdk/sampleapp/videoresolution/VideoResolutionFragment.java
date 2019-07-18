@@ -67,6 +67,28 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
         this.presenter = presenter;
     }
 
+    public void resetResolution() {
+        txtMinWH.setText("widthxheight");
+        txtMaxWH.setText("widthxheight");
+        txtMinFps.setText("Fps");
+        txtMaxFps.setText("Fps");
+        txtInputWH.setText("widthxheight");
+        txtSentWH.setText("widthxheight");
+        txtRecceivedWH.setText("widthxheight");
+
+        // init seekbars
+        seekBarWidthHeight.setType(CustomSeekBar.Seekbar_Type.WIDTH_HEIGHT);
+        seekBarFps.setType(CustomSeekBar.Seekbar_Type.FPS);
+        seekBarWidthHeight.setCurrentWidthHeight("WidthxHeight");
+        seekBarFps.setCurrentWidthHeight("Fps");
+
+        seekBarChangeListenerResDim = getSeekBarChangeListenerDim();
+        seekBarWidthHeight.setOnSeekBarChangeListener(seekBarChangeListenerResDim);
+
+        seekBarChangeListenerResFps = getSeekBarChangeListenerFps();
+        seekBarFps.setOnSeekBarChangeListener(seekBarChangeListenerResFps);
+    }
+
     //----------------------------------------------------------------------------------------------
     // Fragment life cycle methods
     //----------------------------------------------------------------------------------------------
@@ -225,25 +247,7 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
             frameVideoRes.setBackgroundResource(R.drawable.frame_layout_round_border_topright);
         }
 
-        txtMinWH.setText("widthxheight");
-        txtMaxWH.setText("widthxheight");
-        txtMinFps.setText("Fps");
-        txtMaxFps.setText("Fps");
-        txtInputWH.setText("widthxheight");
-        txtSentWH.setText("widthxheight");
-        txtRecceivedWH.setText("widthxheight");
-
-        // init seekbars
-        seekBarWidthHeight.setType(CustomSeekBar.Seekbar_Type.WIDTH_HEIGHT);
-        seekBarFps.setType(CustomSeekBar.Seekbar_Type.FPS);
-        seekBarWidthHeight.setCurrentWidthHeight("WidthxHeight");
-        seekBarFps.setCurrentWidthHeight("Fps");
-
-        seekBarChangeListenerResDim = getSeekBarChangeListenerDim();
-        seekBarWidthHeight.setOnSeekBarChangeListener(seekBarChangeListenerResDim);
-
-        seekBarChangeListenerResFps = getSeekBarChangeListenerFps();
-        seekBarFps.setOnSeekBarChangeListener(seekBarChangeListenerResFps);
+        resetResolution();
 
         btnGetVideoRes.setOnClickListener(view -> presenter.onViewRequestGetVideoResolutions());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -362,7 +366,6 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
 
         return null;
     }
-
 
     //----------------------------------------------------------------------------------------------
     // Call back interface for interacting with the owner

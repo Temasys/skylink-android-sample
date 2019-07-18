@@ -212,42 +212,8 @@ public class SmallVideoViewFragment extends Fragment implements
         currentView = localView;
     }
 
-    public void setViewRemote(SurfaceViewRenderer remoteView) {
-        if (remoteView == null) {
-            String log = "[SA][addRemoteView] Not adding remote view as videoView is null!";
-            Log.d(TAG, log);
-            return;
-        }
-
-        // If previous self video exists,
-        // Set new video to size of previous self video
-        // And remove old self video.
-        View self = localVideoViewLayout.findViewWithTag("peer");
-        if (self != null) {
-            // Remove the old self video.
-            localVideoViewLayout.removeView(self);
-        }
-
-        Utils.removeViewFromParent(remoteView);
-
-        // Tag new video as self and add onClickListener.
-        remoteView.setTag("peer");
-        // And new self video.
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-        params.gravity = Gravity.CENTER;
-        params.weight = 1;
-        remoteView.setLayoutParams(params);
-
-        //alway set self video as vertical orientation
-        localVideoViewLayout.setOrientation(LinearLayout.VERTICAL);
-
-        localVideoViewLayout.addView(remoteView);
-
-        localVideoViewLayout.invalidate();
-
-        currentView = remoteView;
+    public SurfaceViewRenderer getView() {
+        return currentView;
     }
 
     public void displayView() {

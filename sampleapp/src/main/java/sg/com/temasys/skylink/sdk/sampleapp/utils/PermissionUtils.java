@@ -45,8 +45,6 @@ public class PermissionUtils {
 
     public static final int REQUEST_BUTTON_OVERLAY_CODE = 1032;
 
-    public static final int CAPTURE_PERMISSION_REQUEST_CODE = 1033;
-
 
     // Queue of Permission requesting objects.
     //these variables need to be static for all type call and configuration change
@@ -62,6 +60,8 @@ public class PermissionUtils {
      * Used for resuming after device rotation.
      */
     private static PermRequester permRequester = null;
+
+    private boolean sendOverlayAlready = false;
 
     public PermissionUtils() {
     }
@@ -423,7 +423,6 @@ public class PermissionUtils {
         }
     }
 
-
     /**
      * Stores parameters required for making permission request
      * and have methods to perform permission request.
@@ -685,8 +684,7 @@ public class PermissionUtils {
      * @param fragmentInstance the view instance
      * @return true if the permission already grant before
      */
-    public static boolean requestButtonOverlayPermission(Context context, Fragment fragmentInstance) {
-        Log.e("muoipt", "requestButtonOverlayPermission");
+    public boolean requestButtonOverlayPermission(Context context, Fragment fragmentInstance) {
         /** check if we already  have permission to draw over other apps */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(context)) {
@@ -695,13 +693,18 @@ public class PermissionUtils {
                         Uri.parse("package:" + context.getPackageName()));
                 /** request permission via start activity for result */
                 fragmentInstance.startActivityForResult(intent, PermissionUtils.REQUEST_BUTTON_OVERLAY_CODE);
+                sendOverlayAlready = true;
                 return false;
             } else {
                 return true;
             }
         } else {
-            return true;
+            return false;
         }
+    }
+
+    public boolean isSendOverlayAlready() {
+        return sendOverlayAlready;
     }
 
     /**
@@ -717,6 +720,37 @@ public class PermissionUtils {
                 "required. Alternatively, go to Android's Settings -> \"Appear on top/Display over other apps\", select "
                 + context.getResources().getString(R.string.app_name) + ", " +
                 "grant the required permission, and restart this feature.";
+
+        // Create AlertDialog to warn user of consequences of permission denied.
+        AlertDialog.Builder permissionDeniedDialogBuilder =
+                new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AlertDialogCustom));
+        permissionDeniedDialogBuilder.setTitle("Warning! Feature unavailable " +
+                "due to Permission denied.");
+
+
+        // Create TextView for permission alert.
+        final TextView msgTxtView = new TextView(context);
+        msgTxtView.setText(alertText);
+        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
+        permissionDeniedDialogBuilder.setView(msgTxtView);
+        permissionDeniedDialogBuilder.setPositiveButton("Ok", null);
+
+        alertText = "[SA][onPermDenied] " + alertText;
+        Log.d("PermissionUtils", alertText);
+        permissionDeniedDialogBuilder.show();
+    }
+
+    /**
+     * display the dialog to warn about permission deny for capturing screen
+     *
+     * @param context
+     */
+    public void displayScreenCapturePermissionWarning(Context context) {
+        String alertText = "\r\nAndroid permission to allow capturing screen is denied. " +
+                "We are now NOT able to capture the device screen.";
+
+        alertText += "\r\n\nTo enable feature, restart this feature and grant the permission " +
+                "required. ";
 
         // Create AlertDialog to warn user of consequences of permission denied.
         AlertDialog.Builder permissionDeniedDialogBuilder =

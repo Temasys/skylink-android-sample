@@ -34,7 +34,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTriangleButton;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.SmallVideoViewFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -50,10 +49,10 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         View.OnClickListener {
 
     private final String TAG = VideoFragment.class.getName();
-    private final String SELF_CAM_VIEW = "self_camera_video";
-    private final String SELF_SCREEN_VIEW = "self_screen_video";
-    private final String REMOTE_CAM_VIEW = "remote_camera_video";
-    private final String REMOTE_SCREEN_VIEW = "remote_screen_video";
+    private final String SELF_CAM_VIEW = "selfCameraVideo";
+    private final String SELF_SCREEN_VIEW = "selfScreenVideo";
+    private final String REMOTE_CAM_VIEW = "remoteCameraVideo";
+    private final String REMOTE_SCREEN_VIEW = "remoteScreenVideo";
     private final String MAIN_VIEW = "main";
 
     // view widgets
@@ -83,6 +82,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private boolean isAudioOptionsShow = false;
     private boolean isVideoOptionsShow = false;
     private boolean isScreenOptionsShow = false;
+
+    private Constants.VIDEO_TYPE currentMainVideoType = null;
 
     public static VideoFragment newInstance() {
         return new VideoFragment();
@@ -133,17 +134,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     public void onResume() {
         super.onResume();
 
-        // just process resume for video camera, not apply for video screen
-        // TODO @Muoi need to implement for video camera and avoid mediaStateChange for local media
-//        presenter.onViewRequestResume();
+        // just in case that user are not sharing screen, then stop the camera
+        if (localScreenView == null || !isShowScreenSharing)
+            presenter.onViewRequestResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        // just process pause for video camera, not apply for video screen
-        // TODO @Muoi need to implement for video camera and avoid mediaStateChange for local media
-//        presenter.onViewRequestPause();
+
+        // just in case that user are not sharing screen, then stop the camera
+        if (localScreenView == null || !isShowScreenSharing)
+            presenter.onViewRequestPause();
     }
 
     @Override
@@ -229,14 +231,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.e("muoipt", "onRequestPermissionsResult");
-
         // delegate presenter to implement the permission results
         presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == PermissionUtils.REQUEST_BUTTON_OVERLAY_CODE) {
-            int grant = grantResults[0];
-        }
     }
 
 
@@ -286,6 +282,14 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     @Override
     public void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peerList) {
         processFillPeers(peerList);
+
+        // reset the video resolution
+        if (context != null && (context instanceof VideoActivity)) {
+            ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
+            ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
+            ((VideoActivity) context).onShowHideRemoteCameraViewFragment(false, false);
+            ((VideoActivity) context).onShowHideRemoteScreenViewFragment(false, false);
+        }
     }
 
     /**
@@ -324,6 +328,86 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnAudioStart.setImageResource(R.drawable.ic_stop_white_20dp);
     }
 
+    /**
+     * Add or update our self VideoView into the view layout when local peer connected to room and
+     * local video view is ready
+     *
+     * @param mediaId   id of the media object
+     * @param videoView local video view from camera
+     */
+    @Override
+    public void onPresenterRequestAddCameraSelfView(String mediaId, SurfaceViewRenderer videoView) {
+        //save localCameraView
+        localCameraView = videoView;
+        currentMainVideoType = Constants.VIDEO_TYPE.LOCAL_CAMERA;
+
+        // notice user about id of the local media
+        toastLog(TAG, context, "Local video is on with id = " + mediaId);
+
+        changeVideoMuteUI(false);
+        changeVideoStartUI(true, false);
+        btnVideoMute.setEnabled(true);
+        btnVideoSwitchCamera.setEnabled(true);
+        bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+    }
+
+    /**
+     * Add or update our self VideoView into the view layout when local peer connected to room and
+     * local video view is ready
+     *
+     * @param mediaId    id of the media object
+     * @param screenView local video view from screen
+     */
+    @Override
+    public void onPresenterRequestAddScreenSelfView(String mediaId, SurfaceViewRenderer screenView) {
+        //save localScreenView
+        localScreenView = screenView;
+        currentMainVideoType = Constants.VIDEO_TYPE.LOCAL_SCREEN;
+
+        // notice user about id of the local media
+        toastLog(TAG, context, "Local screen sharing is on with id = " + mediaId);
+
+        changeScreenMuteUI(false);
+        changeScreenStartUI(true, false);
+        btnScreenMute.setEnabled(true);
+
+        bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
+
+        if (!isShowScreenSharing) {
+            showHideButton(stopScreenshareFloat, true);
+        }
+    }
+
+    /**
+     * Add or update remote Peer's VideoView into the view layout when receiving remote camera video view
+     *
+     * @param remoteVideoView
+     */
+    @Override
+    public void onPresenterRequestAddCameraRemoteView(SurfaceViewRenderer remoteVideoView) {
+        //save localScreenView
+        remoteCameraView = remoteVideoView;
+        currentMainVideoType = Constants.VIDEO_TYPE.REMOTE_CAMERA;
+
+        // move other views to small view
+        bringSmallViewToMainView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
+    }
+
+    /**
+     * Add remote screen video view to the main view when receiving remote screen video view
+     *
+     * @param remoteScreenView remote screen video view
+     */
+    @Override
+    public void onPresenterRequestAddScreenRemoteView(SurfaceViewRenderer remoteScreenView) {
+        //save localScreenView
+        this.remoteScreenView = remoteScreenView;
+        currentMainVideoType = Constants.VIDEO_TYPE.REMOTE_SCREEN;
+
+        // move other views to small view
+        bringSmallViewToMainView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
+    }
+
     @Override
     public void onPresenterRequestMediaStateChange(SkylinkMedia.MediaType mediaType, SkylinkMedia.MediaState mediaState, boolean isLocal) {
         switch (mediaState) {
@@ -332,12 +416,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                     changeVideoMuteUI(false);
                     changeVideoStartUI(true, false);
                     btnVideoMute.setEnabled(true);
-                    bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+                    btnVideoSwitchCamera.setEnabled(true);
                 } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
                     changeScreenMuteUI(false);
                     changeScreenStartUI(true, false);
                     btnScreenMute.setEnabled(true);
-                    bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
                     if (!isShowScreenSharing) {
                         showHideButton(stopScreenshareFloat, true);
                     }
@@ -351,15 +434,20 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                     changeAudioMuteUI(true);
                 } else if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
                     changeVideoMuteUI(true);
+                    btnVideoMute.setEnabled(true);
+                    btnVideoSwitchCamera.setEnabled(false);
+                    changeVideoStartUI(true, false);
                 } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
                     changeScreenMuteUI(true);
+                    btnScreenMute.setEnabled(true);
+                    changeScreenStartUI(true, false);
                 }
                 break;
             case STOPPED:
                 if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
                     changeVideoStartUI(false, false);
                     btnVideoMute.setEnabled(false);
-                    moveViewToSmallLocalCameraView(localCameraView);
+                    btnVideoSwitchCamera.setEnabled(false);
                 } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
                     changeScreenStartUI(false, false);
                     btnScreenMute.setEnabled(false);
@@ -384,83 +472,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 }
                 break;
         }
-    }
-
-    /**
-     * Add or update our self VideoView into the view layout when local peer connected to room and
-     * local video view is ready
-     *
-     * @param mediaId   id of the media object
-     * @param videoView local video view from camera
-     */
-    @Override
-    public void onPresenterRequestAddCameraSelfView(String mediaId, SurfaceViewRenderer videoView) {
-        //save localCameraView
-        localCameraView = videoView;
-
-        // change UI button
-        changeVideoStartUI(true, false);
-
-        btnVideoMute.setEnabled(true);
-        btnVideoSwitchCamera.setEnabled(true);
-
-        // move other views to small view, display the local camera view to main view
-        bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
-
-        // notice user about id of the local media
-        toastLog(TAG, context, "Local video is on with id = " + mediaId);
-    }
-
-    /**
-     * Add or update our self VideoView into the view layout when local peer connected to room and
-     * local video view is ready
-     *
-     * @param mediaId    id of the media object
-     * @param screenView local video view from screen
-     */
-    @Override
-    public void onPresenterRequestAddScreenSelfView(String mediaId, SurfaceViewRenderer screenView) {
-        //save localScreenView
-        localScreenView = screenView;
-
-        // change UI button
-        changeScreenStartUI(true, false);
-
-        btnScreenMute.setEnabled(true);
-
-        // move other views to small view
-        bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
-
-        // notice user about id of the local media
-        toastLog(TAG, context, "Local screen sharing is on with id = " + mediaId);
-    }
-
-    /**
-     * Add or update remote Peer's VideoView into the view layout when receiving remote camera video view
-     *
-     * @param remoteVideoView
-     */
-    @Override
-    public void onPresenterRequestAddCameraRemoteView(SurfaceViewRenderer remoteVideoView) {
-        //save localScreenView
-        remoteCameraView = remoteVideoView;
-
-        // move other views to small view
-        bringSmallViewToMainView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
-    }
-
-    /**
-     * Add remote screen video view to the main view when receiving remote screen video view
-     *
-     * @param remoteScreenView remote screen video view
-     */
-    @Override
-    public void onPresenterRequestAddScreenRemoteView(SurfaceViewRenderer remoteScreenView) {
-        //save localScreenView
-        this.remoteScreenView = remoteScreenView;
-
-        // move other views to small view
-        bringSmallViewToMainView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
     }
 
     /**
@@ -607,9 +618,26 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+//                    WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT);
-        } else {
+        }
+//        else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+//            stopScreenshareLayoutParams = new WindowManager.LayoutParams(
+//                    WindowManager.LayoutParams.WRAP_CONTENT,
+//                    WindowManager.LayoutParams.WRAP_CONTENT,
+//                    WindowManager.LayoutParams.TYPE_TOAST,
+//                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+//                    PixelFormat.TRANSLUCENT);
+//        } else if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+//            stopScreenshareLayoutParams = new WindowManager.LayoutParams(
+//                    WindowManager.LayoutParams.WRAP_CONTENT,
+//                    WindowManager.LayoutParams.WRAP_CONTENT,
+//                    WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+//                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+//                    PixelFormat.TRANSLUCENT);
+//        }
+        else {
             stopScreenshareLayoutParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -803,6 +831,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             btnFullScreen.setBackground(getActivity().getResources().getDrawable(R.drawable.ic_full_screen));
             actionBar.show();
 
+            bringSmallViewToMainView(currentMainVideoType);
+
             // change tool tip for button
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 btnFullScreen.setTooltipText("Full screen");
@@ -839,10 +869,15 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Bring the small available on small view to main big view
      * and move all other views to small views
      *
-     * @param video_type the type of small view to move to main big view
+     * @param videoType the type of small view to move to main big view
      */
-    public void bringSmallViewToMainView(Constants.VIDEO_TYPE video_type) {
-        switch (video_type) {
+    public void bringSmallViewToMainView(Constants.VIDEO_TYPE videoType) {
+        if (videoType == null)
+            return;
+
+        currentMainVideoType = videoType;
+
+        switch (videoType) {
             case LOCAL_CAMERA:
                 if (localCameraView != null) {
                     addViewToMain(localCameraView);
@@ -947,14 +982,24 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      */
     private void changeUIDisconnected() {
         // remove video views
-        View self = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
-        if (self != null) {
-            videoViewLayout.removeView(self);
+        View selfCamera = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
+        if (selfCamera != null) {
+            videoViewLayout.removeView(selfCamera);
         }
 
-        View peer = videoViewLayout.findViewWithTag(REMOTE_CAM_VIEW);
-        if (peer != null) {
-            videoViewLayout.removeView(peer);
+        View selfScreen = videoViewLayout.findViewWithTag(SELF_SCREEN_VIEW);
+        if (selfScreen != null) {
+            videoViewLayout.removeView(selfScreen);
+        }
+
+        View peerCamera = videoViewLayout.findViewWithTag(REMOTE_CAM_VIEW);
+        if (peerCamera != null) {
+            videoViewLayout.removeView(peerCamera);
+        }
+
+        View peerScreen = videoViewLayout.findViewWithTag(REMOTE_SCREEN_VIEW);
+        if (peerScreen != null) {
+            videoViewLayout.removeView(peerScreen);
         }
 
         View main = videoViewLayout.findViewWithTag(MAIN_VIEW);
@@ -978,6 +1023,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnScreenMute.setImageResource(R.drawable.ic_stop_screen_share_white_20dp);
         btnAudioSpeaker.setImageResource(R.drawable.ic_headset_white_20dp);
 
+        btnAudioStart.setEnabled(true);
+
         if (isShowScreenSharing) {
             showHideButton(stopScreenshareFloat, false);
         }
@@ -985,9 +1032,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // reset the room id info and local peer button
         txtRoomId.setText(R.string.guide_room_id);
         btnLocalPeer.setVisibility(GONE);
+        btnRemotePeer1.setVisibility(GONE);
+        btnRemotePeer2.setVisibility(GONE);
+        btnRemotePeer3.setVisibility(GONE);
 
         // reset the variable toConnectToRoom
         toConnectToRoom = true;
+
+        // reset the video resolution
+        if (context != null && (context instanceof VideoActivity)) {
+            ((VideoActivity) context).resetResolution();
+            ((VideoActivity) context).resetSmallViews();
+        }
     }
 
     /**
