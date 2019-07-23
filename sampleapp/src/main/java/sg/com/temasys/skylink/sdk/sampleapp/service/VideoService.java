@@ -15,6 +15,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoContract;
 import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContract;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_FRONT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
@@ -168,7 +169,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         // VideoCall config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         skylinkConfig.setHasPeerMessaging(true);
         skylinkConfig.setHasFileTransfer(true);
         skylinkConfig.setMirrorLocalView(true);
@@ -219,7 +219,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
         //Start audio.
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null);
         }
     }
 
@@ -237,9 +237,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             // If user select back camera as default video device, start back camera
             // else start front camera as default
             if (videoDevice == SkylinkConfig.VideoDevice.CAMERA_BACK) {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK);
+                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, null);
             } else {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+                mSkylinkConnection.startLocalMedia(CAMERA_FRONT, null);
             }
         }
     }
@@ -258,19 +258,16 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
-            mSkylinkConnection.startLocalMedia(videoDevice);
+            mSkylinkConnection.startLocalMedia(videoDevice, null);
         }
     }
 
     public void startLocalCustomVideo() {
-        // change default video device to CAMERA_BACK to avoid conflict with default CAMERA_FRONT of starting camera
-        getSkylinkConfig().setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-        presenter.onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-
         // create a new custom video capturer to input for the method
-        VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera();
+        VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera(
+                CAMERA_FRONT, mSkylinkConnection);
         if (customVideoCapturer != null) {
-            mSkylinkConnection.startLocalMedia(customVideoCapturer, SkylinkMedia.MediaType.VIDEO_CAMERA);
+            mSkylinkConnection.startLocalMedia(CAMERA_FRONT, customVideoCapturer);
         }
     }
 
