@@ -69,4 +69,13 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
     }
+
+    /**
+     * Start local audio in order to communicate with the remote peer
+     */
+    public void startLocalAudio() {
+        if (mSkylinkConnection != null) {
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null);
+        }
+    }
 }

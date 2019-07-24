@@ -57,7 +57,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void toggleVideo(boolean isRestart) {
         if (mSkylinkConnection != null && localVideoId != null) {
             mSkylinkConnection.toggleVideo(localVideoId, isRestart);
-        } else if(isRestart){
+        } else if (isRestart) {
             startLocalVideo();
         }
     }
@@ -268,6 +268,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 CAMERA_FRONT, mSkylinkConnection);
         if (customVideoCapturer != null) {
             mSkylinkConnection.startLocalMedia(CAMERA_FRONT, customVideoCapturer);
+
         }
     }
 

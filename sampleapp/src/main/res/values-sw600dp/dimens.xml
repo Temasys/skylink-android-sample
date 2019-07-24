@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="banner_height">320dp</dimen>
+    <dimen name="video_res_width">340dp</dimen>
+    <dimen name="custom_seekbar_height">120dp</dimen>
+    <dimen name="min_res_margin_top">110dp</dimen>
+    <dimen name="seekbar_res_fps_margin_top">140dp</dimen>
+    <dimen name="min_fps_margin_top">210dp</dimen>
+    <dimen name="small_view_content_frame_width">150dp</dimen>
+    <dimen name="small_view_content_frame_height">200dp</dimen>
+    <dimen name="contentFrameLocalScreenView_marginTop">200dp</dimen>
+    <dimen name="contentFrameRemoteCameraView_marginTop">400dp</dimen>
+    <dimen name="contentFrameRemoteScreenView_marginTop">600dp</dimen>
+    <dimen name="stop_screen_text_size">6sp</dimen>
+</resources>

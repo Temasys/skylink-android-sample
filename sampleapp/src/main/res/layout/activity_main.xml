@@ -5,21 +5,23 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@android:color/black">
+        android:layout_height="@dimen/banner_height"
+        android:background="@android:color/white">
 
         <ImageView
             android:id="@+id/imgBanner"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/img_banner"/>
+            android:src="@drawable/banner4"/>
 
         <ImageView
             android:id="@+id/imgLogo"
             android:layout_width="@dimen/dp_80dp"
             android:layout_height="@dimen/dp_40dp"
             android:layout_margin="@dimen/dp_10dp"
-            android:src="@drawable/ic_temasys_logo_icon"/>
+            android:src="@drawable/ic_temasys_logo_icon"
+            android:background="@color/color_black"
+            android:visibility="gone"/>
 
     </FrameLayout>
 

@@ -636,6 +636,9 @@ public class Utils {
 
     public static boolean isInternetOn() {
 
+        if (context == null)
+            return false;
+
         // get Connectivity Manager object to check connection
         ConnectivityManager connec =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

@@ -394,7 +394,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     @Override
     public void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer remoteView) {
         // display menu option button accordingly to peerIndex
-        displayPeerMenuOption(peerIndex);
+        displayPeerMenuOption(peerIndex + 1);
 
         if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             remoteViews[peerIndex][0] = remoteView;
