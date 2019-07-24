@@ -56,7 +56,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void toggleVideo(boolean isRestart) {
         if (mSkylinkConnection != null && localVideoId != null) {
             mSkylinkConnection.toggleVideo(localVideoId, isRestart);
-        } else if(isRestart){
+        } else if (isRestart) {
             startLocalVideo();
         }
     }
@@ -219,7 +219,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
         //Start audio.
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null);
         }
     }
 
@@ -237,9 +237,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             // If user select back camera as default video device, start back camera
             // else start front camera as default
             if (videoDevice == SkylinkConfig.VideoDevice.CAMERA_BACK) {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK);
+                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, null);
             } else {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT, null);
             }
         }
     }
@@ -258,11 +258,15 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
-            mSkylinkConnection.startLocalMedia(videoDevice);
+            mSkylinkConnection.startLocalMedia(videoDevice, null);
         }
     }
 
     public void startLocalCustomVideo() {
+        if (mSkylinkConnection == null) {
+            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
+        }
+
         // change default video device to CAMERA_BACK to avoid conflict with default CAMERA_FRONT of starting camera
         getSkylinkConfig().setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
         presenter.onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
@@ -270,7 +274,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         // create a new custom video capturer to input for the method
         VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera();
         if (customVideoCapturer != null) {
-            mSkylinkConnection.startLocalMedia(customVideoCapturer, SkylinkMedia.MediaType.VIDEO_CAMERA);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, customVideoCapturer);
         }
     }
 

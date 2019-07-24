@@ -85,6 +85,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     private Constants.VIDEO_TYPE currentMainVideoType = null;
 
+    private boolean exitFromRoomByUser = false;
+
     public static VideoFragment newInstance() {
         return new VideoFragment();
     }
@@ -222,6 +224,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // not changing configuration
         if (!((VideoActivity) context).isChangingConfigurations()) {
             presenter.onViewRequestExit();
+
+            exitFromRoomByUser = true;
 
             if (isShowScreenSharing) {
                 showHideButton(stopScreenshareFloat, false);
@@ -610,7 +614,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         stopScreenshareFloat = new Button(getActivity());
         stopScreenshareFloat.setText(getActivity().getResources().getText(R.string.stop_screenShare));
         stopScreenshareFloat.setTextColor(getActivity().getResources().getColor(R.color.color_white));
-        stopScreenshareFloat.setTextSize(getActivity().getResources().getDimension(R.dimen.sp_4sp));
+        stopScreenshareFloat.setTextSize(getActivity().getResources().getDimension(R.dimen.stop_screen_text_size));
         stopScreenshareFloat.setBackground(getActivity().getResources().getDrawable(R.drawable.button_stop_screen_sharing));
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -780,6 +784,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             return;
 
         if (view == stopScreenshareFloat) {
+            if (getActivity() == null)
+                return;
+
             WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
             if (isShow && !isShowScreenSharing) {
                 windowManager.addView(stopScreenshareFloat, stopScreenshareLayoutParams);
@@ -1007,6 +1014,16 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             videoViewLayout.removeView(main);
         }
 
+        if (isShowScreenSharing) {
+            showHideButton(stopScreenshareFloat, false);
+        }
+
+        // if user exit from the room by intentionally press back button or navigate up button,
+        // no need to change the UI to avoid crashing the app
+        if (exitFromRoomByUser) {
+            return;
+        }
+
         // change the connect/disconnect button
         btnConnectDisconnect.setImageResource(R.drawable.ic_connect_white_25dp);
         btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_connect_to_room));
@@ -1024,10 +1041,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnAudioSpeaker.setImageResource(R.drawable.ic_headset_white_20dp);
 
         btnAudioStart.setEnabled(true);
-
-        if (isShowScreenSharing) {
-            showHideButton(stopScreenshareFloat, false);
-        }
 
         // reset the room id info and local peer button
         txtRoomId.setText(R.string.guide_room_id);

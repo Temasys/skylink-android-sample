@@ -311,7 +311,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         // reset class variables
         currentVideoLocalState = new VideoLocalState();
 
-        mainView.onPresenterRequestShowHideSmallView(null, false);
+//        mainView.onPresenterRequestShowHideSmallView(null, false);
     }
 
     @Override

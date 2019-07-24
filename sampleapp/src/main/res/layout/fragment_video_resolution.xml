@@ -21,7 +21,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:orientation="horizontal"
-        android:paddingRight="@dimen/dp_10dp">
+        android:paddingRight="@dimen/dp_10dp"
+        android:visibility="gone">
 
         <ImageButton
             android:id="@+id/btnVideoCamera"

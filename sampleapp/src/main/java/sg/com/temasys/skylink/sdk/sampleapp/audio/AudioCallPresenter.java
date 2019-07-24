@@ -78,6 +78,9 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             //connect to room on Skylink connection
             audioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
+            // start local audio
+            audioCallService.startLocalAudio();
+
             //set default for audio output
             currentAudioOutput = Utils.isDefaultSpeakerSettingForAudio();
 
@@ -131,13 +134,6 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
             // change UI to connected to room, but not connected to any peer
             processUpdateStateConnected();
-
-//            //start audio routing if has audio config
-//            SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
-//            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-//                AudioRouter.setPresenter(this);
-//                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
-//            }
         }
     }
 
@@ -145,6 +141,21 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         // delegate to PermissionUtils to process the permissions require
         permissionUtils.onPermissionRequiredHandler(info, TAG, context, audioCallView.onPresenterRequestGetFragmentInstance());
+    }
+
+    @Override
+    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
+        String log = "[SA][onServiceRequestLocalAudioCapture] ";
+
+        //start audio routing if has audio config
+        SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.setPresenter(this);
+            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+        }
+
+        //notify view to change the UI
+//        audioCallView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
     }
 
     @Override

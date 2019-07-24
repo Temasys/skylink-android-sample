@@ -176,7 +176,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
         //Start audio.
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null);
         }
     }
 
@@ -200,9 +200,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             // If user select back camera as default video device, start back camera
             // else start front camera as default
             if (videoDevice == SkylinkConfig.VideoDevice.CAMERA_BACK) {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK);
+                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, null);
             } else {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT);
+                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT, null);
             }
         }
     }
@@ -223,7 +223,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
-            mSkylinkConnection.startLocalMedia(videoDevice);
+            mSkylinkConnection.startLocalMedia(videoDevice, null);
         }
     }
 
@@ -235,7 +235,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         // create a new custom video capturer to input for the method
         VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera();
         if (customVideoCapturer != null) {
-            mSkylinkConnection.startLocalMedia(customVideoCapturer, SkylinkMedia.MediaType.VIDEO_CAMERA);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, customVideoCapturer);
         }
     }
 

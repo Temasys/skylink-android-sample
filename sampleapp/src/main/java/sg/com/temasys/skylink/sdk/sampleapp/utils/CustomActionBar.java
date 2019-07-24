@@ -85,15 +85,15 @@ public class CustomActionBar extends Fragment {
 
         String peerAvatar = newPeer.getPeerName().charAt(0) + "";
         switch (index) {
-            case 1:
+            case 0:
                 btnRemotePeer1.setVisibility(View.VISIBLE);
                 btnRemotePeer1.setText(peerAvatar);
                 break;
-            case 2:
+            case 1:
                 btnRemotePeer2.setVisibility(View.VISIBLE);
                 btnRemotePeer2.setText(peerAvatar);
                 break;
-            case 3:
+            case 2:
                 btnRemotePeer3.setVisibility(View.VISIBLE);
                 btnRemotePeer3.setText(peerAvatar);
                 break;

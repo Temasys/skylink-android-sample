@@ -1251,13 +1251,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         String mainVideoId = getProperVideoId(mediaType);
 
-//        mSkylinkConnection.getInputVideoResolutionByVideoId(mainVideoId);
         mSkylinkConnection.getInputVideoResolutionByVideoType(mediaType);
 
         if (peerId != null) {
-//            mSkylinkConnection.getSentVideoResolutionByVideoId(peerId, mainVideoId);
             mSkylinkConnection.getSentVideoResolutionByVideoType(peerId, mediaType);
-//            mSkylinkConnection.getReceivedVideoResolutionByVideoId(peerId, mainVideoId);
             mSkylinkConnection.getReceivedVideoResolutionByVideoType(peerId, mediaType);
         }
     }
