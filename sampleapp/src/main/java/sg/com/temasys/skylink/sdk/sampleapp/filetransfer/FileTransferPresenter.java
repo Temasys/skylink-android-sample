@@ -160,7 +160,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
         fileTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
-                fileTransferService.getTotalPeersInRoom() - 1);
+                fileTransferService.getTotalPeersInRoom() - 2);
     }
 
     @Override

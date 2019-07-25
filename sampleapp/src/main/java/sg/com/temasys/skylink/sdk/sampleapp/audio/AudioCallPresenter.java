@@ -183,7 +183,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         // Fill the new peer in button in custom bar
         // Display new peer at most right location in action bar
         audioCallView.onPresenterRequestChangeUIRemotePeerJoin(remotePeer,
-                audioCallService.getTotalPeersInRoom() - 1);
+                audioCallService.getTotalPeersInRoom() - 2);
     }
 
     @Override

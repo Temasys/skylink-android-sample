@@ -187,7 +187,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
         dataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
-                dataTransferService.getTotalPeersInRoom() - 1);
+                dataTransferService.getTotalPeersInRoom() - 2);
     }
 
     @Override

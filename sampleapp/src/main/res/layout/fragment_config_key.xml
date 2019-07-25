@@ -15,7 +15,7 @@
             android:id="@+id/currentKeyPlace"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#d2d0d0"
+            android:background="@color/gray"
             android:orientation="vertical"
             android:padding="10dp">
 
@@ -60,7 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="#d2d0d0"
+                android:background="@color/gray"
                 android:orientation="vertical"
                 android:padding="10dp">
 

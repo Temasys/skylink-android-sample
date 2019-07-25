@@ -158,15 +158,19 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 processBack();
                 break;
             case R.id.btnLocalPeer:
+                changeLocalPeerUI(true);
                 displayPeerInfo(0);
                 break;
             case R.id.btnRemotePeer1:
+                changeRemotePeerUI(1, true);
                 displayPeerInfo(1);
                 break;
             case R.id.btnRemotePeer2:
+                changeRemotePeerUI(2, true);
                 displayPeerInfo(2);
                 break;
             case R.id.btnRemotePeer3:
+                changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
                 break;
             case R.id.btn_connect_disconnect:
@@ -988,6 +992,12 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Update the UI when disconnect from the room
      */
     private void changeUIDisconnected() {
+        // if user exit from the room by intentionally press back button or navigate up button,
+        // no need to change the UI to avoid crashing the app
+        if (exitFromRoomByUser) {
+            return;
+        }
+
         // remove video views
         View selfCamera = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
         if (selfCamera != null) {
@@ -1016,12 +1026,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
         if (isShowScreenSharing) {
             showHideButton(stopScreenshareFloat, false);
-        }
-
-        // if user exit from the room by intentionally press back button or navigate up button,
-        // no need to change the UI to avoid crashing the app
-        if (exitFromRoomByUser) {
-            return;
         }
 
         // change the connect/disconnect button

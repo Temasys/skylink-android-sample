@@ -26,6 +26,8 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.Camera1Enumerator;
+import org.webrtc.Camera2Enumerator;
 import org.webrtc.CameraEnumerator;
 import org.webrtc.CameraVideoCapturer;
 import org.webrtc.SurfaceViewRenderer;
@@ -910,22 +912,90 @@ public class Utils {
     }
 
     /**
+     * Check if able to use android.hardware.camera2 (Lollipop and above).
+     *
+     * @return null if unable to perform check, e.g. if context is null.
+     */
+    public static Boolean isUseCamera2() {
+        String logTag = "[SMS][isUseCam2] ";
+        String log = logTag;
+
+        Context applicationContext = context.getApplicationContext();
+        if (applicationContext == null) {
+            log += "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean result = Camera2Enumerator.isSupported(applicationContext);
+        log += "Camera2 is supported: " + result + ".";
+        Log.d(TAG, log);
+        return result;
+    }
+
+    /**
+     * Get the CameraEnumerator to use.
+     * If Camera2 is supported, use Camera2Enumerator.
+     * Otherwise use Camera1Enumerator.
+     *
+     * @return
+     */
+    public static CameraEnumerator getCameraEnumerator() {
+        String logTag = "[SMS][getCamEnum] ";
+        String log = logTag;
+
+        Context applicationContext = context.getApplicationContext();
+        if (applicationContext == null) {
+            log = logTag + "Failed as appContext is null.";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        Boolean canUseCamera2 = isUseCamera2();
+        if (canUseCamera2 == null) {
+            log += "Unable to get CameraEnumerator!";
+            Log.d(TAG, log);
+            return null;
+        }
+
+        CameraEnumerator enumerator;
+        if (canUseCamera2) {
+            enumerator = new Camera2Enumerator(applicationContext);
+            Log.d(TAG, "Using camera2 enumerator.");
+        } else {
+            enumerator = new Camera1Enumerator();
+            Log.d(TAG, "Using camera1 enumerator.");
+        }
+        return enumerator;
+    }
+
+    /**
      * Create a {@link org.webrtc.CameraVideoCapturer}.
      *
-     * @return Null if unable to create capturer.
      * @param videoDevice
      * @param skylinkConnection
+     * @return Null if unable to create capturer.
      */
     public static VideoCapturer createCustomVideoCapturerFromCamera(SkylinkConfig.VideoDevice videoDevice, SkylinkConnection skylinkConnection) {
         String logTag = "";
         String log;
-        CameraEnumerator cameraEnumerator = skylinkConnection.getCameraEnumerator();
+        CameraEnumerator cameraEnumerator = getCameraEnumerator();
         if (cameraEnumerator == null) {
             log = logTag + "Unable to create cameraVideoCapturer as we could not get a CameraEnumerator!";
             Log.d(TAG, log);
             return null;
         }
-        String cameraName = skylinkConnection.getCameraName(videoDevice);
+
+        String[] cameraNames = cameraEnumerator.getDeviceNames();
+        if (cameraNames == null || cameraNames.length < 1) {
+            log = logTag + "Unable to create cameraVideoCapturer as no camera was detected!";
+            Log.d(TAG, log);
+            return null;
+        }
+
+//        String cameraName = getCameraName(videoDevice);
+        String cameraName = cameraNames[1];
+
         if (cameraName == null) {
             log = logTag + "Unable to create cameraVideoCapturer as we could not get a camera!";
             Log.d(TAG, log);

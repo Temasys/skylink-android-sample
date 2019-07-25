@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@id/ll_video_call"
             android:layout_alignParentRight="true"
-            android:layout_margin="@dimen/dp_5dp"
+            android:layout_marginRight="@dimen/dp_5dp"
             android:background="@android:color/transparent"
             android:orientation="horizontal">
 
@@ -108,7 +108,6 @@
             android:layout_above="@id/ll_screen_call"
             android:layout_alignParentRight="true"
             android:layout_marginRight="@dimen/dp_5dp"
-            android:layout_marginTop="@dimen/dp_5dp"
             android:background="@android:color/transparent"
             android:orientation="horizontal">
 
@@ -165,7 +164,6 @@
             android:layout_above="@id/ll_disconnect"
             android:layout_alignParentRight="true"
             android:layout_marginRight="@dimen/dp_5dp"
-            android:layout_marginTop="@dimen/dp_5dp"
             android:background="@android:color/transparent"
             android:orientation="horizontal">
 

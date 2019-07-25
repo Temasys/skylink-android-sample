@@ -19,15 +19,16 @@
             android:layout_width="@dimen/dp_80dp"
             android:layout_height="@dimen/dp_40dp"
             android:layout_margin="@dimen/dp_10dp"
-            android:src="@drawable/ic_temasys_logo_icon"
             android:background="@color/color_black"
+            android:src="@drawable/ic_temasys_logo_icon"
             android:visibility="gone"/>
 
     </FrameLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/main_gray">
 
         <LinearLayout
             android:id="@+id/contentContainer"

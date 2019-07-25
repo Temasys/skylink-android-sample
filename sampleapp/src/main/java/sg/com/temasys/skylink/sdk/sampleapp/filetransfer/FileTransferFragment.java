@@ -132,15 +132,19 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
                 processBack();
                 break;
             case R.id.btnLocalPeer:
+                changeLocalPeerUI(true);
                 processSelectPeer(0);
                 break;
             case R.id.btnRemotePeer1:
+                changeRemotePeerUI(1, true);
                 processSelectPeer(1);
                 break;
             case R.id.btnRemotePeer2:
+                changeRemotePeerUI(2, true);
                 processSelectPeer(2);
                 break;
             case R.id.btnRemotePeer3:
+                changeRemotePeerUI(3, true);
                 processSelectPeer(3);
                 break;
             case R.id.btnChoose:
@@ -157,15 +161,19 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
         //Defining a long click event listener for the peer buttons in the action bar.
         switch (view.getId()) {
             case R.id.btnLocalPeer:
+                changeLocalPeerUI(true);
                 displayPeerInfo(0);
                 break;
             case R.id.btnRemotePeer1:
+                changeRemotePeerUI(1, true);
                 displayPeerInfo(1);
                 break;
             case R.id.btnRemotePeer2:
+                changeRemotePeerUI(2, true);
                 displayPeerInfo(2);
                 break;
             case R.id.btnRemotePeer3:
+                changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
                 break;
         }

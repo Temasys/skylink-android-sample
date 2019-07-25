@@ -12,7 +12,7 @@
         android:id="@+id/btnPeerInfoAvatar"
         android:layout_width="@dimen/dp_100dp"
         android:layout_height="@dimen/dp_100dp"
-        android:background="@drawable/button_circle_avatar_local"
+        android:background="@drawable/button_circle_avatar_local_selected"
         android:text="L"
         android:textColor="@android:color/white"
         android:textSize="@dimen/sp_26sp"/>

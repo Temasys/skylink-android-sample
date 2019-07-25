@@ -214,7 +214,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
-        processAddNewPeer(newPeer, chatService.getTotalPeersInRoom() - 1);
+        processAddNewPeer(newPeer, chatService.getTotalPeersInRoom() - 2);
 
         // Adding info to message collection
         // This message is metadata message to inform the peer join the room
@@ -234,7 +234,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void onServiceRequestRemotePeerLeave(SkylinkPeer removePeer, int removeIndex) {
         // do not process if the left peer is local peer
-        if (removeIndex == -1)
+        if (removeIndex == -1 || removePeer == null)
             return;
 
         // Adding info to message collection

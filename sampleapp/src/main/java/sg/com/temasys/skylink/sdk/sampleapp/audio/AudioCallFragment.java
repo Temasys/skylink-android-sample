@@ -111,15 +111,19 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
                 processBack();
                 break;
             case R.id.btnLocalPeer:
+                changeLocalPeerUI(true);
                 displayPeerInfo(0);
                 break;
             case R.id.btnRemotePeer1:
+                changeRemotePeerUI(1, true);
                 displayPeerInfo(1);
                 break;
             case R.id.btnRemotePeer2:
+                changeRemotePeerUI(2, true);
                 displayPeerInfo(2);
                 break;
             case R.id.btnRemotePeer3:
+                changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
                 break;
             case R.id.btnAudioSpeaker:

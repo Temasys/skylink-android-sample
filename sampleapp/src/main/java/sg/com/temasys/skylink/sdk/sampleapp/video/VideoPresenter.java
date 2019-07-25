@@ -398,7 +398,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
         // Fill the new peer in button in custom bar
-        mainView.onPresenterRequestChangeUiRemotePeerJoin(remotePeer, videoService.getTotalPeersInRoom() - 1);
+        mainView.onPresenterRequestChangeUiRemotePeerJoin(remotePeer, videoService.getTotalPeersInRoom() - 2);
     }
 
     @Override

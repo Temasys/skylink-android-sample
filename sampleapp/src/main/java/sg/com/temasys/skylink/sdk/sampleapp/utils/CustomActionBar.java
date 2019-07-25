@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -186,9 +187,67 @@ public class CustomActionBar extends Fragment {
         View view = inflater.inflate(R.layout.peer_info_layout_local, null);
         alertDialogBuilder.setView(view);
         final AlertDialog dialog = alertDialogBuilder.create();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(final DialogInterface arg0) {
+                btnLocalPeer.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_local));
+                btnLocalPeer.setTextColor(context.getResources().getColor(R.color.primary_dark));
+            }
+
+        });
         dialog.show();
 
         displayPeerDlg(view, peer);
+    }
+
+    /**
+     * Change UI for local peer button
+     */
+    protected void changeLocalPeerUI(boolean isSelected) {
+        if (isSelected) {
+            btnLocalPeer.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_local_selected));
+            btnLocalPeer.setTextColor(context.getResources().getColor(R.color.color_white));
+        } else {
+            btnLocalPeer.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_local));
+            btnLocalPeer.setTextColor(context.getResources().getColor(R.color.primary_dark));
+        }
+    }
+
+    /**
+     * Change UI for remote peer button
+     */
+    protected void changeRemotePeerUI(int index, boolean isSelected) {
+        switch (index) {
+            case 1:
+                if (isSelected) {
+                    btnRemotePeer1.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer1.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer1.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer1.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
+            case 2:
+                if (isSelected) {
+                    btnRemotePeer2.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer2.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer2.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer2.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
+            case 3:
+                if (isSelected) {
+                    btnRemotePeer3.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer3.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer3.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer3.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
+        }
+
+
     }
 
     /**
@@ -203,6 +262,15 @@ public class CustomActionBar extends Fragment {
         View view = inflater.inflate(R.layout.peer_info_layout_remote, null);
         alertDialogBuilder.setView(view);
         final AlertDialog dialog = alertDialogBuilder.create();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(final DialogInterface arg0) {
+                changeRemotePeerUI(0, false);
+                changeRemotePeerUI(1, false);
+                changeRemotePeerUI(2, false);
+            }
+        });
+
         dialog.show();
 
         displayPeerDlg(view, peer);
