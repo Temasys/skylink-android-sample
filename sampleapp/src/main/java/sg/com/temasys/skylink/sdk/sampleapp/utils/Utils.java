@@ -67,7 +67,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKE
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREFERENCES_NAME;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
 
 public class Utils {
 
@@ -664,11 +664,11 @@ public class Utils {
 
 
     public static boolean isDefaultSpeakerSettingForAudio() {
-        return sharedPref.getBoolean(DEFAULT_SPEAKER_AUDIO, false);
+        return sharedPref.getBoolean(DEFAULT_SPEAKER_AUDIO, true);
     }
 
     public static boolean isDefaultSpeakerSettingForVideo() {
-        return sharedPref.getBoolean(DEFAULT_SPEAKER_VIDEO, false);
+        return sharedPref.getBoolean(DEFAULT_SPEAKER_VIDEO, true);
     }
 
     /**
@@ -723,7 +723,7 @@ public class Utils {
         final String cameraFront = SkylinkConfig.VideoDevice.CAMERA_FRONT.getDeviceName();
 
         // Get string value saved in sharePref.
-        String savedValue = sharedPref.getString(DEFAULT_VIDEO_DEVICE, null);
+        String savedValue = sharedPref.getString(DEFAULT_VIDEO_DEVICE, cameraFront);
 
         /** If defaultVideoDevice is not set in sharedPref, set it to {@link cameraFront} */
         if (savedValue == null) {
@@ -742,7 +742,7 @@ public class Utils {
     }
 
     public static String getDefaultVideoResolution() {
-        return sharedPref.getString(DEFAULT_VIDEO_RESOLUTION, VIDEO_RESOLUTION_VGA);
+        return sharedPref.getString(DEFAULT_VIDEO_RESOLUTION, VIDEO_RESOLUTION_FHD);
     }
 
     /**
