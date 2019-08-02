@@ -392,7 +392,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
-        mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+        if (isLocal)
+            mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
     }
 
     @Override
