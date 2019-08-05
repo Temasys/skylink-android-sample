@@ -334,11 +334,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
             //start audio routing if has audio config
-            SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
-            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-                AudioRouter.setPresenter(this);
-                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
-            }
+//            SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
+//            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+//                AudioRouter.setPresenter(this);
+//                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+//            }
 
             multiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
         }
@@ -358,6 +358,16 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][onServiceRequestLocalAudioCapture] ";
 
         toastLog(TAG, context, "Local audio is on with id = " + localAudio.getMediaId());
+
+        //start audio routing if has audio config
+        SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
+        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+            AudioRouter.setPresenter(this);
+            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+
+            // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+            AudioRouter.changeAudioOutput(context, true);
+        }
     }
 
     @Override
