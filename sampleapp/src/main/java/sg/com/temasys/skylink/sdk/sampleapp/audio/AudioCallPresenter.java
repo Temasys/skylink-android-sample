@@ -152,6 +152,9 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
             AudioRouter.setPresenter(this);
             AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+
+            // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+            AudioRouter.changeAudioOutput(context, this.currentAudioOutput);
         }
 
         //notify view to change the UI

@@ -315,10 +315,10 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         //Create an empty view with black background color
         if (Utils.isDefaultNoneVideoDeviceSetting()) {
             removePeerView(0);
-            selfViewLayout = new FrameLayout(context);
-            selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
-            setLayoutParams(selfViewLayout);
-            selfViewLayout.addView(selfViewLayout);
+//            selfViewLayout = new FrameLayout(context);
+//            selfViewLayout.setBackgroundColor(getResources().getColor(R.color.color_black));
+//            setLayoutParams(selfViewLayout);
+//            selfViewLayout.addView(selfViewLayout);
             // display the context menu for local view
             displayPeerMenuOption(0);
         }

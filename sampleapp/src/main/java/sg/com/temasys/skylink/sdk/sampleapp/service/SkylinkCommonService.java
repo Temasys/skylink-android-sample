@@ -248,7 +248,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
         toastLog(TAG, context, log);
 
-        if (mPeersList != null && mPeersList.size() > 1 && !mPeersList.get(0).equals(peerId)) {
+        if (mPeersList != null && mPeersList.size() > 1 && !mPeersList.get(0).getPeerId().equals(peerId)) {
             presenter.onServiceRequestMediaStateChange(media, false);
         } else {
             presenter.onServiceRequestMediaStateChange(media, true);

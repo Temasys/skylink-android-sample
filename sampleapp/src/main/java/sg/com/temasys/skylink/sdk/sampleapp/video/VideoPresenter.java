@@ -335,6 +335,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
             AudioRouter.setPresenter(this);
             AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+
+            // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+            videoService.changeSpeakerOutput(this.currentVideoSpeaker);
         }
 
         //notify view to change the UI
@@ -392,7 +395,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
-        mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+        if (isLocal)
+            mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+
     }
 
     @Override
