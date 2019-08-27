@@ -214,7 +214,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void startLocalAudio() {
         if (mSkylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.AUDIO);
+            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
@@ -250,7 +250,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void startLocalScreen() {
         if (mSkylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.SCREEN_SHARE);
+            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
