@@ -135,10 +135,10 @@ public class CustomActionBar extends Fragment {
         for (int index = 0; index < peersList.size(); index++) {
             SkylinkPeer peer = peersList.get(index);
 
-            String peerAvatar = "";
-            if (peer.getPeerName() != null && peer.getPeerName().length() > 0) {
-                peerAvatar = peer.getPeerName().charAt(0) + "";
-            }
+            if (peer.getPeerName() == null || peer.getPeerName().length() == 0 || peer.getPeerName().equalsIgnoreCase("mcu"))
+                continue;
+
+            String peerAvatar = peer.getPeerName().charAt(0) + "";
 
             switch (index) {
                 case 1:
