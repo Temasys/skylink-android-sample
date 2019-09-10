@@ -5,6 +5,8 @@ import android.content.Context;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
+import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
@@ -15,6 +17,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoContract;
 import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContract;
 
+import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_BACK;
 import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_FRONT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
@@ -214,7 +217,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void startLocalAudio() {
         if (mSkylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.AUDIO);
+            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
@@ -236,8 +239,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
             // If user select back camera as default video device, start back camera
             // else start front camera as default
-            if (videoDevice == SkylinkConfig.VideoDevice.CAMERA_BACK) {
-                mSkylinkConnection.startLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, null);
+            if (videoDevice == CAMERA_BACK) {
+                mSkylinkConnection.startLocalMedia(CAMERA_BACK, null);
             } else {
                 mSkylinkConnection.startLocalMedia(CAMERA_FRONT, null);
             }
@@ -250,7 +253,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void startLocalScreen() {
         if (mSkylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.SCREEN_SHARE);
+            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
@@ -290,5 +293,38 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public String getLocalScreenId() {
         return localScreenSharingId;
+    }
+
+    /**
+     * Remove local audio
+     * Result will be informed in {@link MediaListener#onMediaStateChange(java.lang.String, sg.com.temasys.skylink.sdk.rtc.SkylinkMedia)}
+     * with {@link SkylinkMedia.MediaState} is {@link SkylinkMedia.MediaState#UNAVAILABLE} if local audio
+     * is removed successful OR {@link LifeCycleListener#onWarning(int, java.lang.String)} if local audio
+     * can not be removed or any error occurs
+     */
+    public void removeLocalAudio() {
+        mSkylinkConnection.removeLocalMedia(localAudioId);
+    }
+
+    /**
+     * Remove local video camera
+     * Result will be informed in {@link MediaListener#onMediaStateChange(java.lang.String, sg.com.temasys.skylink.sdk.rtc.SkylinkMedia)}
+     * with {@link SkylinkMedia.MediaState} is {@link SkylinkMedia.MediaState#UNAVAILABLE} if local video camera
+     * is removed successful OR {@link LifeCycleListener#onWarning(int, java.lang.String)} if local video camera
+     * can not be removed or any error occurs
+     */
+    public void removeLocalVideo() {
+        mSkylinkConnection.removeLocalMedia(localVideoId);
+    }
+
+    /**
+     * Remove local screen
+     * Result will be informed in {@link MediaListener#onMediaStateChange(java.lang.String, sg.com.temasys.skylink.sdk.rtc.SkylinkMedia)}
+     * with {@link SkylinkMedia.MediaState} is {@link SkylinkMedia.MediaState#UNAVAILABLE} if local screen
+     * is removed successful OR {@link LifeCycleListener#onWarning(int, java.lang.String)} if local screen
+     * can not be removed or any error occurs
+     */
+    public void removeLocalScreen() {
+        mSkylinkConnection.removeLocalMedia(localScreenSharingId);
     }
 }

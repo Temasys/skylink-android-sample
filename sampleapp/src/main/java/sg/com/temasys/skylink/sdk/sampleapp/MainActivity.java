@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.screenShareContainer:
             case R.id.btnScreenShare:
             case R.id.tvsSreenShare:
-                processScreenShare();
+                processVideo();
                 break;
             case R.id.imgLogo:
                 processImglogo();
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
     }
 
-    private void processScreenShare() {
+    private void processVideo() {
         startActivity(new Intent(this, VideoActivity.class));
     }
 

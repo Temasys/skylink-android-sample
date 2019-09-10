@@ -254,6 +254,21 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
+    public void onViewRequestRemoveAudio() {
+        videoService.removeLocalAudio();
+    }
+
+    @Override
+    public void onViewRequestRemoveVideo() {
+        videoService.removeLocalVideo();
+    }
+
+    @Override
+    public void onViewRequestRemoveScreen() {
+        videoService.removeLocalScreen();
+    }
+
+    @Override
     public void onViewRequestStartLocalMediaIfConfigAllow() {
         String log = "[SA][onViewRequestStartLocalMediaIfConfigAllow] ";
         if (Utils.isDefaultNoneVideoDeviceSetting()) {
@@ -395,9 +410,39 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
-        if (isLocal)
-            mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+        // change the UI
+        mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
 
+        // change the currentVideoLocalState
+        if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA && isLocal) {
+            if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
+                currentVideoLocalState.setVideoMute(true);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+                currentVideoLocalState.setCameraCapturerStop(true);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
+                currentVideoLocalState.setVideoMute(false);
+                currentVideoLocalState.setCameraCapturerStop(false);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
+                currentVideoLocalState.setCameraCapturerStop(true);
+            }
+        } else if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN && isLocal) {
+            if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
+                currentVideoLocalState.setScreenMute(true);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+                currentVideoLocalState.setScreenCapturerStop(true);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
+                currentVideoLocalState.setScreenMute(false);
+                currentVideoLocalState.setScreenCapturerStop(false);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
+                currentVideoLocalState.setScreenCapturerStop(true);
+            }
+        } else if (media.getMediaType() == SkylinkMedia.MediaType.AUDIO_MIC && isLocal) {
+            if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
+                currentVideoLocalState.setAudioMute(true);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
+                currentVideoLocalState.setAudioMute(false);
+            }
+        }
     }
 
     @Override

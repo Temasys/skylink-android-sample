@@ -121,7 +121,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             SkylinkPeer selfPeer = new SkylinkPeer(localPeerId, userName);
 
             if (localAudioId != null) {
-                selfPeer.addMediaId(localAudioId, SkylinkMedia.MediaType.AUDIO);
+                selfPeer.addMediaId(localAudioId, SkylinkMedia.MediaType.AUDIO_MIC);
             }
 
             if (localVideoId != null) {
@@ -237,7 +237,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onMediaStateChange(String peerId, SkylinkMedia media) {
-        String log = "[onMediaStateChange] ";
+        String log = "[SA][onMediaStateChange] ";
         log += "Peer " + getPeerIdNick(peerId) +
                 " Media (" + media.getMediaId() + ") state changed status via:\r\nCallback: " + media.getMediaState() + ".";
 
@@ -252,6 +252,22 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             presenter.onServiceRequestMediaStateChange(media, false);
         } else {
             presenter.onServiceRequestMediaStateChange(media, true);
+
+            // process remove local media if media state is UNAVAILABLE
+            if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
+                for (int i = 0; i < mPeersList.size(); i++) {
+                    mPeersList.get(i).removeMediaId(media.getMediaId());
+                }
+
+                // remove local media id
+                if (media.getMediaType() == SkylinkMedia.MediaType.AUDIO_MIC) {
+                    localAudioId = null;
+                } else if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+                    localVideoId = null;
+                } else if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+                    localScreenSharingId = null;
+                }
+            }
         }
     }
 
@@ -270,7 +286,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
 
         // add audio id for the peer
-        addPeerMedia(remotePeerId, remoteAudio.getMediaId(), SkylinkMedia.MediaType.AUDIO);
+        addPeerMedia(remotePeerId, remoteAudio.getMediaId(), SkylinkMedia.MediaType.AUDIO_MIC);
 
         presenter.onServiceRequestRemotePeerAudioReceive(log, remotePeerUserInfo, remotePeerId, remoteAudio);
     }

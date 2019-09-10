@@ -442,7 +442,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
-        if (removeIndex == -1)
+        if (removeIndex == -1 || remotePeer == null)
             return;
 
         // Remove the peer in button in custom bar

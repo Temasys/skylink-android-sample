@@ -167,6 +167,12 @@ public interface VideoContract {
 
 
         void onViewRequestToggleScreen(boolean start);
+
+        void onViewRequestRemoveAudio();
+
+        void onViewRequestRemoveVideo();
+
+        void onViewRequestRemoveScreen();
     }
 
     interface Service extends BaseService<Presenter> {
