@@ -253,10 +253,12 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         } else {
             presenter.onServiceRequestMediaStateChange(media, true);
 
-            // process remove local media if media state is UNAVAILABLE
+            // process remove local media id for the peer(s) if media state is UNAVAILABLE
             if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
-                for (int i = 0; i < mPeersList.size(); i++) {
-                    mPeersList.get(i).removeMediaId(media.getMediaId());
+                if (mPeersList != null && mPeersList.size() > 0) {
+                    for (int i = 0; i < mPeersList.size(); i++) {
+                        mPeersList.get(i).removeMediaId(media.getMediaId());
+                    }
                 }
 
                 // remove local media id

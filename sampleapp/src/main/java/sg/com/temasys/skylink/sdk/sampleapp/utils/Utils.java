@@ -662,11 +662,12 @@ public class Utils {
         return false;
     }
 
-
+    // default value for speaker is true
     public static boolean isDefaultSpeakerSettingForAudio() {
         return sharedPref.getBoolean(DEFAULT_SPEAKER_AUDIO, true);
     }
 
+    // default value for speaker is true
     public static boolean isDefaultSpeakerSettingForVideo() {
         return sharedPref.getBoolean(DEFAULT_SPEAKER_VIDEO, true);
     }

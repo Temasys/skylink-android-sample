@@ -303,7 +303,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalAudio() {
-        mSkylinkConnection.removeLocalMedia(localAudioId);
+        if(localAudioId != null)
+            mSkylinkConnection.removeLocalMedia(localAudioId);
     }
 
     /**
@@ -314,7 +315,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalVideo() {
-        mSkylinkConnection.removeLocalMedia(localVideoId);
+        if(localVideoId != null)
+            mSkylinkConnection.removeLocalMedia(localVideoId);
     }
 
     /**
@@ -325,6 +327,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalScreen() {
-        mSkylinkConnection.removeLocalMedia(localScreenSharingId);
+        if(localScreenSharingId != null)
+            mSkylinkConnection.removeLocalMedia(localScreenSharingId);
     }
 }

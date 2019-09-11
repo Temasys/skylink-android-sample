@@ -55,17 +55,17 @@
             android:background="@android:color/transparent"
             android:orientation="horizontal">
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_audio_speaker"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
                 android:layout_alignParentBottom="true"
                 android:layout_margin="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_headset_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_headset_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_audio_mute"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -73,11 +73,11 @@
                 android:layout_marginBottom="@dimen/dp_5dp"
                 android:layout_marginRight="@dimen/dp_5dp"
                 android:layout_marginTop="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_audio_mute_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_mic_off_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_audio_remove"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -85,11 +85,11 @@
                 android:layout_marginBottom="@dimen/dp_5dp"
                 android:layout_marginRight="@dimen/dp_5dp"
                 android:layout_marginTop="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_remove_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_remove_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_audio_start"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -123,17 +123,17 @@
             android:background="@android:color/transparent"
             android:orientation="horizontal">
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_video_switch_camera"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
                 android:layout_alignParentBottom="true"
                 android:layout_margin="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_switch_camera_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_switch_camera_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_video_mute"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -141,11 +141,11 @@
                 android:layout_marginBottom="@dimen/dp_5dp"
                 android:layout_marginRight="@dimen/dp_5dp"
                 android:layout_marginTop="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_videocam_mute_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_videocam_mute_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_video_remove"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -153,11 +153,11 @@
                 android:layout_marginBottom="@dimen/dp_5dp"
                 android:layout_marginRight="@dimen/dp_5dp"
                 android:layout_marginTop="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_remove_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_remove_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_video_start"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -191,17 +191,17 @@
             android:background="@android:color/transparent"
             android:orientation="horizontal">
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_screen_mute"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
                 android:layout_alignParentBottom="true"
                 android:layout_margin="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_stop_screen_share_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_stop_screen_share_disable_20dp"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_screen_remove"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
@@ -209,10 +209,11 @@
                 android:layout_marginBottom="@dimen/dp_5dp"
                 android:layout_marginRight="@dimen/dp_5dp"
                 android:layout_marginTop="@dimen/dp_5dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_remove_white_20dp"
+                android:background="@drawable/button_circle_disable"
+                android:src="@drawable/ic_remove_disable_20dp"
                 android:visibility="gone"/>
-            <ImageButton
+
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
                 android:id="@+id/btn_screen_start"
                 android:layout_width="@dimen/btn_video_tool_width"
                 android:layout_height="@dimen/btn_video_tool_height"
