@@ -201,6 +201,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
         }
 
+        // set enable multitrack to false to interop with JS-SDK
+        //skylinkConfig.setEnableMultitrack(false);
+
         return skylinkConfig;
     }
 
@@ -258,7 +261,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
         //Start audio.
         if (mSkylinkConnection != null) {
-
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
             mSkylinkConnection.startLocalMedia(videoDevice, null);
@@ -303,7 +305,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalAudio() {
-        if(localAudioId != null)
+        if (localAudioId != null)
             mSkylinkConnection.removeLocalMedia(localAudioId);
     }
 
@@ -315,7 +317,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalVideo() {
-        if(localVideoId != null)
+        if (localVideoId != null)
             mSkylinkConnection.removeLocalMedia(localVideoId);
     }
 
@@ -327,7 +329,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalScreen() {
-        if(localScreenSharingId != null)
+        if (localScreenSharingId != null)
             mSkylinkConnection.removeLocalMedia(localScreenSharingId);
     }
 }

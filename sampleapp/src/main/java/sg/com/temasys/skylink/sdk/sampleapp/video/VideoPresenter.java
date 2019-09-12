@@ -232,8 +232,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         boolean isCameraStart = currentVideoLocalState.isCameraCapturerStop();
 
         videoService.toggleVideo(isCameraStart);
-
-        currentVideoLocalState.setCameraCapturerStop(!isCameraStart);
     }
 
     @Override
@@ -241,8 +239,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         boolean isScreenStart = currentVideoLocalState.isScreenCapturerStop();
 
         videoService.toggleScreen(isScreenStart);
-
-        currentVideoLocalState.setScreenCapturerStop(!isScreenStart);
     }
 
     @Override
@@ -325,8 +321,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         // reset class variables
         currentVideoLocalState = new VideoLocalState();
-
-//        mainView.onPresenterRequestShowHideSmallView(null, false);
     }
 
     @Override
@@ -595,7 +589,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         // setTag for the remote video view
         videoView.setTag(remoteMedia.getMediaId());
 
-        if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA || remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO) {
+        if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA ||
+                remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO) {
             mainView.onPresenterRequestAddCameraRemoteView(videoView);
         } else if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
             mainView.onPresenterRequestAddScreenRemoteView(videoView);

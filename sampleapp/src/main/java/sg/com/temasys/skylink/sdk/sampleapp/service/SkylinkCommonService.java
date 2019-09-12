@@ -187,7 +187,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onWarning(int errorCode, String message) {
-//        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
+        Utils.handleSkylinkWarning(errorCode, message, context, TAG);
     }
 
     //----------------------------------------------------------------------------------------------
