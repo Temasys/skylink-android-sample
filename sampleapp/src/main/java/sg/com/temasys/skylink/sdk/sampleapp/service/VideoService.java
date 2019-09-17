@@ -225,7 +225,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
         //Start audio.
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", null);
         }
     }
 
@@ -243,9 +243,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             // If user select back camera as default video device, start back camera
             // else start front camera as default
             if (videoDevice == CAMERA_BACK) {
-                mSkylinkConnection.startLocalMedia(CAMERA_BACK, null);
+                mSkylinkConnection.startLocalMedia(CAMERA_BACK, "mobile cam back", null);
             } else {
-                mSkylinkConnection.startLocalMedia(CAMERA_FRONT, null);
+                mSkylinkConnection.startLocalMedia(CAMERA_FRONT, "mobile cam front", null);
             }
         }
     }
@@ -263,7 +263,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         if (mSkylinkConnection != null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
-            mSkylinkConnection.startLocalMedia(videoDevice, null);
+            mSkylinkConnection.startLocalMedia(videoDevice, "screen capture from mobile", null);
         }
     }
 
@@ -272,7 +272,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera(
                 CAMERA_FRONT, mSkylinkConnection);
         if (customVideoCapturer != null) {
-            mSkylinkConnection.startLocalMedia(CAMERA_FRONT, customVideoCapturer);
+            mSkylinkConnection.startLocalMedia(CAMERA_FRONT, "external video from mobile", customVideoCapturer);
 
         }
     }

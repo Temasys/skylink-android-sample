@@ -75,7 +75,7 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
      */
     public void startLocalAudio() {
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null);
+            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", null);
         }
     }
 }
