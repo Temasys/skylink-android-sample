@@ -61,7 +61,7 @@ public abstract class BasePresenter {
     public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
     }
 
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteVideo) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, String remotePeerId, SkylinkMedia remoteVideo) {
     }
 
     public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {

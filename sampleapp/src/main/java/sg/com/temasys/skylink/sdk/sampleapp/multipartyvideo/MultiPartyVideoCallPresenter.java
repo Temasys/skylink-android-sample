@@ -457,10 +457,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
-                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }
 
@@ -472,13 +469,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteMedia) {
-
+    public void onServiceRequestRemotePeerVideoReceive(String log, String remotePeerId, SkylinkMedia remoteMedia) {
         processAddRemoteView(remotePeerId, remoteMedia.getMediaType(), remoteMedia.getVideoView());
-
-        log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
     }

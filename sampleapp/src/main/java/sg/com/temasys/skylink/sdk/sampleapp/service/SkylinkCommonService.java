@@ -241,11 +241,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         log += "Peer " + getPeerIdNick(peerId) +
                 " Media (" + media.getMediaId() + ") state changed status via:\r\nCallback: " + media.getMediaState() + ".";
 
-        // It is also possible to get the mute status via the UserInfo.
-        UserInfo userInfo = getUserInfo(peerId);
-        if (userInfo != null) {
-            log += "\r\nUserInfo: " + userInfo.getMediaState(media.getMediaId()) + ".";
-        }
         toastLog(TAG, context, log);
 
         if (mPeersList != null && mPeersList.size() > 1 && !mPeersList.get(0).getPeerId().equals(peerId)) {
@@ -309,15 +304,13 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         String log = "[onRemotePeerVideoReceive] ";
         log += "Received new Video (" + remoteMedia.getMediaId() + ") from Peer " + getPeerIdNick(remotePeerId) + ".\r\n";
 
-        UserInfo remotePeerUserInfo = getUserInfo(remotePeerId);
-
         if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA || remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO) {
             addPeerMedia(remotePeerId, remoteMedia.getMediaId(), SkylinkMedia.MediaType.VIDEO_CAMERA);
         } else if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
             addPeerMedia(remotePeerId, remoteMedia.getMediaId(), SkylinkMedia.MediaType.VIDEO_SCREEN);
         }
 
-        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerUserInfo, remotePeerId, remoteMedia);
+        presenter.onServiceRequestRemotePeerVideoReceive(log, remotePeerId, remoteMedia);
     }
 
     /**

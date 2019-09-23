@@ -461,10 +461,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo
             remotePeerUserInfo) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n" +
-                "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
+        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }
 
@@ -477,14 +474,10 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, UserInfo remotePeerUserInfo,
-                                                       String remotePeerId, SkylinkMedia remoteVideo) {
+    public void onServiceRequestRemotePeerVideoReceive(String log,String remotePeerId, SkylinkMedia remoteVideo) {
         // add the remote video view in to the view
         processAddRemoteView(remotePeerId, remoteVideo);
 
-        log += "video height:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video width:" + remotePeerUserInfo.getVideoHeight() + ".\r\n" +
-                "video frameRate:" + remotePeerUserInfo.getVideoFps() + ".";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
     }
