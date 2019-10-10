@@ -79,7 +79,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             audioCallService.connectToRoom(Constants.CONFIG_TYPE.AUDIO);
 
             // start local audio
-            audioCallService.startLocalAudio();
+            audioCallService.createLocalAudio();
 
             //set default for audio output
             currentAudioOutput = Utils.isDefaultSpeakerSettingForAudio();
@@ -191,13 +191,13 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     @Override
     public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
+        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }
 
     @Override
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
+        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }
 

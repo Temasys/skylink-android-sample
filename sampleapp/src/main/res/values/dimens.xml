@@ -64,5 +64,7 @@
     <dimen name="contentFrameRemoteScreenView_marginTop">450dp</dimen>
     <dimen name="stop_screen_text_size">4sp</dimen>
     <dimen name="banner_height">190dp</dimen>
+    <dimen name="btnMainButtonWidth">150dp</dimen>
+    <dimen name="btnMainButtonHeight">80dp</dimen>
 
 </resources>

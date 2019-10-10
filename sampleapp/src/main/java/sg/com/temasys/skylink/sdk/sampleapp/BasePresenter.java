@@ -8,7 +8,6 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 
-import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
@@ -189,21 +188,26 @@ public abstract class BasePresenter {
     // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestTransferSpeedReceived(String peerId, String mediaId, int mediaDirection, int mediaType, double transferSpeed) {
-        String direction = "Send";
-        if (Info.MEDIA_DIRECTION_RECV == mediaDirection) {
-            direction = "Recv";
+    public void onServiceRequestTransferSpeedReceived(double transferSpeed, boolean forSending, String remotePeerId, Context context) {
+
+        String log;
+        if (!forSending) {
+            String direction = "Recv";
+            log = "[SA][TransSpeed] Transfer speed " + direction + " from Peer " + remotePeerId + ": " + transferSpeed + " kbps";
+        } else {
+            String direction = "Send";
+            log = "[SA][TransSpeed] Transfer speed " + direction + " to Peer " + remotePeerId + ": " + transferSpeed + " kbps";
         }
         // Log the transfer speeds.
-        String log = "[SA][TransSpeed] Transfer speed for Peer " + peerId + ": " + " MediaId(" + mediaId + ") " +
-                Info.getInfoString(mediaType) + " " + direction + " = " + transferSpeed + " kbps";
+
         Log.d("MultiPartyVideoCall", log);
+        toastLog("MultiPartyVideoCall", context, log);
     }
 
-    public void onServiceRequestWebrtcStatsReceived(String peerId, int mediaDirection, int mediaType, String mediaId, HashMap<String, String> stats) {
+    public void onServiceRequestWebrtcStatsReceived(HashMap<String, String> stats) {
         // Log the WebRTC stats.
         StringBuilder log =
-                new StringBuilder("[SA][WStatsRecv] Received for Peer " + peerId + " MediaId(" + mediaId + ") " +
+                new StringBuilder("[SA][WStatsRecv] Received stats: " +
                         ":\r\n ");
         for (Map.Entry<String, String> entry : stats.entrySet()) {
             log.append(entry.getKey()).append(": ").append(entry.getValue()).append(".\r\n");

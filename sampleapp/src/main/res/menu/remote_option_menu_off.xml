@@ -10,8 +10,11 @@
         android:id="@+id/webRtcStats"
         android:title="@string/webrtc_stats_off"/>
     <item
-        android:id="@+id/transferSpeed"
-        android:title="Transfer speed"/>
+        android:id="@+id/sendingTransferSpeed"
+        android:title="Sending Transfer speed"/>
+    <item
+        android:id="@+id/receivingTransferSpeed"
+        android:title="Received Transfer speed"/>
     <item
         android:id="@+id/recordingStart"
         android:title="Recording stat"/>

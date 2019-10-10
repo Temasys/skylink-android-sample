@@ -1,8 +1,11 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
+import android.util.Log;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -56,26 +59,42 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        skylinkConfig.setHasPeerMessaging(true);
-        skylinkConfig.setHasFileTransfer(true);
+        skylinkConfig.setP2PMessaging(true);
+        skylinkConfig.setFileTransfer(true);
 
         // Allow only 1 remote Peer to join.
-        skylinkConfig.setMaxPeers(1); // Default is 4 remote Peers.
+        skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.RoomMediaType.AUDIO_ONLY); // Default is 4 remote Peers.
 
         // Set the room size
-        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.SMALL);
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
+
+        // set enable multitrack to false to interop with JS-SDK
+        // skylinkConfig.setEnableMultitrack(false);
+
         return skylinkConfig;
     }
 
     /**
      * Start local audio in order to communicate with the remote peer
      */
-    public void startLocalAudio() {
+    public void createLocalAudio() {
         if (mSkylinkConnection != null) {
-            mSkylinkConnection.startLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", null);
+            final boolean[] success = {true};
+            mSkylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", new SkylinkCallback() {
+                @Override
+                public void onError(SkylinkError error, String contextDescription) {
+                    Log.e("SkylinkCallback", contextDescription);
+                    success[0] = false;
+                }
+            });
+
+            if (!success[0]) {
+                String error = "Unable to createLocalAudio!";
+                Utils.toastLog("AudioService", context, error);
+            }
         }
     }
 }

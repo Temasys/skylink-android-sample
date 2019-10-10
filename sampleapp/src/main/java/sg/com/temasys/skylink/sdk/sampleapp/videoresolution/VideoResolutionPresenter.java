@@ -124,9 +124,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
 
     @Override
     public void onViewRequestGetVideoResolutions() {
-        // get the remote peer id
-        String peerId = videoService.getPeerId(1);
-        videoService.getVideoResolutions(this.currentMainVideoTypeSelected, peerId);
+        videoService.getVideoResolutions(this.currentMainVideoTypeSelected, 1);
     }
 
     @Override

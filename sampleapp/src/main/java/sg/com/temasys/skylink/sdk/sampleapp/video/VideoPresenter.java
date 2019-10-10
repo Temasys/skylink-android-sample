@@ -9,6 +9,8 @@ import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
 
+import java.util.List;
+
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
@@ -54,17 +56,14 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     private boolean currentVideoSpeaker = Utils.isDefaultSpeakerSettingForVideo();
 
     // the current state of local video {audio, video, camera}
-    private VideoLocalState currentVideoLocalState = new VideoLocalState();
+    private VideoLocalState currentVideoLocalState;
 
     public VideoPresenter(Context context) {
         this.context = context;
         this.videoService = new VideoService(context);
         this.videoService.setPresenter(this);
         this.permissionUtils = new PermissionUtils();
-
-        // set the init state of currentVideoLocalState, so we can start capturing later
-        currentVideoLocalState.setCameraCapturerStop(true);
-        currentVideoLocalState.setScreenCapturerStop(true);
+        currentVideoLocalState = new VideoLocalState();
     }
 
     public void setMainView(VideoContract.MainView view) {
@@ -134,37 +133,32 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onViewRequestExit() {
         //process disconnect from room if connecting
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
-        if (!videoService.disconnectFromRoom()) {
-            // if not connecting to the room, dispose the local media
-            videoService.disposeLocalMedia();
-        }
+//        if (!videoService.disconnectFromRoom()) {
+//            // if not connecting to the room, dispose the local media
+//            videoService.disposeLocalMedia();
+//        }
+
+        videoService.disconnectFromRoom();
+        videoService.disposeLocalMedia();
+
     }
 
     @Override
     public void onViewRequestChangeAudioState() {
         boolean isAudioMute = currentVideoLocalState.isAudioMute();
-
         processAudioStateChanged(!isAudioMute);
-
-        currentVideoLocalState.setAudioMute(!isAudioMute);
     }
 
     @Override
     public void onViewRequestChangeVideoState() {
         boolean isVideoMute = currentVideoLocalState.isVideoMute();
-
         processVideoStateChanged(!isVideoMute);
-
-        currentVideoLocalState.setVideoMute(!isVideoMute);
     }
 
     @Override
     public void onViewRequestChangeScreenState() {
         boolean isScreenMute = currentVideoLocalState.isScreenMute();
-
         processScreenStateChanged(!isScreenMute);
-
-        currentVideoLocalState.setScreenMute(!isScreenMute);
     }
 
     @Override
@@ -223,7 +217,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onViewRequestStartAudio() {
-        videoService.startLocalAudio();
+        videoService.createLocalAudio();
     }
 
     @Override
@@ -243,10 +237,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onViewRequestToggleScreen(boolean start) {
-        // implement start or stop video base on the state of the current screen video
         videoService.toggleScreen(start);
-
-        currentVideoLocalState.setScreenCapturerStop(!start);
     }
 
     @Override
@@ -274,23 +265,23 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         }
 
         // start local audio
-        videoService.startLocalAudio();
+        videoService.createLocalAudio();
 
         // check the default setting for video device and start local video accordingly
         if (Utils.isDefaultCameraDeviceSetting()) {
-            videoService.startLocalVideo();
+            videoService.createLocalVideo();
             return;
         }
 
         if (Utils.isDefaultScreenDeviceSetting()) {
-            videoService.startLocalScreen();
+            videoService.createLocalScreen();
             return;
         }
 
         // we create a custom video device from back camera of the device, so start custom video device
         // will similarly start back camera
         if (Utils.isDefaultCustomVideoDeviceSetting()) {
-            videoService.startLocalCustomVideo();
+            videoService.createLocalCustomVideo();
             return;
         }
     }
@@ -351,6 +342,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //notify view to change the UI
         mainView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
+
+        currentVideoLocalState.setAudioMute(false);
     }
 
     @Override
@@ -362,17 +355,21 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             log += "VideoView is null! Try to get video from SDK";
             Log.w(TAG, log);
 
-            selfVideoView = videoService.getVideoView(null, localVideo.getMediaId());
+            selfVideoView = videoService.getVideoView(localVideo.getMediaId());
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
         }
+
+        // for test getSkylinkMedia API
+        selfVideoView = videoService.getVideoView(localVideo.getMediaId());
 
         //notify view to change the UI
         mainView.onPresenterRequestAddCameraSelfView(localVideo.getMediaId(), selfVideoView);
 
         // change state of currentVideoLocalState
         currentVideoLocalState.setCameraCapturerStop(false);
+        currentVideoLocalState.setVideoMute(false);
     }
 
     @Override
@@ -384,17 +381,21 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             log += "VideoView is null! Try to get video from SDK";
             Log.w(TAG, log);
 
-            selfVideoView = videoService.getVideoView(null, localScreen.getMediaId());
+            selfVideoView = videoService.getVideoView(localScreen.getMediaId());
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
         }
+
+        // for testing getSkylinkMedia API
+        selfVideoView = videoService.getVideoView(localScreen.getMediaId());
 
         //notify view to change the UI
         mainView.onPresenterRequestAddScreenSelfView(localScreen.getMediaId(), selfVideoView);
 
         // change state of currentVideoLocalState
         currentVideoLocalState.setScreenCapturerStop(false);
+        currentVideoLocalState.setScreenMute(false);
     }
 
     @Override
@@ -411,30 +412,38 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA && isLocal) {
             if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
                 currentVideoLocalState.setVideoMute(true);
+                currentVideoLocalState.setCameraCapturerStop(false);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
                 currentVideoLocalState.setCameraCapturerStop(true);
+                currentVideoLocalState.setVideoMute(false);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
                 currentVideoLocalState.setVideoMute(false);
                 currentVideoLocalState.setCameraCapturerStop(false);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
                 currentVideoLocalState.setCameraCapturerStop(true);
+                currentVideoLocalState.setVideoMute(true);
             }
         } else if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN && isLocal) {
             if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
                 currentVideoLocalState.setScreenMute(true);
+                currentVideoLocalState.setScreenCapturerStop(false);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
                 currentVideoLocalState.setScreenCapturerStop(true);
+                currentVideoLocalState.setScreenMute(false);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
                 currentVideoLocalState.setScreenMute(false);
                 currentVideoLocalState.setScreenCapturerStop(false);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
                 currentVideoLocalState.setScreenCapturerStop(true);
+                currentVideoLocalState.setScreenMute(true);
             }
         } else if (media.getMediaType() == SkylinkMedia.MediaType.AUDIO_MIC && isLocal) {
             if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
                 currentVideoLocalState.setAudioMute(true);
             } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
                 currentVideoLocalState.setAudioMute(false);
+            } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
+                currentVideoLocalState.setAudioMute(true);
             }
         }
     }
@@ -461,20 +470,20 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo
             remotePeerUserInfo) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
+        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }
 
     @Override
     public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo,
                                                        String remotePeerId, SkylinkMedia remoteAudio) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
+        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log,String remotePeerId, SkylinkMedia remoteVideo) {
+    public void onServiceRequestRemotePeerVideoReceive(String log, String remotePeerId, SkylinkMedia remoteVideo) {
         // add the remote video view in to the view
         processAddRemoteView(remotePeerId, remoteVideo);
 
@@ -546,23 +555,22 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     /**
      * Get video view by remote peer id
      */
-    private SurfaceViewRenderer processGetVideoView(String remotePeerId, String mediaId) {
-        return videoService.getVideoView(remotePeerId, mediaId);
+    private SurfaceViewRenderer processGetVideoView(String mediaId) {
+        return videoService.getVideoView(mediaId);
     }
 
     /**
      * Get the remote video view from peer id
      */
-    private SurfaceViewRenderer processGetRemoteView(String remotePeerId, String mediaId) {
-        SurfaceViewRenderer videoView;
-        // Proceed only if the first (& only) remote Peer has joined.
-        if (remotePeerId == null) {
-            return null;
-        } else {
-            videoView = processGetVideoView(remotePeerId, mediaId);
-        }
+    private SurfaceViewRenderer processGetRemoteView(String mediaId) {
+        return processGetVideoView(mediaId);
+    }
 
-        return videoView;
+    /**
+     * Get the remote video view from peer id
+     */
+    private List<SurfaceViewRenderer> processGetRemoteViews(String remotePeerId, SkylinkMedia.MediaType mediaType) {
+        return videoService.getVideoViews(remotePeerId, mediaType);
     }
 
     /**
@@ -573,11 +581,22 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         SurfaceViewRenderer videoView = remoteMedia.getVideoView();
 
         if (videoView == null) {
-            videoView = processGetRemoteView(remotePeerId, remoteMedia.getMediaId());
+            List<SurfaceViewRenderer> videoViews = processGetRemoteViews(remotePeerId, remoteMedia.getMediaType());
+            if (videoViews != null && videoViews.size() > 0) {
+                // get the first video view of the media type
+                videoView = videoViews.get(0);
+            }
         }
 
         if (videoView == null)
             return;
+
+        // for testing getSkylinkMediaList API
+        List<SurfaceViewRenderer> videoViews = processGetRemoteViews(remotePeerId, remoteMedia.getMediaType());
+        if (videoViews != null && videoViews.size() > 0) {
+            // get the first video view of the media type
+            videoView = videoViews.get(0);
+        }
 
         // setTag for the remote video view
         videoView.setTag(remoteMedia.getMediaId());

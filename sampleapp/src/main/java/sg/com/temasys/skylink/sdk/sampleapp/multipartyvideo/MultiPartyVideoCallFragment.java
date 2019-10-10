@@ -30,7 +30,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.rtc.Info;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -240,8 +239,17 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             case R.id.webRtcStats:
                 presenter.onViewRequestWebrtcStatsToggle(currentSelectIndex);
                 break;
-            case R.id.transferSpeed:
-                presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+            case R.id.sendingTransferSpeed:
+                // TODO @Muoi need to update when SDK finished get stats by specific media track
+                // currently the SDK is just able to get full stats for receiving track, no all mediaTypes or
+                // media tracks will get the same stats
+                presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, true);
+                break;
+            case R.id.receivingTransferSpeed:
+                // TODO @Muoi need to update when SDK finished get stats by specific media track
+                // currently the SDK is just able to get full stats for receiving track, no all mediaTypes or
+                // media tracks will get the same stats
+                presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, false);
                 break;
             case R.id.recordingStart:
                 return presenter.onViewRequestStartRecording();
@@ -603,10 +611,13 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         int totalInRoom = presenter.onViewRequestGetTotalInRoom();
 
         for (int i = 0; i < totalInRoom; i++) {
-            SurfaceViewRenderer videoView = presenter.onViewRequestGetVideoViewByIndex(i);
+            List<SurfaceViewRenderer> videoViews = presenter.onViewRequestGetVideoViewByIndex(i);
 
-            if (videoView != null)
-                Utils.removeViewFromParent(videoView);
+            if (videoViews != null && videoViews.size() > 0) {
+                for (SurfaceViewRenderer videoView : videoViews) {
+                    Utils.removeViewFromParent(videoView);
+                }
+            }
         }
     }
 

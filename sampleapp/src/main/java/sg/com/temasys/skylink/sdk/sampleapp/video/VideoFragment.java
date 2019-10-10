@@ -485,11 +485,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 case STOPPED:
                     if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
                         btnVideoStart.setStart(true);
-                        btnVideoMute.setEnabled(false);
+                        btnVideoMute.setEnabled(true);
                         btnVideoSwitchCamera.setEnabled(false);
                     } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
-                        btnScreenMute.setEnabled(false);
                         btnScreenStart.setStart(true);
+                        btnScreenMute.setEnabled(true);
                         if (isShowScreenSharing) {
                             showHideButton(stopScreenshareFloat, false);
                         }

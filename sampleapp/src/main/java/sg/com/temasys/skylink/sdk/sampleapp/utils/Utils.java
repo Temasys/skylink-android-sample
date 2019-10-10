@@ -284,31 +284,22 @@ public class Utils {
 */
 /*
         // To set local video resolution (only use those supported by camera):
-        skylinkConfig.setVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR); // Default is 480 (VGA).
-        skylinkConfig.setVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
-*/
-/*
-        // To enable logs from Skylink SDK (e.g. during debugging):
-        // Do not enable logs for production apps!
-        skylinkConfig.setEnableLogs(true);
+        skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR); // Default is 480 (VGA).
+        skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
 */
 /*
         // To force TURN:
         skylinkConfig.setAllowHost(false);
         skylinkConfig.setAllowStun(false);
 */
-        skylinkConfig.setTimeout(Constants.TIME_OUT);
+        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.FILE_SEND_REQUEST, Constants.TIME_OUT);
 
-        // Add following advanced options during development to catch errors and for better debugging:
-        // To enable logs from Skylink SDK (e.g. during debugging):
-        // Do not enable logs for production apps!
-        skylinkConfig.setEnableLogs(true);
         // SDK_DETAILED_LOGGING
-        skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)!", new Boolean(true));
+        skylinkConfig.setAdvancedOptions("SdkAdvancedOption)!", new Boolean(true));
         // OFF_ANS_VIA_USER_DATA
-        skylinkConfig.getAdvancedOptions().put("OffererAnswererViaUserData", new Boolean(true));
+        skylinkConfig.setAdvancedOptions("OffererAnswererViaUserData", new Boolean(true));
         // SDK_RUNTIME_CRASH
-        skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)@", new Boolean(true));
+        skylinkConfig.setAdvancedOptions("SdkAdvancedOption)@", new Boolean(true));
         // SDK_LOCK_LOG
         // skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)#", new Boolean(true));
 
@@ -323,8 +314,8 @@ public class Utils {
      * @param context
      * @param tag
      */
-    public static void handleSkylinkReceiveLog(int infoCode, String message,
-                                               Context context, String tag) {
+    public static void handleSkylinkReceiveInfo(int infoCode, String message,
+                                                Context context, String tag) {
         String log = "[SA][SkylinkLog] " + message;
         switch (infoCode) {
             case CAM_SWITCH_FRONT:
@@ -344,8 +335,8 @@ public class Utils {
      * @param context
      * @param tag
      */
-    public static void handleSkylinkWarning(int errorCode, String message, Context context,
-                                            String tag) {
+    public static void handleSkylinkWarningErrorMsg(int errorCode, String message, Context context,
+                                                    String tag) {
         String log = "[SA][SkylinkWarn] Error:" + errorCode + " (" +
                 Errors.getErrorString(errorCode) + ")\r\n" + message;
         toastLog(tag, context, log);

@@ -11,8 +11,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Date;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -78,8 +80,21 @@ public class SkylinkConnectionManager {
         // Set SkylinkConnection instance in skylinkCommonService ASAP.
         skylinkCommonService.setmSkylinkConnection(skylinkConnection);
         // Initialize this SkylinkConnection instance.
-        skylinkConnection.init(Config.getAppKey(), skylinkConfig,
-                context.getApplicationContext());
+
+        final boolean[] success = {true};
+        skylinkConnection.init(skylinkConfig, context.getApplicationContext(), new SkylinkCallback() {
+            @Override
+            public void onError(SkylinkError error, String contextDescription) {
+                Log.e("SkylinkCallback", contextDescription);
+                success[0] = false;
+            }
+        });
+
+        if (!success[0]) {
+            String error = "Unable to init the SkylinkConnection instance!";
+            toastLog(TAG, context, error);
+            return null;
+        }
 
         // Set Skylink listeners necessary for current demo/call
         skylinkCommonService.setSkylinkListeners();
@@ -100,8 +115,8 @@ public class SkylinkConnectionManager {
      * @param typeCall Specify which is current demo/call like audio/video/file/...
      * @return SkylinkConnection
      */
-    public SkylinkConnection connectToRoom(Constants.CONFIG_TYPE typeCall) {
-        String logTag = "[SA][SCM][connectToRoom] ";
+    public SkylinkConnection connectToRoomByConnectionString(Constants.CONFIG_TYPE typeCall) {
+        String logTag = "[SA][SCM][connectToRoomByConnectionString] ";
         String log = logTag;
 
         //check internet connection
@@ -134,13 +149,20 @@ public class SkylinkConnectionManager {
         // (such as a secure App server that has the Skylink App Key secret), and sent to the App.
         // This is to avoid keeping the App Key secret within the application, for better security.
         String skylinkConnectionString = getSkylinkConnectionString(
-                mRoomName, new Date(), SkylinkConnection.DEFAULT_DURATION, skylinkConfig.getRoomSize());
+                mRoomName, new Date(), SkylinkConnection.DEFAULT_DURATION, skylinkConfig.getSkylinkRoomSize());
 
         // The skylinkConnectionString should not be logged in production,
         // as it contains potentially sensitive information like the Skylink App Key ID.
-        boolean connectFailed = !skylinkConnection.connectToRoom(skylinkConnectionString, mUserName);
+        final boolean[] success = {true};
+        skylinkConnection.connectToRoom(skylinkConnectionString, mUserName, new SkylinkCallback() {
+            @Override
+            public void onError(SkylinkError error, String contextDescription) {
+                Log.e("SkylinkCallback", contextDescription);
+                success[0] = false;
+            }
+        });
 
-        if (connectFailed) {
+        if (!success[0]) {
             log = logTag + "Unable to connect to room!";
             toastLog(TAG, context, log);
             return null;
@@ -153,20 +175,88 @@ public class SkylinkConnectionManager {
     }
 
     /**
+     * Connects to a room using app key, app secret,... directly
+     *
+     * @param typeCall Specify which is current demo/call like audio/video/file/...
+     * @return SkylinkConnection
+     */
+    public SkylinkConnection connectToRoomByAppKey(Constants.CONFIG_TYPE typeCall) {
+        String logTag = "[SA][SCM][connectToRoomByConnectionString] ";
+        String log = logTag;
+
+        //check internet connection
+        if (!Utils.isInternetOn()) {
+            log = "Internet connection is off !";
+            toastLog(TAG, context, log);
+            return null;
+        }
+
+        if (skylinkCommonService == null) {
+            log += "Error: SkylinkCommonService is null";
+            Log.e(TAG, log);
+            return null;
+        }
+
+        // Initialize the skylink connection using SkylinkConnectionManager if it is not initialized
+        if (skylinkConnection == null) {
+            skylinkConnection = initializeSkylinkConnection(typeCall);
+        }
+
+        // Get room name and user name in setting
+        String mRoomName = Utils.getRoomNameByType(typeCall);
+        String mUserName = Utils.getUserNameByType(typeCall);
+
+        SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
+
+        // The skylinkConnectionString should not be logged in production,
+        // as it contains potentially sensitive information like the Skylink App Key ID.
+        final boolean[] success = {true};
+        skylinkConnection.connectToRoom(Config.getAppKey(), Config.getAppKeySecret(), mRoomName, mUserName,
+                new SkylinkCallback() {
+                    @Override
+                    public void onError(SkylinkError error, String contextDescription) {
+                        Log.e("SkylinkCallback", contextDescription);
+                        success[0] = false;
+                    }
+                });
+
+        if (!success[0]) {
+            log = logTag + "Unable to connect to room!";
+            toastLog(TAG, context, log);
+            return null;
+        }
+
+        log = logTag + "Connecting...";
+        toastLog(TAG, context, log);
+
+        return skylinkConnection;
+    }
+
+    /**
      * Disconnects from the room we are currently in.
-     * Once disconnect is complete, {@link SkylinkCommonService#onDisconnect(int, String)}
+     * Once disconnect is complete, {@link SkylinkCommonService#onDisconnectFromRoom(int, String)}}
      * will be called.
      */
     public boolean disconnectFromRoom() {
-        boolean disConnectSuccess = false;
+        if (skylinkConnection == null)
+            return true;
 
-        if (skylinkConnection != null)
-            disConnectSuccess = skylinkConnection.disconnectFromRoom();
+        final boolean[] success = {true};
+        skylinkConnection.disconnectFromRoom(new SkylinkCallback() {
+            @Override
+            public void onError(SkylinkError error, String contextDescription) {
+                Log.e("SkylinkCallback", contextDescription);
+                success[0] = false;
+            }
+        });
 
-        if (disConnectSuccess)
-            skylinkConnection = null;
+        if (!success[0]) {
+            String error = "Unable to disconnectFromRoom!";
+            toastLog(TAG, context, error);
+            return false;
+        }
 
-        return disConnectSuccess;
+        return true;
     }
 
     /**
@@ -190,18 +280,18 @@ public class SkylinkConnectionManager {
      * Returns the SkylinkConnectionString, which MUST BE URL SAFE.
      * Required inputs are: App key, App secret, Room name, Room start time, and Room duration.
      *
-     * @param roomName  Name of the room
-     * @param startTime Room Start Time
-     * @param duration  Duration of the room in Hours
-     * @param roomSize  The size of the room, restricted by the server
-     *                  Only the first Peer to start the room will have it's room_size effected.
-     *                  Later Peers who join the room will not have their room_size value respected.
-     *                  If more Peers than indicated by the effected room_size join the room,
-     *                  they may get warnings and/or not be allowed to join room.
+     * @param roomName        Name of the room
+     * @param startTime       Room Start Time
+     * @param duration        Duration of the room in Hours
+     * @param skylinkRoomSize The size of the room, restricted by the server
+     *                        Only the first Peer to start the room will have it's room_size effected.
+     *                        Later Peers who join the room will not have their room_size value respected.
+     *                        If more Peers than indicated by the effected room_size join the room,
+     *                        they may get warnings and/or not be allowed to join room.
      * @return
      */
     public String getSkylinkConnectionString(String roomName, Date startTime, int duration,
-                                             SkylinkConfig.RoomSize roomSize) {
+                                             SkylinkConfig.SkylinkRoomSize skylinkRoomSize) {
 
         String info = "Room name: " + roomName + ", startTime: " + startTime +
                 ", duration: " + duration + ".\r\n";
@@ -254,7 +344,8 @@ public class SkylinkConnectionManager {
         http://host/<connectionString>
         */
         connectionString = uriString.substring(urlStart.length(), uriString.length())
-                + "?cred=" + cred + "&room_size=" + roomSize.getValue();
+                + "?cred=" + cred + "&room_size=" + skylinkRoomSize.getValue();
+
         info += "URL safe connectionString: \"" + connectionString + "\"";
         Log.d(TAG, info);
 

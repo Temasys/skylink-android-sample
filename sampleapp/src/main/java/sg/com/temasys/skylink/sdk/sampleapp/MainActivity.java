@@ -7,30 +7,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private LinearLayout audioContainerBig, chatContainerBig, fileContainerBig, dataContainerBig,
-            multiVideoContainerBig, screenShareContainerBig;
-    private RelativeLayout audioContainer, chatContainer, fileContainer, dataContainer,
-            multiVideoContainer, screenShareContainer;
-    private ImageButton btnAudio, btnChat, btnFile, btnData, btnMultiVideo, btnScreenShare;
-    private TextView tvAudio, tvChat, tvFile, tvData, tvMultiVideo, tvScreenShare;
     private ImageView imgLogo;
+    private MainDemoButton btnMainAudio, btnMainVideo, btnMainChat, btnMainFile, btnMainData, btnMainMulti;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,65 +43,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getControlWidgets() {
-        audioContainerBig = findViewById(R.id.audioContainerBig);
-        chatContainerBig = findViewById(R.id.chatContainerBig);
-        fileContainerBig = findViewById(R.id.fileContainerBig);
-        dataContainerBig = findViewById(R.id.dataContainerBig);
-        multiVideoContainerBig = findViewById(R.id.multiVideoContainerBig);
-        screenShareContainerBig = findViewById(R.id.screenShareContainerBig);
+        btnMainAudio = findViewById(R.id.btnMainAudio);
+        btnMainVideo = findViewById(R.id.btnMainVideo);
+        btnMainChat = findViewById(R.id.btnMainChat);
+        btnMainFile = findViewById(R.id.btnMainFile);
+        btnMainData = findViewById(R.id.btnMainData);
+        btnMainMulti = findViewById(R.id.btnMainMulti);
 
-        audioContainer = findViewById(R.id.audioContainer);
-        chatContainer = findViewById(R.id.chatContainer);
-        fileContainer = findViewById(R.id.fileContainer);
-        dataContainer = findViewById(R.id.dataContainer);
-        multiVideoContainer = findViewById(R.id.multiVideoContainer);
-        screenShareContainer = findViewById(R.id.screenShareContainer);
-
-        btnAudio = findViewById(R.id.btnAudioCall);
-        btnChat = findViewById(R.id.btnChat);
-        btnFile = findViewById(R.id.btnFileTransfer);
-        btnData = findViewById(R.id.btnDataTransfer);
-        btnMultiVideo = findViewById(R.id.btnMultiVideoCall);
-        btnScreenShare = findViewById(R.id.btnScreenShare);
-
-        tvAudio = findViewById(R.id.tvAudio);
-        tvChat = findViewById(R.id.tvChat);
-        tvFile = findViewById(R.id.tvFileTransfer);
-        tvData = findViewById(R.id.tvDataTransfer);
-        tvMultiVideo = findViewById(R.id.tvMultiVideoCall);
-        tvScreenShare = findViewById(R.id.tvsSreenShare);
+        btnMainAudio.setType(MainDemoButton.ButtonType.AUDIO);
+        btnMainVideo.setType(MainDemoButton.ButtonType.VIDEO);
+        btnMainChat.setType(MainDemoButton.ButtonType.CHAT);
+        btnMainFile.setType(MainDemoButton.ButtonType.FILE);
+        btnMainData.setType(MainDemoButton.ButtonType.DATA);
+        btnMainMulti.setType(MainDemoButton.ButtonType.MULTI);
 
         imgLogo = findViewById(R.id.imgLogo);
     }
 
     private void initComponents() {
-        audioContainerBig.setOnClickListener(this);
-        chatContainerBig.setOnClickListener(this);
-        fileContainerBig.setOnClickListener(this);
-        dataContainerBig.setOnClickListener(this);
-        multiVideoContainerBig.setOnClickListener(this);
-        screenShareContainerBig.setOnClickListener(this);
-
-        audioContainer.setOnClickListener(this);
-        chatContainer.setOnClickListener(this);
-        fileContainer.setOnClickListener(this);
-        dataContainer.setOnClickListener(this);
-        multiVideoContainer.setOnClickListener(this);
-        screenShareContainer.setOnClickListener(this);
-
-        btnAudio.setOnClickListener(this);
-        btnChat.setOnClickListener(this);
-        btnFile.setOnClickListener(this);
-        btnData.setOnClickListener(this);
-        btnMultiVideo.setOnClickListener(this);
-        btnScreenShare.setOnClickListener(this);
-
-        tvAudio.setOnClickListener(this);
-        tvChat.setOnClickListener(this);
-        tvFile.setOnClickListener(this);
-        tvData.setOnClickListener(this);
-        tvMultiVideo.setOnClickListener(this);
-        tvScreenShare.setOnClickListener(this);
+        btnMainAudio.setOnClickListener(this);
+        btnMainVideo.setOnClickListener(this);
+        btnMainChat.setOnClickListener(this);
+        btnMainFile.setOnClickListener(this);
+        btnMainData.setOnClickListener(this);
+        btnMainMulti.setOnClickListener(this);
 
         //need check imgLogo in case of landscape orientation
         //because imgLogo is not available for landscape orientation
@@ -140,40 +97,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.audioContainerBig:
-            case R.id.audioContainer:
-            case R.id.btnAudioCall:
-            case R.id.tvAudio:
+            case R.id.btnMainAudio:
                 processAudio();
                 break;
-            case R.id.chatContainerBig:
-            case R.id.chatContainer:
-            case R.id.btnChat:
-            case R.id.tvChat:
+            case R.id.btnMainChat:
                 processChat();
                 break;
-            case R.id.fileContainerBig:
-            case R.id.fileContainer:
-            case R.id.btnFileTransfer:
-            case R.id.tvFileTransfer:
+            case R.id.btnMainFile:
                 processFileTransfer();
                 break;
-            case R.id.dataContainerBig:
-            case R.id.dataContainer:
-            case R.id.btnDataTransfer:
-            case R.id.tvDataTransfer:
+            case R.id.btnMainData:
                 processDataTransfer();
                 break;
-            case R.id.multiVideoContainerBig:
-            case R.id.multiVideoContainer:
-            case R.id.btnMultiVideoCall:
-            case R.id.tvMultiVideoCall:
+            case R.id.btnMainMulti:
                 processMultiVideo();
                 break;
-            case R.id.screenShareContainerBig:
-            case R.id.screenShareContainer:
-            case R.id.btnScreenShare:
-            case R.id.tvsSreenShare:
+            case R.id.btnMainVideo:
                 processVideo();
                 break;
             case R.id.imgLogo:

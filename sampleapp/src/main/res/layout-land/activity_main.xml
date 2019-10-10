@@ -7,206 +7,61 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/contentContainer"
+
+        <GridLayout
+            android:id="@+id/gridContent"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center">
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:clipToPadding="false"
+            android:columnCount="3"
+            android:horizontalSpacing="36dp"
+            android:verticalSpacing="2dp">
 
-            <GridLayout
-                android:id="@+id/gridContent"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:columnCount="3">
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
+                android:id="@+id/btnMainAudio"
+                android:layout_width="@dimen/btnMainButtonWidth"
+                android:layout_height="@dimen/btnMainButtonHeight"
+                android:layout_margin="@dimen/dp_20dp">
+            </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
-                <LinearLayout
-                    android:id="@+id/audioContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp">
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
+                android:id="@+id/btnMainVideo"
+                android:layout_width="@dimen/btnMainButtonWidth"
+                android:layout_height="@dimen/btnMainButtonHeight"
+                android:layout_margin="@dimen/dp_20dp">
+            </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
-                    <RelativeLayout
-                        android:id="@+id/audioContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
+                android:id="@+id/btnMainChat"
+                android:layout_width="@dimen/btnMainButtonWidth"
+                android:layout_height="@dimen/btnMainButtonHeight"
+                android:layout_margin="@dimen/dp_20dp">
+            </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
-                        <ImageButton
-                            android:id="@+id/btnAudioCall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_audio_icon"/>
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
+                android:id="@+id/btnMainFile"
+                android:layout_width="@dimen/btnMainButtonWidth"
+                android:layout_height="@dimen/btnMainButtonHeight"
+                android:layout_margin="@dimen/dp_20dp">
+            </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
-                        <TextView
-                            android:id="@+id/tvAudio"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnAudioCall"
-                            android:gravity="center_horizontal"
-                            android:text="@string/audio"/>
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
+                android:id="@+id/btnMainData"
+                android:layout_width="@dimen/btnMainButtonWidth"
+                android:layout_height="@dimen/btnMainButtonHeight"
+                android:layout_margin="@dimen/dp_20dp">
+            </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
-                    </RelativeLayout>
-                </LinearLayout>
+            <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
+                android:id="@+id/btnMainMulti"
+                android:layout_width="@dimen/btnMainButtonWidth"
+                android:layout_height="@dimen/btnMainButtonHeight"
+                android:layout_margin="@dimen/dp_20dp">
+            </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
-                <LinearLayout
-                    android:id="@+id/screenShareContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp"
-                    android:layout_marginBottom="@dimen/dp_20dp"
-                    android:layout_marginLeft="@dimen/dp_20dp"
-                    android:layout_marginRight="@dimen/dp_20dp">
+        </GridLayout>
 
-                    <RelativeLayout
-                        android:id="@+id/screenShareContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <ImageButton
-                            android:id="@+id/btnScreenShare"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_video_icon"/>
-
-                        <TextView
-                            android:id="@+id/tvsSreenShare"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnScreenShare"
-                            android:gravity="center_horizontal"
-                            android:text="@string/video"/>
-
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/chatContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp">
-
-                    <RelativeLayout
-                        android:id="@+id/chatContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <ImageButton
-                            android:id="@+id/btnChat"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_chat_icon"/>
-
-                        <TextView
-                            android:id="@+id/tvChat"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnChat"
-                            android:gravity="center_horizontal"
-                            android:text="@string/chat"/>
-
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/fileContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp">
-
-                    <RelativeLayout
-                        android:id="@+id/fileContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <ImageButton
-                            android:id="@+id/btnFileTransfer"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_file_transfer_icon"/>
-
-                        <TextView
-                            android:id="@+id/tvFileTransfer"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnFileTransfer"
-                            android:gravity="center_horizontal"
-                            android:text="@string/fileTransfer"/>
-
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/dataContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp"
-                    android:layout_marginLeft="@dimen/dp_20dp"
-                    android:layout_marginRight="@dimen/dp_20dp">
-
-                    <RelativeLayout
-                        android:id="@+id/dataContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <ImageButton
-                            android:id="@+id/btnDataTransfer"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_data_transfer_icon"/>
-
-                        <TextView
-                            android:id="@+id/tvDataTransfer"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnDataTransfer"
-                            android:gravity="center_horizontal"
-                            android:text="@string/dataTransfer"/>
-
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/multiVideoContainerBig"
-                    style="@style/CustonmButton"
-                    android:layout_width="@dimen/dp_150dp"
-                    android:layout_height="@dimen/dp_80dp">
-
-                    <RelativeLayout
-                        android:id="@+id/multiVideoContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <ImageButton
-                            android:id="@+id/btnMultiVideoCall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
-                            android:src="@drawable/ic_multi_video_call_icon"/>
-
-                        <TextView
-                            android:id="@+id/tvMultiVideoCall"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/btnMultiVideoCall"
-                            android:gravity="center_horizontal"
-                            android:text="@string/multiVideo"/>
-
-                    </RelativeLayout>
-                </LinearLayout>
-
-
-            </GridLayout>
-        </LinearLayout>
     </ScrollView>
 
 </LinearLayout>

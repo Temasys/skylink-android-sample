@@ -135,7 +135,7 @@ public interface MultiPartyVideoCallContract {
         /**
          * process getting info about transfer speed through network
          */
-        void onViewRequestGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType);
+        void onViewRequestGetTransferSpeeds(int peerIndex, SkylinkMedia.MediaType mediaType, boolean forSending);
 
         /**
          * process refresh the connection to remote peer
@@ -150,7 +150,7 @@ public interface MultiPartyVideoCallContract {
         /**
          * process getting remote video view from specific peer
          */
-        SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int index);
+        List<SurfaceViewRenderer> onViewRequestGetVideoViewByIndex(int index);
 
         /**
          * process data to display on view at initiative connection

@@ -5,7 +5,9 @@ import android.util.Log;
 
 import java.io.File;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
@@ -48,22 +50,22 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
             return;
 
         // Send request to peer requesting permission for file transfer
-        try {
-            mSkylinkConnection.sendFileTransferPermissionRequest(remotePeerId, file.getName(), file.getAbsolutePath());
+        mSkylinkConnection.sendFileTransfer(remotePeerId, file.getName(), file.getAbsolutePath(),
+                new SkylinkCallback() {
+                    @Override
+                    public void onError(SkylinkError error, String contextDescription) {
 
-            String peer = "";
-            if (remotePeerId == null) {
-                peer = "all Peers in room";
-            } else {
-                peer = "Peer " + remotePeerId;
-            }
-            String log = "Sending file to " + peer + ".";
-            toastLog(TAG, context, log);
-        } catch (SkylinkException e) {
-            String log = e.getMessage();
-            toastLogLong(TAG, context, log);
-            Log.e(TAG, log, e);
+                    }
+                });
+
+        String peer = "";
+        if (remotePeerId == null) {
+            peer = "all Peers in room";
+        } else {
+            peer = "Peer " + remotePeerId;
         }
+        String log = "Sending file to " + peer + ".";
+        toastLog(TAG, context, log);
     }
 
     /**
@@ -77,11 +79,15 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
         if (mSkylinkConnection == null)
             return;
 
-        try {
-            mSkylinkConnection.sendFileTransferPermissionResponse(remotePeerId, downloadedFilePath, isPermitted);
-        } catch (SkylinkException e) {
-            String log = e.getMessage();
-            toastLogLong(TAG, context, log);
+        if (isPermitted) {
+            mSkylinkConnection.acceptFileTransfer(remotePeerId, downloadedFilePath, new SkylinkCallback() {
+                @Override
+                public void onError(SkylinkError error, String contextDescription) {
+
+                }
+            });
+        } else {
+            mSkylinkConnection.rejectFileTransfer(remotePeerId);
         }
     }
 
@@ -111,10 +117,10 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        skylinkConfig.setHasFileTransfer(true);
+        skylinkConfig.setFileTransfer(true);
 
         // Set the room size
-        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.MEDIUM);
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);

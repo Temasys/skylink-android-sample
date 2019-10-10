@@ -1,8 +1,11 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
+import android.util.Log;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
@@ -43,7 +46,19 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
         if (mSkylinkConnection == null)
             return;
 
-        mSkylinkConnection.sendData(remotePeerId, data);
+        final boolean[] success = {true};
+        mSkylinkConnection.sendData(remotePeerId, data, new SkylinkCallback() {
+            @Override
+            public void onError(SkylinkError error, String contextDescription) {
+                Log.e("SkylinkCallback", contextDescription);
+                success[0] = false;
+            }
+        });
+
+        if (!success[0]) {
+            String error = "Unable to sendData!";
+            Utils.toastLog(TAG, context, error);
+        }
     }
 
     /**
@@ -70,10 +85,10 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        skylinkConfig.setHasDataTransfer(true);
+        skylinkConfig.setDataTransfer(true);
 
         // Set the room size
-        skylinkConfig.setRoomSize(SkylinkConfig.RoomSize.MEDIUM);
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);

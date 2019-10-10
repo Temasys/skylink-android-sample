@@ -9,10 +9,9 @@ import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import sg.com.temasys.skylink.sdk.rtc.Info;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
@@ -83,9 +82,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             //connect to room on Skylink connection
             processConnectToRoom();
 
-            //Start local audio and video.
-//            multiVideoCallService.startLocalMedia();
-
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
@@ -103,30 +99,30 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         }
 
         // start local audio
-        multiVideoCallService.startLocalAudio();
+        multiVideoCallService.createLocalAudio();
 
         // check the default setting for video device and start local video accordingly
         if (Utils.isDefaultCameraDeviceSetting()) {
-            multiVideoCallService.startLocalVideo();
+            multiVideoCallService.createLocalVideo();
             return;
         }
 
         if (Utils.isDefaultScreenDeviceSetting()) {
-            multiVideoCallService.startLocalScreen();
+            multiVideoCallService.createLocalScreen();
             return;
         }
 
         // we create a custom video device from back camera of the device, so start custom video device
         // will similarly start back camera
         if (Utils.isDefaultCustomVideoDeviceSetting()) {
-            multiVideoCallService.startLocalCustomVideo();
+            multiVideoCallService.createLocalCustomVideo();
             return;
         }
     }
 
     @Override
     public void onViewRequestStopScreenSharing() {
-        multiVideoCallService.toggleScreen();
+        multiVideoCallService.toggleScreen(false);
     }
 
     @Override
@@ -215,12 +211,12 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             gettingStats = true;
         }
         isGettingWebrtcStats.put(peerId, gettingStats);
-        processGetWStatsAll(peerId);
+        processGetWStatsAll(peerIndex);
     }
 
     @Override
-    public void onViewRequestGetTransferSpeeds(int peerIndex, int mediaDirection, int mediaType) {
-        multiVideoCallService.getTransferSpeeds(peerIndex, null, mediaDirection, mediaType);
+    public void onViewRequestGetTransferSpeeds(int peerIndex, SkylinkMedia.MediaType mediaType, boolean forSending) {
+        multiVideoCallService.getTransferSpeeds(peerIndex, mediaType, forSending);
     }
 
     @Override
@@ -241,7 +237,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public SurfaceViewRenderer onViewRequestGetVideoViewByIndex(int index) {
+    public List<SurfaceViewRenderer> onViewRequestGetVideoViewByIndex(int index) {
         return multiVideoCallService.getVideoViewByIndex(index);
     }
 
@@ -263,37 +259,37 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onViewRequestStartAudio() {
-        multiVideoCallService.startLocalAudio();
+        multiVideoCallService.createLocalAudio();
     }
 
     @Override
     public void onViewRequestStartVideo() {
-        multiVideoCallService.startLocalVideo();
+        multiVideoCallService.createLocalVideo();
     }
 
     @Override
     public void onViewRequestStartVideoCustom() {
-        multiVideoCallService.startLocalCustomVideo();
+        multiVideoCallService.createLocalCustomVideo();
     }
 
     @Override
     public void onViewRequestStartVideoCamera() {
-        multiVideoCallService.startLocalVideo();
+        multiVideoCallService.createLocalVideo();
     }
 
     @Override
     public void onViewRequestStartVideoScreen() {
-        multiVideoCallService.startLocalScreen();
+        multiVideoCallService.createLocalScreen();
     }
 
     @Override
     public void onViewRequestStartSecondVideoView() {
         if (!Utils.isDefaultScreenDeviceSetting()) {
             // start screen sharing
-            multiVideoCallService.startLocalScreen();
+            multiVideoCallService.createLocalScreen();
         } else {
             // start front camera
-            multiVideoCallService.startLocalVideo();
+            multiVideoCallService.createLocalVideo();
         }
     }
 
@@ -333,13 +329,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
-            //start audio routing if has audio config
-//            SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
-//            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-//                AudioRouter.setPresenter(this);
-//                AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
-//            }
-
             multiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
         }
     }
@@ -375,10 +364,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         String log = "[SA][onServiceRequestLocalCameraCapture] ";
 
         if (localVideo.getVideoView() == null) {
-            log += "VideoView is null!";
+            log += "VideoView is null! Try to get video view from the SDK";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType(), true);
+            // Able to get video view from SDK
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoViewById(localVideo.getMediaId());
             multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
 
         } else {
@@ -396,7 +386,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             log += "VideoView is null!";
             Log.d(TAG, log);
 
-            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoView(null, localVideo.getMediaType(), true);
+            SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoViewById(localVideo.getMediaId());
             multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
 
         } else {
@@ -404,30 +394,6 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             Log.d(TAG, log);
             multiVideoCallView.onPresenterRequestAddSelfView(localVideo.getVideoView(), localVideo.getMediaType());
         }
-    }
-
-    @Override
-    public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-        String log = "[SA][VideoResInput] The video (" + mediaType.toString() + ") input has width x height, fps: " +
-                width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-//        toastLogLong(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
-        String log = "[SA][VideoResRecv] The video (" + mediaType.toString() + ") received from Peer " + peerId +
-                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-//        toastLogLong(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
-        String log = "[SA][VideoResSent] The video (" + mediaType.toString() + ") sent to Peer " + peerId +
-                " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
-        Log.d(TAG, log);
-//        toastLogLong(TAG, context, log);
     }
 
     @Override
@@ -457,13 +423,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
+        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
         toastLog(TAG, context, log);
     }
 
     @Override
     public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
-        log += "isAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
+        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
         Log.d(TAG, log);
         toastLog(TAG, context, log);
     }
@@ -518,9 +484,10 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
      * Trigger processGetWebrtcStats for specific Peer in a loop if current state allows.
      * To stop loop, set {@link #isGettingWebrtcStats} to false.
      *
-     * @param peerId
+     * @param peerIndex the index of the remote peer to get the stats
      */
-    private void processGetWStatsAll(final String peerId) {
+    private void processGetWStatsAll(final int peerIndex) {
+        String peerId = multiVideoCallService.getPeerId(peerIndex);
         Boolean gettingStats = isGettingWebrtcStats.get(peerId);
         if (gettingStats == null) {
             String log = "[SA][WStatsAll] Peer " + peerId +
@@ -531,7 +498,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
         if (gettingStats) {
             // Request to get WebRTC stats.
-            processGetWebrtcStats(peerId, Info.MEDIA_DIRECTION_BOTH, Info.MEDIA_ALL);
+            processGetWebrtcStats(peerIndex);
 
             // Wait for waitMs ms before requesting WebRTC stats again.
             final int waitMs = 1000;
@@ -544,14 +511,13 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
                                     e.getMessage();
                     Log.e(TAG, error);
                 }
-                processGetWStatsAll(peerId);
+                processGetWStatsAll(peerIndex);
             }).start();
-
         }
     }
 
-    private void processGetWebrtcStats(String peerId, int mediaDirection, int mediaType) {
-        multiVideoCallService.getWebrtcStats(peerId, null, mediaDirection, mediaType);
+    private void processGetWebrtcStats(int peerIndex) {
+        multiVideoCallService.getWebrtcStats(peerIndex);
     }
 
     private void processAddRemoteView(String remotePeerId, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer videoView) {
