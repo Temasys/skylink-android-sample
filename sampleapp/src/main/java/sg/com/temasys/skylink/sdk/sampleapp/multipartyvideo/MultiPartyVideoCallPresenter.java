@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -344,9 +343,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
 
     @Override
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
-        String log = "[SA][onServiceRequestLocalAudioCapture] ";
-
-        toastLog(TAG, context, "Local audio is on with id = " + localAudio.getMediaId());
+        toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         //start audio routing if has audio config
         SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
@@ -355,7 +352,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
 
             // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
-            AudioRouter.changeAudioOutput(context, true);
+            AudioRouter.changeAudioOutput(true);
         }
     }
 
@@ -422,35 +419,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
-        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
-        Log.d(TAG, log);
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, String remotePeerId, SkylinkMedia remoteMedia) {
+    public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteMedia) {
         processAddRemoteView(remotePeerId, remoteMedia.getMediaType(), remoteMedia.getVideoView());
-        Log.d(TAG, log);
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRecordingVideoLink(String recordingId, String peerId, String videoLink) {
-        String peer = " Mixin";
-        if (peerId != null) {
-            peer = " Peer " + multiVideoCallService.getPeerIdNick(peerId) + "'s";
-        }
-        String msg = "Recording:" + recordingId + peer + " video link:\n" + videoLink;
-
-        multiVideoCallView.onPresenterRequestDisplayVideoLinkInfo(recordingId, msg);
-
     }
 
     @Override
@@ -471,13 +441,12 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
      * Process connect to room on service layer and update UI accordingly
      */
     private void processConnectToRoom() {
-
-        //connect to SkylinkSDK
-        multiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
-
         //get roomName from setting
         String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
         toastLog(TAG, context, log);
+
+        //connect to SkylinkSDK
+        multiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
     }
 
     /**

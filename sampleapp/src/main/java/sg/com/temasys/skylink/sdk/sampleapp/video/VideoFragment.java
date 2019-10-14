@@ -40,7 +40,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.removeViewFromParent;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
@@ -140,8 +139,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         super.onResume();
 
         // just in case that user are not sharing screen, then stop the camera
-        if (localScreenView == null || !isShowScreenSharing)
-            presenter.onViewRequestResume();
+        presenter.onViewRequestResume();
     }
 
     @Override
@@ -149,8 +147,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         super.onPause();
 
         // just in case that user are not sharing screen, then stop the camera
-        if (localScreenView == null || !isShowScreenSharing)
-            presenter.onViewRequestPause();
+        presenter.onViewRequestPause();
     }
 
     @Override
@@ -337,13 +334,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     @Override
     public void onPresenterRequestLocalAudioCapture(String mediaId) {
-        toastLog(TAG, context, "Local audio is on with id = " + mediaId);
-
         btnAudioSpeaker.setEnabled(true);
         if (Utils.isDefaultSpeakerSettingForVideo()) {
-            btnAudioSpeaker.setMuted(true);
-        } else {
             btnAudioSpeaker.setMuted(false);
+        } else {
+            btnAudioSpeaker.setMuted(true);
         }
 
         btnAudioMute.setEnabled(true);
@@ -369,9 +364,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         localCameraView = videoView;
         currentMainVideoType = Constants.VIDEO_TYPE.LOCAL_CAMERA;
 
-        // notice user about id of the local media
-        toastLog(TAG, context, "Local video is on with id = " + mediaId);
-
         btnVideoSwitchCamera.setEnabled(true);
         btnVideoMute.setEnabled(true);
         btnVideoRemove.setEnabled(true);
@@ -391,9 +383,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         //save localScreenView
         localScreenView = screenView;
         currentMainVideoType = Constants.VIDEO_TYPE.LOCAL_SCREEN;
-
-        // notice user about id of the local media
-        toastLog(TAG, context, "Local screen sharing is on with id = " + mediaId);
 
         btnScreenRemove.setEnabled(true);
         btnScreenMute.setEnabled(true);
@@ -537,19 +526,23 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             case VIDEO_CAMERA:
                 showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, isLocal, false);
                 if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_CAMERA) {
-                    removeViewFromParent(localCameraView);
+                    localCameraView = null;
+                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
                 }
                 if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_CAMERA) {
-                    removeViewFromParent(remoteCameraView);
+                    localScreenView = null;
+                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
                 }
                 break;
             case VIDEO_SCREEN:
                 showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, isLocal, false);
                 if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_SCREEN) {
-                    removeViewFromParent(localScreenView);
+                    remoteCameraView = null;
+                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
                 }
                 if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_SCREEN) {
-                    removeViewFromParent(remoteScreenView);
+                    remoteScreenView = null;
+                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
                 }
                 break;
         }
@@ -575,7 +568,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      */
     @Override
     public void onPresenterRequestChangeSpeakerOutput(boolean isSpeakerOn) {
-        btnAudioSpeaker.setMuted(isSpeakerOn);
+        btnAudioSpeaker.setMuted(!isSpeakerOn);
 
         if (isSpeakerOn) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -818,9 +811,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
 
         if (Utils.isDefaultSpeakerSettingForVideo()) {
-            btnAudioSpeaker.setMuted(true);
-        } else {
             btnAudioSpeaker.setMuted(false);
+        } else {
+            btnAudioSpeaker.setMuted(true);
         }
 
         // start a local video base on default device setting
@@ -1206,15 +1199,15 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
         if (isAudioOptionsShow) {
             btnAudio.setImageResource(R.drawable.ic_collapse_green_20dp);
-            showHideViewAudio(btnAudioStart, true, false);
-            showHideViewAudio(btnAudioRemove, true, false);
-            showHideViewAudio(btnAudioMute, true, false);
-            showHideViewAudio(btnAudioSpeaker, true, true);
+            showHideViewAudioOption(btnAudioStart, true, false);
+            showHideViewAudioOption(btnAudioRemove, true, false);
+            showHideViewAudioOption(btnAudioMute, true, false);
+            showHideViewAudioOption(btnAudioSpeaker, true, true);
         } else {
-            showHideViewAudio(btnAudioStart, false, false);
-            showHideViewAudio(btnAudioRemove, false, false);
-            showHideViewAudio(btnAudioMute, false, false);
-            showHideViewAudio(btnAudioSpeaker, false, true);
+            showHideViewAudioOption(btnAudioStart, false, false);
+            showHideViewAudioOption(btnAudioRemove, false, false);
+            showHideViewAudioOption(btnAudioMute, false, false);
+            showHideViewAudioOption(btnAudioSpeaker, false, true);
             audioLayout.setBackgroundColor(Color.TRANSPARENT);
         }
     }
@@ -1227,15 +1220,15 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
         if (isVideoOptionsShow) {
             btnVideo.setImageResource(R.drawable.ic_collapse_green_20dp);
-            showHideViewVideo(btnVideoStart, true, false);
-            showHideViewVideo(btnVideoRemove, true, false);
-            showHideViewVideo(btnVideoMute, true, false);
-            showHideViewVideo(btnVideoSwitchCamera, true, true);
+            showHideViewVideoOption(btnVideoStart, true, false);
+            showHideViewVideoOption(btnVideoRemove, true, false);
+            showHideViewVideoOption(btnVideoMute, true, false);
+            showHideViewVideoOption(btnVideoSwitchCamera, true, true);
         } else {
-            showHideViewVideo(btnVideoStart, false, false);
-            showHideViewVideo(btnVideoRemove, false, false);
-            showHideViewVideo(btnVideoMute, false, false);
-            showHideViewVideo(btnVideoSwitchCamera, false, true);
+            showHideViewVideoOption(btnVideoStart, false, false);
+            showHideViewVideoOption(btnVideoRemove, false, false);
+            showHideViewVideoOption(btnVideoMute, false, false);
+            showHideViewVideoOption(btnVideoSwitchCamera, false, true);
             videoLayout.setBackgroundColor(Color.TRANSPARENT);
         }
     }
@@ -1248,18 +1241,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
         if (isScreenOptionsShow) {
             btnScreen.setImageResource(R.drawable.ic_collapse_green_20dp);
-            showHideViewScreen(btnScreenMute, true, false);
-            showHideViewScreen(btnScreenRemove, true, false);
-            showHideViewScreen(btnScreenStart, true, true);
+            showHideViewScreenOption(btnScreenMute, true, false);
+            showHideViewScreenOption(btnScreenRemove, true, false);
+            showHideViewScreenOption(btnScreenStart, true, true);
         } else {
-            showHideViewScreen(btnScreenMute, false, false);
-            showHideViewScreen(btnScreenRemove, false, false);
-            showHideViewScreen(btnScreenStart, false, true);
+            showHideViewScreenOption(btnScreenMute, false, false);
+            showHideViewScreenOption(btnScreenRemove, false, false);
+            showHideViewScreenOption(btnScreenStart, false, true);
             screenLayout.setBackgroundColor(Color.TRANSPARENT);
         }
     }
 
-    private void showHideViewAudio(View view, boolean isShow, boolean isFinalView) {
+    private void showHideViewAudioOption(View view, boolean isShow, boolean isFinalView) {
         if (isShow) {
             view.animate()
                     .translationX(0)
@@ -1297,7 +1290,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
     }
 
-    private void showHideViewVideo(View view, boolean isShow, boolean isFinalView) {
+    private void showHideViewVideoOption(View view, boolean isShow, boolean isFinalView) {
         if (isShow) {
             view.animate()
                     .translationX(0)
@@ -1335,7 +1328,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
     }
 
-    private void showHideViewScreen(View view, boolean isShow, boolean isFinalView) {
+    private void showHideViewScreenOption(View view, boolean isShow, boolean isFinalView) {
         if (isShow) {
             view.animate()
                     .translationX(0)

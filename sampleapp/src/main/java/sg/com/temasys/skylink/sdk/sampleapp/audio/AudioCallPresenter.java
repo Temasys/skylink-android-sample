@@ -5,7 +5,6 @@ import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -99,7 +98,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         currentAudioOutput = !currentAudioOutput;
 
         // change audio output (speaker state) in AudioRouter
-        AudioRouter.changeAudioOutput(context, currentAudioOutput);
+        AudioRouter.changeAudioOutput(currentAudioOutput);
     }
 
     @Override
@@ -145,7 +144,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
 
     @Override
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
-        String log = "[SA][onServiceRequestLocalAudioCapture] ";
+        toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         //start audio routing if has audio config
         SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
@@ -154,11 +153,8 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
 
             // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
-            AudioRouter.changeAudioOutput(context, this.currentAudioOutput);
+            AudioRouter.changeAudioOutput(this.currentAudioOutput);
         }
-
-        //notify view to change the UI
-//        audioCallView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
     }
 
     @Override
@@ -187,18 +183,6 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
         // Display new peer at most right location in action bar
         audioCallView.onPresenterRequestChangeUIRemotePeerJoin(remotePeer,
                 audioCallService.getTotalPeersInRoom() - 2);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
-        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, context, log);
     }
 
     @Override

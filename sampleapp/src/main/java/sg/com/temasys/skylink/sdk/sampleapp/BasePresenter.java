@@ -2,7 +2,6 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -11,7 +10,6 @@ import java.util.Map;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -50,17 +48,11 @@ public abstract class BasePresenter {
     public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
     }
 
-    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo remotePeerUserInfo) {
-    }
-
     //----------------------------------------------------------------------------------------------
     // Methods which are from MediaListener need to be implemented for audio and video
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo, String remotePeerId, SkylinkMedia remoteAudio) {
-    }
-
-    public void onServiceRequestRemotePeerVideoReceive(String log, String remotePeerId, SkylinkMedia remoteVideo) {
+    public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
     }
 
     public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
@@ -70,15 +62,6 @@ public abstract class BasePresenter {
     }
 
     public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
-    }
-
-    public void onServiceRequestVideoSizeChange(String peerId, String videoId, Point size) {
-        String peer = "Peer " + peerId;
-        // If peerId is null, this call is for our local video.
-        if (peerId == null) {
-            peer = "We've";
-        }
-        Log.d("VideoCall (" + videoId + ") ", peer + " got video size changed to: " + size.toString() + ".");
     }
 
     //----------------------------------------------------------------------------------------------
@@ -174,9 +157,6 @@ public abstract class BasePresenter {
         toastLogLong("MultiPartyVideoCall", context, log);
     }
 
-    public void onServiceRequestRecordingVideoLink(String recordingId, String peerId, String videoLink) {
-    }
-
     public void onServiceRequestRecordingError(Context context, String recordingId, int errorCode, String description) {
         String log = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
                 "! Error: " + description;
@@ -188,7 +168,7 @@ public abstract class BasePresenter {
     // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestTransferSpeedReceived(double transferSpeed, boolean forSending, String remotePeerId, Context context) {
+    public void onServiceRequestTransferSpeedReceived(double transferSpeed, String remotePeerId, boolean forSending, Context context) {
 
         String log;
         if (!forSending) {

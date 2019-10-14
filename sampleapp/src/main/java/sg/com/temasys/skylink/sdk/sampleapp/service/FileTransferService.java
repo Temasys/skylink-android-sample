@@ -1,21 +1,18 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -46,11 +43,11 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
      * @param file         The file that is to be shared.
      */
     public void sendFile(String remotePeerId, File file) {
-        if (mSkylinkConnection == null)
+        if (skylinkConnection == null)
             return;
 
         // Send request to peer requesting permission for file transfer
-        mSkylinkConnection.sendFileTransfer(remotePeerId, file.getName(), file.getAbsolutePath(),
+        skylinkConnection.sendFileTransfer(remotePeerId, file.getName(), file.getAbsolutePath(),
                 new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
@@ -76,18 +73,18 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
      * @param isPermitted        Whether permission was granted for the file share to proceed.
      */
     public void sendFileTransferPermissionResponse(String remotePeerId, String downloadedFilePath, boolean isPermitted) {
-        if (mSkylinkConnection == null)
+        if (skylinkConnection == null)
             return;
 
         if (isPermitted) {
-            mSkylinkConnection.acceptFileTransfer(remotePeerId, downloadedFilePath, new SkylinkCallback() {
+            skylinkConnection.acceptFileTransfer(remotePeerId, downloadedFilePath, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
 
                 }
             });
         } else {
-            mSkylinkConnection.rejectFileTransfer(remotePeerId);
+            skylinkConnection.rejectFileTransfer(remotePeerId);
         }
     }
 
@@ -98,11 +95,11 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
      */
     @Override
     public void setSkylinkListeners() {
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.setLifeCycleListener(this);
-            mSkylinkConnection.setRemotePeerListener(this);
-            mSkylinkConnection.setOsListener(this);
-            mSkylinkConnection.setFileTransferListener(this);
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setOsListener(this);
+            skylinkConnection.setFileTransferListener(this);
         }
     }
 

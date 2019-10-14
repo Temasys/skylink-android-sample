@@ -55,21 +55,21 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     @Override
     public void setSkylinkListeners() {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             // LifeCycleListener for connect, disconnect,.. with room
-            mSkylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setLifeCycleListener(this);
 
             //RemotePeerListener for communicate with remote peer(s)
-            mSkylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setRemotePeerListener(this);
 
             // MediaListener for media using like audio, video,..
-            mSkylinkConnection.setMediaListener(this);
+            skylinkConnection.setMediaListener(this);
 
             // OsListener for permission of media
-            mSkylinkConnection.setOsListener(this);
+            skylinkConnection.setOsListener(this);
 
             // RecordingListener for recording audio, video
-            mSkylinkConnection.setRecordingListener(this);
+            skylinkConnection.setRecordingListener(this);
         }
     }
 
@@ -124,9 +124,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * -- Info.CAM_SWITCH_NON_FRONT (successfully switched to a back camera)
      */
     public void switchCamera() {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.switchCamera(new SkylinkCallback() {
+            skylinkConnection.switchCamera(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -142,18 +142,18 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     }
 
     public void createLocalAudio() {
-        if (mSkylinkConnection == null) {
+        if (skylinkConnection == null) {
             initializeSkylinkConnection(Constants.CONFIG_TYPE.AUDIO);
         }
 
         //Start audio.
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null, null);
+        if (skylinkConnection != null) {
+            skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null, null);
         }
     }
 
     public void createLocalVideo() {
-        if (mSkylinkConnection == null) {
+        if (skylinkConnection == null) {
             initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
@@ -164,7 +164,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         }
 
         //Start audio.
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
 
             // Get default setting for videoDevice
             SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
@@ -172,52 +172,52 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             // If user select back camera as default video device, start back camera
             // else start front camera as default
             if (videoDevice == SkylinkConfig.VideoDevice.CAMERA_BACK) {
-                mSkylinkConnection.createLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, null, null);
+                skylinkConnection.createLocalMedia(SkylinkConfig.VideoDevice.CAMERA_BACK, null, null);
             } else {
-                mSkylinkConnection.createLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT, null, null);
+                skylinkConnection.createLocalMedia(SkylinkConfig.VideoDevice.CAMERA_FRONT, null, null);
             }
         }
     }
 
     public void toggleVideo(boolean isRestart) {
-        if (mSkylinkConnection != null && localVideoId != null) {
+        if (skylinkConnection != null && localVideo != null) {
             if (isRestart) {
-                mSkylinkConnection.changeLocalMediaState(localVideoId, SkylinkMedia.MediaState.ACTIVE, null);
+                skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, null);
             } else {
-                mSkylinkConnection.changeLocalMediaState(localVideoId, SkylinkMedia.MediaState.STOPPED, null);
+                skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.STOPPED, null);
             }
         }
     }
 
     public void createLocalScreen() {
-        if (mSkylinkConnection == null) {
+        if (skylinkConnection == null) {
             initializeSkylinkConnection(Constants.CONFIG_TYPE.SCREEN_SHARE);
         }
 
         //Start audio.
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
 
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
-            mSkylinkConnection.createLocalMedia(videoDevice, null, null);
+            skylinkConnection.createLocalMedia(videoDevice, null, null);
         }
     }
 
     public void createLocalCustomVideo() {
         // create a new custom video capturer to input for the method
         VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera(
-                CAMERA_FRONT, mSkylinkConnection);
+                CAMERA_FRONT, skylinkConnection);
         if (customVideoCapturer != null) {
-            mSkylinkConnection.createLocalMedia(CAMERA_FRONT, null, customVideoCapturer, -1, -1, -1, null);
+            skylinkConnection.createLocalMedia(CAMERA_FRONT, null, customVideoCapturer, -1, -1, -1, null);
         }
     }
 
     public void toggleScreen(boolean restart) {
-        if (mSkylinkConnection != null && localScreenSharingId != null)
+        if (skylinkConnection != null && localScreen != null)
             if (restart) {
-                mSkylinkConnection.changeLocalMediaState(localScreenSharingId, SkylinkMedia.MediaState.ACTIVE, null);
+                skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, null);
             } else {
-                mSkylinkConnection.changeLocalMediaState(localScreenSharingId, SkylinkMedia.MediaState.STOPPED, null);
+                skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.STOPPED, null);
             }
         else
             createLocalScreen();
@@ -234,9 +234,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return True if recording is successful, false otherwise.
      */
     public boolean startRecording() {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.startRecording(new SkylinkCallback() {
+            skylinkConnection.startRecording(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -268,9 +268,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return True if recording is successful, false otherwise.
      */
     public boolean stopRecording() {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.stopRecording(new SkylinkCallback() {
+            skylinkConnection.stopRecording(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -303,9 +303,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * SkylinkSDK may adjust resolution dynamically to try to match its bandwidth criteria.
      */
     public void getInputVideoResolution() {
-        if (mSkylinkConnection != null && localVideoId != null) {
+        if (skylinkConnection != null && localVideo != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.getInputVideoResolution(localVideoId, new SkylinkCallback.InputVideoResolution() {
+            skylinkConnection.getInputVideoResolution(localVideo.getMediaId(), new SkylinkCallback.InputVideoResolution() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -314,7 +314,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
                 @Override
                 public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-                    obtainInputVideoResolution(width, height, fps, captureFormat, localVideoId);
+                    obtainInputVideoResolution(width, height, fps, captureFormat, localVideo.getMediaId());
                 }
             });
 
@@ -337,12 +337,12 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     public void getSentVideoResolution(int peerIndex, SkylinkMedia.MediaType videoType) {
         String mediaId = getProperLocalMediaId(videoType);
 
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             if (peerIndex != -1 && mediaId != null) {
                 // get sent video res to remote peer
                 String remotePeerId = mPeersList.get(peerIndex).getPeerId();
                 final boolean[] success = {true};
-                mSkylinkConnection.getSentVideoResolution(remotePeerId, mediaId,
+                skylinkConnection.getSentVideoResolution(remotePeerId, mediaId,
                         new SkylinkCallback.SentVideoResolution() {
                             @Override
                             public void onError(SkylinkError error, String contextDescription) {
@@ -376,7 +376,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         // we also can get media id from remote peer id
         String remotePeerId = mPeersList.get(peerIndex).getPeerId();
 
-        List<SkylinkMedia> remoteSkylinkMediaList = mSkylinkConnection.getSkylinkMediaList(mediaType, remotePeerId);
+        List<SkylinkMedia> remoteSkylinkMediaList = skylinkConnection.getSkylinkMediaList(mediaType, remotePeerId);
 
         if (remoteSkylinkMediaList == null || remoteSkylinkMediaList.size() == 0) {
             return;
@@ -390,7 +390,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         if (remoteMedia != null && remoteMedia.getMediaState() != SkylinkMedia.MediaState.UNAVAILABLE) {
             String mediaId = remoteMedia.getMediaId();
             final boolean[] success = {true};
-            mSkylinkConnection.getReceivedVideoResolution(remotePeerId, mediaId, new SkylinkCallback.ReceivedVideoResolution() {
+            skylinkConnection.getReceivedVideoResolution(remotePeerId, mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -418,40 +418,43 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public void getWebrtcStats(int peerIndex) {
         String peerId = mPeersList.get(peerIndex).getPeerId();
-        Map<String, SkylinkMedia.MediaType> ids = mPeersList.get(peerIndex).getMediaIds();
 
         if (peerId == null)
             return;
-        if (ids == null || ids.size() == 0)
+
+        // get sending stats from local media to remote peer
+        Map<String, SkylinkMedia> localMediaMap = mPeersList.get(0).getMediaMap();
+        if (localMediaMap != null && localMediaMap.size() > 0) {
+            for (String mediaId : localMediaMap.keySet()) {
+                final boolean[] success = {true};
+                skylinkConnection.getSendingWebRtcStats(mediaId, peerId,
+                        new SkylinkCallback.WebRtcStats() {
+                            @Override
+                            public void onError(SkylinkError error, String contextDescription) {
+                                Log.e("SkylinkCallback", contextDescription);
+                                success[0] = false;
+                            }
+
+                            @Override
+                            public void onReceiveWebRtcStats(HashMap<String, String> stats) {
+                                presenter.onServiceRequestWebrtcStatsReceived(stats);
+                            }
+                        });
+                if (!success[0]) {
+                    String error = "Unable to getSendingWebRtcStats!";
+                    toastLog(TAG, context, error);
+                }
+            }
+        }
+
+        // get receiving web rtc stats from remote media of remote peer
+        Map<String, SkylinkMedia> mediaMap = mPeersList.get(peerIndex).getMediaMap();
+        if (mediaMap == null || mediaMap.size() == 0)
             return;
 
-        for (String id : ids.keySet()) {
-            SkylinkMedia.MediaType mediaType = ids.get(id);
-
-            // TODO @Muoi need to update when SDK finished get stats by specific media track
-            // currently the SDK is just able to get full stats for receiving track, no all mediaTypes or
-            // media tracks will get the same stats
+        for (String mediaId : mediaMap.keySet()) {
             final boolean[] success = {true};
-            mSkylinkConnection.getSendingWebRtcStats(getProperRemoteMediaId(peerId, mediaType, true), peerId,
-                    new SkylinkCallback.WebRtcStats() {
-                        @Override
-                        public void onError(SkylinkError error, String contextDescription) {
-                            Log.e("SkylinkCallback", contextDescription);
-                            success[0] = false;
-                        }
-
-                        @Override
-                        public void onReceiveWebRtcStats(HashMap<String, String> stats) {
-                            presenter.onServiceRequestWebrtcStatsReceived(stats);
-                        }
-                    });
-            if (!success[0]) {
-                String error = "Unable to getSendingWebRtcStats!";
-                toastLog(TAG, context, error);
-            }
-
-            success[0] = true;
-            mSkylinkConnection.getReceivingWebRtcStats(getProperRemoteMediaId(peerId, mediaType, false),
+            skylinkConnection.getReceivingWebRtcStats(mediaId,
                     new SkylinkCallback.WebRtcStats() {
                         @Override
                         public void onError(SkylinkError error, String contextDescription) {
@@ -468,71 +471,78 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                 String error = "Unable to getReceivingWebRtcStats!";
                 toastLog(TAG, context, error);
             }
-
         }
     }
 
     /**
      * Request for the instantaneous transfer speed(s) of media stream(s), at the moment of request.
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(double, boolean, String, Context}
+     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(double}
      *
      * @param peerIndex  Index of the remote Peer in frame for which we are getting transfer speed on.
      * @param mediaType  type of the media object to get resolution
      * @param forSending The flag to distinguish getting from sending/uploading or from receiving/downloading
      */
     public void getTransferSpeeds(int peerIndex, SkylinkMedia.MediaType mediaType, boolean forSending) {
-
         String peerId = mPeersList.get(peerIndex).getPeerId();
-        Map<String, SkylinkMedia.MediaType> ids = mPeersList.get(peerIndex).getMediaIds();
 
         if (peerId == null)
             return;
-        if (ids == null || ids.size() == 0)
-            return;
 
-
-        // TODO @Muoi need to update when SDK finished get stats by specific media track
-        // currently the SDK is just able to get full stats for receiving track, no all mediaTypes or
-        // media tracks will get the same stats
-
+        // get sending stats from local media to remote peer
         if (forSending) {
-            final boolean[] success = {true};
-            mSkylinkConnection.getSendingTransferSpeed(getProperRemoteMediaId(peerId, mediaType, true), peerId,
-                    new SkylinkCallback.TransferSpeed() {
-                        @Override
-                        public void onError(SkylinkError error, String contextDescription) {
-                            Log.e("SkylinkCallback", contextDescription);
-                            success[0] = false;
-                        }
+            Map<String, SkylinkMedia> localMediaMap = mPeersList.get(0).getMediaMap();
+            if (localMediaMap != null && localMediaMap.size() > 0) {
+                for (String mediaId : localMediaMap.keySet()) {
+                    if (localMediaMap.get(mediaId).getMediaType() == mediaType) {
+                        final boolean[] success = {true};
+                        skylinkConnection.getSendingTransferSpeed(mediaId, peerId,
+                                new SkylinkCallback.TransferSpeed() {
+                                    @Override
+                                    public void onError(SkylinkError error, String contextDescription) {
+                                        Log.e("SkylinkCallback", contextDescription);
+                                        success[0] = false;
+                                    }
 
-                        @Override
-                        public void onReceiveTransferSpeed(double transferSpeed) {
-                            presenter.onServiceRequestTransferSpeedReceived(transferSpeed, true, peerId, context);
+                                    @Override
+                                    public void onReceiveTransferSpeed(double transferSpeed) {
+                                        presenter.onServiceRequestTransferSpeedReceived(transferSpeed, peerId, true, context);
+                                    }
+                                });
+                        if (!success[0]) {
+                            String error = "Unable to getSendingTransferSpeed!";
+                            toastLog(TAG, context, error);
                         }
-                    });
-            if (!success[0]) {
-                String error = "Unable to getSendingTransferSpeed!";
-                toastLog(TAG, context, error);
+                    }
+                }
             }
         } else {
-            final boolean[] success = {true};
-            mSkylinkConnection.getReceivingTransferSpeed(getProperRemoteMediaId(peerId, mediaType, false),
-                    new SkylinkCallback.TransferSpeed() {
-                        @Override
-                        public void onError(SkylinkError error, String contextDescription) {
-                            Log.e("SkylinkCallback", contextDescription);
-                            success[0] = false;
-                        }
+            Map<String, SkylinkMedia> mediaMap = mPeersList.get(peerIndex).getMediaMap();
+            if (mediaMap == null || mediaMap.size() == 0)
+                return;
+            if (mediaMap != null && mediaMap.size() > 0) {
+                for (String mediaId : mediaMap.keySet()) {
+                    if (mediaMap.get(mediaId).getMediaType() == mediaType) {
+                        final boolean[] success = {true};
+                        skylinkConnection.getReceivingTransferSpeed(mediaId,
+                                new SkylinkCallback.TransferSpeed() {
+                                    @Override
+                                    public void onError(SkylinkError error, String contextDescription) {
+                                        Log.e("SkylinkCallback", contextDescription);
+                                        success[0] = false;
+                                    }
 
-                        @Override
-                        public void onReceiveTransferSpeed(double transferSpeed) {
-                            presenter.onServiceRequestTransferSpeedReceived(transferSpeed, false, peerId, context);
+                                    @Override
+                                    public void onReceiveTransferSpeed(double transferSpeed) {
+                                        presenter.onServiceRequestTransferSpeedReceived(transferSpeed, peerId, false, context);
+                                    }
+                                });
+                        if (!success[0]) {
+                            String error = "Unable to getReceivingTransferSpeed!";
+                            toastLog(TAG, context, error);
                         }
-                    });
-            if (!success[0]) {
-                String error = "Unable to getReceivingTransferSpeed!";
-                toastLog(TAG, context, error);
+                    }
+                }
             }
         }
     }
@@ -548,7 +558,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public void refreshConnection(int peerIndex, boolean iceRestart) {
 
-        if (mSkylinkConnection == null)
+        if (skylinkConnection == null)
             return;
 
         String peerStr = "All peers ";
@@ -559,7 +569,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         final boolean[] success = {true};
         if (peerIndex == -1) {
 
-            mSkylinkConnection.refreshConnection(null, iceRestart, new SkylinkCallback() {
+            skylinkConnection.refreshConnection(null, iceRestart, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -571,7 +581,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         } else {
             SkylinkPeer peer = mPeersList.get(peerIndex);
 
-            mSkylinkConnection.refreshConnection(peer.getPeerId(), iceRestart, new SkylinkCallback() {
+            skylinkConnection.refreshConnection(peer.getPeerId(), iceRestart, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -595,19 +605,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             log += ".";
         }
         toastLog(TAG, context, log);
-
-        // Log any failed peer to refresh with
-
-//        // Log errors if any.
-//        if (failedPeers != null) {
-//            log = "Unable to refresh ";
-//            if ("".equals(failedPeers[0])) {
-//                log += "as there is no Peer in the room!";
-//            } else {
-//                log += "for Peer(s): " + Arrays.toString(failedPeers) + "!";
-//            }
-//            toastLog(TAG, context, log);
-//        }
     }
 
     /**
@@ -618,11 +615,11 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return video view of the SkylinkMedia object
      */
     public SurfaceViewRenderer getVideoViewById(String mediaId) {
-        if (mSkylinkConnection == null || mediaId == null) {
+        if (skylinkConnection == null || mediaId == null) {
             return null;
         }
 
-        SkylinkMedia localMedia = mSkylinkConnection.getSkylinkMedia(mediaId);
+        SkylinkMedia localMedia = skylinkConnection.getSkylinkMedia(mediaId);
 
         if (localMedia != null) {
             return localMedia.getVideoView();
@@ -647,11 +644,11 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
         // for local video view
         if (peerIndex == -1) {
-            mediaList = mSkylinkConnection.getSkylinkMediaList(SkylinkMedia.MediaType.VIDEO, null);
+            mediaList = skylinkConnection.getSkylinkMediaList(SkylinkMedia.MediaType.VIDEO, null);
         } else {
             if (peerIndex < mPeersList.size()) {
                 SkylinkPeer skylinkPeer = mPeersList.get(peerIndex);
-                mediaList = mSkylinkConnection.getSkylinkMediaList(SkylinkMedia.MediaType.VIDEO, skylinkPeer.getPeerId());
+                mediaList = skylinkConnection.getSkylinkMediaList(SkylinkMedia.MediaType.VIDEO, skylinkPeer.getPeerId());
             }
         }
 
@@ -689,8 +686,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return list of peerId or null if not available.
      */
     public String[] getPeerIdList() {
-        if (mSkylinkConnection != null) {
-            return mSkylinkConnection.getPeerIdList();
+        if (skylinkConnection != null) {
+            return skylinkConnection.getPeerIdList();
         }
 
         return null;
@@ -724,7 +721,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * @return id of peer
      */
     public String getPeerIdByIndex(int peerIndex) {
-        if (mSkylinkConnection != null && peerIndex < mPeersList.size()) {
+        if (skylinkConnection != null && peerIndex < mPeersList.size()) {
             return mPeersList.get(peerIndex).getPeerId();
         }
 

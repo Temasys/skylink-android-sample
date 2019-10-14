@@ -78,7 +78,7 @@ public class SkylinkConnectionManager {
 
         skylinkConnection = SkylinkConnection.getInstance();
         // Set SkylinkConnection instance in skylinkCommonService ASAP.
-        skylinkCommonService.setmSkylinkConnection(skylinkConnection);
+        skylinkCommonService.setSkylinkConnection(skylinkConnection);
         // Initialize this SkylinkConnection instance.
 
         final boolean[] success = {true};

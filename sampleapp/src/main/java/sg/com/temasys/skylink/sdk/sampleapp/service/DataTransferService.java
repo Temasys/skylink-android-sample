@@ -43,11 +43,11 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
      * @throws SkylinkException When byte array is not of a size allowed.
      */
     public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
-        if (mSkylinkConnection == null)
+        if (skylinkConnection == null)
             return;
 
         final boolean[] success = {true};
-        mSkylinkConnection.sendData(remotePeerId, data, new SkylinkCallback() {
+        skylinkConnection.sendData(remotePeerId, data, new SkylinkCallback() {
             @Override
             public void onError(SkylinkError error, String contextDescription) {
                 Log.e("SkylinkCallback", contextDescription);
@@ -67,10 +67,10 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
      */
     @Override
     public void setSkylinkListeners() {
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.setLifeCycleListener(this);
-            mSkylinkConnection.setRemotePeerListener(this);
-            mSkylinkConnection.setDataTransferListener(this);
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setDataTransferListener(this);
         }
     }
 

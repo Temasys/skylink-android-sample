@@ -434,15 +434,19 @@ public class VideoActivity extends AppCompatActivity {
     public void removeView(Constants.VIDEO_TYPE videoType) {
         switch (videoType) {
             case LOCAL_CAMERA:
+                onShowHideLocalCameraViewFragment(false, false);
                 localVideoCameraFragment.setView(null);
                 break;
             case LOCAL_SCREEN:
+                onShowHideLocalScreenViewFragment(false, false);
                 localVideoScreenFragment.setView(null);
                 break;
             case REMOTE_CAMERA:
+                onShowHideRemoteCameraViewFragment(false, false);
                 remoteVideoCameraFragment.setView(null);
                 break;
             case REMOTE_SCREEN:
+                onShowHideRemoteScreenViewFragment(false, false);
                 remoteVideoScreenFragment.setView(null);
                 break;
         }

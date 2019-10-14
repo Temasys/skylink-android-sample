@@ -55,18 +55,20 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     }
 
     /**
-     * Stop or restart the local camera based on the parameter |isToggle|,
+     * Create local video camera if it has not been started
+     * if the local video camera is started:
+     * - Stop or restart the local camera based on the parameter |toActive|,
      * given that the local video source is available, i.e., had been started and not removed.
-     * However, if the intended state of the camera (started or stopped) is already the current
+     * However, if the intended state of the camera (active or stopped) is already the current
      * state, then no change will be effected.
-     * Trigger LifeCycleListener.onWarning if an error occurs, for example:
+     * Trigger callback SkylinkCallback.onError if an error occurs, for example:
      * if local video source is not available.
      */
-    public void toggleVideo(boolean isRestart) {
-        if (mSkylinkConnection != null && localVideoId != null) {
-            if (isRestart) {
+    public void toggleVideo(boolean toActive) {
+        if (skylinkConnection != null && localVideo != null) {
+            if (toActive) {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localVideoId, SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -79,7 +81,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             } else {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localVideoId, SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -91,16 +93,26 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                     toastLog(TAG, context, error);
                 }
             }
-        } else if (isRestart) {
+        } else if (toActive) {
             createLocalVideo();
         }
     }
 
-    public void toggleScreen(boolean start) {
-        if (mSkylinkConnection != null && localScreenSharingId != null) {
-            if (start) {
+    /**
+     * Create local video screen sharing if it has not been started
+     * if the local video screen is started:
+     * - Stop or restart the local screen based on the parameter |toActive|,
+     * given that the local screen source is available, i.e., had been started and not removed.
+     * However, if the intended state of the screen (active or stopped) is already the current
+     * state, then no change will be effected.
+     * Trigger callback SkylinkCallback.onError if an error occurs, for example:
+     * if local screen source is not available.
+     */
+    public void toggleScreen(boolean toActive) {
+        if (skylinkConnection != null && localScreen != null) {
+            if (toActive) {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localScreenSharingId, SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -113,7 +125,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             } else {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localScreenSharingId, SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -132,13 +144,13 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     /**
      * Mutes the local user's audio and notifies all the peers in the room.
      *
-     * @param audioMuted Flag that specifies whether audio should be mute
+     * @param toMuted Flag that specifies whether audio should be mute
      */
-    public void muteLocalAudio(boolean audioMuted) {
-        if (mSkylinkConnection != null) {
-            if (audioMuted) {
+    public void muteLocalAudio(boolean toMuted) {
+        if (skylinkConnection != null) {
+            if (toMuted) {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localAudioId, SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localAudio.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -151,7 +163,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             } else {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localAudioId, SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localAudio.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -170,13 +182,13 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * Mutes the local user's video and notifies all the peers in the room.
      * Note that black video frames (consuming bandwidth) are still being sent to remote Peer(s).
      *
-     * @param videoMuted Flag that specifies whether video should be mute
+     * @param toMuted Flag that specifies whether video should be mute
      */
-    public void muteLocalVideo(boolean videoMuted) {
-        if (mSkylinkConnection != null) {
-            if (videoMuted) {
+    public void muteLocalVideo(boolean toMuted) {
+        if (skylinkConnection != null) {
+            if (toMuted) {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localVideoId, SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -189,7 +201,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             } else {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localVideoId, SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -208,13 +220,13 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * Mutes the local user's screen video and notifies all the peers in the room.
      * Note that black video frames (consuming bandwidth) are still being sent to remote Peer(s).
      *
-     * @param screenMuted Flag that specifies whether screen video should be mute
+     * @param toMuted Flag that specifies whether screen video should be mute
      */
-    public void muteLocalScreen(boolean screenMuted) {
-        if (mSkylinkConnection != null) {
-            if (screenMuted) {
+    public void muteLocalScreen(boolean toMuted) {
+        if (skylinkConnection != null) {
+            if (toMuted) {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localScreenSharingId, SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -227,7 +239,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             } else {
                 final boolean[] success = {true};
-                mSkylinkConnection.changeLocalMediaState(localScreenSharingId, SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
+                skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -248,8 +260,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * @return Video View of Peer or null if none is matched with the input id.
      */
     public SurfaceViewRenderer getVideoView(String mediaId) {
-        if (mSkylinkConnection != null) {
-            SkylinkMedia media = mSkylinkConnection.getSkylinkMedia(mediaId);
+        if (skylinkConnection != null) {
+            SkylinkMedia media = skylinkConnection.getSkylinkMedia(mediaId);
             if (media != null) {
                 return media.getVideoView();
             }
@@ -269,8 +281,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         List<SkylinkMedia> mediaObjects = null;
         List<SurfaceViewRenderer> videoViews = new ArrayList<SurfaceViewRenderer>();
 
-        if (mSkylinkConnection != null) {
-            mediaObjects = mSkylinkConnection.getSkylinkMediaList(mediaType, peerId);
+        if (skylinkConnection != null) {
+            mediaObjects = skylinkConnection.getSkylinkMediaList(mediaType, peerId);
             if (mediaObjects == null || mediaObjects.size() == 0) {
                 return null;
             }
@@ -290,7 +302,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * The speaker is automatically turned off when audio bluetooth is connected.
      */
     public void changeSpeakerOutput(boolean isSpeakerOn) {
-        AudioRouter.changeAudioOutput(context, isSpeakerOn);
+        AudioRouter.changeAudioOutput(isSpeakerOn);
     }
 
     /**
@@ -299,11 +311,11 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      */
     @Override
     public void setSkylinkListeners() {
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.setLifeCycleListener(this);
-            mSkylinkConnection.setRemotePeerListener(this);
-            mSkylinkConnection.setMediaListener(this);
-            mSkylinkConnection.setOsListener(this);
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setOsListener(this);
         }
     }
 
@@ -359,7 +371,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void switchCamera() {
         final boolean[] success = {true};
-        mSkylinkConnection.switchCamera(new SkylinkCallback() {
+        skylinkConnection.switchCamera(new SkylinkCallback() {
             @Override
             public void onError(SkylinkError error, String contextDescription) {
                 Log.e("SkylinkCallback", contextDescription);
@@ -373,14 +385,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     }
 
     public void createLocalAudio() {
-        if (mSkylinkConnection == null) {
+        if (skylinkConnection == null) {
             initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", new SkylinkCallback() {
+            skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -395,12 +407,12 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     }
 
     public void createLocalVideo() {
-        if (mSkylinkConnection == null) {
+        if (skylinkConnection == null) {
             initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
 
             // Get default setting for videoDevice
             SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
@@ -409,7 +421,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             // else start front camera as default
             if (videoDevice == CAMERA_BACK) {
                 final boolean[] success = {true};
-                mSkylinkConnection.createLocalMedia(CAMERA_BACK, "mobile cam back", new SkylinkCallback() {
+                skylinkConnection.createLocalMedia(CAMERA_BACK, "mobile cam back", new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -422,7 +434,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             } else {
                 final boolean[] success = {true};
-                mSkylinkConnection.createLocalMedia(CAMERA_FRONT, "mobile cam front", new SkylinkCallback() {
+                skylinkConnection.createLocalMedia(CAMERA_FRONT, "mobile cam front", new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
                         Log.e("SkylinkCallback", contextDescription);
@@ -438,16 +450,16 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     }
 
     public void createLocalScreen() {
-        if (mSkylinkConnection == null) {
+        if (skylinkConnection == null) {
             initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
         }
 
         //Start audio.
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
             final boolean[] success = {true};
-            mSkylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile", new SkylinkCallback() {
+            skylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -464,10 +476,10 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void createLocalCustomVideo() {
         // create a new custom video capturer to input for the method
         VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera(
-                CAMERA_FRONT, mSkylinkConnection);
+                CAMERA_FRONT, skylinkConnection);
         if (customVideoCapturer != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.createLocalMedia(CAMERA_FRONT, "external video from mobile",
+            skylinkConnection.createLocalMedia(CAMERA_FRONT, "external video from mobile",
                     customVideoCapturer, -1, -1, -1, new SkylinkCallback() {
                         @Override
                         public void onError(SkylinkError error, String contextDescription) {
@@ -483,12 +495,27 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         }
     }
 
-    public void disposeLocalMedia() {
-        clearInstance();
+    public String getLocalVideoId() {
+        if (localVideo == null)
+            return null;
+
+        return localVideo.getMediaId();
     }
 
-    public String getLocalVideoId() {
-        return localVideoId;
+    public SkylinkMedia getLocalAudio() {
+        return localAudio;
+    }
+
+    public SkylinkMedia getLocalVideo() {
+        return localVideo;
+    }
+
+    public SkylinkMedia getLocalScreen() {
+        return localScreen;
+    }
+
+    public void disposeLocalMedia() {
+        clearInstance();
     }
 
     /**
@@ -499,9 +526,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalAudio() {
-        if (localAudioId != null) {
+        if (localAudio != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.removeLocalMedia(localAudioId, new SkylinkCallback() {
+            skylinkConnection.removeLocalMedia(localAudio.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -523,9 +550,9 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalVideo() {
-        if (localVideoId != null) {
+        if (localVideo != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.removeLocalMedia(localVideoId, new SkylinkCallback() {
+            skylinkConnection.removeLocalMedia(localVideo.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -547,10 +574,10 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * can not be removed or any error occurs
      */
     public void removeLocalScreen() {
-        if (localScreenSharingId != null) {
+        if (localScreen != null) {
             final boolean[] success = {true};
 
-            mSkylinkConnection.removeLocalMedia(localScreenSharingId, new SkylinkCallback() {
+            skylinkConnection.removeLocalMedia(localScreen.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);

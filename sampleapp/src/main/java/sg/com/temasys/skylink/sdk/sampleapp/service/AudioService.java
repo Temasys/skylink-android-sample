@@ -40,11 +40,11 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
      */
     @Override
     public void setSkylinkListeners() {
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.setLifeCycleListener(this);
-            mSkylinkConnection.setRemotePeerListener(this);
-            mSkylinkConnection.setMediaListener(this);
-            mSkylinkConnection.setOsListener(this);
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setMediaListener(this);
+            skylinkConnection.setOsListener(this);
         }
     }
 
@@ -81,9 +81,9 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
      * Start local audio in order to communicate with the remote peer
      */
     public void createLocalAudio() {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", new SkylinkCallback() {
+            skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);

@@ -58,11 +58,6 @@ public interface MultiPartyVideoCallContract {
         Fragment onPresenterRequestGetFragmentInstance();
 
         /**
-         * Update UI details when need to display video link after recorded
-         */
-        void onPresenterRequestDisplayVideoLinkInfo(String recordingId, String msg);
-
-        /**
          * Show or hide button stop screen sharing on UI
          */
         void onPresenterRequestShowButtonStopScreenSharing();

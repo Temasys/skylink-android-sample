@@ -38,9 +38,9 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      * @param message      User defined data
      */
     public void sendServerMessage(String remotePeerId, String message) {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.sendServerMessage(remotePeerId, message, new SkylinkCallback() {
+            skylinkConnection.sendServerMessage(remotePeerId, message, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -65,9 +65,9 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      * @throws SkylinkException if the system was unable to send the message.
      */
     public void sendP2PMessage(String remotePeerId, String message) {
-        if (mSkylinkConnection != null) {
+        if (skylinkConnection != null) {
             final boolean[] success = {true};
-            mSkylinkConnection.sendP2PMessage(remotePeerId, message, new SkylinkCallback() {
+            skylinkConnection.sendP2PMessage(remotePeerId, message, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -88,10 +88,10 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      */
     @Override
     public void setSkylinkListeners() {
-        if (mSkylinkConnection != null) {
-            mSkylinkConnection.setLifeCycleListener(this);
-            mSkylinkConnection.setRemotePeerListener(this);
-            mSkylinkConnection.setMessagesListener(this);
+        if (skylinkConnection != null) {
+            skylinkConnection.setLifeCycleListener(this);
+            skylinkConnection.setRemotePeerListener(this);
+            skylinkConnection.setMessagesListener(this);
         }
     }
 

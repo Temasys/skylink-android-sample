@@ -292,7 +292,7 @@ public class AudioRouter {
         Log.d(TAG, log);
     }
 
-    public static void changeAudioOutput(Context context, boolean isSpeakerphoneOn) {
+    public static void changeAudioOutput(boolean isSpeakerphoneOn) {
         // check the audioManager object
         // incase of user not connected to room, but user changes the speaker state
         if (audioManager == null)
@@ -325,7 +325,7 @@ public class AudioRouter {
             isSpeakerOn = Utils.isDefaultSpeakerSettingForVideo();
         }
 
-        setAudioPathOnHeadedSet(isSpeakerOn);
+        changeAudioOutput(isSpeakerOn);
     }
 
     private void processHeadsetPlug(boolean isHeadsetPlug) {

@@ -10,8 +10,8 @@ public class SkylinkPeer implements Serializable {
     private String peerId;
     private String peerName;
 
-    // The list to keep track of media(audio, video, screen) ids to manage by the peer
-    private Map<String, SkylinkMedia.MediaType> mediaIds;
+    // The map to keep track of media(audio, video, screen) object belongs to the peer
+    private Map<String, SkylinkMedia> mediaMap;
 
     public SkylinkPeer() {
     }
@@ -41,12 +41,12 @@ public class SkylinkPeer implements Serializable {
         this.peerName = peerName;
     }
 
-    public Map<String, SkylinkMedia.MediaType> getMediaIds() {
-        return mediaIds;
+    public Map<String, SkylinkMedia> getMediaMap() {
+        return mediaMap;
     }
 
-    public void setMediaIds(Map<String, SkylinkMedia.MediaType> mediaIds) {
-        this.mediaIds = mediaIds;
+    public void setMediaMap(Map<String, SkylinkMedia> mediaMap) {
+        this.mediaMap = mediaMap;
     }
 
     @Override
@@ -54,18 +54,71 @@ public class SkylinkPeer implements Serializable {
         return peerName + "(" + peerId + ")";
     }
 
-    public void addMediaId(String mediaId, SkylinkMedia.MediaType mediaType) {
-        if (mediaIds == null) {
-            mediaIds = new HashMap<String, SkylinkMedia.MediaType>();
+    public void addMedia(SkylinkMedia media) {
+        if (mediaMap == null) {
+            mediaMap = new HashMap<String, SkylinkMedia>();
         }
 
-        mediaIds.put(mediaId, mediaType);
+        mediaMap.put(media.getMediaId(), media);
     }
 
-    public SkylinkMedia.MediaType removeMediaId(String mediaId) {
-        if (mediaIds == null) {
+    public void updateMedia(SkylinkMedia remoteMedia) {
+        if (mediaMap == null) {
+            mediaMap = new HashMap<String, SkylinkMedia>();
+        }
+
+        mediaMap.put(remoteMedia.getMediaId(), remoteMedia);
+    }
+
+    public SkylinkMedia removeMediaId(String mediaId) {
+        if (mediaMap == null) {
             return null;
         }
-        return mediaIds.remove(mediaId);
+        return mediaMap.remove(mediaId);
+    }
+
+    /**
+     * Get the first audio object in the mediaMap
+     */
+    public SkylinkMedia getAudio() {
+        if (mediaMap == null || mediaMap.size() == 0)
+            return null;
+
+        for (SkylinkMedia media : mediaMap.values()) {
+            if (!media.isVideo())
+                return media;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the first video camera object in the mediaMap
+     */
+    public SkylinkMedia getVideo() {
+        if (mediaMap == null || mediaMap.size() == 0)
+            return null;
+
+        for (SkylinkMedia media : mediaMap.values()) {
+            if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA || media.getMediaType() == SkylinkMedia.MediaType.VIDEO)
+                return media;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the first video screen object in the mediaMap
+     */
+    public SkylinkMedia getScreen() {
+        if (mediaMap == null || mediaMap.size() == 0)
+            return null;
+
+        for (SkylinkMedia media : mediaMap.values()) {
+            if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN)
+                return media;
+        }
+
+        return null;
     }
 }

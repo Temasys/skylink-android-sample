@@ -28,8 +28,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
  * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
  */
-
-// need to refactor the name of the class to apply for both local view and remote view
 public class SmallVideoViewFragment extends Fragment implements
         OnClickListener, View.OnTouchListener {
 
@@ -178,6 +176,11 @@ public class SmallVideoViewFragment extends Fragment implements
         if (localView == null) {
             String log = "[SA][addRemoteView] Not adding remote view as videoView is null!";
             Log.d(TAG, log);
+
+            localVideoViewLayout.setVisibility(View.GONE);
+            btnBringToMain.setVisibility(View.GONE);
+
+            currentView = localView;
             return;
         }
 
@@ -210,6 +213,9 @@ public class SmallVideoViewFragment extends Fragment implements
         localVideoViewLayout.invalidate();
 
         currentView = localView;
+
+        localVideoViewLayout.setVisibility(View.VISIBLE);
+        btnBringToMain.setVisibility(View.VISIBLE);
     }
 
     public SurfaceViewRenderer getView() {
@@ -220,6 +226,10 @@ public class SmallVideoViewFragment extends Fragment implements
         if (currentView == null) {
             String log = "[SA][addRemoteView] Not adding remote view as videoView is null!";
             Log.d(TAG, log);
+
+            localVideoViewLayout.setVisibility(View.GONE);
+            btnBringToMain.setVisibility(View.GONE);
+
             return;
         }
 
@@ -250,6 +260,9 @@ public class SmallVideoViewFragment extends Fragment implements
         localVideoViewLayout.addView(currentView);
 
         localVideoViewLayout.invalidate();
+
+        localVideoViewLayout.setVisibility(View.VISIBLE);
+        btnBringToMain.setVisibility(View.VISIBLE);
     }
 
     private void processBringViewToMain() {
@@ -265,5 +278,7 @@ public class SmallVideoViewFragment extends Fragment implements
             localVideoViewLayout.removeView(self);
         }
 
+        localVideoViewLayout.setVisibility(View.GONE);
+        btnBringToMain.setVisibility(View.GONE);
     }
 }

@@ -13,13 +13,11 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
-import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.VideoService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoLocalState;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -46,24 +44,20 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     // The service instance
     private VideoService videoService;
 
-    // The video resolution presenter
+    // The video resolution presenter to implement video resolutions
     private VideoResolutionPresenter videoResPresenter;
 
-    //utils to process permission
+    // Utils to process permission
     private PermissionUtils permissionUtils;
 
     // the current speaker output {speaker/headset}
     private boolean currentVideoSpeaker = Utils.isDefaultSpeakerSettingForVideo();
-
-    // the current state of local video {audio, video, camera}
-    private VideoLocalState currentVideoLocalState;
 
     public VideoPresenter(Context context) {
         this.context = context;
         this.videoService = new VideoService(context);
         this.videoService.setPresenter(this);
         this.permissionUtils = new PermissionUtils();
-        currentVideoLocalState = new VideoLocalState();
     }
 
     public void setMainView(VideoContract.MainView view) {
@@ -107,21 +101,33 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onViewRequestResume() {
 
         // do not process if user has not started video from camera
-        if (videoService.getLocalVideoId() == null) {
+        if (videoService.getLocalVideo() == null) {
             return;
         }
 
-        // turn back camera to previous state
-        boolean localCameraStop = currentVideoLocalState.isCameraCapturerStop();
-
-        videoService.toggleVideo(!localCameraStop);
+        // turn back camera to active state
+        // we just active local video camera if there is only 1 active camera at current time
+        // if there is an active screen, do not ative local camera as it may be intention of the user
+        SkylinkMedia localVideo = videoService.getLocalVideo();
+        SkylinkMedia localScreen = videoService.getLocalScreen();
+        if (localVideo != null && localVideo.getMediaState() == SkylinkMedia.MediaState.STOPPED
+                && (localScreen == null || (localScreen != null && localScreen.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE))) {
+            videoService.toggleVideo(true);
+        }
 
     }
 
     @Override
     public void onViewRequestPause() {
-        //stop camera when pausing so that camera will be available for the others to use
-        videoService.toggleVideo(false);
+        // stop camera when pausing so that camera will be available for the others to use
+        // we just stop local video camera if there is only 1 active camera at current time
+        // if there is an active screen, do not stop local camera as it may be intention of the user
+        SkylinkMedia localVideo = videoService.getLocalVideo();
+        SkylinkMedia localScreen = videoService.getLocalScreen();
+        if (localVideo != null && (localVideo.getMediaState() == SkylinkMedia.MediaState.ACTIVE || localVideo.getMediaState() == SkylinkMedia.MediaState.MUTED)
+                && (localScreen == null || (localScreen != null && localScreen.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE))) {
+            videoService.toggleVideo(false);
+        }
     }
 
     @Override
@@ -133,32 +139,59 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onViewRequestExit() {
         //process disconnect from room if connecting
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
-//        if (!videoService.disconnectFromRoom()) {
-//            // if not connecting to the room, dispose the local media
-//            videoService.disposeLocalMedia();
-//        }
-
         videoService.disconnectFromRoom();
         videoService.disposeLocalMedia();
-
     }
 
     @Override
     public void onViewRequestChangeAudioState() {
-        boolean isAudioMute = currentVideoLocalState.isAudioMute();
-        processAudioStateChanged(!isAudioMute);
+        SkylinkMedia localAudio = videoService.getLocalAudio();
+
+        // do not process if user has not started audio
+        if (localAudio == null)
+            return;
+
+        // mute local audio if its current state is ACTIVE or STOPPED
+        // active it if its current state is MUTED
+        if (localAudio.getMediaState() == SkylinkMedia.MediaState.ACTIVE || localAudio.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+            videoService.muteLocalAudio(true);
+        } else if (localAudio.getMediaState() == SkylinkMedia.MediaState.MUTED) {
+            videoService.muteLocalAudio(false);
+        }
     }
 
     @Override
     public void onViewRequestChangeVideoState() {
-        boolean isVideoMute = currentVideoLocalState.isVideoMute();
-        processVideoStateChanged(!isVideoMute);
+        SkylinkMedia localVideo = videoService.getLocalVideo();
+
+        // do not process if user has not started video from camera
+        if (localVideo == null)
+            return;
+
+        // mute local video if its current state is ACTIVE or STOPPED
+        // active it if its current state is MUTED
+        if (localVideo.getMediaState() == SkylinkMedia.MediaState.ACTIVE || localVideo.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+            videoService.muteLocalVideo(true);
+        } else if (localVideo.getMediaState() == SkylinkMedia.MediaState.MUTED) {
+            videoService.muteLocalVideo(false);
+        }
     }
 
     @Override
     public void onViewRequestChangeScreenState() {
-        boolean isScreenMute = currentVideoLocalState.isScreenMute();
-        processScreenStateChanged(!isScreenMute);
+        // do not process if user has not started screen sharing
+        SkylinkMedia localScreen = videoService.getLocalScreen();
+
+        if (localScreen == null)
+            return;
+
+        // mute local screen if its current state is ACTIVE or STOPPED
+        // active it if its current state is MUTED
+        if (localScreen.getMediaState() == SkylinkMedia.MediaState.ACTIVE || localScreen.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+            videoService.muteLocalScreen(true);
+        } else if (localScreen.getMediaState() == SkylinkMedia.MediaState.MUTED) {
+            videoService.muteLocalScreen(false);
+        }
     }
 
     @Override
@@ -223,21 +256,32 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onViewRequestToggleVideo() {
         // implement start or stop video base on the state of the current video from camera
-        boolean isCameraStart = currentVideoLocalState.isCameraCapturerStop();
+        SkylinkMedia localVideo = videoService.getLocalVideo();
 
-        videoService.toggleVideo(isCameraStart);
+        // change local video state to STOPPED if its current state is active or muted
+        if (localVideo != null && (localVideo.getMediaState() == SkylinkMedia.MediaState.ACTIVE || localVideo.getMediaState() == SkylinkMedia.MediaState.MUTED)) {
+            videoService.toggleVideo(false);
+        } else if (localVideo == null || localVideo.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+            videoService.toggleVideo(true);
+        }
     }
 
     @Override
     public void onViewRequestToggleScreen() {
-        boolean isScreenStart = currentVideoLocalState.isScreenCapturerStop();
+        // implement start or stop video base on the state of the current video from camera
+        SkylinkMedia localScreen = videoService.getLocalScreen();
 
-        videoService.toggleScreen(isScreenStart);
+        // change local video state to STOPPED if its current state is active or muted
+        if (localScreen != null && (localScreen.getMediaState() == SkylinkMedia.MediaState.ACTIVE || localScreen.getMediaState() == SkylinkMedia.MediaState.MUTED)) {
+            videoService.toggleScreen(false);
+        } else if (localScreen == null || localScreen.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
+            videoService.toggleScreen(true);
+        }
     }
 
     @Override
-    public void onViewRequestToggleScreen(boolean start) {
-        videoService.toggleScreen(start);
+    public void onViewRequestToggleScreen(boolean toActive) {
+        videoService.toggleScreen(toActive);
     }
 
     @Override
@@ -309,9 +353,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
             AudioRouter.stopAudioRouting(context);
         }
-
-        // reset class variables
-        currentVideoLocalState = new VideoLocalState();
     }
 
     @Override
@@ -328,7 +369,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
-        String log = "[SA][onServiceRequestLocalAudioCapture] ";
+        toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         //start audio routing if has audio config
         SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
@@ -342,13 +383,13 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //notify view to change the UI
         mainView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
-
-        currentVideoLocalState.setAudioMute(false);
     }
 
     @Override
     public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
         String log = "[SA][onServiceRequestLocalCameraCapture] ";
+        toastLog(log, context, "Local video camera is on with id = " + localVideo.getMediaId());
+
         SurfaceViewRenderer selfVideoView = localVideo.getVideoView();
 
         if (selfVideoView == null) {
@@ -361,20 +402,15 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             Log.d(TAG, log);
         }
 
-        // for test getSkylinkMedia API
-        selfVideoView = videoService.getVideoView(localVideo.getMediaId());
-
         //notify view to change the UI
         mainView.onPresenterRequestAddCameraSelfView(localVideo.getMediaId(), selfVideoView);
-
-        // change state of currentVideoLocalState
-        currentVideoLocalState.setCameraCapturerStop(false);
-        currentVideoLocalState.setVideoMute(false);
     }
 
     @Override
     public void onServiceRequestLocalScreenCapture(SkylinkMedia localScreen) {
         String log = "[SA][onServiceRequestLocalScreenCapture] ";
+        toastLog(log, context, "Local video screen is on with id = " + localScreen.getMediaId());
+
         SurfaceViewRenderer selfVideoView = localScreen.getVideoView();
 
         if (selfVideoView == null) {
@@ -387,15 +423,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             Log.d(TAG, log);
         }
 
-        // for testing getSkylinkMedia API
-        selfVideoView = videoService.getVideoView(localScreen.getMediaId());
-
         //notify view to change the UI
         mainView.onPresenterRequestAddScreenSelfView(localScreen.getMediaId(), selfVideoView);
-
-        // change state of currentVideoLocalState
-        currentVideoLocalState.setScreenCapturerStop(false);
-        currentVideoLocalState.setScreenMute(false);
     }
 
     @Override
@@ -407,45 +436,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
         // change the UI
         mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
-
-        // change the currentVideoLocalState
-        if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA && isLocal) {
-            if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
-                currentVideoLocalState.setVideoMute(true);
-                currentVideoLocalState.setCameraCapturerStop(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
-                currentVideoLocalState.setCameraCapturerStop(true);
-                currentVideoLocalState.setVideoMute(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
-                currentVideoLocalState.setVideoMute(false);
-                currentVideoLocalState.setCameraCapturerStop(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
-                currentVideoLocalState.setCameraCapturerStop(true);
-                currentVideoLocalState.setVideoMute(true);
-            }
-        } else if (media.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN && isLocal) {
-            if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
-                currentVideoLocalState.setScreenMute(true);
-                currentVideoLocalState.setScreenCapturerStop(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.STOPPED) {
-                currentVideoLocalState.setScreenCapturerStop(true);
-                currentVideoLocalState.setScreenMute(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
-                currentVideoLocalState.setScreenMute(false);
-                currentVideoLocalState.setScreenCapturerStop(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
-                currentVideoLocalState.setScreenCapturerStop(true);
-                currentVideoLocalState.setScreenMute(true);
-            }
-        } else if (media.getMediaType() == SkylinkMedia.MediaType.AUDIO_MIC && isLocal) {
-            if (media.getMediaState() == SkylinkMedia.MediaState.MUTED) {
-                currentVideoLocalState.setAudioMute(true);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.ACTIVE) {
-                currentVideoLocalState.setAudioMute(false);
-            } else if (media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
-                currentVideoLocalState.setAudioMute(true);
-            }
-        }
     }
 
     @Override
@@ -465,30 +455,16 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         // remove the remote peer video view
         mainView.onPresenterRequestRemoveRemotePeer();
+
+        videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
+        videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
+        videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
+        videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
     }
 
     @Override
-    public void onServiceRequestRemotePeerConnectionRefreshed(String log, UserInfo
-            remotePeerUserInfo) {
-        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".";
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerAudioReceive(String log, UserInfo remotePeerUserInfo,
-                                                       String remotePeerId, SkylinkMedia remoteAudio) {
-        log += "hasAudioStereo:" + remotePeerUserInfo.isAudioStereo() + ".\r\n";
-        Log.d(TAG, log);
-        toastLog(TAG, context, log);
-    }
-
-    @Override
-    public void onServiceRequestRemotePeerVideoReceive(String log, String remotePeerId, SkylinkMedia remoteVideo) {
-        // add the remote video view in to the view
+    public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
         processAddRemoteView(remotePeerId, remoteVideo);
-
-        Log.d(TAG, log);
-        toastLog(TAG, context, log);
     }
 
     @Override
@@ -534,22 +510,10 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         return permissionUtils.requestButtonOverlayPermission(context, mainView.onPresenterRequestGetFragmentInstance());
     }
 
-    // If audio is enabled, mute audio and if audio is mute, then enable it
-    private void processAudioStateChanged(boolean isAudioMuted) {
-        //set mute audio to sdk
-        videoService.muteLocalAudio(isAudioMuted);
-    }
-
-    // If audio is enabled, mute audio and if audio is mute, then enable it
-    private void processVideoStateChanged(boolean isVideoMuted) {
-        //set mute audio to sdk
-        videoService.muteLocalVideo(isVideoMuted);
-    }
-
     // If screen video is enabled, mute screen video and if screen video is mute, then enable it
-    private void processScreenStateChanged(boolean isScreenMuted) {
+    private void processScreenStateChanged(boolean toMuted) {
         //set mute screen video to sdk
-        videoService.muteLocalScreen(isScreenMuted);
+        videoService.muteLocalScreen(toMuted);
     }
 
     /**

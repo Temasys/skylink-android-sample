@@ -444,32 +444,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         return this;
     }
 
-    /**
-     * Display the video link after recording the video
-     *
-     * @param recordingId
-     * @param msg
-     */
-    @Override
-    public void onPresenterRequestDisplayVideoLinkInfo(String recordingId, String msg) {
-        // Create a clickable video link.
-        final SpannableString videoLinkClickable = new SpannableString(msg);
-        Linkify.addLinks(videoLinkClickable, Linkify.WEB_URLS);
-
-        // Create TextView for video link.
-        final TextView msgTxtView = new TextView(context);
-        msgTxtView.setText(videoLinkClickable);
-        msgTxtView.setMovementMethod(LinkMovementMethod.getInstance());
-
-        // Create AlertDialog to present video link.
-        AlertDialog.Builder videoLinkDialogBuilder = new AlertDialog.Builder(context);
-        videoLinkDialogBuilder.setTitle("Recording: " + recordingId + " Video link");
-        videoLinkDialogBuilder.setView(msgTxtView);
-        videoLinkDialogBuilder.setPositiveButton("OK", null);
-        videoLinkDialogBuilder.show();
-        Log.d(TAG, "[SRS][SA] " + msg);
-    }
-
     @Override
     public void onPresenterRequestShowButtonStopScreenSharing() {
         if (isStopScreenShareBtnShowing) {
