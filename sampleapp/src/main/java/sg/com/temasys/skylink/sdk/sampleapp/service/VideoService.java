@@ -525,10 +525,10 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * is removed successful OR {@link LifeCycleListener#onReceiveWarning(int, String)} if local audio
      * can not be removed or any error occurs
      */
-    public void removeLocalAudio() {
+    public void destroyLocalAudio() {
         if (localAudio != null) {
             final boolean[] success = {true};
-            skylinkConnection.removeLocalMedia(localAudio.getMediaId(), new SkylinkCallback() {
+            skylinkConnection.destroyLocalMedia(localAudio.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -536,7 +536,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             });
             if (!success[0]) {
-                String error = "Unable to removeLocalAudio!";
+                String error = "Unable to destroyLocalAudio!";
                 toastLog(TAG, context, error);
             }
         }
@@ -549,10 +549,10 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * is removed successful OR {@link LifeCycleListener#onReceiveWarning(int, String)}  if local video camera
      * can not be removed or any error occurs
      */
-    public void removeLocalVideo() {
+    public void destroyLocalVideo() {
         if (localVideo != null) {
             final boolean[] success = {true};
-            skylinkConnection.removeLocalMedia(localVideo.getMediaId(), new SkylinkCallback() {
+            skylinkConnection.destroyLocalMedia(localVideo.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -560,7 +560,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             });
             if (!success[0]) {
-                String error = "Unable to removeLocalVideo!";
+                String error = "Unable to destroyLocalVideo!";
                 toastLog(TAG, context, error);
             }
         }
@@ -573,11 +573,11 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * is removed successful OR {@link LifeCycleListener#onReceiveWarning(int, String)} if local screen
      * can not be removed or any error occurs
      */
-    public void removeLocalScreen() {
+    public void destroyLocalScreen() {
         if (localScreen != null) {
             final boolean[] success = {true};
 
-            skylinkConnection.removeLocalMedia(localScreen.getMediaId(), new SkylinkCallback() {
+            skylinkConnection.destroyLocalMedia(localScreen.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -585,7 +585,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 }
             });
             if (!success[0]) {
-                String error = "Unable to removeLocalScreen!";
+                String error = "Unable to destroyLocalScreen!";
                 toastLog(TAG, context, error);
             }
         }

@@ -47,7 +47,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
             return;
 
         // Send request to peer requesting permission for file transfer
-        skylinkConnection.sendFileTransfer(remotePeerId, file.getName(), file.getAbsolutePath(),
+        skylinkConnection.sendFileTransfer(file.getAbsolutePath(), file.getName(), remotePeerId,
                 new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, String contextDescription) {
@@ -77,7 +77,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
             return;
 
         if (isPermitted) {
-            skylinkConnection.acceptFileTransfer(remotePeerId, downloadedFilePath, new SkylinkCallback() {
+            skylinkConnection.acceptFileTransfer(downloadedFilePath, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
 

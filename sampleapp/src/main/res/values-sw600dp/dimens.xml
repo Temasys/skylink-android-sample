@@ -12,4 +12,7 @@
     <dimen name="contentFrameRemoteCameraView_marginTop">400dp</dimen>
     <dimen name="contentFrameRemoteScreenView_marginTop">600dp</dimen>
     <dimen name="stop_screen_text_size">6sp</dimen>
+    <dimen name="main_demo_button_margin">30dp</dimen>
+    <dimen name="main_demo_button_width">250dp</dimen>
+    <dimen name="main_demo_button_height">100dp</dimen>
 </resources>

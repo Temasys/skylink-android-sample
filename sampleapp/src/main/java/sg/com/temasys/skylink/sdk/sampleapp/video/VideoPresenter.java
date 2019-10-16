@@ -286,17 +286,17 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void onViewRequestRemoveAudio() {
-        videoService.removeLocalAudio();
+        videoService.destroyLocalAudio();
     }
 
     @Override
     public void onViewRequestRemoveVideo() {
-        videoService.removeLocalVideo();
+        videoService.destroyLocalVideo();
     }
 
     @Override
     public void onViewRequestRemoveScreen() {
-        videoService.removeLocalScreen();
+        videoService.destroyLocalScreen();
     }
 
     @Override

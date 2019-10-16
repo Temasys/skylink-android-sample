@@ -60,7 +60,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     private SkylinkConnectionManager skylinkConnectionManager;
 
     // SkylinkConnection instance for working with SkylinkSDK
-    // this variable need to be static for configuration change
     protected static SkylinkConnection skylinkConnection;
 
     //list of peers (including selfPeer) joined in room
@@ -70,8 +69,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     protected String roomName;
     protected String userName;
 
+    // local SkylinkMedia objects to control locally
     protected SkylinkMedia localAudio, localVideo, localScreen;
-
 
     public SkylinkCommonService(Context context) {
         this.context = context;
@@ -88,7 +87,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public abstract SkylinkConfig getSkylinkConfig();
 
     //----------------------------------------------------------------------------------------------
-    // Override methods from SkylinkListener(s)
+    // Override methods from Skylink Listener(s)
     // These methods are responsible to inform user the results from SkylinkSDK
     //----------------------------------------------------------------------------------------------
 
@@ -119,7 +118,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         //add self peer as a peer in list
         SkylinkPeer selfPeer = new SkylinkPeer(localPeerId, userName);
 
-        // add local media to selfPeer
+        // add local media to selfPeer if it was created
         if (localAudio != null) {
             selfPeer.addMedia(localAudio);
         }
@@ -138,6 +137,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         presenter.onServiceRequestConnect(true);
     }
 
+    /**
+     * This is triggered when there is error for connecting to the room
+     */
     @Override
     public void onConnectToRoomFailed(String errorMessage) {
         presenter.onServiceRequestConnect(false);
@@ -203,7 +205,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     //----------------------------------------------------------------------------------------------
 
     /**
-     * This is triggered from SkylinkSDK when successfully captures the local device's media input.
+     * This is triggered from SkylinkSDK when successfully captures the local device's media input,
+     * for both audio, video, screen
      * This may be at the start of media usage or when media source has been changed.
      * It can happen only if the connection is configured to have a media configuration.
      *
@@ -213,14 +216,12 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onCreateLocalMedia(SkylinkMedia localMedia) {
         Log.d(TAG, "[SA][onCreateLocalMedia]");
 
-        if (localMedia == null)
-            return;
-
         if (!localMedia.isVideo()) {
             presenter.onServiceRequestLocalAudioCapture(localMedia);
             localAudio = localMedia;
         } else {
-            if (SkylinkMedia.MediaType.VIDEO_CAMERA == localMedia.getMediaType()) {
+            if (SkylinkMedia.MediaType.VIDEO_CAMERA == localMedia.getMediaType()
+                    || SkylinkMedia.MediaType.VIDEO == localMedia.getMediaType()) {
                 presenter.onServiceRequestLocalCameraCapture(localMedia);
                 localVideo = localMedia;
             } else if (SkylinkMedia.MediaType.VIDEO_SCREEN == localMedia.getMediaType()) {
@@ -281,22 +282,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
 
         presenter.onServiceRequestMediaStateChange(localMedia, true);
-
-        // process remove local media id for the self peer if media state is UNAVAILABLE
-        if (localMedia.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
-            if (mPeersList != null && mPeersList.size() > 0) {
-                mPeersList.get(0).removeMediaId(localMedia.getMediaId());
-            }
-
-            // remove local media id
-            if (localMedia.getMediaType() == SkylinkMedia.MediaType.AUDIO || localMedia.getMediaType() == SkylinkMedia.MediaType.AUDIO_MIC) {
-                localAudio = null;
-            } else if (localMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO || localMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) {
-                localVideo = null;
-            } else if (localMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
-                localScreen = null;
-            }
-        }
     }
 
     /**
@@ -326,6 +311,34 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         // process remove local media id for the self peer if media state is UNAVAILABLE
         if (remoteMedia.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
             remotePeer.removeMediaId(remoteMedia.getMediaId());
+        }
+    }
+
+    /**
+     * This is triggered when a specific local media object is destroyed
+     *
+     * @param localMedia The local media object that was destroyed
+     */
+    @Override
+    public void onDestroyLocalMedia(SkylinkMedia localMedia) {
+        String log = "[SA][onDestroyLocalMedia] ";
+        log += "Local media (" + localMedia.getMediaId() + ") has been destroyed.";
+
+        toastLog(TAG, context, log);
+
+        presenter.onServiceRequestMediaStateChange(localMedia, true);
+
+        if (mPeersList != null && mPeersList.size() > 0) {
+            mPeersList.get(0).removeMediaId(localMedia.getMediaId());
+        }
+
+        // remove local media id
+        if (localMedia.getMediaType() == SkylinkMedia.MediaType.AUDIO || localMedia.getMediaType() == SkylinkMedia.MediaType.AUDIO_MIC) {
+            localAudio = null;
+        } else if (localMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO || localMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+            localVideo = null;
+        } else if (localMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+            localScreen = null;
         }
     }
 
@@ -1250,13 +1263,19 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     protected void obtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat, String mediaId) {
         Log.d(TAG, "[SA][obtainInputVideoResolution]");
 
+        // TODO @Muoi need to check here as SA crash
+        // media object is removed but still got video resolution???
+
         SkylinkMedia.MediaType mediaType = null;
         // get the video type from videoId
-        if (mediaId.equals(localVideo.getMediaId())) {
+        if (localVideo != null && mediaId.equals(localVideo.getMediaId())) {
             mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
-        } else if (mediaId.equals(localScreen.getMediaId())) {
+        } else if (localScreen != null && mediaId.equals(localScreen.getMediaId())) {
             mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
         }
+
+        if (mediaType == null)
+            return;
 
         if (videoResPresenter != null)
             videoResPresenter.onServiceRequestInputVideoResolutionObtained(mediaType, width, height, fps, captureFormat);
@@ -1318,13 +1337,19 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     protected void obtainSentVideoResolution(int width, int height, int fps, String mediaId, String remotePeerId) {
         Log.d(TAG, "[SA][obtainSentVideoResolution]");
 
+        // TODO @Muoi need to check here as SA crash
+        // media object is removed but still got video resolution???
+
         SkylinkMedia.MediaType mediaType = null;
         // get the video type from videoId
-        if (mediaId.equals(localVideo.getMediaId())) {
+        if (localVideo != null && mediaId.equals(localVideo.getMediaId())) {
             mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
-        } else if (mediaId.equals(localScreen.getMediaId())) {
+        } else if (localScreen != null && mediaId.equals(localScreen.getMediaId())) {
             mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
         }
+
+        if (mediaType == null)
+            return;
 
         if (videoResPresenter != null)
             videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeerId, mediaType, width, height, fps);

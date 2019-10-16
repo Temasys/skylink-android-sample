@@ -47,7 +47,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
             return;
 
         final boolean[] success = {true};
-        skylinkConnection.sendData(remotePeerId, data, new SkylinkCallback() {
+        skylinkConnection.sendData(data, remotePeerId, new SkylinkCallback() {
             @Override
             public void onError(SkylinkError error, String contextDescription) {
                 Log.e("SkylinkCallback", contextDescription);

@@ -20,44 +20,44 @@
 
             <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
                 android:id="@+id/btnMainAudio"
-                android:layout_width="@dimen/btnMainButtonWidth"
-                android:layout_height="@dimen/btnMainButtonHeight"
-                android:layout_margin="@dimen/dp_20dp">
+                android:layout_width="@dimen/main_demo_button_width"
+                android:layout_height="@dimen/main_demo_button_height"
+                android:layout_margin="@dimen/main_demo_button_margin">
             </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
             <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
                 android:id="@+id/btnMainVideo"
-                android:layout_width="@dimen/btnMainButtonWidth"
-                android:layout_height="@dimen/btnMainButtonHeight"
-                android:layout_margin="@dimen/dp_20dp">
+                android:layout_width="@dimen/main_demo_button_width"
+                android:layout_height="@dimen/main_demo_button_height"
+                android:layout_margin="@dimen/main_demo_button_margin">
             </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
             <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
                 android:id="@+id/btnMainChat"
-                android:layout_width="@dimen/btnMainButtonWidth"
-                android:layout_height="@dimen/btnMainButtonHeight"
-                android:layout_margin="@dimen/dp_20dp">
+                android:layout_width="@dimen/main_demo_button_width"
+                android:layout_height="@dimen/main_demo_button_height"
+                android:layout_margin="@dimen/main_demo_button_margin">
             </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
             <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
                 android:id="@+id/btnMainFile"
-                android:layout_width="@dimen/btnMainButtonWidth"
-                android:layout_height="@dimen/btnMainButtonHeight"
-                android:layout_margin="@dimen/dp_20dp">
+                android:layout_width="@dimen/main_demo_button_width"
+                android:layout_height="@dimen/main_demo_button_height"
+                android:layout_margin="@dimen/main_demo_button_margin">
             </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
             <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
                 android:id="@+id/btnMainData"
-                android:layout_width="@dimen/btnMainButtonWidth"
-                android:layout_height="@dimen/btnMainButtonHeight"
-                android:layout_margin="@dimen/dp_20dp">
+                android:layout_width="@dimen/main_demo_button_width"
+                android:layout_height="@dimen/main_demo_button_height"
+                android:layout_margin="@dimen/main_demo_button_margin">
             </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
             <sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton
                 android:id="@+id/btnMainMulti"
-                android:layout_width="@dimen/btnMainButtonWidth"
-                android:layout_height="@dimen/btnMainButtonHeight"
-                android:layout_margin="@dimen/dp_20dp">
+                android:layout_width="@dimen/main_demo_button_width"
+                android:layout_height="@dimen/main_demo_button_height"
+                android:layout_margin="@dimen/main_demo_button_margin">
             </sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton>
 
         </GridLayout>

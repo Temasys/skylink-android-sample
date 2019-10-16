@@ -40,7 +40,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     public void sendServerMessage(String remotePeerId, String message) {
         if (skylinkConnection != null) {
             final boolean[] success = {true};
-            skylinkConnection.sendServerMessage(remotePeerId, message, new SkylinkCallback() {
+            skylinkConnection.sendServerMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -67,7 +67,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     public void sendP2PMessage(String remotePeerId, String message) {
         if (skylinkConnection != null) {
             final boolean[] success = {true};
-            skylinkConnection.sendP2PMessage(remotePeerId, message, new SkylinkCallback() {
+            skylinkConnection.sendP2PMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);

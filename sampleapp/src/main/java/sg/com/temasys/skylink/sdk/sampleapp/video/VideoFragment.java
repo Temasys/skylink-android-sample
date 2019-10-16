@@ -526,10 +526,12 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             case VIDEO_CAMERA:
                 showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, isLocal, false);
                 if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_CAMERA) {
+                    moveViewToSmallLocalCameraView(localCameraView);
                     localCameraView = null;
                     ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
                 }
                 if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_CAMERA) {
+                    moveViewToSmallRemoteCameraView(remoteCameraView);
                     localScreenView = null;
                     ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
                 }
@@ -537,10 +539,12 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             case VIDEO_SCREEN:
                 showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, isLocal, false);
                 if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_SCREEN) {
+                    moveViewToSmallLocalScreenView(localScreenView);
                     remoteCameraView = null;
                     ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
                 }
                 if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_SCREEN) {
+                    moveViewToSmallRemoteScreenView(remoteScreenView);
                     remoteScreenView = null;
                     ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
                 }

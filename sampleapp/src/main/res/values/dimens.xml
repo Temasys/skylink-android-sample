@@ -66,5 +66,8 @@
     <dimen name="banner_height">190dp</dimen>
     <dimen name="btnMainButtonWidth">150dp</dimen>
     <dimen name="btnMainButtonHeight">80dp</dimen>
+    <dimen name="main_demo_button_margin">10dp</dimen>
+    <dimen name="main_demo_button_width">150dp</dimen>
+    <dimen name="main_demo_button_height">80dp</dimen>
 
 </resources>
