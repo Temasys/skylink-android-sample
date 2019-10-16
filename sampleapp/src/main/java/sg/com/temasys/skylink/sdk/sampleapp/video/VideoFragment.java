@@ -521,30 +521,36 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Remove a specific view, both main view and small views
      */
     private void removeView(SkylinkMedia.MediaType videoType, boolean isLocal) {
-        // remove the small video views and main view
         switch (videoType) {
             case VIDEO_CAMERA:
                 showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, isLocal, false);
-                if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_CAMERA) {
-                    moveViewToSmallLocalCameraView(localCameraView);
+                if (isLocal) {
+                    if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_CAMERA && isLocal) {
+                        moveViewToSmallLocalCameraView(localCameraView);
+                    }
                     localCameraView = null;
                     ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
-                }
-                if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_CAMERA) {
-                    moveViewToSmallRemoteCameraView(remoteCameraView);
-                    localScreenView = null;
-                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
+                } else {
+                    if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_CAMERA && !isLocal) {
+                        moveViewToSmallRemoteCameraView(remoteCameraView);
+                    }
+                    remoteCameraView = null;
+                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
                 }
                 break;
             case VIDEO_SCREEN:
                 showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, isLocal, false);
-                if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_SCREEN) {
-                    moveViewToSmallLocalScreenView(localScreenView);
-                    remoteCameraView = null;
-                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_CAMERA);
-                }
-                if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_SCREEN) {
-                    moveViewToSmallRemoteScreenView(remoteScreenView);
+                if (isLocal) {
+                    if (currentMainVideoType == Constants.VIDEO_TYPE.LOCAL_SCREEN && isLocal) {
+                        moveViewToSmallLocalScreenView(localScreenView);
+
+                    }
+                    localScreenView = null;
+                    ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
+                } else {
+                    if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_SCREEN && !isLocal) {
+                        moveViewToSmallRemoteScreenView(remoteScreenView);
+                    }
                     remoteScreenView = null;
                     ((VideoActivity) context).removeView(Constants.VIDEO_TYPE.REMOTE_SCREEN);
                 }
@@ -961,10 +967,19 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         } else {
             videoToolLayout.setVisibility(VISIBLE);
             btnVideoRes.setVisibility(View.VISIBLE);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, true);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, true);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, false, true);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, true);
+            if (localCameraView != null) {
+                showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, true);
+            }
+            if (localScreenView != null) {
+                showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, true);
+            }
+            if (remoteCameraView != null) {
+                showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, false, true);
+            }
+            if (remoteScreenView != null) {
+                showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, true);
+            }
+
             if (isShowVideoRes) {
                 ((VideoActivity) getActivity()).onShowHideVideoResFragment(true);
             }
@@ -1375,31 +1390,31 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             return;
         }
 
-        SmallVideoViewFragment localVideoFragment = null;
+        SmallVideoViewFragment smallVideoFragment = null;
 
         switch (mediaType) {
             case VIDEO_CAMERA:
                 if (isLocal)
-                    localVideoFragment = ((VideoActivity) context).getLocalVideoCameraFragment();
+                    smallVideoFragment = ((VideoActivity) context).getLocalVideoCameraFragment();
                 else
-                    localVideoFragment = ((VideoActivity) context).getRemoteVideoCameraFragment();
+                    smallVideoFragment = ((VideoActivity) context).getRemoteVideoCameraFragment();
                 break;
             case VIDEO_SCREEN:
                 if (isLocal)
-                    localVideoFragment = ((VideoActivity) context).getLocalVideoScreenFragment();
+                    smallVideoFragment = ((VideoActivity) context).getLocalVideoScreenFragment();
                 else
-                    localVideoFragment = ((VideoActivity) context).getRemoteVideoScreenFragment();
+                    smallVideoFragment = ((VideoActivity) context).getRemoteVideoScreenFragment();
                 break;
         }
 
-        if (localVideoFragment == null) {
+        if (smallVideoFragment == null) {
             return;
         }
 
         if (isShow) {
-            ((VideoActivity) context).attachSmallView(localVideoFragment);
+            ((VideoActivity) context).attachSmallView(smallVideoFragment);
         } else {
-            ((VideoActivity) context).detachSmallView(localVideoFragment);
+            ((VideoActivity) context).detachSmallView(smallVideoFragment);
         }
     }
 }
