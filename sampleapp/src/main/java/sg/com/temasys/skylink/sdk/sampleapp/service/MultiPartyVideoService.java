@@ -88,7 +88,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         skylinkConfig.setMirrorLocalFrontCameraView(true);
 
         // Allow only 3 remote Peers to join, due to current UI design.
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.RoomMediaType.VIDEO);
+        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
@@ -390,7 +390,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         if (remoteMedia != null && remoteMedia.getMediaState() != SkylinkMedia.MediaState.UNAVAILABLE) {
             String mediaId = remoteMedia.getMediaId();
             final boolean[] success = {true};
-            skylinkConnection.getReceivedVideoResolution(remotePeerId, mediaId, new SkylinkCallback.ReceivedVideoResolution() {
+            skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                 @Override
                 public void onError(SkylinkError error, String contextDescription) {
                     Log.e("SkylinkCallback", contextDescription);
@@ -427,7 +427,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         if (localMediaMap != null && localMediaMap.size() > 0) {
             for (String mediaId : localMediaMap.keySet()) {
                 final boolean[] success = {true};
-                skylinkConnection.getSendingWebRtcStats(mediaId, peerId,
+                skylinkConnection.getSentWebRtcStats(mediaId, peerId,
                         new SkylinkCallback.WebRtcStats() {
                             @Override
                             public void onError(SkylinkError error, String contextDescription) {
@@ -441,7 +441,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                             }
                         });
                 if (!success[0]) {
-                    String error = "Unable to getSendingWebRtcStats!";
+                    String error = "Unable to getSentWebRtcStats!";
                     toastLog(TAG, context, error);
                 }
             }
@@ -454,7 +454,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
         for (String mediaId : mediaMap.keySet()) {
             final boolean[] success = {true};
-            skylinkConnection.getReceivingWebRtcStats(mediaId,
+            skylinkConnection.getReceivedWebRtcStats(mediaId,
                     new SkylinkCallback.WebRtcStats() {
                         @Override
                         public void onError(SkylinkError error, String contextDescription) {
@@ -468,7 +468,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                         }
                     });
             if (!success[0]) {
-                String error = "Unable to getReceivingWebRtcStats!";
+                String error = "Unable to getReceivedWebRtcStats!";
                 toastLog(TAG, context, error);
             }
         }
@@ -477,7 +477,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     /**
      * Request for the instantaneous transfer speed(s) of media stream(s), at the moment of request.
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(double}
+     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(double, String, boolean, Context)}
      *
      * @param peerIndex  Index of the remote Peer in frame for which we are getting transfer speed on.
      * @param mediaType  type of the media object to get resolution
@@ -496,7 +496,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                 for (String mediaId : localMediaMap.keySet()) {
                     if (localMediaMap.get(mediaId).getMediaType() == mediaType) {
                         final boolean[] success = {true};
-                        skylinkConnection.getSendingTransferSpeed(mediaId, peerId,
+                        skylinkConnection.getSentTransferSpeed(mediaId, peerId,
                                 new SkylinkCallback.TransferSpeed() {
                                     @Override
                                     public void onError(SkylinkError error, String contextDescription) {
@@ -510,7 +510,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                                     }
                                 });
                         if (!success[0]) {
-                            String error = "Unable to getSendingTransferSpeed!";
+                            String error = "Unable to getSentTransferSpeed!";
                             toastLog(TAG, context, error);
                         }
                     }
@@ -524,7 +524,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                 for (String mediaId : mediaMap.keySet()) {
                     if (mediaMap.get(mediaId).getMediaType() == mediaType) {
                         final boolean[] success = {true};
-                        skylinkConnection.getReceivingTransferSpeed(mediaId,
+                        skylinkConnection.getReceivedTransferSpeed(mediaId,
                                 new SkylinkCallback.TransferSpeed() {
                                     @Override
                                     public void onError(SkylinkError error, String contextDescription) {
@@ -538,7 +538,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                                     }
                                 });
                         if (!success[0]) {
-                            String error = "Unable to getReceivingTransferSpeed!";
+                            String error = "Unable to getReceivedTransferSpeed!";
                             toastLog(TAG, context, error);
                         }
                     }

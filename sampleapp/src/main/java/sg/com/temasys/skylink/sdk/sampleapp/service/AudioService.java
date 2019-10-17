@@ -63,7 +63,7 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         skylinkConfig.setFileTransfer(true);
 
         // Allow only 1 remote Peer to join.
-        skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.RoomMediaType.AUDIO_ONLY); // Default is 4 remote Peers.
+        skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY); // Default is 4 remote Peers.
 
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);

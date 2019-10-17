@@ -295,11 +295,11 @@ public class Utils {
         skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.FILE_SEND_REQUEST, Constants.TIME_OUT);
 
         // SDK_DETAILED_LOGGING
-        skylinkConfig.setAdvancedOptions("SdkAdvancedOption)!", new Boolean(true));
+        skylinkConfig.setAdvancedOption("SdkAdvancedOption)!", new Boolean(true));
         // OFF_ANS_VIA_USER_DATA
-        skylinkConfig.setAdvancedOptions("OffererAnswererViaUserData", new Boolean(true));
+        skylinkConfig.setAdvancedOption("OffererAnswererViaUserData", new Boolean(true));
         // SDK_RUNTIME_CRASH
-        skylinkConfig.setAdvancedOptions("SdkAdvancedOption)@", new Boolean(true));
+        skylinkConfig.setAdvancedOption("SdkAdvancedOption)@", new Boolean(true));
         // SDK_LOCK_LOG
         // skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)#", new Boolean(true));
 

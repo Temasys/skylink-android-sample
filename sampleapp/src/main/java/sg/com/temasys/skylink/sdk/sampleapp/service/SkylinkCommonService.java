@@ -1228,7 +1228,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
                 if (remoteMedia != null && remoteMedia.getMediaState() != SkylinkMedia.MediaState.UNAVAILABLE) {
                     String mediaId = remoteMedia.getMediaId();
-                    skylinkConnection.getReceivedVideoResolution(remotePeerId, mediaId, new SkylinkCallback.ReceivedVideoResolution() {
+                    skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                         @Override
                         public void onError(SkylinkError error, String contextDescription) {
                             Log.e("SkylinkCallback", contextDescription);
