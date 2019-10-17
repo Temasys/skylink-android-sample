@@ -7,6 +7,7 @@ import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
@@ -14,6 +15,7 @@ import sg.com.temasys.skylink.sdk.listener.MediaListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -70,7 +72,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -83,7 +86,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -114,7 +118,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -127,7 +132,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -152,7 +158,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localAudio.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -165,7 +172,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localAudio.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -190,7 +198,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -203,7 +212,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -228,7 +238,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -241,7 +252,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -373,7 +385,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         final boolean[] success = {true};
         skylinkConnection.switchCamera(new SkylinkCallback() {
             @Override
-            public void onError(SkylinkError error, String contextDescription) {
+            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
                 success[0] = false;
             }
@@ -394,7 +407,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             final boolean[] success = {true};
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -423,7 +437,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.createLocalMedia(CAMERA_BACK, "mobile cam back", new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -436,7 +451,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                 final boolean[] success = {true};
                 skylinkConnection.createLocalMedia(CAMERA_FRONT, "mobile cam front", new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -461,7 +477,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             final boolean[] success = {true};
             skylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile", new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -482,7 +499,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             skylinkConnection.createLocalMedia(CAMERA_FRONT, "external video from mobile",
                     customVideoCapturer, -1, -1, -1, new SkylinkCallback() {
                         @Override
-                        public void onError(SkylinkError error, String contextDescription) {
+                        public void onError(SkylinkError error, HashMap<String, Object> details) {
+                            String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
                             success[0] = false;
                         }
@@ -530,7 +548,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             final boolean[] success = {true};
             skylinkConnection.destroyLocalMedia(localAudio.getMediaId(), new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -554,7 +573,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             final boolean[] success = {true};
             skylinkConnection.destroyLocalMedia(localVideo.getMediaId(), new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -579,7 +599,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
             skylinkConnection.destroyLocalMedia(localScreen.getMediaId(), new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }

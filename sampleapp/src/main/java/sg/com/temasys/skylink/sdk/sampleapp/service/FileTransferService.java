@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 
 import java.io.File;
+import java.util.HashMap;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -50,7 +51,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
         skylinkConnection.sendFileTransfer(file.getAbsolutePath(), file.getName(), remotePeerId,
                 new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
 
                     }
                 });
@@ -79,7 +80,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
         if (isPermitted) {
             skylinkConnection.acceptFileTransfer(downloadedFilePath, remotePeerId, new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
 
                 }
             });

@@ -10,11 +10,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Date;
+import java.util.HashMap;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -84,7 +86,8 @@ public class SkylinkConnectionManager {
         final boolean[] success = {true};
         skylinkConnection.init(skylinkConfig, context.getApplicationContext(), new SkylinkCallback() {
             @Override
-            public void onError(SkylinkError error, String contextDescription) {
+            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
                 success[0] = false;
             }
@@ -156,7 +159,8 @@ public class SkylinkConnectionManager {
         final boolean[] success = {true};
         skylinkConnection.connectToRoom(skylinkConnectionString, mUserName, new SkylinkCallback() {
             @Override
-            public void onError(SkylinkError error, String contextDescription) {
+            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
                 success[0] = false;
             }
@@ -214,7 +218,8 @@ public class SkylinkConnectionManager {
         skylinkConnection.connectToRoom(Config.getAppKey(), Config.getAppKeySecret(), mRoomName, mUserName,
                 new SkylinkCallback() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                         success[0] = false;
                     }
@@ -244,7 +249,8 @@ public class SkylinkConnectionManager {
         final boolean[] success = {true};
         skylinkConnection.disconnectFromRoom(new SkylinkCallback() {
             @Override
-            public void onError(SkylinkError error, String contextDescription) {
+            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
                 success[0] = false;
             }

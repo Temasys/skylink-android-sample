@@ -15,6 +15,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
@@ -128,7 +129,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             final boolean[] success = {true};
             skylinkConnection.switchCamera(new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -238,7 +240,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             final boolean[] success = {true};
             skylinkConnection.startRecording(new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -272,7 +275,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             final boolean[] success = {true};
             skylinkConnection.stopRecording(new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -307,7 +311,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             final boolean[] success = {true};
             skylinkConnection.getInputVideoResolution(localVideo.getMediaId(), new SkylinkCallback.InputVideoResolution() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -345,7 +350,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                 skylinkConnection.getSentVideoResolution(remotePeerId, mediaId,
                         new SkylinkCallback.SentVideoResolution() {
                             @Override
-                            public void onError(SkylinkError error, String contextDescription) {
+                            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                 Log.e("SkylinkCallback", contextDescription);
                                 success[0] = false;
                             }
@@ -392,7 +398,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             final boolean[] success = {true};
             skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -430,7 +437,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                 skylinkConnection.getSentWebRtcStats(mediaId, peerId,
                         new SkylinkCallback.WebRtcStats() {
                             @Override
-                            public void onError(SkylinkError error, String contextDescription) {
+                            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                 Log.e("SkylinkCallback", contextDescription);
                                 success[0] = false;
                             }
@@ -457,7 +465,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             skylinkConnection.getReceivedWebRtcStats(mediaId,
                     new SkylinkCallback.WebRtcStats() {
                         @Override
-                        public void onError(SkylinkError error, String contextDescription) {
+                        public void onError(SkylinkError error, HashMap<String, Object> details) {
+                            String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
                             success[0] = false;
                         }
@@ -499,7 +508,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                         skylinkConnection.getSentTransferSpeed(mediaId, peerId,
                                 new SkylinkCallback.TransferSpeed() {
                                     @Override
-                                    public void onError(SkylinkError error, String contextDescription) {
+                                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                         Log.e("SkylinkCallback", contextDescription);
                                         success[0] = false;
                                     }
@@ -527,7 +537,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                         skylinkConnection.getReceivedTransferSpeed(mediaId,
                                 new SkylinkCallback.TransferSpeed() {
                                     @Override
-                                    public void onError(SkylinkError error, String contextDescription) {
+                                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                         Log.e("SkylinkCallback", contextDescription);
                                         success[0] = false;
                                     }
@@ -571,7 +582,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
             skylinkConnection.refreshConnection(null, iceRestart, new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     // TODO @Muoi need to get the fail peer to refresh here
                     success[0] = false;
@@ -583,7 +595,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
             skylinkConnection.refreshConnection(peer.getPeerId(), iceRestart, new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }

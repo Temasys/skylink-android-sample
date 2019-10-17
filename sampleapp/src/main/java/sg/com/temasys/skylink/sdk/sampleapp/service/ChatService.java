@@ -3,9 +3,12 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.HashMap;
+
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
@@ -42,7 +45,8 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
             final boolean[] success = {true};
             skylinkConnection.sendServerMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
@@ -69,7 +73,8 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
             final boolean[] success = {true};
             skylinkConnection.sendP2PMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }

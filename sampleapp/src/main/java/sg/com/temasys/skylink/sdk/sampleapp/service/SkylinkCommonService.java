@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.listener.DataTransferListener;
@@ -26,6 +27,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.rtc.UserInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
@@ -1080,7 +1082,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         skylinkConnection.setInputVideoResolution(videoId, width, height, fps, new SkylinkCallback.InputVideoResolution() {
             @Override
-            public void onError(SkylinkError error, String contextDescription) {
+            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
             }
 
@@ -1189,7 +1192,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         // get input video res
         skylinkConnection.getInputVideoResolution(videoId, new SkylinkCallback.InputVideoResolution() {
             @Override
-            public void onError(SkylinkError error, String contextDescription) {
+            public void onError(SkylinkError error, HashMap<String, Object> details) {
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
             }
 
@@ -1206,7 +1210,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                 // get sent video res to remote peer
                 skylinkConnection.getSentVideoResolution(remotePeerId, videoId, new SkylinkCallback.SentVideoResolution() {
                     @Override
-                    public void onError(SkylinkError error, String contextDescription) {
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
                     }
 
@@ -1230,7 +1235,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                     String mediaId = remoteMedia.getMediaId();
                     skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                         @Override
-                        public void onError(SkylinkError error, String contextDescription) {
+                        public void onError(SkylinkError error, HashMap<String, Object> details) {
+                            String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
                         }
 

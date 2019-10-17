@@ -3,9 +3,12 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.HashMap;
+
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -85,7 +88,8 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
             final boolean[] success = {true};
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", new SkylinkCallback() {
                 @Override
-                public void onError(SkylinkError error, String contextDescription) {
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     success[0] = false;
                 }
