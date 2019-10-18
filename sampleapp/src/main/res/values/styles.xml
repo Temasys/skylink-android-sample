@@ -15,31 +15,7 @@
         <item name="android:contentDescription">@string/action_configuration</item>
     </style>
 
-    <style name="CustonmButton" parent="Widget.AppCompat.Button">
-        <item name="android:layout_margin">@dimen/dp_10dp</item>
-        <item name="android:background">@drawable/button_corner_ripple</item>
-        <item name="android:gravity">center</item>
-        <item name="android:focusable">true</item>
-        <item name="android:clickable">true</item>
-    </style>
-
-    <style name="CustonmFloatingButton" parent="Widget.AppCompat.Button">
-        <item name="android:layout_width">@dimen/dp_60dp</item>
-        <item name="android:layout_height">@dimen/dp_60dp</item>
-        <item name="android:layout_marginBottom">5dp</item>
-        <item name="android:backgroundTint" tools:targetApi="lollipop">@android:color/transparent
-        </item>
-        <item name="android:visibility">visible</item>
-    </style>
-
     <style name="AlertDialogCustom" parent="Theme.AppCompat.Light.Dialog">
-        <!-- Used for the buttons -->
-        <!--<item name="colorAccent">@color/primary</item>-->
-        <!-- Used for the title and text -->
-        <!--<item name="android:textColorPrimary">#FFFFFF</item>-->
-        <!-- Used for the background -->
-        <!--<item name="android:background">@color/color_white</item>-->
-
         <item name="android:layout_marginLeft">5dp</item>
         <item name="android:layout_marginRight">5dp</item>
     </style>

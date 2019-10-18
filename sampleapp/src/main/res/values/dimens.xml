@@ -13,9 +13,6 @@
     <dimen name="dp_5dp">5dp</dimen>
     <dimen name="dp_60dp">60dp</dimen>
     <dimen name="dp_100dp">100dp</dimen>
-    <dimen name="dp_45dp">45dp</dimen>
-    <dimen name="dp_48dp">48dp</dimen>
-    <dimen name="dp_35dp">35dp</dimen>
     <dimen name="dp_300dp">300dp</dimen>
     <dimen name="dp_165dp">165dp</dimen>
     <dimen name="dp_255dp">255dp</dimen>
@@ -34,13 +31,9 @@
     <dimen name="sp_10sp">10sp</dimen>
     <dimen name="sp_14sp">14sp</dimen>
     <dimen name="sp_15sp">15sp</dimen>
-    <dimen name="dp_180dp">180dp</dimen>
-    <dimen name="dp_90dp">90dp</dimen>
-    <dimen name="dp_190dp">190dp</dimen>
     <dimen name="dp_350dp">350dp</dimen>
 
     <dimen name="custom_seekbar_height">90dp</dimen>
-    <dimen name="video_res_height">300dp</dimen>
     <dimen name="video_res_width">270dp</dimen>
     <dimen name="custom_seekbar_width">350dp</dimen>
     <dimen name="min_res_margin_top">90dp</dimen>
@@ -54,11 +47,6 @@
     <dimen name="file_preview_height">300dp</dimen>
     <dimen name="btn_video_tool_width">40dp</dimen>
     <dimen name="btn_video_tool_height">40dp</dimen>
-    <dimen name="dp_270dp">270dp</dimen>
-    <dimen name="dp_400dp">400dp</dimen>
-    <dimen name="dp_600dp">600dp</dimen>
-    <dimen name="dp_200dp">200dp</dimen>
-    <dimen name="dp_450dp">450dp</dimen>
     <dimen name="contentFrameLocalScreenView_marginTop">150dp</dimen>
     <dimen name="contentFrameRemoteCameraView_marginTop">300dp</dimen>
     <dimen name="contentFrameRemoteScreenView_marginTop">450dp</dimen>
