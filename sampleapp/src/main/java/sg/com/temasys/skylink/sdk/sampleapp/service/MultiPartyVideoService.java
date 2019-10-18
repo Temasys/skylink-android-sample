@@ -92,7 +92,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
         // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);

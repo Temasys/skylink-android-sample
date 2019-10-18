@@ -114,7 +114,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         skylinkConfig.setP2PMessaging(true);
 
         // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
