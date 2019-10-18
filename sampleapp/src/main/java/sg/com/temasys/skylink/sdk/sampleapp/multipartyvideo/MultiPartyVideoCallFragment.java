@@ -424,11 +424,11 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         // Remove video view at viewIndex
         removePeerView(viewIndex);
 
-        // Shift all other views from right to left
-        shiftUpRemotePeers(viewIndex);
-
         // hide the menu option button for peer also
         hidePeerMenuOption(viewIndex);
+
+        // Shift all other views from right to left
+        shiftUpRemotePeers(viewIndex);
     }
 
     /**
@@ -652,16 +652,19 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
             FrameLayout peerFrameLayout = remoteViewLayouts[i + 1];
 
+            hidePeerMenuOption(i+1);
+
             SurfaceViewRenderer view = (SurfaceViewRenderer) peerFrameLayout.getChildAt(0);
 
             if (view != null) {
                 peerFrameLayout.removeAllViews();
                 setLayoutParams(view);
                 remoteViewLayouts[i].addView(view);
+
+                showPeerMenuOption(i);
             }
         }
     }
-
 
     /**
      * Display the dialog of peer info including peer username and peer id
@@ -702,16 +705,30 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private void hidePeerMenuOption(int index) {
         switch (index) {
             case 0:
-                btnOptionLocal.setVisibility(View.GONE);
-                break;
-            case 1:
                 btnOptionPeer1.setVisibility(View.GONE);
                 break;
-            case 2:
+            case 1:
                 btnOptionPeer2.setVisibility(View.GONE);
                 break;
-            case 3:
+            case 2:
                 btnOptionPeer3.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    /**
+     * Show menu option button for peer in specific index
+     */
+    private void showPeerMenuOption(int index) {
+        switch (index) {
+            case 0:
+                btnOptionPeer1.setVisibility(VISIBLE);
+                break;
+            case 1:
+                btnOptionPeer2.setVisibility(VISIBLE);
+                break;
+            case 2:
+                btnOptionPeer3.setVisibility(VISIBLE);
                 break;
         }
     }

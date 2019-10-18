@@ -351,8 +351,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             AudioRouter.setPresenter(this);
             AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
 
-            // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
-            AudioRouter.changeAudioOutput(true);
+            // This demo will not apply the default setting for video speaker
+            // Turn off speaker by the default
+            AudioRouter.changeAudioOutput(false);
         }
     }
 
