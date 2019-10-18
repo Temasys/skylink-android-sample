@@ -357,4 +357,8 @@ public class SkylinkConnectionManager {
 
         return connectionString;
     }
+
+    public void setSkylinkConnection(SkylinkConnection skylinkConnection) {
+        this.skylinkConnection = skylinkConnection;
+    }
 }

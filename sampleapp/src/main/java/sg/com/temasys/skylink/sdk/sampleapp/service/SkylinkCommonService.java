@@ -1173,9 +1173,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * Note:
      * - Resolution may not always be available, e.g. if no video is captured.
      * - If resolution are available, they will be returned in the below callback as the process is asynchronous
-     * {@link SkylinkCallback.onObtainInputVideoResolution} for input video resolution
-     * {@link SkylinkCallback#onObtainSentVideoResolution} for sent video resolution
-     * {@link SkylinkCallback#onObtainReceivedVideoResolution} for received video resolution
+     * {@link SkylinkCallback.InputVideoResolution#onObtainInputVideoResolution(int, int, int, SkylinkCaptureFormat)} for input video resolution
+     * {@link SkylinkCallback.SentVideoResolution#onObtainSentVideoResolution(int, int, int)} for sent video resolution
+     * {@link SkylinkCallback.ReceivedVideoResolution#onObtainReceivedVideoResolution(int, int, int)} for received video resolution
      *
      * @param mediaType the type of the video (video or screen)
      * @param peerIndex index of the remote Peer from whom we want to get sent or received video resolution.
@@ -1465,5 +1465,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         localAudio = null;
         localVideo = null;
         localScreen = null;
+
+        skylinkConnectionManager.setSkylinkConnection(null);
+
     }
 }
