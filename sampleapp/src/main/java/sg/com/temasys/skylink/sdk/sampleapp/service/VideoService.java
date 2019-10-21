@@ -341,6 +341,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         // VideoCall config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         skylinkConfig.setP2PMessaging(true);
         skylinkConfig.setFileTransfer(true);
         skylinkConfig.setMirrorLocalFrontCameraView(true);
@@ -403,7 +404,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         }
 
         //Start audio.
-        if (skylinkConnection != null) {
+        if (skylinkConnection != null && localAudio == null) {
             final boolean[] success = {true};
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", new SkylinkCallback() {
                 @Override
@@ -426,7 +427,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         }
 
         //Start audio.
-        if (skylinkConnection != null) {
+        if (skylinkConnection != null && localVideo == null) {
 
             // Get default setting for videoDevice
             SkylinkConfig.VideoDevice videoDevice = Utils.getDefaultVideoDevice();
@@ -471,7 +472,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         }
 
         //Start audio.
-        if (skylinkConnection != null) {
+        if (skylinkConnection != null && localScreen == null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
             final boolean[] success = {true};
@@ -511,13 +512,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             }
 
         }
-    }
-
-    public String getLocalVideoId() {
-        if (localVideo == null)
-            return null;
-
-        return localVideo.getMediaId();
     }
 
     public SkylinkMedia getLocalAudio() {

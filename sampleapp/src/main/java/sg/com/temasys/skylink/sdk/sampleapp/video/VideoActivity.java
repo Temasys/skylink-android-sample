@@ -431,6 +431,11 @@ public class VideoActivity extends AppCompatActivity {
         onShowHideRemoteScreenViewFragment(false, false);
     }
 
+    public void resetSmallRemoteViews() {
+        onShowHideRemoteCameraViewFragment(false, false);
+        onShowHideRemoteScreenViewFragment(false, false);
+    }
+
     public void removeView(Constants.VIDEO_TYPE videoType) {
         switch (videoType) {
             case LOCAL_CAMERA:

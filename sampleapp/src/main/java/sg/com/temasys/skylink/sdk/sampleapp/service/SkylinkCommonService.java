@@ -79,6 +79,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         this.skylinkConnectionManager = new SkylinkConnectionManager(this, context);
     }
 
+    public static SkylinkConnection getSkylinkConnectionInstance() {
+        return skylinkConnection;
+    }
+
     protected void setSkylinkConnection(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
     }
@@ -163,8 +167,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         //update UI to disconnected state for all types call
         presenter.onServiceRequestDisconnect();
-
-        clearInstance();
     }
 
     /**
@@ -656,7 +658,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         int numRemotePeers = mPeersList.size() - 1;
         if (numRemotePeers >= 0) {
-            String log = "Your Peer " + getUserDataString(userInfo) + " ( " + remotePeerId + " ) left" +
+            String log = "Your Peer " + getUserDataString(userInfo) + " ( " + remotePeerId + " ) left. " +
                     Info.getInfoString(infoCode) + ". " + numRemotePeers + " remote Peer(s) left in the room.";
             toastLog(TAG, context, log);
         }
@@ -1467,6 +1469,5 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         localScreen = null;
 
         skylinkConnectionManager.setSkylinkConnection(null);
-
     }
 }

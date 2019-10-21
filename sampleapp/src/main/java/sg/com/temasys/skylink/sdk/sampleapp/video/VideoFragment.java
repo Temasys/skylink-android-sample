@@ -1142,56 +1142,30 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             return;
         }
 
-        // remove video views
-        View selfCamera = videoViewLayout.findViewWithTag(SELF_CAM_VIEW);
-        if (selfCamera != null) {
-            videoViewLayout.removeView(selfCamera);
-        }
+        View main = videoViewLayout.findViewWithTag(MAIN_VIEW);
+        if (currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_CAMERA || currentMainVideoType == Constants.VIDEO_TYPE.REMOTE_SCREEN) {
+            videoViewLayout.removeView(main);
 
-        View selfScreen = videoViewLayout.findViewWithTag(SELF_SCREEN_VIEW);
-        if (selfScreen != null) {
-            videoViewLayout.removeView(selfScreen);
+            if (localCameraView != null)
+                bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_CAMERA);
+            else if (localScreenView != null)
+                bringSmallViewToMainView(Constants.VIDEO_TYPE.LOCAL_SCREEN);
         }
 
         View peerCamera = videoViewLayout.findViewWithTag(REMOTE_CAM_VIEW);
+        View peerScreen = videoViewLayout.findViewWithTag(REMOTE_SCREEN_VIEW);
+
         if (peerCamera != null) {
             videoViewLayout.removeView(peerCamera);
         }
 
-        View peerScreen = videoViewLayout.findViewWithTag(REMOTE_SCREEN_VIEW);
         if (peerScreen != null) {
             videoViewLayout.removeView(peerScreen);
-        }
-
-        View main = videoViewLayout.findViewWithTag(MAIN_VIEW);
-        if (main != null) {
-            videoViewLayout.removeView(main);
-        }
-
-        if (isShowScreenSharing) {
-            showHideButton(stopScreenshareFloat, false);
         }
 
         // change the connect/disconnect button
         btnConnectDisconnect.setImageResource(R.drawable.ic_connect_white_25dp);
         btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_connect_to_room));
-
-        btnAudioSpeaker.setEnabled(false);
-        btnAudioMute.setEnabled(false);
-        btnAudioRemove.setEnabled(false);
-        btnAudioStart.setStart(true);
-        btnAudioStart.setEnabled(true);
-
-        btnVideoSwitchCamera.setEnabled(false);
-        btnVideoMute.setEnabled(false);
-        btnVideoRemove.setEnabled(false);
-        btnVideoStart.setStart(true);
-        btnVideoStart.setEnabled(true);
-
-        btnScreenMute.setEnabled(false);
-        btnScreenRemove.setEnabled(false);
-        btnScreenStart.setStart(true);
-        btnScreenStart.setEnabled(true);
 
         // reset the room id info and local peer button
         txtRoomId.setText(R.string.guide_room_id);
@@ -1206,7 +1180,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // reset the video resolution
         if (context != null && (context instanceof VideoActivity)) {
             ((VideoActivity) context).resetResolution();
-            ((VideoActivity) context).resetSmallViews();
+            ((VideoActivity) context).resetSmallRemoteViews();
         }
     }
 

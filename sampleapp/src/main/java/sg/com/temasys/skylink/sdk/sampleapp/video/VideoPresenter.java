@@ -94,6 +94,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         //get default audio output settings
         mainView.onPresenterRequestChangeSpeakerOutput(this.currentVideoSpeaker);
 
+        onViewRequestStartLocalMediaIfConfigAllow();
+
         //after connected to skylink SDK, UI will be updated latter on onServiceRequestConnect
     }
 
@@ -347,12 +349,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestDisconnect() {
         processDisconnectUIChange();
-
-        //stop audio routing
-        SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(context);
-        }
     }
 
     @Override
@@ -436,6 +432,14 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
         // change the UI
         mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+
+        // stop audio routing when local audio is removed
+        if (isLocal && !media.isVideo() && media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
+            SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
+            if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
+                AudioRouter.stopAudioRouting(context);
+            }
+        }
     }
 
     @Override

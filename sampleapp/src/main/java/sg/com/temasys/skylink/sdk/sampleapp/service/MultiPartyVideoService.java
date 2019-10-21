@@ -84,6 +84,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         // MultiPartyVideoCall config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         skylinkConfig.setP2PMessaging(true);
         skylinkConfig.setFileTransfer(true);
         skylinkConfig.setMirrorLocalFrontCameraView(true);
