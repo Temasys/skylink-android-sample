@@ -369,7 +369,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         }
 
         // set enable multitrack to false to interop with JS-SDK
-        // skylinkConfig.setEnableMultitrack(false);
+        // skylinkConfig.setMultitrackCreateEnable(false);
 
         return skylinkConfig;
     }

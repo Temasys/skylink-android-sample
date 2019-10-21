@@ -98,7 +98,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 
         // set enable multitrack to false to interop with JS-SDK
-        // skylinkConfig.setEnableMultitrack(false);
+        // skylinkConfig.setMultitrackCreateEnable(false);
 
         //Set default video resolution setting
         String videoResolution = Utils.getDefaultVideoResolution();
