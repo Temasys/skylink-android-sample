@@ -157,7 +157,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         //Defining a click event actions for the buttons
         switch (view.getId()) {
             case R.id.btnBack:
-                processBack();
+                processReturn();
                 break;
             case R.id.btnLocalPeer:
                 changeLocalPeerUI(true);
@@ -1421,5 +1421,13 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         } else {
             presenter.onViewRequestLockRoom();
         }
+    }
+
+    /**
+     * process exit the demo when people press on back button in the menu
+     */
+    private void processReturn() {
+        presenter.onViewRequestExit();
+        processBack();
     }
 }

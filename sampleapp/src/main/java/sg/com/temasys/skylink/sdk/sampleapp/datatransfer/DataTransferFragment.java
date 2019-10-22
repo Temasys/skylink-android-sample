@@ -114,7 +114,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
         //Defining a click event listener for the buttons in the action bar.
         switch (view.getId()) {
             case R.id.btnBack:
-                processBack();
+                processReturn();
                 break;
             case R.id.btnLocalPeer:
                 changeLocalPeerUI(true);
@@ -517,5 +517,13 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
         }
 
         dataPreviewContainer.setLayoutParams(params);
+    }
+
+    /**
+     * process exit the demo when people press on back button in the menu
+     */
+    private void processReturn() {
+        presenter.onViewRequestExit();
+        processBack();
     }
 }

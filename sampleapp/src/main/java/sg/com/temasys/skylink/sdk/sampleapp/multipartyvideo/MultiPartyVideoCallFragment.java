@@ -160,7 +160,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnBack:
-                processBack();
+                processReturn();
                 break;
             case R.id.btnLocalPeer:
                 changeLocalPeerUI(true);
@@ -881,5 +881,13 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         }
 
         isRemoteCameraDisplay[index] = !isRemoteCameraDisplay[index];
+    }
+
+    /**
+     * process exit the demo when people press on back button in the menu
+     */
+    private void processReturn() {
+        presenter.onViewRequestExit();
+        processBack();
     }
 }
