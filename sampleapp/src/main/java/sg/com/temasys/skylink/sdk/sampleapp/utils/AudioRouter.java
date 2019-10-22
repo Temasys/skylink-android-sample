@@ -44,8 +44,7 @@ public class AudioRouter {
                     int state = intent.getIntExtra("state", -1);
                     switch (state) {
                         case 0:
-                            // uncomment if you want to enable speaker on when disconnect from headset
-//                            processHeadsetPlug(false);
+                            processHeadsetPlug(false);
                             break;
                         case 1:
                             processHeadsetPlug(true);
@@ -84,11 +83,10 @@ public class AudioRouter {
 
                     int currentAudioState = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, -1);
 
-                    // uncomment if you want to enable speaker on when disconnect from bluetooth
                     if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTED) {
-//                        processHeadsetBluetooth(false);
+                        processHeadsetBluetooth(false);
                     } else if (currentAudioState == BluetoothHeadset.STATE_DISCONNECTING) {
-//                        processHeadsetBluetooth(false);
+                        processHeadsetBluetooth(false);
                     } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTED) {
                         processHeadsetBluetooth(true);
                     } else if (currentAudioState == BluetoothHeadset.STATE_CONNECTING) {
@@ -226,6 +224,18 @@ public class AudioRouter {
         instance = null;
         log = logTag + "Audio Router instance removed. Stop audio is complete.";
         Log.d(TAG, log);
+    }
+
+    public static void turnOnSpeaker() {
+        isSpeakerOn = true;
+
+        changeAudioOutput(true);
+    }
+
+    public static void turnOffSpeaker() {
+        isSpeakerOn = false;
+
+        changeAudioOutput(false);
     }
 
     /**

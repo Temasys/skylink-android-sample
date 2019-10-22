@@ -225,4 +225,7 @@ public abstract class BasePresenter {
 
     public void onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice cameraBack) {
     }
+
+    public void onServiceRequestChangeRoomLockStatus(boolean roomLockStatus) {
+    }
 }

@@ -57,5 +57,6 @@
     <dimen name="main_demo_button_margin">10dp</dimen>
     <dimen name="main_demo_button_width">150dp</dimen>
     <dimen name="main_demo_button_height">80dp</dimen>
+    <dimen name="dp_8dp">8dp</dimen>
 
 </resources>

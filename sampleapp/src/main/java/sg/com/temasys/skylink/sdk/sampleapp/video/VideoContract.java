@@ -91,6 +91,8 @@ public interface VideoContract {
         void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice);
 
         void onPresenterRequestShowHideSmallView(SkylinkMedia.MediaType mediaType, boolean isShow);
+
+        void onPresenterRequestChangeRoomLockStatus(boolean isRoomLocked);
     }
 
     interface Presenter {
@@ -173,6 +175,10 @@ public interface VideoContract {
         void onViewRequestRemoveVideo();
 
         void onViewRequestRemoveScreen();
+
+        void onViewRequestLockRoom();
+
+        void onViewRequestUnlockRoom();
     }
 
     interface Service extends BaseService<Presenter> {

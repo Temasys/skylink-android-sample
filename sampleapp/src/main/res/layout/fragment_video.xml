@@ -46,6 +46,28 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ll_lock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/ll_audio_call"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/dp_5dp"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_lock"
+                android:layout_width="@dimen/btn_video_tool_width"
+                android:layout_height="@dimen/btn_video_tool_height"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans"
+                android:src="@drawable/icon_lock_room"/>
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/ll_audio_call"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -246,5 +268,4 @@
         android:layout_alignParentLeft="true"
         android:layout_margin="@dimen/dp_5dp"
         android:background="@drawable/ic_full_screen"/>
-
 </RelativeLayout>

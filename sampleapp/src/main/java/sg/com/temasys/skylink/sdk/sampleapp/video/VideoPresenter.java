@@ -332,6 +332,16 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         }
     }
 
+    @Override
+    public void onViewRequestLockRoom() {
+        videoService.lockRoom();
+    }
+
+    @Override
+    public void onViewRequestUnlockRoom() {
+        videoService.unlockRoom();
+    }
+
     //----------------------------------------------------------------------------------------------
     // Override methods from BasePresenter for service to call
     // These methods are responsible for processing requests from service
@@ -483,6 +493,11 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
             String log = context.getString(R.string.enable_headset);
             toastLog(TAG, context, log);
         }
+    }
+
+    @Override
+    public void onServiceRequestChangeRoomLockStatus(boolean roomLockStatus) {
+        mainView.onPresenterRequestChangeRoomLockStatus(roomLockStatus);
     }
 
     //----------------------------------------------------------------------------------------------

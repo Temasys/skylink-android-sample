@@ -94,14 +94,14 @@ public class CustomImageButton extends AppCompatImageButton {
     public void setMuted(boolean muted) {
         if (muted) {
             if (this.isEnable && drawableMuted != null)
-                this.setImageDrawable(drawableMuted);
+                this.setImageDrawable(drawableActive);
             else if (!this.isEnable && drawableMutedDisable != null)
-                this.setImageDrawable(drawableMutedDisable);
+                this.setImageDrawable(drawableDisable);
         } else {
             if (this.isEnable)
-                this.setImageDrawable(drawableActive);
+                this.setImageDrawable(drawableMuted);
             else
-                this.setImageDrawable(drawableDisable);
+                this.setImageDrawable(drawableMutedDisable);
         }
     }
 

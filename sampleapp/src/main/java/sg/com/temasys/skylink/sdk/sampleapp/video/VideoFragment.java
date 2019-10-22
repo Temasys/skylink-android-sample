@@ -65,6 +65,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private CustomImageButton btnAudioSpeaker, btnAudioMute, btnAudioRemove, btnAudioStart,
             btnVideoSwitchCamera, btnVideoMute, btnVideoRemove, btnVideoStart,
             btnScreenMute, btnScreenRemove, btnScreenStart;
+    private ImageButton btnLockRoom;
     private Button stopScreenshareFloat, btnFullScreen;
 
     private WindowManager.LayoutParams stopScreenshareLayoutParams;
@@ -76,6 +77,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private boolean isShowScreenSharing = false;
     private boolean isFullScreen = false;
     private boolean isShowVideoRes = false;
+    private boolean isLockRoom = false;
 
     private SurfaceViewRenderer localCameraView, localScreenView, remoteCameraView, remoteScreenView;
 
@@ -227,6 +229,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             case R.id.btn_screen_mute:
                 presenter.onViewRequestChangeScreenState();
                 break;
+            case R.id.btn_lock:
+                processLockUnlockRoom();
+                break;
         }
     }
 
@@ -274,6 +279,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // Change the connect button UI to disconnect button
         btnConnectDisconnect.setImageResource(R.drawable.ic_disconnect_white_25dp);
         btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_call_end));
+
+        btnLockRoom.setEnabled(true);
 
         // change variable toConnectToRoom
         toConnectToRoom = false;
@@ -610,6 +617,17 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
     }
 
+    @Override
+    public void onPresenterRequestChangeRoomLockStatus(boolean isRoomLocked) {
+        this.isLockRoom = isRoomLocked;
+
+        if (isRoomLocked) {
+            btnLockRoom.setImageDrawable(context.getResources().getDrawable(R.drawable.icon_unlock_room));
+        } else {
+            btnLockRoom.setImageDrawable(context.getResources().getDrawable(R.drawable.icon_lock_room));
+        }
+    }
+
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
@@ -637,6 +655,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnScreenRemove = rootView.findViewById(R.id.btn_screen_remove);
         btnScreenStart = rootView.findViewById(R.id.btn_screen_start);
         btnScreen = rootView.findViewById(R.id.btn_screen);
+        btnLockRoom = rootView.findViewById(R.id.btn_lock);
     }
 
     /**
@@ -726,6 +745,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnScreenRemove.setOnClickListener(this);
         btnScreenStart.setOnClickListener(this);
         btnScreen.setOnClickListener(this);
+        btnLockRoom.setOnClickListener(this);
 
         // init setting value for room name and room id in action bar
         // Update the UI when connecting to room: change the room_id
@@ -746,6 +766,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnVideoRemove.setEnabled(false);
         btnScreenMute.setEnabled(false);
         btnScreenRemove.setEnabled(false);
+        btnLockRoom.setEnabled(false);
 
         // Add an system overlay button for stop screen share
         stopScreenshareFloat = new Button(getActivity());
@@ -1167,6 +1188,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnConnectDisconnect.setImageResource(R.drawable.ic_connect_white_25dp);
         btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_connect_to_room));
 
+        btnLockRoom.setEnabled(false);
+
         // reset the room id info and local peer button
         txtRoomId.setText(R.string.guide_room_id);
         btnLocalPeer.setVisibility(GONE);
@@ -1389,6 +1412,14 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             ((VideoActivity) context).attachSmallView(smallVideoFragment);
         } else {
             ((VideoActivity) context).detachSmallView(smallVideoFragment);
+        }
+    }
+
+    private void processLockUnlockRoom() {
+        if (isLockRoom) {
+            presenter.onViewRequestUnlockRoom();
+        } else {
+            presenter.onViewRequestLockRoom();
         }
     }
 }

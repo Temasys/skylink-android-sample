@@ -178,6 +178,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         log += "[SA] Peer " + remotePeerId + " changed Room locked status to "
                 + roomLockStatus + ".";
         toastLog(TAG, context, log);
+
+        presenter.onServiceRequestChangeRoomLockStatus(roomLockStatus);
     }
 
     /**
@@ -1366,6 +1368,46 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                     " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
             Log.d(TAG, log);
             toastLogLong(TAG, context, log);
+        }
+    }
+
+    public void lockRoom() {
+        final boolean[] result = {true};
+        if (skylinkConnection != null) {
+            skylinkConnection.lockRoom(new SkylinkCallback() {
+                @Override
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    Log.e("SkylinkCallback", contextDescription);
+                    toastLog(TAG, context, "Lock room failed");
+                    result[0] = false;
+                }
+            });
+        }
+
+        if (result[0]) {
+            toastLog(TAG, context, "Lock room successfully");
+            presenter.onServiceRequestChangeRoomLockStatus(true);
+        }
+    }
+
+    public void unlockRoom() {
+        final boolean[] result = {true};
+        if (skylinkConnection != null) {
+            skylinkConnection.unlockRoom(new SkylinkCallback() {
+                @Override
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    Log.e("SkylinkCallback", contextDescription);
+                    toastLog(TAG, context, "Unlock room failed");
+                    result[0] = false;
+                }
+            });
+        }
+
+        if (result[0]) {
+            toastLog(TAG, context, "Unlock room successfully");
+            presenter.onServiceRequestChangeRoomLockStatus(false);
         }
     }
 

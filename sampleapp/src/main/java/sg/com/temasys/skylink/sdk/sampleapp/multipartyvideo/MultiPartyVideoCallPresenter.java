@@ -351,9 +351,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
             AudioRouter.setPresenter(this);
             AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
 
-            // This demo will not apply the default setting for video speaker
-            // Turn off speaker by the default
-            AudioRouter.changeAudioOutput(false);
+            // Turn on speaker by the default
+            AudioRouter.turnOnSpeaker();
         }
     }
 
