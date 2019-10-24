@@ -127,4 +127,8 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
     }
+
+    public void disposeLocalMedia() {
+        clearInstance();
+    }
 }

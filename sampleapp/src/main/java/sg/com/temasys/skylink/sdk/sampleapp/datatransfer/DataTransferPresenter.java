@@ -169,6 +169,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     public void onViewRequestExit() {
         //process disconnect from room
         dataTransferService.disconnectFromRoom();
+        dataTransferService.disposeLocalMedia();
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 

@@ -62,8 +62,8 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        skylinkConfig.setP2PMessaging(true);
-        skylinkConfig.setFileTransfer(true);
+        skylinkConfig.setP2PMessaging(false);
+        skylinkConfig.setFileTransfer(false);
 
         // Allow only 1 remote Peer to join.
         skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY); // Default is 4 remote Peers.
@@ -100,5 +100,9 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
                 Utils.toastLog("AudioService", context, error);
             }
         }
+    }
+
+    public void disposeLocalMedia() {
+        clearInstance();
     }
 }

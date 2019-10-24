@@ -671,10 +671,10 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
      * Init value for view components
      */
     private void initComponents() {
-        btnAudioSpeaker.setDrawableActive(getResources().getDrawable(R.drawable.ic_speaker_white_20dp));
-        btnAudioSpeaker.setDrawableDisable(getResources().getDrawable(R.drawable.ic_speaker_disable_20dp));
-        btnAudioSpeaker.setDrawableMuted(getResources().getDrawable(R.drawable.ic_headset_white_20dp));
-        btnAudioSpeaker.setDrawableMutedDisable(getResources().getDrawable(R.drawable.ic_headset_disable_20dp));
+        btnAudioSpeaker.setDrawableActive(getResources().getDrawable(R.drawable.ic_headset_white_20dp));
+        btnAudioSpeaker.setDrawableDisable(getResources().getDrawable(R.drawable.ic_headset_disable_20dp));
+        btnAudioSpeaker.setDrawableMuted(getResources().getDrawable(R.drawable.ic_speaker_white_20dp));
+        btnAudioSpeaker.setDrawableMutedDisable(getResources().getDrawable(R.drawable.ic_speaker_disable_20dp));
 
         btnAudioMute.setDrawableActive(getResources().getDrawable(R.drawable.ic_audio_mute_white_20dp));
         btnAudioMute.setDrawableDisable(getResources().getDrawable(R.drawable.ic_mic_off_disable_20dp));

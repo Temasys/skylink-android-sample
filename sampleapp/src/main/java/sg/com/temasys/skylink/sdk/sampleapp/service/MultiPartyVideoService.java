@@ -85,8 +85,8 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        skylinkConfig.setP2PMessaging(true);
-        skylinkConfig.setFileTransfer(true);
+        skylinkConfig.setP2PMessaging(false);
+        skylinkConfig.setFileTransfer(false);
         skylinkConfig.setMirrorLocalFrontCameraView(true);
 
         // Allow only 3 remote Peers to join, due to current UI design.
@@ -747,5 +747,9 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
+    }
+
+    public void disposeLocalMedia() {
+        clearInstance();
     }
 }

@@ -119,6 +119,8 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onViewRequestExit() {
         //process disconnect from room
         audioCallService.disconnectFromRoom();
+        audioCallService.disposeLocalMedia();
+
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 

@@ -131,4 +131,8 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
     }
+
+    public void disposeLocalMedia() {
+        clearInstance();
+    }
 }

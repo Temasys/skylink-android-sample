@@ -128,6 +128,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onViewRequestExit() {
         //process disconnect from room
         multiVideoCallService.disconnectFromRoom();
+        multiVideoCallService.disposeLocalMedia();
+
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
     }
 

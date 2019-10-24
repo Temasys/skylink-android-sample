@@ -105,4 +105,8 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
     public SkylinkPeer getPeerByIndex(int index) {
         return mPeersList.get(index);
     }
+
+    public void disposeLocalMedia() {
+        clearInstance();
+    }
 }
