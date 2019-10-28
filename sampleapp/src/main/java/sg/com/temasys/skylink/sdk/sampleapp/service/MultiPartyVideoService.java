@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -119,11 +120,11 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
     /**
      * Call this method to switch between available camera.
-     * Outcome of operation delivered via callback at
-     * {@link SkylinkCommonService#onReceiveInfo(int, String)}
-     * with 2 possible Info:
-     * -- Info.CAM_SWITCH_FRONT (successfully switched to the front camera)
-     * -- Info.CAM_SWITCH_NON_FRONT (successfully switched to a back camera)
+     * On successful operation, camera switched to will be delivered via callback at
+     * {@link LifeCycleListener#onReceiveInfo(sg.com.temasys.skylink.sdk.rtc.SkylinkInfo, String)}
+     * with possible {@link sg.com.temasys.skylink.sdk.rtc.SkylinkInfo}:
+     * -- {@link sg.com.temasys.skylink.sdk.rtc.SkylinkInfo#CAM_OPEN_FRONT}.
+     * -- {@link sg.com.temasys.skylink.sdk.rtc.SkylinkInfo#CAM_OPEN_NON_FRONT}.
      */
     public void switchCamera() {
         if (skylinkConnection != null) {

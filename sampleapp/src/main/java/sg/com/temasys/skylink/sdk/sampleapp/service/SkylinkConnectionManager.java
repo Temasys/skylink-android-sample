@@ -12,6 +12,7 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 
+import sg.com.temasys.skylink.sdk.listener.LifeCycleListener;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
@@ -239,7 +240,7 @@ public class SkylinkConnectionManager {
 
     /**
      * Disconnects from the room we are currently in.
-     * Once disconnect is complete, {@link SkylinkCommonService#onDisconnectFromRoom(int, String)}}
+     * Once disconnect is complete, {@link LifeCycleListener#onDisconnectFromRoom(SkylinkEvent, String)}}
      * will be called.
      */
     public boolean disconnectFromRoom() {

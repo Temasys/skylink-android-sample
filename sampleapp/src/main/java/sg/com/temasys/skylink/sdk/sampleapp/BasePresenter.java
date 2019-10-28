@@ -9,6 +9,7 @@ import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -68,15 +69,15 @@ public abstract class BasePresenter {
     // Methods which are from OsListener need to be implemented for audio, video, fileTransfer, multiVideo functions
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestIntentRequired(Intent intent, int requestCode, int infoCode) {
+    public void onServiceRequestIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
     }
 
-    public void onServiceRequestPermissionGranted(Intent intent, int requestCode, int infoCode) {
-        PermissionUtils.onPermissionGrantedHandler(requestCode, infoCode, true);
+    public void onServiceRequestPermissionGranted(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+        PermissionUtils.onPermissionGrantedHandler(requestCode, skylinkInfo, true);
     }
 
-    public void onServiceRequestPermissionDenied(Intent intent, int requestCode, int infoCode) {
-        PermissionUtils.onPermissionGrantedHandler(requestCode, infoCode, false);
+    public void onServiceRequestPermissionDenied(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+        PermissionUtils.onPermissionGrantedHandler(requestCode, skylinkInfo, false);
     }
 
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {

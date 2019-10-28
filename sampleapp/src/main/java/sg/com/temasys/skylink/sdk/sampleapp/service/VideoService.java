@@ -534,7 +534,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * Remove local audio object
      * Result will be informed in {@link MediaListener#onChangeLocalMedia(SkylinkMedia)}
      * with {@link SkylinkMedia.MediaState} is {@link SkylinkMedia.MediaState#UNAVAILABLE} if local audio
-     * is removed successful OR {@link LifeCycleListener#onReceiveWarning(int, String)} if local audio
+     * is removed successful OR {@link LifeCycleListener#onReceiveWarning(SkylinkError, String)} if local audio
      * can not be removed or any error occurs
      */
     public void destroyLocalAudio() {
@@ -559,7 +559,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * Remove local video camera object
      * Result will be informed in {@link MediaListener#onChangeLocalMedia(SkylinkMedia)}
      * with {@link SkylinkMedia.MediaState} is {@link SkylinkMedia.MediaState#UNAVAILABLE} if local video camera
-     * is removed successful OR {@link LifeCycleListener#onReceiveWarning(int, String)}  if local video camera
+     * is removed successful OR {@link LifeCycleListener#onReceiveWarning(SkylinkError, String)}  if local video camera
      * can not be removed or any error occurs
      */
     public void destroyLocalVideo() {
@@ -584,7 +584,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * Remove local screen object
      * Result will be informed in {@link MediaListener#onChangeLocalMedia(SkylinkMedia)}
      * with {@link SkylinkMedia.MediaState} is {@link SkylinkMedia.MediaState#UNAVAILABLE} if local screen
-     * is removed successful OR {@link LifeCycleListener#onReceiveWarning(int, String)} if local screen
+     * is removed successful OR {@link LifeCycleListener#onReceiveWarning(SkylinkError, String)} if local screen
      * can not be removed or any error occurs
      */
     public void destroyLocalScreen() {

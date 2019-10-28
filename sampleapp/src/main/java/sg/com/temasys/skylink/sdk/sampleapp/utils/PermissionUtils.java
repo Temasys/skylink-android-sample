@@ -19,16 +19,10 @@ import android.widget.TextView;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import sg.com.temasys.skylink.sdk.rtc.Info;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.PermissionService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
-
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_AUDIO_MIC;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_READ;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_STORAGE_WRITE;
-import static sg.com.temasys.skylink.sdk.rtc.Info.PERM_VIDEO_CAM;
-import static sg.com.temasys.skylink.sdk.rtc.Info.getInfoString;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -169,17 +163,15 @@ public class PermissionUtils {
      * Once the corresponding {@link android.app.Activity#onActivityResult(int, int, Intent)}
      * is received, pass the parameters (requestCode, resultCode, Intent) to the SDK's
      * {@link SkylinkConnection#processActivityResult(int, int, Intent)}.
-     *
-     * @param intent          As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
+     *  @param intent          As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
      * @param requestCode     As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
-     * @param infoCode        As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
+     * @param skylinkInfo     As that in {@link sg.com.temasys.skylink.sdk.listener.OsListener#onIntentRequired}.
      * @param currentActivity The current {@link Activity}.
      */
-    public void onIntentRequiredHandler(Intent intent, int requestCode, int infoCode, Activity currentActivity) {
+    public void onIntentRequiredHandler(Intent intent, int requestCode, SkylinkInfo skylinkInfo, Activity currentActivity) {
         String logTag = "[SPmS][getScreenCaptureIntent] ";
         currentActivity.startActivityForResult(intent, requestCode);
-        String log = logTag + "Started Activity for result, infoCode:" + infoCode
-                + " (" + Info.getInfoString(infoCode) + ").";
+        String log = logTag + "Started Activity for result, " + skylinkInfo;
         Log.d("PermissionUtils", log);
     }
 
@@ -211,18 +203,17 @@ public class PermissionUtils {
     /**
      * Handles Skylink SDK OsListener callback onPermissionGranted.
      * Log the permission that had been granted.
-     *
      * @param requestCode
-     * @param infoCode
+     * @param skylinkInfo
      * @param granted
      */
-    public static void onPermissionGrantedHandler(int requestCode, int infoCode, boolean granted) {
+    public static void onPermissionGrantedHandler(int requestCode, SkylinkInfo skylinkInfo, boolean granted) {
         String outcome = "GRANTED";
         if (!granted) {
             outcome = "DENIED";
         }
         String log = "[SA][onPermGrant] Permission has been " + outcome + " for requestCode " +
-                requestCode + ", infoCode:" + infoCode + " (" + getInfoString(infoCode) + ").";
+                requestCode + ", " + skylinkInfo;
         Log.d("PermissionUtils", log);
     }
 
@@ -233,8 +224,8 @@ public class PermissionUtils {
      * @param info As given in OsListener method.
      */
     public static void onPermissionGrantedHandler(PermRequesterInfo info) {
-        String log = "[SA][onPermGrant] Permission has been GRANTED for " + info.getPermissions()[0] +
-                ", infoCode:" + info.getInfoCode() + " (" + getInfoString(info.getInfoCode()) + ").";
+        String log = "[SA][onPermGrant] Permission has been GRANTED for " + info.getPermissions()[0]
+                + ", " + info.getSkylinkInfo();
         Log.d("PermissionUtils", log);
     }
 
@@ -248,7 +239,7 @@ public class PermissionUtils {
         // Check if should explain reason for requesting permission, which happens if the user
         // has denied this Permission before, but did not indicate to never ask again.
         String alertText = "";
-        switch (info.getInfoCode()) {
+        switch (info.getSkylinkInfo()) {
             case PERM_AUDIO_MIC:
                 alertText += "Android permission to use the Microphone was denied. " +
                         "We are now NOT able to send our audio to a remote Peer!";
@@ -478,7 +469,7 @@ public class PermissionUtils {
         void processOnPermReq(final PermRequesterInfo requester, final String tag,
                               final Context context, final Fragment fragment) {
             int requestCode = requester.getRequestCode();
-            int infoCode = requester.getInfoCode();
+            SkylinkInfo skylinkInfo = requester.getSkylinkInfo();
             String[] permissions = requester.getPermissions();
             String permission = permissions[0];
             String log = "[SA][PR][procPermReq] SDK requesting permission for " + permission +
@@ -488,9 +479,7 @@ public class PermissionUtils {
             // call Skylink SDK processPermissionsResult with PERMISSION_GRANTED as the result.
             int permissionState = ContextCompat.checkSelfPermission(context, permission);
             if (permissionState == PackageManager.PERMISSION_GRANTED) {
-                log += "has already been granted, no need to request again. " +
-                        "infoCode:" + infoCode +
-                        " (" + getInfoString(infoCode) + ")";
+                log += "has already been granted, no need to request again. " + skylinkInfo;
 
                 int[] grantResults = new int[]{PackageManager.PERMISSION_GRANTED};
                 if (!PermissionService.processPermissionsResult(
@@ -513,7 +502,7 @@ public class PermissionUtils {
 
             // Create explanation based on permission required.
             String alertText = "";
-            switch (infoCode) {
+            switch (skylinkInfo) {
                 case PERM_AUDIO_MIC:
                     alertText += "Android permission to use the Microphone must be given " +
                             "in order to send our audio to a remote Peer!";
@@ -531,7 +520,7 @@ public class PermissionUtils {
                             "in order to receive file from a remote Peer!";
                     break;
             }
-            log += alertText + "\r\ninfoCode:" + infoCode + " (" + getInfoString(infoCode) + ")";
+            log += alertText + "\r\n" + skylinkInfo;
 
             // Explain rationale for permission request if the user
             // has denied this Permission before, but did not indicate to never ask again.

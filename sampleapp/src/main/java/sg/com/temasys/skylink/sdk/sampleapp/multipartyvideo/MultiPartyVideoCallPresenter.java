@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
@@ -316,9 +317,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestIntentRequired(Intent intent, int requestCode, int infoCode) {
+    public void onServiceRequestIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         // delegate to PermissionUtils to process the permissions
-        permissionUtils.onIntentRequiredHandler(intent, requestCode, infoCode, (Activity) context);
+        permissionUtils.onIntentRequiredHandler(intent, requestCode, skylinkInfo, (Activity) context);
     }
 
 

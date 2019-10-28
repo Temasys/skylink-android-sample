@@ -51,17 +51,16 @@ import java.util.TimeZone;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import sg.com.temasys.skylink.sdk.rtc.Errors;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_FRONT;
-import static sg.com.temasys.skylink.sdk.rtc.Info.CAM_SWITCH_NON_FRONT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
@@ -309,17 +308,17 @@ public class Utils {
     /**
      * Log and Toast some info provided by SkylinkConnection.
      *
-     * @param infoCode
+     * @param skylinkInfo
      * @param message
      * @param context
      * @param tag
      */
-    public static void handleSkylinkReceiveInfo(int infoCode, String message,
+    public static void handleSkylinkReceiveInfo(SkylinkInfo skylinkInfo, String message,
                                                 Context context, String tag) {
-        String log = "[SA][SkylinkLog] " + message;
-        switch (infoCode) {
-            case CAM_SWITCH_FRONT:
-            case CAM_SWITCH_NON_FRONT:
+        String log = tag + message;
+        switch (skylinkInfo) {
+            case CAM_OPEN_FRONT:
+            case CAM_OPEN_NON_FRONT:
                 toastLog(TAG, context, log);
                 break;
             default:
@@ -330,15 +329,14 @@ public class Utils {
     /**
      * Log and Toast warning provided by SkylinkConnection.
      *
-     * @param errorCode
+     * @param skylinkError
      * @param message
      * @param context
      * @param tag
      */
-    public static void handleSkylinkWarningErrorMsg(int errorCode, String message, Context context,
-                                                    String tag) {
-        String log = "[SA][SkylinkWarn] Error:" + errorCode + " (" +
-                Errors.getErrorString(errorCode) + ")\r\n" + message;
+    public static void handleSkylinkWarningErrorMsg(SkylinkError skylinkError, String message,
+                                                    Context context, String tag) {
+        String log = tag + skylinkError + "\r\n" + message;
         toastLog(tag, context, log);
         Log.w(tag, log);
     }

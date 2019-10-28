@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
+
 /**
  * Created by muoi.pham on 20/07/18.
  */
@@ -7,15 +9,16 @@ package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 public class PermRequesterInfo {
     private String[] permissions;
     private int requestCode;
-    private int infoCode;
+
+    private SkylinkInfo skylinkInfo;
 
     public PermRequesterInfo() {
     }
 
-    public PermRequesterInfo(String[] permissions, int requestCode, int infoCode) {
+    public PermRequesterInfo(String[] permissions, int requestCode, SkylinkInfo skylinkInfo) {
         this.permissions = permissions;
         this.requestCode = requestCode;
-        this.infoCode = infoCode;
+        this.skylinkInfo = skylinkInfo;
     }
 
     public String[] getPermissions() {
@@ -34,11 +37,12 @@ public class PermRequesterInfo {
         this.requestCode = requestCode;
     }
 
-    public int getInfoCode() {
-        return infoCode;
+    public SkylinkInfo getSkylinkInfo() {
+        return skylinkInfo;
     }
 
-    public void setInfoCode(int infoCode) {
-        this.infoCode = infoCode;
+    public void setSkylinkInfo(SkylinkInfo skylinkInfo) {
+        this.skylinkInfo = skylinkInfo;
     }
+
 }
