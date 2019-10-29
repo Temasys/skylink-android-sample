@@ -15,6 +15,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+
 /**
  * Created by muoi.pham on 20/07/18.
  * This class is responsible for communicating with SkylinkSDK
@@ -42,20 +44,14 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      */
     public void sendServerMessage(String remotePeerId, String message) {
         if (skylinkConnection != null) {
-            final boolean[] success = {true};
             skylinkConnection.sendServerMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to sendServerMessage as " + contextDescription);
                 }
             });
-
-            if (!success[0]) {
-                String error = "Unable to sendServerMessage!";
-                Utils.toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -70,20 +66,14 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      */
     public void sendP2PMessage(String remotePeerId, String message) {
         if (skylinkConnection != null) {
-            final boolean[] success = {true};
             skylinkConnection.sendP2PMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to sendP2PMessage as " + contextDescription);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to sendP2PMessage!";
-                Utils.toastLog(TAG, context, error);
-            }
-
         }
     }
 

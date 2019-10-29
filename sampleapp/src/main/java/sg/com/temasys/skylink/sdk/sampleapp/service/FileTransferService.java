@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -52,7 +54,9 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
                 new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
-
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                        Log.e("SkylinkCallback", contextDescription);
+                        toastLog(TAG, context, "\"Unable to sendFileTransfer as " + contextDescription);
                     }
                 });
 
@@ -81,7 +85,9 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
             skylinkConnection.acceptFileTransfer(downloadedFilePath, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
-
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    Log.e("SkylinkCallback", contextDescription);
+                    toastLog(TAG, context, "\"Unable to acceptFileTransfer as " + contextDescription);
                 }
             });
         } else {

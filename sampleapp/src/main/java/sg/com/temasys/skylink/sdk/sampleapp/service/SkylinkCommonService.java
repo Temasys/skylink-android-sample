@@ -195,9 +195,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onReceiveInfo(SkylinkInfo skylinkInfo, String contextDescription) {
+        Log.d(TAG, "onReceiveInfo(skylinkInfo: " + skylinkInfo.getDescription() + ", contextDescription: " + contextDescription);
+
         String tag = "[SA][onReceiveInfo] ";
         String log = tag + skylinkInfo + "/r/nDescription: " + contextDescription;
-        Log.d(TAG, log);
+//        Log.d(TAG, log);
         Utils.handleSkylinkReceiveInfo(skylinkInfo, contextDescription, context, tag);
     }
 
@@ -206,9 +208,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onReceiveWarning(SkylinkError skylinkError, String contextDescription) {
+        Log.d(TAG, "onReceiveWarning(skylinkError: " + skylinkError.toString() + ", contextDescription: " + contextDescription);
+
         String tag = "[SA][onReceiveWarning] ";
         String log = tag + skylinkError + "/r/nDescription: " + contextDescription;
-        Log.d(TAG, log);
+//        Log.d(TAG, log);
         Utils.handleSkylinkWarningErrorMsg(skylinkError, contextDescription, context, tag);
     }
 
@@ -218,9 +222,11 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onReceiveError(SkylinkError skylinkError, HashMap<String, Object> details) {
         String contextDescriptionString = (String) details.get(CONTEXT_DESCRIPTION);
+        Log.d(TAG, "onReceiveError(skylinkError: " + skylinkError.toString() + ", details: " + contextDescriptionString);
+
         String tag = "[SA][onReceiveError] ";
         String log = tag + skylinkError + "/r/nDescription: " + contextDescriptionString;
-        Log.d(TAG, log);
+//        Log.d(TAG, log);
         Utils.handleSkylinkWarningErrorMsg(skylinkError, contextDescriptionString, context, tag);
     }
 
@@ -439,7 +445,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param skylinkInfo
      */
     public void onRequirePermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
-        Log.d(TAG, "onRequirePermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getCode());
+        Log.d(TAG, "onRequirePermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         presenter.onServiceRequestIntentRequired(intent, requestCode, skylinkInfo);
     }
 
@@ -452,7 +458,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param skylinkInfo
      */
     public void onGrantPermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
-        Log.d(TAG, "onGrantPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getCode());
+        Log.d(TAG, "onGrantPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         presenter.onServiceRequestPermissionGranted(intent, requestCode, skylinkInfo);
     }
 
@@ -465,7 +471,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param skylinkInfo
      */
     public void onDenyPermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
-        Log.d(TAG, "onDenyPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getCode());
+        Log.d(TAG, "onDenyPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         presenter.onServiceRequestPermissionDenied(intent, requestCode, skylinkInfo);
     }
 
@@ -485,7 +491,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onRequirePermission(String[] permissions, int requestCode, SkylinkInfo
             skylinkInfo) {
-        Log.d(TAG, "onRequirePermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getCode());
+        Log.d(TAG, "onRequirePermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, skylinkInfo);
 
         presenter.onServiceRequestPermissionRequired(info);
@@ -505,7 +511,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onGrantPermission(String[] permissions, int requestCode, SkylinkInfo
             skylinkInfo) {
-        Log.d(TAG, "onGrantPermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getCode());
+        Log.d(TAG, "onGrantPermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, skylinkInfo);
 
         presenter.onServiceRequestPermissionGranted(info);
@@ -525,7 +531,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onDenyPermission(String[] permissions,
                                  int requestCode, SkylinkInfo skylinkInfo) {
-        Log.d(TAG, "onDenyPermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getCode());
+        Log.d(TAG, "onDenyPermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, skylinkInfo);
 
         presenter.onServiceRequestPermissionDenied(context, info);
@@ -684,7 +690,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onReceiveRemotePeerLeaveRoom(String remotePeerId, SkylinkInfo skylinkInfo, UserInfo userInfo) {
-        Log.d(TAG, "onReceiveRemotePeerLeaveRoom(remotePeerId: " + remotePeerId + ", SkylinkInfo: " + skylinkInfo.getCode() + ", userInfo: " + userInfo.getUserData());
+        Log.d(TAG, "onReceiveRemotePeerLeaveRoom(remotePeerId: " + remotePeerId + ", SkylinkInfo: " + skylinkInfo.getDescription() + ", userInfo: " + userInfo.getUserData());
 
         //remove remote peer and keep the index of remote peer for multi party video call function
         int removeIndex = -1;
@@ -706,7 +712,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         int numRemotePeers = mPeersList.size() - 1;
         if (numRemotePeers >= 0) {
             String log = "Your Peer " + getUserDataString(userInfo) + " (" + remotePeerId + ") left."
-                    + skylinkInfo + " " + numRemotePeers + " remote Peer(s) left in the room.";
+                    + skylinkInfo.getDescription() + " " + numRemotePeers + " remote Peer(s) left in the room.";
             toastLog(TAG, context, log);
         }
     }
@@ -972,8 +978,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
 
-    public boolean disconnectFromRoom() {
-        return skylinkConnectionManager.disconnectFromRoom();
+    public void disconnectFromRoom() {
+        skylinkConnectionManager.disconnectFromRoom();
     }
 
     //static method for the other to access current instance of SkylinkConnection
@@ -1146,8 +1152,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         skylinkConnection.setInputVideoResolution(videoId, width, height, fps, new SkylinkCallback.InputVideoResolution() {
             @Override
             public void onError(SkylinkError error, HashMap<String, Object> details) {
-                String contextDescription = (String) details.get(CONTEXT_DESCRIPTION);
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
+                toastLog(TAG, context, "\"Unable to setInputVideoResolution as " + contextDescription);
             }
 
             @Override
@@ -1258,8 +1265,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         skylinkConnection.getInputVideoResolution(videoId, new SkylinkCallback.InputVideoResolution() {
             @Override
             public void onError(SkylinkError error, HashMap<String, Object> details) {
-                String contextDescription = (String) details.get(CONTEXT_DESCRIPTION);
+                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
+                toastLog(TAG, context, "\"Unable to getInputVideoResolution as " + contextDescription);
             }
 
             @Override
@@ -1276,8 +1284,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                 skylinkConnection.getSentVideoResolution(remotePeerId, videoId, new SkylinkCallback.SentVideoResolution() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
-                        String contextDescription = (String) details.get(CONTEXT_DESCRIPTION);
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
+                        toastLog(TAG, context, "\"Unable to getSentVideoResolution as " + contextDescription);
                     }
 
                     @Override
@@ -1301,8 +1310,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                     skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                         @Override
                         public void onError(SkylinkError error, HashMap<String, Object> details) {
-                            String contextDescription = (String) details.get(CONTEXT_DESCRIPTION);
+                            String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
+                            toastLog(TAG, context, "\"Unable to getReceivedVideoResolution as " + contextDescription);
                         }
 
                         @Override
@@ -1436,42 +1446,28 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     public void lockRoom() {
-        final boolean[] result = {true};
         if (skylinkConnection != null) {
             skylinkConnection.lockRoom(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
-                    String contextDescription = (String) details.get(CONTEXT_DESCRIPTION);
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    toastLog(TAG, context, "Lock room failed");
-                    result[0] = false;
+                    toastLog(TAG, context, "\"Unable to lockRoom as " + contextDescription);
                 }
             });
-        }
-
-        if (result[0]) {
-            toastLog(TAG, context, "Lock room successfully");
-            presenter.onServiceRequestChangeRoomLockStatus(true);
         }
     }
 
     public void unlockRoom() {
-        final boolean[] result = {true};
         if (skylinkConnection != null) {
             skylinkConnection.unlockRoom(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
-                    String contextDescription = (String) details.get(CONTEXT_DESCRIPTION);
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    toastLog(TAG, context, "Unlock room failed");
-                    result[0] = false;
+                    toastLog(TAG, context, "\"Unable to unlockRoom as " + contextDescription);
                 }
             });
-        }
-
-        if (result[0]) {
-            toastLog(TAG, context, "Unlock room successfully");
-            presenter.onServiceRequestChangeRoomLockStatus(false);
         }
     }
 

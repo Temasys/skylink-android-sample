@@ -95,12 +95,12 @@ public interface MultiPartyVideoCallContract {
         /**
          * process starting recording function
          */
-        boolean onViewRequestStartRecording();
+        void onViewRequestStartRecording();
 
         /**
          * process stopping recording function
          */
-        boolean onViewRequestStopRecording();
+        void onViewRequestStopRecording();
 
         /**
          * process get info about roomId and nickName of peer from SDK

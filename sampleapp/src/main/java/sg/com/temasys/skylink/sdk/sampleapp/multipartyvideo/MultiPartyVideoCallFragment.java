@@ -247,9 +247,9 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
                 presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, false);
                 break;
             case R.id.recordingStart:
-                return presenter.onViewRequestStartRecording();
+                presenter.onViewRequestStartRecording();
             case R.id.recordingStop:
-                return presenter.onViewRequestStopRecording();
+                presenter.onViewRequestStopRecording();
             case R.id.restart:
                 refreshConnection(currentSelectIndex, false);
                 break;
@@ -652,7 +652,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
             FrameLayout peerFrameLayout = remoteViewLayouts[i + 1];
 
-            hidePeerMenuOption(i+1);
+            hidePeerMenuOption(i + 1);
 
             SurfaceViewRenderer view = (SurfaceViewRenderer) peerFrameLayout.getChildAt(0);
 

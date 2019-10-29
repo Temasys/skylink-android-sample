@@ -49,20 +49,14 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
         if (skylinkConnection == null)
             return;
 
-        final boolean[] success = {true};
         skylinkConnection.sendData(data, remotePeerId, new SkylinkCallback() {
             @Override
             public void onError(SkylinkError error, HashMap<String, Object> details) {
                 String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
-                success[0] = false;
+                Utils.toastLog(TAG, context, "\"Unable to sendData as " + contextDescription);
             }
         });
-
-        if (!success[0]) {
-            String error = "Unable to sendData!";
-            Utils.toastLog(TAG, context, error);
-        }
     }
 
     /**

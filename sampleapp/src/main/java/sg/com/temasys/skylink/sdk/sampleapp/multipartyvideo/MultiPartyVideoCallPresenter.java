@@ -161,15 +161,15 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public boolean onViewRequestStartRecording() {
+    public void onViewRequestStartRecording() {
         // start recording the view call by SkylinkSDK (with SMR key)
-        return multiVideoCallService.startRecording();
+        multiVideoCallService.startRecording();
     }
 
     @Override
-    public boolean onViewRequestStopRecording() {
+    public void onViewRequestStopRecording() {
         // stop recording the view call by SkylinkSDK (with SMR key)
-        return multiVideoCallService.stopRecording();
+        multiVideoCallService.stopRecording();
     }
 
     @Override

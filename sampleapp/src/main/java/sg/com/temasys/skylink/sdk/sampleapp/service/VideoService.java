@@ -69,33 +69,23 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void toggleVideo(boolean toActive) {
         if (skylinkConnection != null && localVideo != null) {
             if (toActive) {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to active local video as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to ACTIVE video camerq!";
-                    toastLog(TAG, context, error);
-                }
             } else {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to stop local video as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to stop video camera!";
-                    toastLog(TAG, context, error);
-                }
             }
         } else if (toActive) {
             createLocalVideo();
@@ -115,33 +105,23 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void toggleScreen(boolean toActive) {
         if (skylinkConnection != null && localScreen != null) {
             if (toActive) {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to active screen as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to ACTIVE screen!";
-                    toastLog(TAG, context, error);
-                }
             } else {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.STOPPED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to stop screen as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to stop screen!";
-                    toastLog(TAG, context, error);
-                }
             }
         } else
             createLocalScreen();
@@ -155,33 +135,23 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void muteLocalAudio(boolean toMuted) {
         if (skylinkConnection != null) {
             if (toMuted) {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localAudio.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to mute local audio as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to muteLocalAudio!";
-                    toastLog(TAG, context, error);
-                }
             } else {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localAudio.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to active local audio as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to ACTIVE LocalAudio!";
-                    toastLog(TAG, context, error);
-                }
             }
         }
     }
@@ -195,33 +165,23 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void muteLocalVideo(boolean toMuted) {
         if (skylinkConnection != null) {
             if (toMuted) {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to mute local video as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to muteLocalVideo!";
-                    toastLog(TAG, context, error);
-                }
             } else {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localVideo.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to active local video as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to ACTIVE LocalVideo!";
-                    toastLog(TAG, context, error);
-                }
             }
         }
     }
@@ -235,33 +195,23 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     public void muteLocalScreen(boolean toMuted) {
         if (skylinkConnection != null) {
             if (toMuted) {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.MUTED, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to mute local screen as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to muteLocalScreen!";
-                    toastLog(TAG, context, error);
-                }
             } else {
-                final boolean[] success = {true};
                 skylinkConnection.changeLocalMediaState(localScreen.getMediaId(), SkylinkMedia.MediaState.ACTIVE, new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to active local screen as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to ACTIVE LocalScreen!";
-                    toastLog(TAG, context, error);
-                }
             }
         }
     }
@@ -311,7 +261,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     /**
      * Change the speaker output to on/off
-     * The speaker is automatically turned off when audio bluetooth is connected.
+     * The speaker is automatically turned off when audio bluetooth or headset is connected.
      */
     public void changeSpeakerOutput(boolean isSpeakerOn) {
         AudioRouter.changeAudioOutput(isSpeakerOn);
@@ -383,19 +333,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     }
 
     public void switchCamera() {
-        final boolean[] success = {true};
         skylinkConnection.switchCamera(new SkylinkCallback() {
             @Override
             public void onError(SkylinkError error, HashMap<String, Object> details) {
                 String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
-                success[0] = false;
+                toastLog(TAG, context, "\"Unable to switch local camera as " + contextDescription);
             }
         });
-        if (!success[0]) {
-            String error = "Unable to switchCamera!";
-            toastLog(TAG, context, error);
-        }
     }
 
     public void createLocalAudio() {
@@ -405,19 +350,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
         //Start audio.
         if (skylinkConnection != null && localAudio == null) {
-            final boolean[] success = {true};
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to createLocalAudio as " + contextDescription);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to createLocalAudio!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -435,33 +375,23 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             // If user select back camera as default video device, start back camera
             // else start front camera as default
             if (videoDevice == CAMERA_BACK) {
-                final boolean[] success = {true};
                 skylinkConnection.createLocalMedia(CAMERA_BACK, "mobile cam back", new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to createLocalVideo as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to createLocalVideo from CAMERA_BACK!";
-                    toastLog(TAG, context, error);
-                }
-            } else {
-                final boolean[] success = {true};
+            } else if (videoDevice == CAMERA_FRONT) {
                 skylinkConnection.createLocalMedia(CAMERA_FRONT, "mobile cam front", new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                         Log.e("SkylinkCallback", contextDescription);
-                        success[0] = false;
+                        toastLog(TAG, context, "\"Unable to createLocalVideo as " + contextDescription);
                     }
                 });
-                if (!success[0]) {
-                    String error = "Unable to createLocalVideo from CAMERA_FRONT!";
-                    toastLog(TAG, context, error);
-                }
             }
         }
     }
@@ -475,19 +405,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         if (skylinkConnection != null && localScreen == null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.
-            final boolean[] success = {true};
             skylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to createLocalScreen as " + contextDescription);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to createLocalScreen!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -496,20 +421,15 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         VideoCapturer customVideoCapturer = Utils.createCustomVideoCapturerFromCamera(
                 CAMERA_FRONT, skylinkConnection);
         if (customVideoCapturer != null) {
-            final boolean[] success = {true};
             skylinkConnection.createLocalMedia(CAMERA_FRONT, "external video from mobile",
                     customVideoCapturer, -1, -1, -1, new SkylinkCallback() {
                         @Override
                         public void onError(SkylinkError error, HashMap<String, Object> details) {
                             String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
-                            success[0] = false;
+                            toastLog(TAG, context, "\"Unable to createLocalCustomVideo as " + contextDescription);
                         }
                     });
-            if (!success[0]) {
-                String error = "Unable to createLocalCustomVideo!";
-                toastLog(TAG, context, error);
-            }
 
         }
     }
@@ -539,19 +459,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      */
     public void destroyLocalAudio() {
         if (localAudio != null) {
-            final boolean[] success = {true};
             skylinkConnection.destroyLocalMedia(localAudio.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to destroyLocalAudio as " + contextDescription);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to destroyLocalAudio!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -564,19 +479,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      */
     public void destroyLocalVideo() {
         if (localVideo != null) {
-            final boolean[] success = {true};
             skylinkConnection.destroyLocalMedia(localVideo.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to destroyLocalVideo as " + contextDescription);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to destroyLocalVideo!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -589,20 +499,14 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      */
     public void destroyLocalScreen() {
         if (localScreen != null) {
-            final boolean[] success = {true};
-
             skylinkConnection.destroyLocalMedia(localScreen.getMediaId(), new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to destroyLocalScreen as " + contextDescription);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to destroyLocalScreen!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 }

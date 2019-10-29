@@ -14,6 +14,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+
 /**
  * Created by muoi.pham on 20/07/18.
  * This class is responsible for communicating with SkylinkSDK
@@ -85,20 +87,14 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
      */
     public void createLocalAudio() {
         if (skylinkConnection != null) {
-            final boolean[] success = {true};
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "local audio mic", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog("AudioService", context, "\"Unable to createLocalAudio as " + contextDescription);
                 }
             });
-
-            if (!success[0]) {
-                String error = "Unable to createLocalAudio!";
-                Utils.toastLog("AudioService", context, error);
-            }
         }
     }
 

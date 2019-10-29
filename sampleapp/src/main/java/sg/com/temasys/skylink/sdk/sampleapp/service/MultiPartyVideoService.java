@@ -128,20 +128,14 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public void switchCamera() {
         if (skylinkConnection != null) {
-            final boolean[] success = {true};
             skylinkConnection.switchCamera(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to switchCamera as " + contextDescription);
                 }
             });
-
-            if (!success[0]) {
-                String error = "Unable to switchCamera!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -234,33 +228,21 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * - We should not have just tried to start recording.
      * Actual start of recording will be notified via relevant callback on
      * {@link BasePresenter#onServiceRequestRecordingStart(Context, boolean)}
-     *
-     * @return True if recording is successful, false otherwise.
      */
-    public boolean startRecording() {
+    public void startRecording() {
         if (skylinkConnection != null) {
-            final boolean[] success = {true};
             skylinkConnection.startRecording(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to startRecording as " + contextDescription);
                 }
             });
 
-            if (!success[0]) {
-                String error = "Unable to startRecording!";
-                toastLog(TAG, context, error);
-                return false;
-            } else {
-                String error = "Recording is started...";
-                toastLog(TAG, context, error);
-                return false;
-            }
+            String error = "Recording is started...";
+            toastLog(TAG, context, error);
         }
-
-        return false;
     }
 
     /**
@@ -269,33 +251,21 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      * - We should not have just tried to stop recording.
      * Actual stop of recording will be notified via relevant callback on
      * {@link BasePresenter#onServiceRequestRecordingStop(Context, boolean)}
-     *
-     * @return True if recording is successful, false otherwise.
      */
-    public boolean stopRecording() {
+    public void stopRecording() {
         if (skylinkConnection != null) {
-            final boolean[] success = {true};
             skylinkConnection.stopRecording(new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to stopRecording as " + contextDescription);
                 }
             });
 
-            if (!success[0]) {
-                String error = "Unable to stopRecording!";
-                toastLog(TAG, context, error);
-                return false;
-            } else {
-                String error = "Recording is stopped!";
-                toastLog(TAG, context, error);
-                return false;
-            }
+            String error = "Recording is stopped!";
+            toastLog(TAG, context, error);
         }
-
-        return false;
     }
 
     /**
@@ -310,13 +280,12 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
      */
     public void getInputVideoResolution() {
         if (skylinkConnection != null && localVideo != null) {
-            final boolean[] success = {true};
             skylinkConnection.getInputVideoResolution(localVideo.getMediaId(), new SkylinkCallback.InputVideoResolution() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to getInputVideoResolution as " + contextDescription);
                 }
 
                 @Override
@@ -324,11 +293,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                     obtainInputVideoResolution(width, height, fps, captureFormat, localVideo.getMediaId());
                 }
             });
-
-            if (!success[0]) {
-                String error = "Unable to getInputVideoResolution!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -348,14 +312,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             if (peerIndex != -1 && mediaId != null) {
                 // get sent video res to remote peer
                 String remotePeerId = mPeersList.get(peerIndex).getPeerId();
-                final boolean[] success = {true};
                 skylinkConnection.getSentVideoResolution(remotePeerId, mediaId,
                         new SkylinkCallback.SentVideoResolution() {
                             @Override
                             public void onError(SkylinkError error, HashMap<String, Object> details) {
                                 String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                 Log.e("SkylinkCallback", contextDescription);
-                                success[0] = false;
+                                toastLog(TAG, context, "\"Unable to getSentVideoResolution as " + contextDescription);
                             }
 
                             @Override
@@ -363,10 +326,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                                 obtainSentVideoResolution(width, height, fps, mediaId, remotePeerId);
                             }
                         });
-                if (!success[0]) {
-                    String error = "Unable to getSentVideoResolution!";
-                    toastLog(TAG, context, error);
-                }
             }
         }
     }
@@ -397,13 +356,12 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
 
         if (remoteMedia != null && remoteMedia.getMediaState() != SkylinkMedia.MediaState.UNAVAILABLE) {
             String mediaId = remoteMedia.getMediaId();
-            final boolean[] success = {true};
             skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to getReceivedVideoResolution as " + contextDescription);
                 }
 
                 @Override
@@ -411,10 +369,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                     obtainReceivedVideoResolution(width, height, fps, mediaId, remotePeerId);
                 }
             });
-            if (!success[0]) {
-                String error = "Unable to getReceivedVideoResolution!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -435,14 +389,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         Map<String, SkylinkMedia> localMediaMap = mPeersList.get(0).getMediaMap();
         if (localMediaMap != null && localMediaMap.size() > 0) {
             for (String mediaId : localMediaMap.keySet()) {
-                final boolean[] success = {true};
                 skylinkConnection.getSentWebRtcStats(mediaId, peerId,
                         new SkylinkCallback.WebRtcStats() {
                             @Override
                             public void onError(SkylinkError error, HashMap<String, Object> details) {
                                 String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                 Log.e("SkylinkCallback", contextDescription);
-                                success[0] = false;
+                                toastLog(TAG, context, "\"Unable to getSentWebRtcStats as " + contextDescription);
                             }
 
                             @Override
@@ -450,10 +403,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                                 presenter.onServiceRequestWebrtcStatsReceived(stats);
                             }
                         });
-                if (!success[0]) {
-                    String error = "Unable to getSentWebRtcStats!";
-                    toastLog(TAG, context, error);
-                }
             }
         }
 
@@ -463,14 +412,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             return;
 
         for (String mediaId : mediaMap.keySet()) {
-            final boolean[] success = {true};
             skylinkConnection.getReceivedWebRtcStats(mediaId,
                     new SkylinkCallback.WebRtcStats() {
                         @Override
                         public void onError(SkylinkError error, HashMap<String, Object> details) {
                             String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
-                            success[0] = false;
+                            toastLog(TAG, context, "\"Unable to getReceivedWebRtcStats as " + contextDescription);
                         }
 
                         @Override
@@ -478,10 +426,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                             presenter.onServiceRequestWebrtcStatsReceived(stats);
                         }
                     });
-            if (!success[0]) {
-                String error = "Unable to getReceivedWebRtcStats!";
-                toastLog(TAG, context, error);
-            }
         }
     }
 
@@ -506,14 +450,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             if (localMediaMap != null && localMediaMap.size() > 0) {
                 for (String mediaId : localMediaMap.keySet()) {
                     if (localMediaMap.get(mediaId).getMediaType() == mediaType) {
-                        final boolean[] success = {true};
                         skylinkConnection.getSentTransferSpeed(mediaId, peerId,
                                 new SkylinkCallback.TransferSpeed() {
                                     @Override
                                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                         Log.e("SkylinkCallback", contextDescription);
-                                        success[0] = false;
+                                        toastLog(TAG, context, "\"Unable to getSentTransferSpeed for sending as " + contextDescription);
                                     }
 
                                     @Override
@@ -521,10 +464,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                                         presenter.onServiceRequestTransferSpeedReceived(transferSpeed, peerId, true, context);
                                     }
                                 });
-                        if (!success[0]) {
-                            String error = "Unable to getSentTransferSpeed!";
-                            toastLog(TAG, context, error);
-                        }
                     }
                 }
             }
@@ -535,14 +474,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
             if (mediaMap != null && mediaMap.size() > 0) {
                 for (String mediaId : mediaMap.keySet()) {
                     if (mediaMap.get(mediaId).getMediaType() == mediaType) {
-                        final boolean[] success = {true};
                         skylinkConnection.getReceivedTransferSpeed(mediaId,
                                 new SkylinkCallback.TransferSpeed() {
                                     @Override
                                     public void onError(SkylinkError error, HashMap<String, Object> details) {
                                         String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                                         Log.e("SkylinkCallback", contextDescription);
-                                        success[0] = false;
+                                        toastLog(TAG, context, "\"Unable to getReceivedTransferSpeed for receiving as " + contextDescription);
                                     }
 
                                     @Override
@@ -550,10 +488,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                                         presenter.onServiceRequestTransferSpeedReceived(transferSpeed, peerId, false, context);
                                     }
                                 });
-                        if (!success[0]) {
-                            String error = "Unable to getReceivedTransferSpeed!";
-                            toastLog(TAG, context, error);
-                        }
                     }
                 }
             }
@@ -579,16 +513,14 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
         //list of peers that are failed for refreshing
         String[] failedPeers = new String[MAX_REMOTE_PEER];
 
-        final boolean[] success = {true};
         if (peerIndex == -1) {
-
             skylinkConnection.refreshConnection(null, iceRestart, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    failedPeers[0] = (String) details.get(SkylinkEvent.REMOTE_PEER_ID);
                     Log.e("SkylinkCallback", contextDescription);
-                    // TODO @Muoi need to get the fail peer to refresh here
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to refreshConnection with remote peer " + failedPeers[0] + " as " + contextDescription);
                 }
             });
 
@@ -599,18 +531,13 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    failedPeers[0] = (String) details.get(SkylinkEvent.REMOTE_PEER_ID);
                     Log.e("SkylinkCallback", contextDescription);
-                    success[0] = false;
+                    toastLog(TAG, context, "\"Unable to refreshConnection with remote peer " + failedPeers[0] + " as " + contextDescription);
                 }
             });
 
             peerStr = "Peer " + peer.getPeerName();
-        }
-
-        if (!success[0]) {
-            String error = "Unable to refreshConnection!";
-            toastLog(TAG, context, error);
-            return;
         }
 
         String log = "Refreshing connection for " + peerStr;
