@@ -151,6 +151,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     @Override
     public void onConnectToRoomFailed(String errorMessage) {
         Log.d(TAG, "onConnectToRoomFailed(" + errorMessage + ")");
+        toastLog(TAG, context, errorMessage);
         presenter.onServiceRequestConnect(false);
     }
 

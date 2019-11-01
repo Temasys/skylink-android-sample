@@ -383,7 +383,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
                         toastLog(TAG, context, "\"Unable to createLocalVideo as " + contextDescription);
                     }
                 });
-            } else if (videoDevice == CAMERA_FRONT) {
+            } else {
                 skylinkConnection.createLocalMedia(CAMERA_FRONT, "mobile cam front", new SkylinkCallback() {
                     @Override
                     public void onError(SkylinkError error, HashMap<String, Object> details) {
