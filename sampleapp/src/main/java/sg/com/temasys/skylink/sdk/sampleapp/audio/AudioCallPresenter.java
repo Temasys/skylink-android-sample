@@ -3,7 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.audio;
 import android.content.Context;
 import android.util.Log;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.AudioService;
@@ -36,8 +35,8 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     //utils to process permission
     private PermissionUtils permissionUtils;
 
-    //current audio output
-    private boolean currentAudioOutput = Utils.isDefaultSpeakerSettingForAudio();
+    //current audio output getting from default setting
+    private boolean currentAudioSpeaker = Utils.isDefaultSpeakerSettingForAudio();
 
     //constructor
     public AudioCallPresenter(Context context) {
@@ -80,25 +79,26 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
             // start local audio
             audioCallService.createLocalAudio();
 
-            //set default for audio output
-            currentAudioOutput = Utils.isDefaultSpeakerSettingForAudio();
-
             //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
 
             Log.d(TAG, "Try to connect when entering room");
         }
 
         //get default audio output settings and change UI
-        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioOutput);
+        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioSpeaker);
     }
 
     @Override
     public void onViewRequestChangeAudioOuput() {
         //change current speakerOn
-        currentAudioOutput = !currentAudioOutput;
+        currentAudioSpeaker = !currentAudioSpeaker;
 
         // change audio output (speaker state) in AudioRouter
-        AudioRouter.changeAudioOutput(currentAudioOutput);
+        if(currentAudioSpeaker){
+            AudioRouter.turnOnSpeaker();
+        } else{
+            AudioRouter.turnOffSpeaker();
+        }
     }
 
     @Override
@@ -119,6 +119,8 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onViewRequestExit() {
         //process disconnect from room
         audioCallService.disconnectFromRoom();
+
+        // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         audioCallService.disposeLocalMedia();
 
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
@@ -148,26 +150,27 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
         toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
-        //start audio routing if has audio config
-        SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.setPresenter(this);
-            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+        // change the audio output base on the default setting
+        AudioRouter.setPresenter(this);
+        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
 
-            // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
-            AudioRouter.changeAudioOutput(this.currentAudioOutput);
+        // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+        if(currentAudioSpeaker){
+            AudioRouter.turnOnSpeaker();
+        } else {
+            AudioRouter.turnOffSpeaker();
         }
     }
 
     @Override
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
         // change the current speaker state
-        this.currentAudioOutput = isSpeakerOn;
+        this.currentAudioSpeaker = isSpeakerOn;
 
         // change button UI
-        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioOutput);
+        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioSpeaker);
 
-        if (currentAudioOutput) {
+        if (currentAudioSpeaker) {
             toastLog(TAG, context, "Speaker is turned ON");
         } else {
             toastLog(TAG, context, "Speaker is turned OFF");
@@ -202,10 +205,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     @Override
     public void onServiceRequestDisconnect() {
         //stop audio routing
-        SkylinkConfig skylinkConfig = audioCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(context);
-        }
+        AudioRouter.stopAudioRouting(context);
     }
 
     //----------------------------------------------------------------------------------------------

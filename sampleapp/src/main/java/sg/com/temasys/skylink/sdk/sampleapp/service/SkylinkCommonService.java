@@ -285,6 +285,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         if (remoteMedia.isVideo()) {
             presenter.onServiceRequestRemotePeerVideoReceive(remotePeerId, remoteMedia);
+        } else {
+            presenter.onServiceRequestRemotePeerAudioReceive(remotePeerId);
         }
     }
 

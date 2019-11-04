@@ -264,7 +264,11 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
      * The speaker is automatically turned off when audio bluetooth or headset is connected.
      */
     public void changeSpeakerOutput(boolean isSpeakerOn) {
-        AudioRouter.changeAudioOutput(isSpeakerOn);
+        if (isSpeakerOn) {
+            AudioRouter.turnOnSpeaker();
+        } else {
+            AudioRouter.turnOffSpeaker();
+        }
     }
 
     /**

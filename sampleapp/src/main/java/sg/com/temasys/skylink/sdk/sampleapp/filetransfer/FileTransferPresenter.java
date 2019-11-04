@@ -141,6 +141,8 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     public void onViewRequestExit() {
         //process disconnect from room
         fileTransferService.disconnectFromRoom();
+
+        // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         fileTransferService.disposeLocalMedia();
 
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect

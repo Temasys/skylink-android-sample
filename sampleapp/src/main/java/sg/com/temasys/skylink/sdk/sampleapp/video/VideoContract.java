@@ -42,6 +42,11 @@ public interface VideoContract {
         void onPresenterRequestAddScreenSelfView(String mediaId, SurfaceViewRenderer videoView);
 
         /**
+         * Update UI details when receiving remote audio
+         */
+        void onPresenterRequestReceiveRemoteAudio(String remotePeerId);
+
+        /**
          * Update UI details when adding remote camera video view
          */
         void onPresenterRequestAddCameraRemoteView(SurfaceViewRenderer remoteVideoView);

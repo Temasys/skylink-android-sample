@@ -87,6 +87,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     public void onViewRequestExit() {
         //process disconnect from room
         chatService.disconnectFromRoom();
+
+        // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         chatService.disposeLocalMedia();
 
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect

@@ -341,13 +341,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
     @Override
     public void onPresenterRequestLocalAudioCapture(String mediaId) {
-        btnAudioSpeaker.setEnabled(true);
-        if (Utils.isDefaultSpeakerSettingForVideo()) {
-            btnAudioSpeaker.setMuted(false);
-        } else {
-            btnAudioSpeaker.setMuted(true);
-        }
-
         btnAudioMute.setEnabled(true);
         btnAudioRemove.setEnabled(true);
 
@@ -403,6 +396,16 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         }
     }
 
+    @Override
+    public void onPresenterRequestReceiveRemoteAudio(String remotePeerId) {
+        btnAudioSpeaker.setEnabled(true);
+        if (Utils.isDefaultSpeakerSettingForVideo()) {
+            btnAudioSpeaker.setMuted(false);
+        } else {
+            btnAudioSpeaker.setMuted(true);
+        }
+    }
+
     /**
      * Add or update remote Peer's VideoView into the view layout when receiving remote camera video view
      *
@@ -455,13 +458,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                     } else if (mediaType == SkylinkMedia.MediaType.AUDIO_MIC) {
                         btnAudioMute.setEnabled(true);
                         btnAudioRemove.setEnabled(true);
-                        btnAudioSpeaker.setEnabled(true);
-
-                        if (Utils.isDefaultSpeakerSettingForVideo()) {
-                            btnAudioSpeaker.setMuted(false);
-                        } else {
-                            btnAudioSpeaker.setMuted(true);
-                        }
                     }
                     break;
                 case MUTED:
@@ -509,7 +505,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                         btnScreenRemove.setEnabled(false);
                         removeView(SkylinkMedia.MediaType.VIDEO_SCREEN, true);
                     } else if (mediaType == SkylinkMedia.MediaType.AUDIO_MIC) {
-                        btnAudioSpeaker.setEnabled(false);
                         btnAudioMute.setEnabled(false);
                         btnAudioStart.setEnabled(true);
                         btnAudioStart.setStart(true);
@@ -519,7 +514,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             }
         } else {
             if (mediaState == SkylinkMedia.MediaState.UNAVAILABLE) {
-                removeView(mediaType, false);
+                switch (mediaType) {
+                    case VIDEO:
+                    case VIDEO_CAMERA:
+                    case VIDEO_SCREEN:
+                    case VIDEO_CUSTOM:
+                        removeView(mediaType, false);
+                        break;
+                    case AUDIO:
+                    case AUDIO_MIC:
+                        btnAudioSpeaker.setEnabled(false);
+                        break;
+                }
             }
         }
     }

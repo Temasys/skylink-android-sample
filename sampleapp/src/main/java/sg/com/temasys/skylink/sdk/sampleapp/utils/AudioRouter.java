@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.audiofx.NoiseSuppressor;
-import android.os.Build;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
@@ -121,11 +119,8 @@ public class AudioRouter {
         this.bluetoothAdapter = bluetoothAdapter;
     }
 
-    public static boolean isNoiseSuppressorAvailable() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            return NoiseSuppressor.isAvailable();
-        }
-        return false;
+    public static void setPresenter(BasePresenter presenter) {
+        AudioRouter.presenter = presenter;
     }
 
     /**
@@ -147,8 +142,6 @@ public class AudioRouter {
             Log.d(TAG, log);
             return;
         }
-
-        boolean isNoiseSuppressorAvailable = isNoiseSuppressorAvailable();
 
         log = logTag + "Initializing Audio Router...";
         Log.d(TAG, log);
@@ -277,8 +270,7 @@ public class AudioRouter {
         Log.d(TAG, log);
     }
 
-
-    static void initializeAudioRouter(Context context) {
+    private static void initializeAudioRouter(Context context) {
         String logTag = "[SA][AR][initializeAudioRouter] ";
         String log = logTag + "Trying to initialize Audio Router...";
         Log.d(TAG, log);
@@ -302,11 +294,12 @@ public class AudioRouter {
         Log.d(TAG, log);
     }
 
-    public static void changeAudioOutput(boolean isSpeakerphoneOn) {
+    private static void changeAudioOutput(boolean isSpeakerphoneOn) {
         // check the audioManager object
         // incase of user not connected to room, but user changes the speaker state
-        if (audioManager == null)
+        if (audioManager == null) {
             return;
+        }
 
         isSpeakerOn = isSpeakerphoneOn;
 
@@ -315,20 +308,16 @@ public class AudioRouter {
             audioManager.setMode(AudioManager.MODE_NORMAL);
             audioManager.abandonAudioFocus(null);
         } else {
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
-                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-            audioManager.setMode(AudioManager.MODE_IN_CALL);
+                    AudioManager.AUDIOFOCUS_GAIN);
         }
 
         audioManager.setSpeakerphoneOn(isSpeakerOn);
         presenter.onServiceRequestAudioOutputChanged(isSpeakerOn);
     }
 
-    public static void setPresenter(BasePresenter presenter) {
-        AudioRouter.presenter = presenter;
-    }
-
-    public static void applyDefaultAudioSetting() {
+    private static void applyDefaultAudioSetting() {
         if (callType.equals(Constants.CONFIG_TYPE.AUDIO)) {
             isSpeakerOn = Utils.isDefaultSpeakerSettingForAudio();
         } else if (callType.equals(Constants.CONFIG_TYPE.VIDEO) || callType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {

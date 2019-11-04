@@ -129,6 +129,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onViewRequestExit() {
         //process disconnect from room
         multiVideoCallService.disconnectFromRoom();
+
+        // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         multiVideoCallService.disposeLocalMedia();
 
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
@@ -338,24 +340,21 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public void onServiceRequestDisconnect() {
         //stop audio routing
-        SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(context);
-        }
+        AudioRouter.stopAudioRouting(context);
     }
 
     @Override
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
         toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
-        //start audio routing if has audio config
-        SkylinkConfig skylinkConfig = multiVideoCallService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioSend() && skylinkConfig.hasAudioReceive()) {
-            AudioRouter.setPresenter(this);
-            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+        AudioRouter.setPresenter(this);
+        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
 
-            // Turn on speaker by the default
+        // Turn on/off speaker by the default setting for video speaker
+        if (Utils.isDefaultSpeakerSettingForVideo()) {
             AudioRouter.turnOnSpeaker();
+        } else {
+            AudioRouter.turnOffSpeaker();
         }
     }
 

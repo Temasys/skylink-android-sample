@@ -89,9 +89,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         //connect to room on Skylink connection
         processConnectToRoom();
 
-        //default setting for video output
-        this.currentVideoSpeaker = Utils.isDefaultSpeakerSettingForVideo();
-
         //get default audio output settings
         mainView.onPresenterRequestChangeSpeakerOutput(this.currentVideoSpeaker);
 
@@ -141,6 +138,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         //process disconnect from room if connecting
         //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
         videoService.disconnectFromRoom();
+
+        // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         videoService.disposeLocalMedia();
     }
 
@@ -358,12 +357,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestDisconnect() {
         processDisconnectUIChange();
-
-        // stop audio routing
-        SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioReceive()) {
-            AudioRouter.stopAudioRouting(context);
-        }
     }
 
     @Override
@@ -381,16 +374,6 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     @Override
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
         toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
-
-        //start audio routing if has audio config
-        SkylinkConfig skylinkConfig = videoService.getSkylinkConfig();
-        if (skylinkConfig.hasAudioReceive()) {
-            AudioRouter.setPresenter(this);
-            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
-
-            // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
-            videoService.changeSpeakerOutput(this.currentVideoSpeaker);
-        }
 
         //notify view to change the UI
         mainView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
@@ -447,6 +430,11 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
         // change the UI
         mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+
+        // stop audio routing when remote audio is unavailable
+        if (!isLocal && !media.isVideo() && media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
+            AudioRouter.stopAudioRouting(context);
+        }
     }
 
     @Override
@@ -471,6 +459,17 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
         videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
         videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
+    }
+
+    @Override
+    public void onServiceRequestRemotePeerAudioReceive(String remotePeerId) {
+        AudioRouter.setPresenter(this);
+        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
+
+        // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+        videoService.changeSpeakerOutput(this.currentVideoSpeaker);
+
+        mainView.onPresenterRequestReceiveRemoteAudio(remotePeerId);
     }
 
     @Override

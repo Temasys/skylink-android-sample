@@ -53,6 +53,9 @@ public abstract class BasePresenter {
     // Methods which are from MediaListener need to be implemented for audio and video
     //----------------------------------------------------------------------------------------------
 
+    public void onServiceRequestRemotePeerAudioReceive(String remotePeerId) {
+    }
+
     public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
     }
 
