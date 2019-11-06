@@ -355,7 +355,7 @@ public class Utils {
         }
         toast = Toast.makeText(context, log, toastLength);
         toast.show();
-        Log.d("SkylinkWarningError", log);
+        Log.d("SkylinkInfo", log);
     }
 
     /**

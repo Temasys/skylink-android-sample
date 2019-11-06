@@ -121,7 +121,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     /**
      * Call this method to switch between available camera.
      * On successful operation, camera switched to will be delivered via callback at
-     * {@link LifeCycleListener#onReceiveInfo(sg.com.temasys.skylink.sdk.rtc.SkylinkInfo, String)}
+     * {@link LifeCycleListener#onReceiveInfo(sg.com.temasys.skylink.sdk.rtc.SkylinkInfo, HashMap)}
      * with possible {@link sg.com.temasys.skylink.sdk.rtc.SkylinkInfo}:
      * -- {@link sg.com.temasys.skylink.sdk.rtc.SkylinkInfo#CAM_OPEN_FRONT}.
      * -- {@link sg.com.temasys.skylink.sdk.rtc.SkylinkInfo#CAM_OPEN_NON_FRONT}.

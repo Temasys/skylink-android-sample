@@ -91,7 +91,15 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
                 }
             });
         } else {
-            skylinkConnection.rejectFileTransfer(remotePeerId);
+            skylinkConnection.rejectFileTransfer(remotePeerId, new SkylinkCallback() {
+                @Override
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    Log.e("SkylinkCallback", contextDescription);
+                    toastLog(TAG, context, "\"Unable to sendFileTransferPermissionResponse as "
+                            + contextDescription);
+                }
+            });
         }
     }
 

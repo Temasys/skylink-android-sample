@@ -195,26 +195,28 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * This is triggered from SkylinkSDK to deliver messages that might be useful to the user.
      */
     @Override
-    public void onReceiveInfo(SkylinkInfo skylinkInfo, String contextDescription) {
-        Log.d(TAG, "onReceiveInfo(skylinkInfo: " + skylinkInfo.getDescription() + ", contextDescription: " + contextDescription);
+    public void onReceiveInfo(SkylinkInfo skylinkInfo, HashMap<String, Object> details) {
+        String contextDescriptionString = (String) details.get(CONTEXT_DESCRIPTION);
+        Log.d(TAG, "onReceiveInfo(skylinkInfo: " + skylinkInfo.toString() + ", details: " + contextDescriptionString);
 
         String tag = "[SA][onReceiveInfo] ";
-        String log = tag + skylinkInfo + "/r/nDescription: " + contextDescription;
+        String log = tag + skylinkInfo + "/r/nDescription: " + contextDescriptionString;
 //        Log.d(TAG, log);
-        Utils.handleSkylinkReceiveInfo(skylinkInfo, contextDescription, context, tag);
+        Utils.handleSkylinkReceiveInfo(skylinkInfo, contextDescriptionString, context, tag);
     }
 
     /**
      * This is triggered from SkylinkSDK to deliver a warning message to the user
      */
     @Override
-    public void onReceiveWarning(SkylinkError skylinkError, String contextDescription) {
-        Log.d(TAG, "onReceiveWarning(skylinkError: " + skylinkError.toString() + ", contextDescription: " + contextDescription);
+    public void onReceiveWarning(SkylinkError skylinkError, HashMap<String, Object> details) {
+        String contextDescriptionString = (String) details.get(CONTEXT_DESCRIPTION);
+        Log.d(TAG, "onReceiveWarning(skylinkError: " + skylinkError.toString() + ", details: " + contextDescriptionString);
 
         String tag = "[SA][onReceiveWarning] ";
-        String log = tag + skylinkError + "/r/nDescription: " + contextDescription;
+        String log = tag + skylinkError + "/r/nDescription: " + contextDescriptionString;
 //        Log.d(TAG, log);
-        Utils.handleSkylinkWarningErrorMsg(skylinkError, contextDescription, context, tag);
+        Utils.handleSkylinkWarningErrorMsg(skylinkError, contextDescriptionString, context, tag);
     }
 
     /**
@@ -954,6 +956,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     // Public methods helps to work with SkylinkSDK
     //----------------------------------------------------------------------------------------------
     protected void initializeSkylinkConnection(Constants.CONFIG_TYPE typeCall) {
+        Log.d(TAG, "initializeSkylinkConnection with typeCall: " + typeCall);
         this.skylinkConnection = skylinkConnectionManager.initializeSkylinkConnection(typeCall);
 
         // enable debugging log
