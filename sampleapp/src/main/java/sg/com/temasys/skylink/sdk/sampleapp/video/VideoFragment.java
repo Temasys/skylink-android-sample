@@ -1194,7 +1194,9 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         btnConnectDisconnect.setImageResource(R.drawable.ic_connect_white_25dp);
         btnConnectDisconnect.setBackground(getResources().getDrawable(R.drawable.button_circle_connect_to_room));
 
+        btnLockRoom.setImageDrawable(context.getResources().getDrawable(R.drawable.icon_lock_room));
         btnLockRoom.setEnabled(false);
+        isLockRoom = false;
 
         // reset the room id info and local peer button
         txtRoomId.setText(R.string.guide_room_id);
