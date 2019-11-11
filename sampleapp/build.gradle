@@ -34,7 +34,7 @@ android {
     defaultConfig {
         applicationId "sg.com.temasys.skylink.sampleapp_2_0_0_Beta"
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 27
         versionCode 1
         versionName "2.0.0-Beta"
         multiDexEnabled true
