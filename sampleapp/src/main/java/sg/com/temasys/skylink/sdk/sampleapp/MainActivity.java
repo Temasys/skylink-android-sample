@@ -21,7 +21,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private ImageView imgLogo;
+    private ImageView imgBanner;
     private MainDemoButton btnMainAudio, btnMainVideo, btnMainChat, btnMainFile, btnMainData, btnMainMulti;
 
     @Override
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMainData.setType(MainDemoButton.ButtonType.DATA);
         btnMainMulti.setType(MainDemoButton.ButtonType.MULTI);
 
-        imgLogo = findViewById(R.id.imgLogo);
+        imgBanner = findViewById(R.id.imgBanner);
     }
 
     private void initComponents() {
@@ -68,10 +68,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMainData.setOnClickListener(this);
         btnMainMulti.setOnClickListener(this);
 
-        //need check imgLogo in case of landscape orientation
-        //because imgLogo is not available for landscape orientation
-        if (imgLogo != null)
-            imgLogo.setOnClickListener(this);
+        //need check imgBanner in case of landscape orientation
+        //because imgBanner is not available for landscape orientation
+        if (imgBanner != null)
+            imgBanner.setOnClickListener(this);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnMainVideo:
                 processVideo();
                 break;
-            case R.id.imgLogo:
+            case R.id.imgBanner:
                 processImglogo();
                 break;
         }

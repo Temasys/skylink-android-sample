@@ -80,10 +80,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         this.skylinkConnectionManager = new SkylinkConnectionManager(this, context);
     }
 
-    public static SkylinkConnection getSkylinkConnectionInstance() {
-        return skylinkConnection;
-    }
-
     protected void setSkylinkConnection(SkylinkConnection skylinkConnection) {
         this.skylinkConnection = skylinkConnection;
     }

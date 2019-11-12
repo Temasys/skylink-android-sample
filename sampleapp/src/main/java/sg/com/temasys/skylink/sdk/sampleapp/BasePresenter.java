@@ -214,7 +214,6 @@ public abstract class BasePresenter {
     public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
     }
 
-
     public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
     }
 
