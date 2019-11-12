@@ -112,6 +112,22 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
                 changeRemotePeerUI(3, true);
                 processSelectPeer(3);
                 break;
+            case R.id.btnRemotePeer4:
+                changeRemotePeerUI(4, true);
+                processSelectPeer(4);
+                break;
+            case R.id.btnRemotePeer5:
+                changeRemotePeerUI(5, true);
+                processSelectPeer(5);
+                break;
+            case R.id.btnRemotePeer6:
+                changeRemotePeerUI(6, true);
+                processSelectPeer(6);
+                break;
+            case R.id.btnRemotePeer7:
+                changeRemotePeerUI(7, true);
+                processSelectPeer(7);
+                break;
             case R.id.btnServerMsg:
                 processSelectMessageType(ChatPresenter.MESSAGE_TYPE.TYPE_SERVER);
                 break;
@@ -143,6 +159,22 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             case R.id.btnRemotePeer3:
                 changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
+                break;
+            case R.id.btnRemotePeer4:
+                changeRemotePeerUI(4, true);
+                displayPeerInfo(4);
+                break;
+            case R.id.btnRemotePeer5:
+                changeRemotePeerUI(5, true);
+                displayPeerInfo(5);
+                break;
+            case R.id.btnRemotePeer6:
+                changeRemotePeerUI(6, true);
+                displayPeerInfo(6);
+                break;
+            case R.id.btnRemotePeer7:
+                changeRemotePeerUI(7, true);
+                displayPeerInfo(7);
                 break;
         }
 
@@ -266,6 +298,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnRemotePeer1.setOnClickListener(this);
         btnRemotePeer2.setOnClickListener(this);
         btnRemotePeer3.setOnClickListener(this);
+        btnRemotePeer4.setOnClickListener(this);
+        btnRemotePeer5.setOnClickListener(this);
+        btnRemotePeer6.setOnClickListener(this);
+        btnRemotePeer7.setOnClickListener(this);
         btnSendServerMessage.setOnClickListener(this);
         btnSendP2PMessage.setOnClickListener(this);
         btnSend.setOnClickListener(this);
@@ -274,6 +310,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnRemotePeer1.setOnLongClickListener(this);
         btnRemotePeer2.setOnLongClickListener(this);
         btnRemotePeer3.setOnLongClickListener(this);
+        btnRemotePeer4.setOnLongClickListener(this);
+        btnRemotePeer5.setOnLongClickListener(this);
+        btnRemotePeer6.setOnLongClickListener(this);
+        btnRemotePeer7.setOnLongClickListener(this);
 
         // init setting value for room name in action bar
         txtRoomName.setText(Config.ROOM_NAME_CHAT);

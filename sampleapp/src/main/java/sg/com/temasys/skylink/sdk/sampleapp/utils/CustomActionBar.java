@@ -36,6 +36,10 @@ public class CustomActionBar extends Fragment {
     protected Button btnRemotePeer1;
     protected Button btnRemotePeer2;
     protected Button btnRemotePeer3;
+    protected Button btnRemotePeer4;
+    protected Button btnRemotePeer5;
+    protected Button btnRemotePeer6;
+    protected Button btnRemotePeer7;
 
     public CustomActionBar() {
     }
@@ -60,6 +64,10 @@ public class CustomActionBar extends Fragment {
         btnRemotePeer1 = customBar.findViewById(R.id.btnRemotePeer1);
         btnRemotePeer2 = customBar.findViewById(R.id.btnRemotePeer2);
         btnRemotePeer3 = customBar.findViewById(R.id.btnRemotePeer3);
+        btnRemotePeer4 = customBar.findViewById(R.id.btnRemotePeer4);
+        btnRemotePeer5 = customBar.findViewById(R.id.btnRemotePeer5);
+        btnRemotePeer6 = customBar.findViewById(R.id.btnRemotePeer6);
+        btnRemotePeer7 = customBar.findViewById(R.id.btnRemotePeer7);
     }
 
     /**
@@ -98,6 +106,22 @@ public class CustomActionBar extends Fragment {
                 btnRemotePeer3.setVisibility(View.VISIBLE);
                 btnRemotePeer3.setText(peerAvatar);
                 break;
+            case 3:
+                btnRemotePeer4.setVisibility(View.VISIBLE);
+                btnRemotePeer4.setText(peerAvatar);
+                break;
+            case 4:
+                btnRemotePeer5.setVisibility(View.VISIBLE);
+                btnRemotePeer5.setText(peerAvatar);
+                break;
+            case 5:
+                btnRemotePeer6.setVisibility(View.VISIBLE);
+                btnRemotePeer6.setText(peerAvatar);
+                break;
+            case 6:
+                btnRemotePeer7.setVisibility(View.VISIBLE);
+                btnRemotePeer7.setText(peerAvatar);
+                break;
         }
     }
 
@@ -118,6 +142,18 @@ public class CustomActionBar extends Fragment {
             case 3:
                 btnRemotePeer3.setVisibility(View.GONE);
                 break;
+            case 4:
+                btnRemotePeer4.setVisibility(View.GONE);
+                break;
+            case 5:
+                btnRemotePeer5.setVisibility(View.GONE);
+                break;
+            case 6:
+                btnRemotePeer6.setVisibility(View.GONE);
+                break;
+            case 7:
+                btnRemotePeer7.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -135,7 +171,7 @@ public class CustomActionBar extends Fragment {
         for (int index = 0; index < peersList.size(); index++) {
             SkylinkPeer peer = peersList.get(index);
 
-            if (peer.getPeerName() == null || peer.getPeerName().length() == 0 || peer.getPeerName().equalsIgnoreCase("mcu"))
+            if (peer.getPeerName() == null || peer.getPeerName().length() == 0)
                 continue;
 
             String peerAvatar = peer.getPeerName().charAt(0) + "";
@@ -152,6 +188,22 @@ public class CustomActionBar extends Fragment {
                 case 3:
                     btnRemotePeer3.setVisibility(View.VISIBLE);
                     btnRemotePeer3.setText(peerAvatar);
+                    break;
+                case 4:
+                    btnRemotePeer4.setVisibility(View.VISIBLE);
+                    btnRemotePeer4.setText(peerAvatar);
+                    break;
+                case 5:
+                    btnRemotePeer5.setVisibility(View.VISIBLE);
+                    btnRemotePeer5.setText(peerAvatar);
+                    break;
+                case 6:
+                    btnRemotePeer6.setVisibility(View.VISIBLE);
+                    btnRemotePeer6.setText(peerAvatar);
+                    break;
+                case 7:
+                    btnRemotePeer7.setVisibility(View.VISIBLE);
+                    btnRemotePeer7.setText(peerAvatar);
                     break;
             }
         }
@@ -245,6 +297,42 @@ public class CustomActionBar extends Fragment {
                     btnRemotePeer3.setTextColor(context.getResources().getColor(R.color.color_black));
                 }
                 break;
+            case 4:
+                if (isSelected) {
+                    btnRemotePeer4.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer4.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer4.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer4.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
+            case 5:
+                if (isSelected) {
+                    btnRemotePeer5.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer5.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer5.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer5.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
+            case 6:
+                if (isSelected) {
+                    btnRemotePeer6.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer6.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer6.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer6.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
+            case 7:
+                if (isSelected) {
+                    btnRemotePeer7.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar_chat));
+                    btnRemotePeer7.setTextColor(context.getResources().getColor(R.color.color_white));
+                } else {
+                    btnRemotePeer7.setBackground(context.getResources().getDrawable(R.drawable.button_circle_avatar));
+                    btnRemotePeer7.setTextColor(context.getResources().getColor(R.color.color_black));
+                }
+                break;
         }
 
 
@@ -268,6 +356,11 @@ public class CustomActionBar extends Fragment {
                 changeRemotePeerUI(0, false);
                 changeRemotePeerUI(1, false);
                 changeRemotePeerUI(2, false);
+                changeRemotePeerUI(3, false);
+                changeRemotePeerUI(4, false);
+                changeRemotePeerUI(5, false);
+                changeRemotePeerUI(6, false);
+                changeRemotePeerUI(7, false);
             }
         });
 
@@ -287,17 +380,29 @@ public class CustomActionBar extends Fragment {
         switch (index) {
             // select all peers in group to send message to
             case 0:
-                updateButtonUI(unSelected, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3);
+                updateButtonUI(unSelected, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3, btnRemotePeer4, btnRemotePeer5, btnRemotePeer6, btnRemotePeer7);
                 break;
-            // select the first/send/third remote peer in room to send message to
+            // select the first remote peer in room to send message to
             case 1:
-                updateButtonUI(unSelected, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3);
+                updateButtonUI(unSelected, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3, btnRemotePeer4, btnRemotePeer5, btnRemotePeer6, btnRemotePeer7);
                 break;
             case 2:
-                updateButtonUI(unSelected, btnRemotePeer2, btnRemotePeer1, btnRemotePeer3);
+                updateButtonUI(unSelected, btnRemotePeer2, btnRemotePeer1, btnRemotePeer3, btnRemotePeer4, btnRemotePeer5, btnRemotePeer6, btnRemotePeer7);
                 break;
             case 3:
-                updateButtonUI(unSelected, btnRemotePeer3, btnRemotePeer1, btnRemotePeer2);
+                updateButtonUI(unSelected, btnRemotePeer3, btnRemotePeer1, btnRemotePeer2, btnRemotePeer4, btnRemotePeer5, btnRemotePeer6, btnRemotePeer7);
+                break;
+            case 4:
+                updateButtonUI(unSelected, btnRemotePeer4, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3, btnRemotePeer5, btnRemotePeer6, btnRemotePeer7);
+                break;
+            case 5:
+                updateButtonUI(unSelected, btnRemotePeer5, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3, btnRemotePeer4, btnRemotePeer6, btnRemotePeer7);
+                break;
+            case 6:
+                updateButtonUI(unSelected, btnRemotePeer6, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3, btnRemotePeer4, btnRemotePeer5, btnRemotePeer7);
+                break;
+            case 7:
+                updateButtonUI(unSelected, btnRemotePeer7, btnRemotePeer1, btnRemotePeer2, btnRemotePeer3, btnRemotePeer4, btnRemotePeer5, btnRemotePeer6);
                 break;
         }
     }
@@ -325,6 +430,10 @@ public class CustomActionBar extends Fragment {
         btnRemotePeer1.setVisibility(View.GONE);
         btnRemotePeer2.setVisibility(View.GONE);
         btnRemotePeer3.setVisibility(View.GONE);
+        btnRemotePeer4.setVisibility(View.GONE);
+        btnRemotePeer5.setVisibility(View.GONE);
+        btnRemotePeer6.setVisibility(View.GONE);
+        btnRemotePeer7.setVisibility(View.GONE);
     }
 
     /**
@@ -336,7 +445,8 @@ public class CustomActionBar extends Fragment {
      * @param btnUnSelectedPeer1 the un selected peer button to change UI to un selected state
      * @param btnUnSelectedPeer2 the un selected peer button to change UI to un selected state
      */
-    private void updateButtonUI(boolean unSelectAll, Button btnSelectedPeer, Button btnUnSelectedPeer1, Button btnUnSelectedPeer2) {
+    private void updateButtonUI(boolean unSelectAll, Button btnSelectedPeer, Button btnUnSelectedPeer1, Button btnUnSelectedPeer2,
+                                Button btnUnSelectedPeer3, Button btnUnSelectedPeer4, Button btnUnSelectedPeer5, Button btnUnSelectedPeer6) {
         if (unSelectAll) {
             btnSelectedPeer.setSelected(false);
             btnSelectedPeer.setBackgroundResource(R.drawable.button_circle_avatar);
@@ -349,7 +459,14 @@ public class CustomActionBar extends Fragment {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 btnSelectedPeer.setTextColor(context.getColor(R.color.color_white));
             }
+
+            btnLocalPeer.setSelected(false);
+            btnLocalPeer.setBackgroundResource(R.drawable.button_circle_avatar_local);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                btnLocalPeer.setTextColor(context.getColor(R.color.primary_dark));
+            }
         }
+
         btnUnSelectedPeer1.setSelected(false);
         btnUnSelectedPeer1.setBackgroundResource(R.drawable.button_circle_avatar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -359,6 +476,26 @@ public class CustomActionBar extends Fragment {
         btnUnSelectedPeer2.setBackgroundResource(R.drawable.button_circle_avatar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             btnUnSelectedPeer2.setTextColor(context.getColor(R.color.color_black));
+        }
+        btnUnSelectedPeer3.setSelected(false);
+        btnUnSelectedPeer3.setBackgroundResource(R.drawable.button_circle_avatar);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            btnUnSelectedPeer3.setTextColor(context.getColor(R.color.color_black));
+        }
+        btnUnSelectedPeer4.setSelected(false);
+        btnUnSelectedPeer4.setBackgroundResource(R.drawable.button_circle_avatar);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            btnUnSelectedPeer4.setTextColor(context.getColor(R.color.color_black));
+        }
+        btnUnSelectedPeer5.setSelected(false);
+        btnUnSelectedPeer5.setBackgroundResource(R.drawable.button_circle_avatar);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            btnUnSelectedPeer5.setTextColor(context.getColor(R.color.color_black));
+        }
+        btnUnSelectedPeer6.setSelected(false);
+        btnUnSelectedPeer6.setBackgroundResource(R.drawable.button_circle_avatar);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            btnUnSelectedPeer6.setTextColor(context.getColor(R.color.color_black));
         }
     }
 }

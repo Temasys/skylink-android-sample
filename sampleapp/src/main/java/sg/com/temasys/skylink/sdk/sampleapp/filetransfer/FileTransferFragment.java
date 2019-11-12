@@ -147,6 +147,22 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
                 changeRemotePeerUI(3, true);
                 processSelectPeer(3);
                 break;
+            case R.id.btnRemotePeer4:
+                changeRemotePeerUI(4, true);
+                displayPeerInfo(4);
+                break;
+            case R.id.btnRemotePeer5:
+                changeRemotePeerUI(5, true);
+                displayPeerInfo(5);
+                break;
+            case R.id.btnRemotePeer6:
+                changeRemotePeerUI(6, true);
+                displayPeerInfo(6);
+                break;
+            case R.id.btnRemotePeer7:
+                changeRemotePeerUI(7, true);
+                displayPeerInfo(7);
+                break;
             case R.id.btnChoose:
                 requestPermission();
                 break;
@@ -175,6 +191,22 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
             case R.id.btnRemotePeer3:
                 changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
+                break;
+            case R.id.btnRemotePeer4:
+                changeRemotePeerUI(4, true);
+                displayPeerInfo(4);
+                break;
+            case R.id.btnRemotePeer5:
+                changeRemotePeerUI(5, true);
+                displayPeerInfo(5);
+                break;
+            case R.id.btnRemotePeer6:
+                changeRemotePeerUI(6, true);
+                displayPeerInfo(6);
+                break;
+            case R.id.btnRemotePeer7:
+                changeRemotePeerUI(7, true);
+                displayPeerInfo(7);
                 break;
         }
 
@@ -423,6 +455,10 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
         btnRemotePeer1.setOnClickListener(this);
         btnRemotePeer2.setOnClickListener(this);
         btnRemotePeer3.setOnClickListener(this);
+        btnRemotePeer4.setOnClickListener(this);
+        btnRemotePeer5.setOnClickListener(this);
+        btnRemotePeer6.setOnClickListener(this);
+        btnRemotePeer7.setOnClickListener(this);
         btnChooseFile.setOnClickListener(this);
         btnSendFile.setOnClickListener(this);
 
@@ -430,6 +466,10 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
         btnRemotePeer1.setOnLongClickListener(this);
         btnRemotePeer2.setOnLongClickListener(this);
         btnRemotePeer3.setOnLongClickListener(this);
+        btnRemotePeer4.setOnLongClickListener(this);
+        btnRemotePeer5.setOnLongClickListener(this);
+        btnRemotePeer6.setOnLongClickListener(this);
+        btnRemotePeer7.setOnLongClickListener(this);
 
         // change screen orientation in case of landscape mode
         changeScreenOrientation(context.getResources().getConfiguration().orientation);

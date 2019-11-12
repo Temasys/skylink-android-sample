@@ -178,6 +178,22 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
                 changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
                 break;
+            case R.id.btnRemotePeer4:
+                changeRemotePeerUI(4, true);
+                displayPeerInfo(4);
+                break;
+            case R.id.btnRemotePeer5:
+                changeRemotePeerUI(5, true);
+                displayPeerInfo(5);
+                break;
+            case R.id.btnRemotePeer6:
+                changeRemotePeerUI(6, true);
+                displayPeerInfo(6);
+                break;
+            case R.id.btnRemotePeer7:
+                changeRemotePeerUI(7, true);
+                displayPeerInfo(7);
+                break;
             case R.id.btnLocalPeerMenu:
                 onMenuOptionLocalPeer(btnOptionLocal);
                 break;
@@ -503,11 +519,10 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         btnRemotePeer1.setOnClickListener(this);
         btnRemotePeer2.setOnClickListener(this);
         btnRemotePeer3.setOnClickListener(this);
-
-        btnOptionLocal.setOnClickListener(this);
-        btnOptionPeer1.setOnClickListener(this);
-        btnOptionPeer2.setOnClickListener(this);
-        btnOptionPeer3.setOnClickListener(this);
+        btnRemotePeer4.setOnClickListener(this);
+        btnRemotePeer5.setOnClickListener(this);
+        btnRemotePeer6.setOnClickListener(this);
+        btnRemotePeer7.setOnClickListener(this);
 
         btnStartAudioMulti.setOnClickListener(this);
         btnStartVideoMulti.setOnClickListener(this);

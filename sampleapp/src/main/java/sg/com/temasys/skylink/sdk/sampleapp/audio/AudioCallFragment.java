@@ -126,6 +126,22 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
                 changeRemotePeerUI(3, true);
                 displayPeerInfo(3);
                 break;
+            case R.id.btnRemotePeer4:
+                changeRemotePeerUI(4, true);
+                displayPeerInfo(4);
+                break;
+            case R.id.btnRemotePeer5:
+                changeRemotePeerUI(5, true);
+                displayPeerInfo(5);
+                break;
+            case R.id.btnRemotePeer6:
+                changeRemotePeerUI(6, true);
+                displayPeerInfo(6);
+                break;
+            case R.id.btnRemotePeer7:
+                changeRemotePeerUI(7, true);
+                displayPeerInfo(7);
+                break;
             case R.id.btnAudioSpeaker:
                 presenter.onViewRequestChangeAudioOuput();
                 break;
@@ -278,6 +294,10 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
         btnRemotePeer1.setOnClickListener(this);
         btnRemotePeer2.setOnClickListener(this);
         btnRemotePeer3.setOnClickListener(this);
+        btnRemotePeer4.setOnClickListener(this);
+        btnRemotePeer5.setOnClickListener(this);
+        btnRemotePeer6.setOnClickListener(this);
+        btnRemotePeer7.setOnClickListener(this);
         btnAudioSpeaker.setOnClickListener(this);
         btnAudioEnd.setOnClickListener(this);
 
