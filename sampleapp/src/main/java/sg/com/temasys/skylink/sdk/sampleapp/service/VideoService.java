@@ -42,6 +42,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     private static final String TAG = VideoService.class.getCanonicalName();
 
+    private final int MAX_REMOTE_PEER = 1;
+
     public VideoService(Context context) {
         super(context);
     }
@@ -301,8 +303,8 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         skylinkConfig.setMirrorLocalFrontCameraView(true);
         skylinkConfig.setReportVideoResolutionUntilStable(true);
 
-        // Allow only 1 remote Peer to join.
-        skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO); // Default is 4 remote Peers.
+        // Allow only 1 remote Peer to join as our UI just support 1 remote peer
+        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.EXTRA_SMALL);

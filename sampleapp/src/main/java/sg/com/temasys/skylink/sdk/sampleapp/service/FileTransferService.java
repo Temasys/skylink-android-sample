@@ -26,6 +26,8 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
 
     private final String TAG = FileTransferService.class.getName();
 
+    private final int MAX_REMOTE_PEER = 7;
+
     public FileTransferService(Context context) {
         super(context);
     }
@@ -133,6 +135,8 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
 
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
+        // set to 7 remote peers connected as our UI just support maximum 8 peers
+        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
 
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);

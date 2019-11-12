@@ -26,6 +26,8 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
 
     private final String TAG = ChatService.class.getName();
 
+    private final int MAX_REMOTE_PEER = 7;
+
     public ChatService(Context context) {
         super(context);
     }
@@ -102,6 +104,9 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setP2PMessaging(true);
+
+        // set to 7 remote peers connected as our UI just support maximum 8 peers
+        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
 
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);

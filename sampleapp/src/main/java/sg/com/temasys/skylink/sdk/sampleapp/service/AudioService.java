@@ -23,6 +23,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 public class AudioService extends SkylinkCommonService implements AudioCallContract.Service {
 
+    private final int MAX_REMOTE_PEER = 5;
+
     public AudioService(Context context) {
         super(context);
     }
@@ -67,8 +69,8 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
         skylinkConfig.setP2PMessaging(false);
         skylinkConfig.setFileTransfer(false);
 
-        // Allow only 1 remote Peer to join.
-        skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY); // Default is 4 remote Peers.
+        // Allow only maximum 5 remote Peers to join.
+        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
 
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
