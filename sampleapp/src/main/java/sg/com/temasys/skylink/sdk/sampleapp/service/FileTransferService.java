@@ -61,15 +61,6 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
                         toastLog(TAG, context, "\"Unable to sendFileTransfer as " + contextDescription);
                     }
                 });
-
-        String peer = "";
-        if (remotePeerId == null) {
-            peer = "all Peers in room";
-        } else {
-            peer = "Peer " + remotePeerId;
-        }
-        String log = "Sending file to " + peer + ".";
-        toastLog(TAG, context, log);
     }
 
     /**

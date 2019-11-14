@@ -3,7 +3,6 @@ package sg.com.temasys.skylink.sdk.sampleapp.datatransfer;
 import android.content.Context;
 import android.util.Log;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.DataTransferService;
@@ -13,7 +12,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLogLong;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -149,20 +147,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
         }
 
         // delegate to service layer to implement sending data
-        String error = null;
-        try {
-            dataTransferService.sendData(remotePeerId, data);
-        } catch (SkylinkException e) {
-            error = e.getMessage();
-        } catch (UnsupportedOperationException e) {
-            error = e.getMessage();
-        }
-
-        if (error != null) {
-            toastLogLong(TAG, context, error);
-        } else {
-            toastLog(TAG, context, "You have sent an array of data");
-        }
+        dataTransferService.sendData(remotePeerId, data);
     }
 
     @Override

@@ -9,7 +9,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -45,9 +44,8 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
      *
      * @param remotePeerId remotePeerID of a specified peer
      * @param data         Array of bytes
-     * @throws SkylinkException When byte array is not of a size allowed.
      */
-    public void sendData(String remotePeerId, byte[] data) throws SkylinkException {
+    public void sendData(String remotePeerId, byte[] data){
         if (skylinkConnection == null)
             return;
 
