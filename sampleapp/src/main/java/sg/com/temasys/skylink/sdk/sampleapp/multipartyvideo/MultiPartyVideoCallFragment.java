@@ -56,8 +56,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     private FrameLayout[] remoteViewLayouts;
 
     // menu option buttons for peers
-    private Button btnOptionLocal, btnOptionPeer1, btnOptionPeer2, btnOptionPeer3, btnStartAudioMulti,
-            btnStartVideoMulti, stopScreenshareFloat;
+    private Button btnOptionLocal, btnOptionPeer1, btnOptionPeer2, btnOptionPeer3, stopScreenshareFloat;
 
     //    private SurfaceViewRenderer localCameraView, localScreenView, localMainView;
     // The array of local video views (local camera, local screen sharing)
@@ -205,12 +204,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
                 break;
             case R.id.btnPeer3Menu:
                 onMenuOptionRemotePeer(btnOptionPeer3, 3);
-                break;
-            case R.id.btnStartAudioMulti:
-                presenter.onViewRequestStartAudio();
-                break;
-            case R.id.btnStartVideoMulti:
-                presenter.onViewRequestStartVideo();
                 break;
         }
     }
@@ -394,9 +387,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
         displayPeerMenuOption(0);
 
-        btnStartAudioMulti.setVisibility(View.GONE);
-        btnStartVideoMulti.setVisibility(View.GONE);
-
         if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             localViews[0] = videoView;
             isLocalCameraDisplay = true;
@@ -492,9 +482,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         btnOptionPeer1 = rootView.findViewById(R.id.btnPeer1Menu);
         btnOptionPeer2 = rootView.findViewById(R.id.btnPeer2Menu);
         btnOptionPeer3 = rootView.findViewById(R.id.btnPeer3Menu);
-
-        btnStartAudioMulti = rootView.findViewById(R.id.btnStartAudioMulti);
-        btnStartVideoMulti = rootView.findViewById(R.id.btnStartVideoMulti);
     }
 
     /**
@@ -524,8 +511,10 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         btnRemotePeer6.setOnClickListener(this);
         btnRemotePeer7.setOnClickListener(this);
 
-        btnStartAudioMulti.setOnClickListener(this);
-        btnStartVideoMulti.setOnClickListener(this);
+        btnOptionLocal.setOnClickListener(this);
+        btnOptionPeer1.setOnClickListener(this);
+        btnOptionPeer2.setOnClickListener(this);
+        btnOptionPeer3.setOnClickListener(this);
 
         // display context menu button for each peer in correct position
         locateMenuButtons();

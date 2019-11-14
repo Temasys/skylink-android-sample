@@ -1,35 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/root_layout"
+<RelativeLayout android:id="@+id/root_layout"
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:weightSum="2">
-
-    <Button
-        android:id="@+id/btnStartVideoMulti"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/button_circle_trans"
-        android:padding="@dimen/dp_10dp"
-        android:text="Start video"
-        android:textColor="@color/primary"
-        android:visibility="gone"/>
-
-    <Button
-        android:id="@+id/btnStartAudioMulti"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/btnStartVideoMulti"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/dp_20dp"
-        android:background="@drawable/button_circle_trans"
-        android:padding="@dimen/dp_10dp"
-        android:text="Start audio"
-        android:textColor="@color/primary"
-        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -105,8 +81,8 @@
         android:layout_width="@dimen/dp_40dp"
         android:layout_height="@dimen/dp_40dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="@dimen/dp_165dp"
         android:layout_marginBottom="@dimen/dp_255dp"
+        android:layout_marginLeft="@dimen/dp_165dp"
         android:background="@drawable/button_circle_menu_option"
         android:visibility="gone"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
@@ -114,10 +90,10 @@
         android:id="@+id/btnPeer3Menu"
         android:layout_width="@dimen/dp_40dp"
         android:layout_height="@dimen/dp_40dp"
-        android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="@dimen/dp_165dp"
+        android:layout_alignParentRight="true"
         android:layout_marginBottom="@dimen/dp_255dp"
+        android:layout_marginLeft="@dimen/dp_165dp"
         android:background="@drawable/button_circle_menu_option"
         android:visibility="gone"></sg.com.temasys.skylink.sdk.sampleapp.utils.OptionButton>
 
