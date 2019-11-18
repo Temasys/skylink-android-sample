@@ -20,14 +20,14 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  * This class is responsible for implementing audio logic.
  */
 
-public class AudioCallPresenter extends BasePresenter implements AudioCallContract.Presenter {
+public class AudioPresenter extends BasePresenter implements AudioContract.Presenter {
 
-    private final String TAG = AudioCallPresenter.class.getName();
+    private final String TAG = AudioPresenter.class.getName();
 
     private Context context;
 
     //view object
-    private AudioCallContract.View audioCallView;
+    private AudioContract.View audioCallView;
 
     //service object
     private AudioService audioCallService;
@@ -39,7 +39,7 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     private boolean currentAudioSpeaker = Utils.isDefaultSpeakerSettingForAudio();
 
     //constructor
-    public AudioCallPresenter(Context context) {
+    public AudioPresenter(Context context) {
         this.context = context;
         this.audioCallService = new AudioService(context);
         this.audioCallService.setPresenter(this);
@@ -47,13 +47,13 @@ public class AudioCallPresenter extends BasePresenter implements AudioCallContra
     }
 
     //link Presenter to View
-    public void setView(AudioCallContract.View view) {
+    public void setView(AudioContract.View view) {
         audioCallView = view;
         audioCallView.setPresenter(this);
     }
 
     //----------------------------------------------------------------------------------------------
-    // Override methods from AudioCallContract.Presenter for view to call
+    // Override methods from AudioContract.Presenter for view to call
     // These methods are responsible for processing requests from view
     //----------------------------------------------------------------------------------------------
 

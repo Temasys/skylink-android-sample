@@ -28,9 +28,9 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
  * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
  */
-public class AudioCallFragment extends CustomActionBar implements AudioCallContract.View, View.OnClickListener {
+public class AudioFragment extends CustomActionBar implements AudioContract.View, View.OnClickListener {
 
-    private final String TAG = AudioCallFragment.class.getName();
+    private final String TAG = AudioFragment.class.getName();
 
     // The view widgets
     private LinearLayout llTool;
@@ -38,14 +38,14 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
     private ImageView img;
 
     // presenter instance to implement app logic
-    private AudioCallContract.Presenter presenter;
+    private AudioContract.Presenter presenter;
 
-    public static AudioCallFragment newInstance() {
-        return new AudioCallFragment();
+    public static AudioFragment newInstance() {
+        return new AudioFragment();
     }
 
     @Override
-    public void setPresenter(AudioCallContract.Presenter presenter) {
+    public void setPresenter(AudioContract.Presenter presenter) {
         this.presenter = presenter;
     }
 
@@ -63,7 +63,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Allow volume to be controlled using volume keys
-        ((AudioCallActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        ((AudioActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
                              Bundle savedInstanceState) {
         Log.d(TAG, "[SA][Audio][onCreateView] ");
 
-        View rootView = inflater.inflate(R.layout.fragment_audio_call, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_audio, container, false);
 
         // get the UI controls from layout
         getControlWidgets(rootView);
@@ -158,7 +158,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
         // Close the room connection when this sample app is finished, so the streams can be closed.
         // I.e. already isConnected() and not changing orientation.
         // in case of changing screen orientation, do not close the connection
-        if (!((AudioCallActivity) context).isChangingConfigurations()) {
+        if (!((AudioActivity) context).isChangingConfigurations()) {
             presenter.onViewRequestExit();
         }
     }
@@ -277,7 +277,7 @@ public class AudioCallFragment extends CustomActionBar implements AudioCallContr
      * And get the view widgets in the action bar
      */
     private void setActionBar() {
-        ActionBar actionBar = ((AudioCallActivity) getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AudioActivity) getActivity()).getSupportActionBar();
         super.setActionBar(actionBar);
     }
 

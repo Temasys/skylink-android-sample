@@ -9,7 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void processAudio() {
-        startActivity(new Intent(this, AudioCallActivity.class));
+        startActivity(new Intent(this, AudioActivity.class));
     }
 
     private void processChat() {

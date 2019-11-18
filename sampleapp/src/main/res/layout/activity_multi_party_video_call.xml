@@ -3,7 +3,7 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              tools:context="sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallActivity">
+              tools:context="sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity">
 
     <FrameLayout
         android:id="@+id/contentFrameMultiPartyVideoCall"

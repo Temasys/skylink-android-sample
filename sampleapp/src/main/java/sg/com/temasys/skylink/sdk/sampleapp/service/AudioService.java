@@ -10,7 +10,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioCallContract;
+import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -21,7 +21,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  * This class is responsible for communicating with SkylinkSDK
  */
 
-public class AudioService extends SkylinkCommonService implements AudioCallContract.Service {
+public class AudioService extends SkylinkCommonService implements AudioContract.Service {
 
     private final int MAX_REMOTE_PEER = 5;
 
@@ -30,7 +30,7 @@ public class AudioService extends SkylinkCommonService implements AudioCallContr
     }
 
     @Override
-    public void setPresenter(AudioCallContract.Presenter presenter) {
+    public void setPresenter(AudioContract.Presenter presenter) {
         this.presenter = (BasePresenter) presenter;
     }
 

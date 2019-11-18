@@ -13,7 +13,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
  * This interface is responsible for specify behaviors of View, Presenter, Service
  */
 
-public interface AudioCallContract {
+public interface AudioContract {
 
     interface View extends BaseView<Presenter> {
 

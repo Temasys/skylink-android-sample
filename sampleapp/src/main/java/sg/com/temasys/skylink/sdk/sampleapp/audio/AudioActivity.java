@@ -9,42 +9,42 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class AudioCallActivity extends AppCompatActivity {
+public class AudioActivity extends AppCompatActivity {
 
     private final String AUDIO_CALL_FRAGMENT_TAG = "AUDIO_CALL_FRAGMENT";
 
     // presenter instance
-    private AudioCallPresenter audioCallPresenter;
+    private AudioPresenter audioPresenter;
 
     // view instance
-    private AudioCallFragment audioCallFragment;
+    private AudioFragment audioFragment;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_audio_call);
+        setContentView(R.layout.activity_audio);
 
         // create presenter
-        audioCallPresenter = new AudioCallPresenter(this);
+        audioPresenter = new AudioPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            audioCallFragment = AudioCallFragment.newInstance();
+            audioFragment = AudioFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameAudioCall, audioCallFragment, AUDIO_CALL_FRAGMENT_TAG)
+                    .add(R.id.contentFrameAudioCall, audioFragment, AUDIO_CALL_FRAGMENT_TAG)
                     .commit();
         } else {
-            audioCallFragment = (AudioCallFragment) getSupportFragmentManager()
+            audioFragment = (AudioFragment) getSupportFragmentManager()
                     .findFragmentByTag(AUDIO_CALL_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        if (audioCallFragment != null)
-            audioCallPresenter.setView(audioCallFragment);
+        if (audioFragment != null)
+            audioPresenter.setView(audioFragment);
     }
 
     @Override
@@ -58,6 +58,6 @@ public class AudioCallActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, AUDIO_CALL_FRAGMENT_TAG, audioCallFragment);
+        getSupportFragmentManager().putFragment(outState, AUDIO_CALL_FRAGMENT_TAG, audioFragment);
     }
 }

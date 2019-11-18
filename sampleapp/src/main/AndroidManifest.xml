@@ -35,7 +35,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".audio.AudioCallActivity"
+            android:name=".audio.AudioActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_section1"/>
         <activity
