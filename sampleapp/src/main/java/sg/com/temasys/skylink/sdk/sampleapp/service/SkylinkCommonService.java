@@ -196,8 +196,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onReceiveInfo(skylinkInfo: " + skylinkInfo.toString() + ", details: " + contextDescriptionString);
 
         String tag = "[SA][onReceiveInfo] ";
-        String log = tag + skylinkInfo + "/r/nDescription: " + contextDescriptionString;
-//        Log.d(TAG, log);
         Utils.handleSkylinkReceiveInfo(skylinkInfo, contextDescriptionString, context, tag);
     }
 
@@ -210,8 +208,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onReceiveWarning(skylinkError: " + skylinkError.toString() + ", details: " + contextDescriptionString);
 
         String tag = "[SA][onReceiveWarning] ";
-        String log = tag + skylinkError + "/r/nDescription: " + contextDescriptionString;
-//        Log.d(TAG, log);
         Utils.handleSkylinkWarningErrorMsg(skylinkError, contextDescriptionString, context, tag);
     }
 
@@ -224,8 +220,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onReceiveError(skylinkError: " + skylinkError.toString() + ", details: " + contextDescriptionString);
 
         String tag = "[SA][onReceiveError] ";
-        String log = tag + skylinkError + "/r/nDescription: " + contextDescriptionString;
-//        Log.d(TAG, log);
         Utils.handleSkylinkWarningErrorMsg(skylinkError, contextDescriptionString, context, tag);
     }
 
@@ -383,23 +377,23 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     @Override
     public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat, String mediaId) {
-//        Log.d(TAG, "onObtainInputVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps);
+        Log.d(TAG, "onObtainInputVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps);
 
         obtainInputVideoResolution(width, height, fps, captureFormat, mediaId);
     }
 
     @Override
     public void onObtainReceivedVideoResolution(int width, int height, int fps, String mediaId, String remotePeerId) {
-//        Log.d(TAG, "onObtainReceivedVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps +
-//                ", mediaId: " + mediaId + ", remotePeerId: " + remotePeerId);
+        Log.d(TAG, "onObtainReceivedVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps +
+                ", mediaId: " + mediaId + ", remotePeerId: " + remotePeerId);
 
         obtainReceivedVideoResolution(width, height, fps, mediaId, remotePeerId);
     }
 
     @Override
     public void onObtainSentVideoResolution(int width, int height, int fps, String mediaId, String remotePeerId) {
-//        Log.d(TAG, "onObtainSentVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps +
-//                ", mediaId: " + mediaId + ", remotePeerId: " + remotePeerId);
+        Log.d(TAG, "onObtainSentVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps +
+                ", mediaId: " + mediaId + ", remotePeerId: " + remotePeerId);
 
         obtainSentVideoResolution(width, height, fps, mediaId, remotePeerId);
     }
@@ -414,9 +408,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     @Override
     public void onChangeVideoSize(Point size, SkylinkMedia media, String remotePeerId) {
-//        Log.d(TAG, "onChangeVideoSize(size: " + size.toString() + ", media: " + media.toString() + ", remotePeerId: " + remotePeerId);
-
-        Log.d(TAG, "[SA][onChangeVideoSize] The media(" + media.getMediaId() + ") from Peer " +
+        Log.d(TAG, "[onChangeVideoSize] The media(" + media.getMediaId() + ") from Peer " +
                 "(" + getPeerNameById(remotePeerId) + ") has changed the size to " + size.toString());
     }
 
@@ -679,6 +671,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         String log = "[SA][onDisconnectWithRemotePeer]" + " Our connection with Remote Peer " + getPeerIdNick(remotePeerId) + " has been terminated.";
         toastLog(TAG, context, log);
+
+        disconnectRemotePeer(remotePeerId);
     }
 
     /**
@@ -693,22 +687,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onReceiveRemotePeerLeaveRoom(String remotePeerId, SkylinkInfo skylinkInfo, UserInfo userInfo) {
         Log.d(TAG, "onReceiveRemotePeerLeaveRoom(remotePeerId: " + remotePeerId + ", SkylinkInfo: " + skylinkInfo.getDescription() + ", userInfo: " + userInfo.getUserData());
 
-        //remove remote peer and keep the index of remote peer for multi party video call function
-        int removeIndex = -1;
-        SkylinkPeer removedPeer = null;
-
-        // re-fill all peers, except local peer
-        for (int i = 1; i < mPeersList.size(); i++) {
-            if (mPeersList.get(i).getPeerId().equals(remotePeerId)) {
-                removedPeer = mPeersList.get(i);
-                mPeersList.remove(i);
-                removeIndex = i;
-                break;
-            }
-        }
-
-        //update UI when remote peer left the room
-        presenter.onServiceRequestRemotePeerLeave(removedPeer, removeIndex - 1);
+        disconnectRemotePeer(remotePeerId);
 
         int numRemotePeers = mPeersList.size() - 1;
         if (numRemotePeers >= 0) {
@@ -1345,8 +1324,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     protected void obtainInputVideoResolution(int width, int height,
                                               int fps, SkylinkCaptureFormat captureFormat, String mediaId) {
-//        Log.d(TAG, "[SA][obtainInputVideoResolution]");
-
         // TODO @Muoi need to check here as SA crash
         // media object is removed but still got video resolution???
 
@@ -1387,8 +1364,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     protected void obtainReceivedVideoResolution(int width, int height,
                                                  int fps, String mediaId, String remotePeerId) {
-//        Log.d(TAG, "[SA][obtainReceivedVideoResolution]");
-
         SkylinkMedia remoteMedia = skylinkConnection.getSkylinkMedia(mediaId);
 
         if (remoteMedia == null) {
@@ -1421,8 +1396,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     protected void obtainSentVideoResolution(int width, int height,
                                              int fps, String mediaId, String remotePeerId) {
-//        Log.d(TAG, "[SA][obtainSentVideoResolution]");
-
         // TODO @Muoi need to check here as SA crash
         // media object is removed but still got video resolution???
 
@@ -1578,5 +1551,25 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         skylinkConnectionManager.setSkylinkConnection(null);
 
         skylinkConnection = null;
+    }
+
+    private void disconnectRemotePeer(String remotePeerId) {
+        //remove remote peer in the mPeersList and remove the peer index in view
+        int removeIndex = -1;
+        SkylinkPeer removedPeer = null;
+
+        // re-fill all peers, except local peer
+        for (int i = 1; i < mPeersList.size(); i++) {
+            if (mPeersList.get(i).getPeerId().equals(remotePeerId)) {
+                removedPeer = mPeersList.get(i);
+                mPeersList.remove(i);
+                removeIndex = i;
+                break;
+            }
+        }
+
+        //update UI when remote peer left the room
+        if (removedPeer != null && removeIndex != -1)
+            presenter.onServiceRequestRemotePeerLeave(removedPeer, removeIndex - 1);
     }
 }

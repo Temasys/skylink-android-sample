@@ -28,6 +28,11 @@ public interface MultiPartyVideoCallContract {
         void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
+         * Update UI into disconnected state
+         */
+        void onPresenterRequestUpdateUIDisconnected();
+
+        /**
          * Update UI when remote peer join the room
          */
         void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);

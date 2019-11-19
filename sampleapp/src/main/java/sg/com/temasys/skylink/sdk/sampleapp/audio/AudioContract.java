@@ -33,6 +33,11 @@ public interface AudioContract {
         void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
+         * Update UI into disconnected state
+         */
+        void onPresenterRequestUpdateUIDisconnected();
+
+        /**
          * Update UI when remote peer join the room
          */
         void onPresenterRequestChangeUIRemotePeerJoin(SkylinkPeer newPeer, int index);

@@ -35,6 +35,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static android.view.View.GONE;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.SAMPLE_FILE_NAME;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
@@ -310,6 +311,16 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
     public void onPresenterRequestUpdateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         updateUILocalPeer(Config.USER_NAME_FILE);
+    }
+
+    /**
+     * Update UI into disconnected state
+     * */
+    @Override
+    public void onPresenterRequestUpdateUIDisconnected() {
+        updateRoomInfo(getResources().getString(R.string.guide_room_id));
+
+        btnLocalPeer.setVisibility(GONE);
     }
 
     /**

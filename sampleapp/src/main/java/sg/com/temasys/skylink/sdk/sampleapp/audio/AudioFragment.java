@@ -24,6 +24,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 
+import static android.view.View.GONE;
+
 /**
  * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
@@ -194,6 +196,13 @@ public class AudioFragment extends CustomActionBar implements AudioContract.View
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             img.setImageDrawable(context.getDrawable(R.drawable.ic_local_32));
         }
+    }
+
+    @Override
+    public void onPresenterRequestUpdateUIDisconnected() {
+        updateRoomInfo(getResources().getString(R.string.guide_room_id));
+
+        btnLocalPeer.setVisibility(GONE);
     }
 
     /**

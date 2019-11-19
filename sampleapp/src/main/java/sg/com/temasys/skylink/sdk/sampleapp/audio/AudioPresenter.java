@@ -141,6 +141,15 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     }
 
     @Override
+    public void onServiceRequestDisconnect() {
+        //stop audio routing
+        AudioRouter.stopAudioRouting(context);
+
+        // update UI
+        audioCallView.onPresenterRequestUpdateUIDisconnected();
+    }
+
+    @Override
     public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
         // delegate to PermissionUtils to process the permissions require
         permissionUtils.onPermissionRequiredHandler(info, TAG, context, audioCallView.onPresenterRequestGetFragmentInstance());
@@ -200,12 +209,6 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
         // Remove a remote peer by re-fill total remote peer left in the room
         // to make sure the left peers are displayed correctly
         audioCallView.onPresenterRequestChangeUIRemotePeerLeft(audioCallService.getPeersList());
-    }
-
-    @Override
-    public void onServiceRequestDisconnect() {
-        //stop audio routing
-        AudioRouter.stopAudioRouting(context);
     }
 
     //----------------------------------------------------------------------------------------------

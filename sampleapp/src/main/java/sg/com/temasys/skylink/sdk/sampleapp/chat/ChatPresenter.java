@@ -208,6 +208,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         chatMessageCollection.clear();
         selectedPeerIndex = 0;
         messageType = MESSAGE_TYPE.TYPE_SERVER;
+
+        chatView.onPresenterRequestUpdateUIDisconnected();
     }
 
     /**

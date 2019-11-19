@@ -341,6 +341,9 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onServiceRequestDisconnect() {
         //stop audio routing
         AudioRouter.stopAudioRouting(context);
+
+        // update UI
+        multiVideoCallView.onPresenterRequestUpdateUIDisconnected();
     }
 
     @Override

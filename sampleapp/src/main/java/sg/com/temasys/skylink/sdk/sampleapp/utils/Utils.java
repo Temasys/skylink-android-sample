@@ -338,7 +338,7 @@ public class Utils {
                                                     Context context, String tag) {
         String log = tag + skylinkError + "\r\n" + message;
         toastLog(tag, context, log);
-        Log.w("SkylinkWarningError", log);
+        Log.e("SkylinkWarningError", log);
     }
 
     /**
@@ -355,7 +355,7 @@ public class Utils {
         }
         toast = Toast.makeText(context, log, toastLength);
         toast.show();
-        Log.d("SkylinkInfo", log);
+//        Log.d("SkylinkInfo", log);
     }
 
     /**

@@ -21,6 +21,11 @@ public interface ChatContract {
         void onPresenterRequestUpdateUIConnected(String roomId);
 
         /**
+         * Update UI into disconnected state
+         */
+        void onPresenterRequestUpdateUIDisconnected();
+
+        /**
          * Update UI details when new remote peer joins at a specific index the room
          */
         void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);

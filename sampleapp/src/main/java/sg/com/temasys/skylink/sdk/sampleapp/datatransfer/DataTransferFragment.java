@@ -32,6 +32,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
+import static android.view.View.GONE;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.SAMPLE_DATA_NAME;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
@@ -311,6 +312,16 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
     public void onPresenterRequestUpdateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         updateUILocalPeer(Config.USER_NAME_DATA);
+    }
+
+    /**
+     * Update UI into disconnected state
+     * */
+    @Override
+    public void onPresenterRequestUpdateUIDisconnected() {
+        updateRoomInfo(getResources().getString(R.string.guide_room_id));
+
+        btnLocalPeer.setVisibility(GONE);
     }
 
     /**

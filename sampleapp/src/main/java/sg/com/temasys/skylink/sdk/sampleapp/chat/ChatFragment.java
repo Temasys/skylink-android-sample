@@ -22,6 +22,8 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 
+import static android.view.View.GONE;
+
 /**
  * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
@@ -231,6 +233,16 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     public void onPresenterRequestUpdateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         updateUILocalPeer(Config.USER_NAME_CHAT);
+    }
+
+    /**
+     * Update UI into disconnected state
+     * */
+    @Override
+    public void onPresenterRequestUpdateUIDisconnected() {
+        updateRoomInfo(getResources().getString(R.string.guide_room_id));
+
+        btnLocalPeer.setVisibility(GONE);
     }
 
     /**
