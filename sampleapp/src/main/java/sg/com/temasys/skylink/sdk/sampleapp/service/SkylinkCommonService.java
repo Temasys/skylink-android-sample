@@ -924,6 +924,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             description, String recordingId) {
         Log.d(TAG, "onReceiveRecordingError(errorCode: " + errorCode + ",description: " + description + ",recordingId: " + recordingId);
 
+        toastLogLong(TAG, context, "onReceiveRecordingError(errorCode: " + errorCode + ",description: " + description + ",recordingId: " + recordingId);
+
         presenter.onServiceRequestRecordingError(context, recordingId, errorCode, description);
     }
 

@@ -220,11 +220,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             case R.id.startVideo:
                 presenter.onViewRequestStartVideo();
                 break;
-//            case R.id.startVideoCustom:
-//                presenter.onViewRequestStartVideoCustom();
-//            case R.id.startCamera:
-//                presenter.onViewRequestStartVideoCamera();
-//                break;
             case R.id.startScreen:
                 presenter.onViewRequestStartVideoScreen();
                 break;
@@ -257,8 +252,10 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
                 break;
             case R.id.recordingStart:
                 presenter.onViewRequestStartRecording();
+                break;
             case R.id.recordingStop:
                 presenter.onViewRequestStopRecording();
+                break;
             case R.id.restart:
                 refreshConnection(currentSelectIndex, false);
                 break;
@@ -334,6 +331,16 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
             // display the context menu for local view
             displayPeerMenuOption(0);
         }
+    }
+
+    /**
+     * Update the UI into disconnected state
+     */
+    @Override
+    public void onPresenterRequestUpdateUIDisconnected() {
+        updateRoomInfo(getResources().getString(R.string.guide_room_id));
+
+        btnLocalPeer.setVisibility(GONE);
     }
 
     /**

@@ -239,9 +239,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                     toastLog(TAG, context, "\"Unable to startRecording as " + contextDescription);
                 }
             });
-
-            String error = "Recording is started...";
-            toastLog(TAG, context, error);
         }
     }
 
@@ -262,9 +259,6 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
                     toastLog(TAG, context, "\"Unable to stopRecording as " + contextDescription);
                 }
             });
-
-            String error = "Recording is stopped!";
-            toastLog(TAG, context, error);
         }
     }
 
