@@ -665,7 +665,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
             hidePeerMenuOption(i + 1);
 
-            SurfaceViewRenderer view = (SurfaceViewRenderer) peerFrameLayout.getChildAt(0);
+            View view = peerFrameLayout.getChildAt(0);
 
             if (view != null) {
                 peerFrameLayout.removeAllViews();
