@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
+package sg.com.temasys.skylink.sdk.sampleapp.multivideos;
 
 import android.content.Intent;
 import android.support.v4.app.Fragment;
@@ -7,7 +7,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
@@ -18,7 +17,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
  * This interface is responsible for specify behaviors of View, Presenter, Service
  */
 
-public interface MultiPartyVideoCallContract {
+public interface MultiVideosContract {
 
     interface View extends BaseView<Presenter> {
 
@@ -66,8 +65,6 @@ public interface MultiPartyVideoCallContract {
          * Show or hide button stop screen sharing on UI
          */
         void onPresenterRequestShowButtonStopScreenSharing();
-
-        void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice);
     }
 
     interface Presenter {

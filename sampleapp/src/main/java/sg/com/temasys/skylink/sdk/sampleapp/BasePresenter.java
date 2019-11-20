@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
@@ -152,20 +151,20 @@ public abstract class BasePresenter {
     public void onServiceRequestRecordingStart(Context context, boolean recording) {
         String log = "[SRS][SA] Recording Started! isRecording=" +
                 recording + ".";
-        toastLogLong("MultiPartyVideoCall", context, log);
+        toastLogLong("MultiVideos", context, log);
     }
 
     public void onServiceRequestRecordingStop(Context context, boolean recording) {
         String log = "[SRS][SA] Recording Stopped! isRecording=" +
                 recording + ".";
-        toastLogLong("MultiPartyVideoCall", context, log);
+        toastLogLong("MultiVideos", context, log);
     }
 
     public void onServiceRequestRecordingError(Context context, String recordingId, int errorCode, String description) {
         String log = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
                 "! Error: " + description;
-        toastLogLong("MultiPartyVideoCall", context, log);
-        Log.e("MultiPartyVideoCall", log);
+        toastLogLong("MultiVideos", context, log);
+        Log.e("MultiVideos", log);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -184,8 +183,8 @@ public abstract class BasePresenter {
         }
         // Log the transfer speeds.
 
-        Log.d("MultiPartyVideoCall", log);
-        toastLog("MultiPartyVideoCall", context, log);
+        Log.d("MultiVideos", log);
+        toastLog("MultiVideos", context, log);
     }
 
     public void onServiceRequestWebrtcStatsReceived(HashMap<String, String> stats) {
@@ -196,7 +195,7 @@ public abstract class BasePresenter {
         for (Map.Entry<String, String> entry : stats.entrySet()) {
             log.append(entry.getKey()).append(": ").append(entry.getValue()).append(".\r\n");
         }
-        Log.d("MultiPartyVideoCall", log.toString());
+        Log.d("MultiVideos", log.toString());
     }
 
     //----------------------------------------------------------------------------------------------
@@ -224,9 +223,6 @@ public abstract class BasePresenter {
     }
 
     public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
-    }
-
-    public void onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice cameraBack) {
     }
 
     public void onServiceRequestChangeRoomLockStatus(boolean roomLockStatus) {

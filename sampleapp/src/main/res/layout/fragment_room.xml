@@ -339,11 +339,11 @@
                 android:padding="5dp">
 
                 <TextView
-                    android:id="@+id/txtMultipartyVideo"
+                    android:id="@+id/txtMultiVideos"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="5dp"
-                    android:text="Multiparty Video Call Config"
+                    android:text="Multi Videos Config"
                     android:textSize="18dp"
                     tools:textColor="?attr/colorPrimary"/>
 
@@ -351,13 +351,13 @@
                     android:id="@+id/txtUserMulti"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/txtMultipartyVideo"
+                    android:layout_below="@id/txtMultiVideos"
                     android:text="UserName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
-                    android:id="@+id/edtUserNameParty"
+                    android:id="@+id/edtUserNameMultiVideos"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
@@ -372,13 +372,13 @@
                     android:id="@+id/txtRoomMulti"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/edtUserNameParty"
+                    android:layout_below="@id/edtUserNameMultiVideos"
                     android:text="RoomName"
                     android:textSize="16dp"
                     tools:textColor="?attr/colorPrimary"/>
 
                 <EditText
-                    android:id="@+id/edtRoomNameParty"
+                    android:id="@+id/edtRoomNameMultiVideos"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"

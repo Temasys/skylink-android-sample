@@ -90,8 +90,6 @@ public class CustomTriangleButton extends AppCompatButton {
 
         // draw icons
         Bitmap icon_setting = getBitmapFromVectorDrawable(this.context, R.drawable.ic_settings_white_24dp);
-//        Bitmap icon_video_normal = getBitmapFromVectorDrawable(this.context, R.drawable.ic_play_arrow_primary_16dp);
-//        Bitmap icon_video_clicked = getBitmapFromVectorDrawable(this.context, R.drawable.ic_play_arrow_primary_dark_16dp);
 
         int width = icon_setting.getWidth();
         int height = icon_setting.getHeight();
@@ -103,43 +101,16 @@ public class CustomTriangleButton extends AppCompatButton {
             poswidth = centerPosX - (width / 2);
             posHeight = centerPosY - (height / 2);
             canvas.drawBitmap(icon_setting, poswidth, posHeight, iconPaint);
-
-//            canvas.drawCircle(centerPosX, centerPosY, 20f, iconPaint);
-//
-//            width = icon_video_normal.getWidth();
-//            height = icon_video_normal.getHeight();
-//
-//            poswidth = centerPosX - (width / 2) - 1;
-//            posHeight = centerPosY - (height / 2) - 1;
-
-
         } else if (currentDirection == ButtonDirection.TOP_RIGHT) {
             icon_setting = getBitmapFromVectorDrawable(this.context, R.drawable.ic_settings_white_20dp);
 
             poswidth = centerPosX + (width / 4);
             posHeight = centerPosY - (height / 2);
             canvas.drawBitmap(icon_setting, poswidth, posHeight, iconPaint);
-
-//            poswidth = centerPosX + (width / 3 * 2);
-//            posHeight = centerPosY + (height / 4) - 20;
-//            canvas.drawCircle(poswidth, posHeight, 12f, iconPaint);
-//
-//            width = icon_video_normal.getWidth();
-//            height = icon_video_normal.getHeight();
-//
-//            poswidth = centerPosX + (width / 3 + 10);
-//            posHeight = centerPosY - (height / 2) - 5;
-
         } else if (currentDirection == ButtonDirection.BOTTOM_LEFT) {
 
         } else if (currentDirection == ButtonDirection.BOTTOM_RIGHT) {
 
-        }
-
-        if (state == ButtonState.NORMAL) {
-//            canvas.drawBitmap(icon_video_normal, poswidth, posHeight, iconPaint);
-        } else if (state == ButtonState.CLICKED) {
-//            canvas.drawBitmap(icon_video_clicked, poswidth, posHeight, iconPaint);
         }
     }
 

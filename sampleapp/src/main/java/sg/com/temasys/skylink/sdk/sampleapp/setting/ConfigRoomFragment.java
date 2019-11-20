@@ -17,37 +17,37 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_AUDI
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_CHAT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_MULTI_VIDEOS;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_CHAT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_MULTI_VIDEOS;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameAudio;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameChat;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameData;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameFile;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameParty;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameMultiVideos;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameVideo;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameAudio;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameChat;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameData;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameFile;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameParty;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameMultiVideos;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameVideo;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_MULTI_VIDEOS_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_MULTI_VIDEOS_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VIDEO_DEFAULT;
 
 /**
@@ -59,28 +59,28 @@ public class ConfigRoomFragment extends Fragment {
     public static final String PREF_ROOM_NAME_CHAT = "RoomNameChat";
     public static final String PREF_ROOM_NAME_DATA = "RoomNameData";
     public static final String PREF_ROOM_NAME_FILE = "RoomNameFile";
-    public static final String PREF_ROOM_NAME_PARTY = "RoomNameParty";
+    public static final String PREF_ROOM_NAME_MULTI_VIDEOS = "RoomNameMultiVideos";
     public static final String PREF_ROOM_NAME_VIDEO = "RoomNameVideo";
 
     public static final String PREF_USER_NAME_AUDIO = "UserNameAudio";
     public static final String PREF_USER_NAME_CHAT = "UserNameChat";
     public static final String PREF_USER_NAME_DATA = "UserNameData";
     public static final String PREF_USER_NAME_FILE = "UserNameFile";
-    public static final String PREF_USER_NAME_PARTY = "UserNameParty";
+    public static final String PREF_USER_NAME_MULTI_VIDEOS = "UserNameMultiVideos";
     public static final String PREF_USER_NAME_VIDEO = "UserNameVideo";
 
     private EditText edtRoomNameAudio;
     private EditText edtRoomNameChat;
     private EditText edtRoomNameData;
     private EditText edtRoomNameFile;
-    private EditText edtRoomNameParty;
+    private EditText edtRoomNameMultiVideos;
     private EditText edtRoomNameVideo;
 
     private EditText edtUserNameAudio;
     private EditText edtUserNameChat;
     private EditText edtUserNameData;
     private EditText edtUserNameFile;
-    private EditText edtUserNameParty;
+    private EditText edtUserNameMultiVideos;
     private EditText edtUserNameVideo;
 
     public ConfigRoomFragment() {
@@ -124,12 +124,12 @@ public class ConfigRoomFragment extends Fragment {
         edtRoomNameFile = (EditText) view.findViewById(R.id.edtRoomNameFile);
         edtRoomNameFile.setText(ROOM_NAME_FILE);
 
-        // Multi Party Video Function Value Set
-        edtUserNameParty = (EditText) view.findViewById(R.id.edtUserNameParty);
-        edtUserNameParty.setText(USER_NAME_PARTY);
+        // Multi Videos Function Value Set
+        edtUserNameMultiVideos = (EditText) view.findViewById(R.id.edtUserNameMultiVideos);
+        edtUserNameMultiVideos.setText(USER_NAME_MULTI_VIDEOS);
 
-        edtRoomNameParty = (EditText) view.findViewById(R.id.edtRoomNameParty);
-        edtRoomNameParty.setText(ROOM_NAME_PARTY);
+        edtRoomNameMultiVideos = (EditText) view.findViewById(R.id.edtRoomNameMultiVideos);
+        edtRoomNameMultiVideos.setText(ROOM_NAME_MULTI_VIDEOS);
 
         // Video Function Value Set
         edtUserNameVideo = (EditText) view.findViewById(R.id.edtUserNameVideo);
@@ -144,14 +144,14 @@ public class ConfigRoomFragment extends Fragment {
         setFocusChangeListener(edtRoomNameChat, PREF_ROOM_NAME_CHAT);
         setFocusChangeListener(edtRoomNameData, PREF_ROOM_NAME_DATA);
         setFocusChangeListener(edtRoomNameFile, PREF_ROOM_NAME_FILE);
-        setFocusChangeListener(edtRoomNameParty, PREF_ROOM_NAME_PARTY);
+        setFocusChangeListener(edtRoomNameMultiVideos, PREF_ROOM_NAME_MULTI_VIDEOS);
         setFocusChangeListener(edtRoomNameVideo, PREF_ROOM_NAME_VIDEO);
         //  - User names.
         setFocusChangeListener(edtUserNameAudio, PREF_USER_NAME_AUDIO);
         setFocusChangeListener(edtUserNameChat, PREF_USER_NAME_CHAT);
         setFocusChangeListener(edtUserNameData, PREF_USER_NAME_DATA);
         setFocusChangeListener(edtUserNameFile, PREF_USER_NAME_FILE);
-        setFocusChangeListener(edtUserNameParty, PREF_USER_NAME_PARTY);
+        setFocusChangeListener(edtUserNameMultiVideos, PREF_USER_NAME_MULTI_VIDEOS);
         setFocusChangeListener(edtUserNameVideo, PREF_USER_NAME_VIDEO);
 
         // Button to reset all values to Default values (from Constants.java)
@@ -163,14 +163,14 @@ public class ConfigRoomFragment extends Fragment {
                 edtRoomNameChat.setText(ROOM_NAME_CHAT_DEFAULT);
                 edtRoomNameData.setText(ROOM_NAME_DATA_DEFAULT);
                 edtRoomNameFile.setText(ROOM_NAME_FILE_DEFAULT);
-                edtRoomNameParty.setText(ROOM_NAME_PARTY_DEFAULT);
+                edtRoomNameMultiVideos.setText(ROOM_NAME_MULTI_VIDEOS_DEFAULT);
                 edtRoomNameVideo.setText(ROOM_NAME_VIDEO_DEFAULT);
 
                 edtUserNameAudio.setText(USER_NAME_AUDIO_DEFAULT);
                 edtUserNameChat.setText(USER_NAME_CHAT_DEFAULT);
                 edtUserNameData.setText(USER_NAME_DATA_DEFAULT);
                 edtUserNameFile.setText(USER_NAME_FILE_DEFAULT);
-                edtUserNameParty.setText(USER_NAME_PARTY_DEFAULT);
+                edtUserNameMultiVideos.setText(USER_NAME_MULTI_VIDEOS_DEFAULT);
                 edtUserNameVideo.setText(USER_NAME_VIDEO_DEFAULT);
 
                 // Set Config values to default values and write to Preferences if it had changed.
@@ -178,14 +178,14 @@ public class ConfigRoomFragment extends Fragment {
                 setRoomNameChat(ROOM_NAME_CHAT_DEFAULT, getActivity());
                 setRoomNameData(ROOM_NAME_DATA_DEFAULT, getActivity());
                 setRoomNameFile(ROOM_NAME_FILE_DEFAULT, getActivity());
-                setRoomNameParty(ROOM_NAME_PARTY_DEFAULT, getActivity());
+                setRoomNameMultiVideos(ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
                 setRoomNameVideo(ROOM_NAME_VIDEO_DEFAULT, getActivity());
 
                 setUserNameAudio(USER_NAME_AUDIO_DEFAULT, getActivity());
                 setUserNameChat(USER_NAME_CHAT_DEFAULT, getActivity());
                 setUserNameData(USER_NAME_DATA_DEFAULT, getActivity());
                 setUserNameFile(USER_NAME_FILE_DEFAULT, getActivity());
-                setUserNameParty(USER_NAME_PARTY_DEFAULT, getActivity());
+                setUserNameMultiVideos(USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
                 setUserNameVideo(USER_NAME_VIDEO_DEFAULT, getActivity());
             }
         });
@@ -219,9 +219,9 @@ public class ConfigRoomFragment extends Fragment {
                             setRoomNameFile(uiValue, getActivity());
                             editText.setText(ROOM_NAME_FILE);
                             break;
-                        case PREF_ROOM_NAME_PARTY:
-                            setRoomNameParty(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_PARTY);
+                        case PREF_ROOM_NAME_MULTI_VIDEOS:
+                            setRoomNameMultiVideos(uiValue, getActivity());
+                            editText.setText(ROOM_NAME_MULTI_VIDEOS);
                             break;
                         case PREF_ROOM_NAME_VIDEO:
                             setRoomNameVideo(uiValue, getActivity());
@@ -245,9 +245,9 @@ public class ConfigRoomFragment extends Fragment {
                             setUserNameFile(uiValue, getActivity());
                             editText.setText(USER_NAME_FILE);
                             break;
-                        case PREF_USER_NAME_PARTY:
-                            setUserNameParty(uiValue, getActivity());
-                            editText.setText(USER_NAME_PARTY);
+                        case PREF_USER_NAME_MULTI_VIDEOS:
+                            setUserNameMultiVideos(uiValue, getActivity());
+                            editText.setText(USER_NAME_MULTI_VIDEOS);
                             break;
                         case PREF_USER_NAME_VIDEO:
                             setUserNameVideo(uiValue, getActivity());

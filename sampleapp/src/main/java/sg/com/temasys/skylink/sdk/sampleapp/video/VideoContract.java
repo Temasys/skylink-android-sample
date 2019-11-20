@@ -93,10 +93,6 @@ public interface VideoContract {
 
         void onPresenterRequestMediaStateChange(SkylinkMedia.MediaType mediaType, SkylinkMedia.MediaState mediaState, boolean isLocal);
 
-        void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice);
-
-        void onPresenterRequestShowHideSmallView(SkylinkMedia.MediaType mediaType, boolean isShow);
-
         void onPresenterRequestChangeRoomLockStatus(boolean isRoomLocked);
     }
 

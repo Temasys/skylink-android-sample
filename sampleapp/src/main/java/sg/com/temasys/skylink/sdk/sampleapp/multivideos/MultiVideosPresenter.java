@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
+package sg.com.temasys.skylink.sdk.sampleapp.multivideos;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,11 +12,10 @@ import org.webrtc.SurfaceViewRenderer;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.service.MultiPartyVideoService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.MultiVideosService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
@@ -31,15 +30,15 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  * Created by muoi.pham on 20/07/18.
  * This class is responsible for processing multi videos call logic
  */
-public class MultiPartyVideoCallPresenter extends BasePresenter implements MultiPartyVideoCallContract.Presenter {
+public class MultiVideosPresenter extends BasePresenter implements MultiVideosContract.Presenter {
 
-    private final String TAG = MultiPartyVideoCallPresenter.class.getName();
+    private final String TAG = MultiVideosPresenter.class.getName();
 
     // view instance
-    public MultiPartyVideoCallContract.View multiVideoCallView;
+    public MultiVideosContract.View multiVideoCallView;
 
     // Service helps to work with SkylinkSDK
-    private MultiPartyVideoService multiVideoCallService;
+    private MultiVideosService multiVideoCallService;
 
     //Permission helps to process media runtime permission
     private PermissionUtils permissionUtils;
@@ -51,14 +50,14 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     private ConcurrentHashMap<String, Boolean> isGettingWebrtcStats =
             new ConcurrentHashMap<String, Boolean>();
 
-    public MultiPartyVideoCallPresenter(Context context) {
+    public MultiVideosPresenter(Context context) {
         this.context = context;
-        this.multiVideoCallService = new MultiPartyVideoService(this.context);
+        this.multiVideoCallService = new MultiVideosService(this.context);
         this.multiVideoCallService.setPresenter(this);
         this.permissionUtils = new PermissionUtils();
     }
 
-    public void setView(MultiPartyVideoCallContract.View view) {
+    public void setView(MultiVideosContract.View view) {
         multiVideoCallView = view;
         multiVideoCallView.setPresenter(this);
     }
@@ -231,7 +230,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     @Override
     public String onViewRequestGetRoomIdAndNickname() {
         //get id and nickname of the room by SkylinkSDK
-        return multiVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
+        return multiVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.MULTI_VIDEOS);
     }
 
     @Override
@@ -334,6 +333,8 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     public void onServiceRequestConnect(boolean isSuccessful) {
         if (isSuccessful) {
             multiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        } else{
+            multiVideoCallView.onPresenterRequestUpdateUIDisconnected();
         }
     }
 
@@ -351,7 +352,7 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
         toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         AudioRouter.setPresenter(this);
-        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
+        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.MULTI_VIDEOS);
 
         // Turn on/off speaker by the default setting for video speaker
         if (Utils.isDefaultSpeakerSettingForVideo()) {
@@ -434,8 +435,12 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
     }
 
     @Override
-    public void onServiceRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
-        multiVideoCallView.onPresenterRequestChangeDefaultVideoDevice(videoDevice);
+    public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
+        if (isSpeakerOn) {
+            toastLog(TAG, context, "Speaker is turned ON");
+        } else {
+            toastLog(TAG, context, "Speaker is turned OFF");
+        }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -447,11 +452,11 @@ public class MultiPartyVideoCallPresenter extends BasePresenter implements Multi
      */
     private void processConnectToRoom() {
         //get roomName from setting
-        String log = "Entering multi party videos room : \"" + Config.ROOM_NAME_PARTY + "\".";
+        String log = "Entering multi videos room : \"" + Config.ROOM_NAME_MULTI_VIDEOS + "\".";
         toastLog(TAG, context, log);
 
         //connect to SkylinkSDK
-        multiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO);
+        multiVideoCallService.connectToRoom(Constants.CONFIG_TYPE.MULTI_VIDEOS);
     }
 
     /**

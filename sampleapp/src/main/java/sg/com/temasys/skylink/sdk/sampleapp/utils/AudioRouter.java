@@ -320,7 +320,7 @@ public class AudioRouter {
     private static void applyDefaultAudioSetting() {
         if (callType.equals(Constants.CONFIG_TYPE.AUDIO)) {
             isSpeakerOn = Utils.isDefaultSpeakerSettingForAudio();
-        } else if (callType.equals(Constants.CONFIG_TYPE.VIDEO) || callType.equals(Constants.CONFIG_TYPE.MULTI_PARTY_VIDEO)) {
+        } else if (callType.equals(Constants.CONFIG_TYPE.VIDEO) || callType.equals(Constants.CONFIG_TYPE.MULTI_VIDEOS)) {
             isSpeakerOn = Utils.isDefaultSpeakerSettingForVideo();
         }
 

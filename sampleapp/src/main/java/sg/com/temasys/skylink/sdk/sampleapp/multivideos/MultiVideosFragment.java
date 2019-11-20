@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
+package sg.com.temasys.skylink.sdk.sampleapp.multivideos;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -25,7 +25,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -41,13 +40,13 @@ import static android.view.View.VISIBLE;
  * Created by muoi.pham on 20/07/18.
  * This class is responsible for display UI and get user interaction
  */
-public class MultiPartyVideoCallFragment extends CustomActionBar implements MultiPartyVideoCallContract.View,
+public class MultiVideosFragment extends CustomActionBar implements MultiVideosContract.View,
         OnClickListener, PopupMenu.OnMenuItemClickListener {
 
-    private final String TAG = MultiPartyVideoCallFragment.class.getName();
+    private final String TAG = MultiVideosFragment.class.getName();
 
     // presenter instance to implement app logic
-    private MultiPartyVideoCallContract.Presenter presenter;
+    private MultiVideosContract.Presenter presenter;
 
     // layout for displaying local video view
     private FrameLayout selfViewLayout;
@@ -76,12 +75,12 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
 
     private boolean isStopScreenShareBtnShowing;
 
-    public static MultiPartyVideoCallFragment newInstance() {
-        return new MultiPartyVideoCallFragment();
+    public static MultiVideosFragment newInstance() {
+        return new MultiVideosFragment();
     }
 
     @Override
-    public void setPresenter(MultiPartyVideoCallContract.Presenter presenter) {
+    public void setPresenter(MultiVideosContract.Presenter presenter) {
         this.presenter = presenter;
     }
 
@@ -100,15 +99,15 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         super.onCreate(savedInstanceState);
 
         // Allow volume to be controlled using volume keys
-        ((MultiPartyVideoCallActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        ((MultiVideosActivity) context).setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "[SA][MultiPartyVideoCallFragment][onCreateView] ");
+        Log.d(TAG, "[SA][MultiVideosFragment][onCreateView] ");
 
-        View rootView = inflater.inflate(R.layout.fragment_video_multiparty, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_multi_videos, container, false);
 
         // get the UI controls from layout
         getControlWidgets(rootView);
@@ -288,7 +287,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         super.onDetach();
 
         // Exit from room only if not changing orientation
-        if (!((MultiPartyVideoCallActivity) context).isChangingConfigurations()) {
+        if (!((MultiVideosActivity) context).isChangingConfigurations()) {
             //exit from room
             presenter.onViewRequestExit();
 
@@ -316,7 +315,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
     public void onPresenterRequestUpdateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         // update the local peer button in the action bar
-        updateUILocalPeer(Config.USER_NAME_PARTY);
+        updateUILocalPeer(Config.USER_NAME_MULTI_VIDEOS);
 
         // Remove any existing Peer View at index.
         // This may sometimes be the case, for e.g. in screen sharing.
@@ -468,11 +467,6 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
         }
     }
 
-    @Override
-    public void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
-        Config.setPrefString(Config.DEFAULT_VIDEO_DEVICE, videoDevice.getDeviceName(), (MultiPartyVideoCallActivity) context);
-    }
-
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
@@ -496,7 +490,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      * And get the view widgets in the action bar
      */
     private void setActionBar() {
-        ActionBar actionBar = ((MultiPartyVideoCallActivity) getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((MultiVideosActivity) getActivity()).getSupportActionBar();
         super.setActionBar(actionBar);
     }
 
@@ -505,7 +499,7 @@ public class MultiPartyVideoCallFragment extends CustomActionBar implements Mult
      */
     private void initControls() {
         // init setting value for room name in action bar
-        txtRoomName.setText(Config.ROOM_NAME_PARTY);
+        txtRoomName.setText(Config.ROOM_NAME_MULTI_VIDEOS);
 
         // set onClick event for buttons in layout
         btnBack.setOnClickListener(this);

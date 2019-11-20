@@ -1,4 +1,4 @@
-package sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo;
+package sg.com.temasys.skylink.sdk.sampleapp.multivideos;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,40 +10,40 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
  * Created by muoi.pham on 20/07/18.
  */
 
-public class MultiPartyVideoCallActivity extends AppCompatActivity {
+public class MultiVideosActivity extends AppCompatActivity {
 
-    private final String MULTI_PARTY_VIDEO_FRAGMENT_TAG = "MULTI_PARTY_VIDEO_FRAGMENT";
+    private final String MULTI_VIDEOS_FRAGMENT_TAG = "MULTI_VIDEOS_FRAGMENT";
 
     // presenter instance
-    private MultiPartyVideoCallPresenter multiPartyVideoPresenter;
+    private MultiVideosPresenter multiVideosPresenter;
 
     // view instance
-    private MultiPartyVideoCallFragment multiPartyVideoFragment;
+    private MultiVideosFragment multiVideosFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_multi_party_video_call);
+        setContentView(R.layout.activity_multi_videos);
 
         //create presenter
-        multiPartyVideoPresenter = new MultiPartyVideoCallPresenter(this);
+        multiVideosPresenter = new MultiVideosPresenter(this);
 
         // check previous state in case of screen rotation
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            multiPartyVideoFragment = MultiPartyVideoCallFragment.newInstance();
+            multiVideosFragment = MultiVideosFragment.newInstance();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameMultiPartyVideoCall, multiPartyVideoFragment, MULTI_PARTY_VIDEO_FRAGMENT_TAG)
+                    .add(R.id.contentFrameMultiVideos, multiVideosFragment, MULTI_VIDEOS_FRAGMENT_TAG)
                     .commit();
         } else {
-            multiPartyVideoFragment = (MultiPartyVideoCallFragment) getSupportFragmentManager()
-                    .findFragmentByTag(MULTI_PARTY_VIDEO_FRAGMENT_TAG);
+            multiVideosFragment = (MultiVideosFragment) getSupportFragmentManager()
+                    .findFragmentByTag(MULTI_VIDEOS_FRAGMENT_TAG);
         }
 
         //link between view and presenter
-        multiPartyVideoPresenter.setView(multiPartyVideoFragment);
+        multiVideosPresenter.setView(multiVideosFragment);
     }
 
     @Override
@@ -57,11 +57,11 @@ public class MultiPartyVideoCallActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         //Save the fragment's instance when changing configuration
-        getSupportFragmentManager().putFragment(outState, MULTI_PARTY_VIDEO_FRAGMENT_TAG, multiPartyVideoFragment);
+        getSupportFragmentManager().putFragment(outState, MULTI_VIDEOS_FRAGMENT_TAG, multiVideosFragment);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        multiPartyVideoPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
+        multiVideosPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
     }
 }

@@ -597,8 +597,8 @@ public class Utils {
                 return Config.ROOM_NAME_DATA;
             case FILE:
                 return Config.ROOM_NAME_FILE;
-            case MULTI_PARTY_VIDEO:
-                return Config.ROOM_NAME_PARTY;
+            case MULTI_VIDEOS:
+                return Config.ROOM_NAME_MULTI_VIDEOS;
             case VIDEO:
                 return Config.ROOM_NAME_VIDEO;
         }
@@ -616,8 +616,8 @@ public class Utils {
                 return Config.USER_NAME_DATA;
             case FILE:
                 return Config.USER_NAME_FILE;
-            case MULTI_PARTY_VIDEO:
-                return Config.USER_NAME_PARTY;
+            case MULTI_VIDEOS:
+                return Config.USER_NAME_MULTI_VIDEOS;
             case VIDEO:
                 return Config.USER_NAME_VIDEO;
         }

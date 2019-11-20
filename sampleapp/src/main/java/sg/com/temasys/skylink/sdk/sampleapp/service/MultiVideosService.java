@@ -19,7 +19,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
-import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallContract;
+import sg.com.temasys.skylink.sdk.sampleapp.multivideos.MultiVideosContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -35,18 +35,18 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
  * This class is responsible for communicating with SkylinkSDK
  */
 
-public class MultiPartyVideoService extends SkylinkCommonService implements MultiPartyVideoCallContract.Service {
+public class MultiVideosService extends SkylinkCommonService implements MultiVideosContract.Service {
 
-    private final String TAG = MultiPartyVideoService.class.getName();
+    private final String TAG = MultiVideosService.class.getName();
 
     private final int MAX_REMOTE_PEER = 3;
 
-    public MultiPartyVideoService(Context context) {
+    public MultiVideosService(Context context) {
         super(context);
     }
 
     @Override
-    public void setPresenter(MultiPartyVideoCallContract.Presenter presenter) {
+    public void setPresenter(MultiVideosContract.Presenter presenter) {
         this.presenter = (BasePresenter) presenter;
     }
 
@@ -82,7 +82,7 @@ public class MultiPartyVideoService extends SkylinkCommonService implements Mult
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // MultiPartyVideoCall config options can be:
+        // MultiVideos config options can be:
         // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);

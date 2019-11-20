@@ -10,25 +10,25 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PR
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_CHAT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_MULTI_VIDEOS;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_CHAT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_DATA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_PARTY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_MULTI_VIDEOS;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_MULTI_VIDEOS_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_PARTY_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_MULTI_VIDEOS_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VIDEO_DEFAULT;
 
 /**
@@ -57,7 +57,7 @@ public class Config {
     public static String ROOM_NAME_CHAT = ROOM_NAME_CHAT_DEFAULT;
     public static String ROOM_NAME_DATA = ROOM_NAME_DATA_DEFAULT;
     public static String ROOM_NAME_FILE = ROOM_NAME_FILE_DEFAULT;
-    public static String ROOM_NAME_PARTY = ROOM_NAME_PARTY_DEFAULT;
+    public static String ROOM_NAME_MULTI_VIDEOS = ROOM_NAME_MULTI_VIDEOS_DEFAULT;
     public static String ROOM_NAME_VIDEO = ROOM_NAME_VIDEO_DEFAULT;
 
     // Config values for user names.
@@ -65,7 +65,7 @@ public class Config {
     public static String USER_NAME_CHAT = USER_NAME_CHAT_DEFAULT;
     public static String USER_NAME_DATA = USER_NAME_DATA_DEFAULT;
     public static String USER_NAME_FILE = USER_NAME_FILE_DEFAULT;
-    public static String USER_NAME_PARTY = USER_NAME_PARTY_DEFAULT;
+    public static String USER_NAME_MULTI_VIDEOS = USER_NAME_MULTI_VIDEOS_DEFAULT;
     public static String USER_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
 
     // Constants for saving default settings of audio and video
@@ -150,14 +150,14 @@ public class Config {
         ROOM_NAME_CHAT = sharedPref.getString(PREF_ROOM_NAME_CHAT, ROOM_NAME_CHAT);
         ROOM_NAME_DATA = sharedPref.getString(PREF_ROOM_NAME_DATA, ROOM_NAME_DATA);
         ROOM_NAME_FILE = sharedPref.getString(PREF_ROOM_NAME_FILE, ROOM_NAME_FILE);
-        ROOM_NAME_PARTY = sharedPref.getString(PREF_ROOM_NAME_PARTY, ROOM_NAME_PARTY);
+        ROOM_NAME_MULTI_VIDEOS = sharedPref.getString(PREF_ROOM_NAME_MULTI_VIDEOS, ROOM_NAME_MULTI_VIDEOS);
 
         USER_NAME_AUDIO = sharedPref.getString(PREF_USER_NAME_AUDIO, USER_NAME_AUDIO);
         USER_NAME_VIDEO = sharedPref.getString(PREF_USER_NAME_VIDEO, USER_NAME_VIDEO);
         USER_NAME_CHAT = sharedPref.getString(PREF_USER_NAME_CHAT, USER_NAME_CHAT);
         USER_NAME_DATA = sharedPref.getString(PREF_USER_NAME_DATA, USER_NAME_DATA);
         USER_NAME_FILE = sharedPref.getString(PREF_USER_NAME_FILE, USER_NAME_FILE);
-        USER_NAME_PARTY = sharedPref.getString(PREF_USER_NAME_PARTY, USER_NAME_PARTY);
+        USER_NAME_MULTI_VIDEOS = sharedPref.getString(PREF_USER_NAME_MULTI_VIDEOS, USER_NAME_MULTI_VIDEOS);
     }
 
     /**
@@ -332,14 +332,14 @@ public class Config {
      * @param newValue
      * @param activity
      */
-    public static void setUserNameParty(String newValue, Activity activity) {
+    public static void setUserNameMultiVideos(String newValue, Activity activity) {
         if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_PARTY_DEFAULT;
+            newValue = USER_NAME_MULTI_VIDEOS_DEFAULT;
         }
         // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_PARTY)) {
-            USER_NAME_PARTY = newValue;
-            setPrefString(PREF_USER_NAME_PARTY, newValue, activity);
+        if (!newValue.equals(USER_NAME_MULTI_VIDEOS)) {
+            USER_NAME_MULTI_VIDEOS = newValue;
+            setPrefString(PREF_USER_NAME_MULTI_VIDEOS, newValue, activity);
         }
     }
 
@@ -446,14 +446,14 @@ public class Config {
      * @param newValue
      * @param activity
      */
-    public static void setRoomNameParty(String newValue, Activity activity) {
+    public static void setRoomNameMultiVideos(String newValue, Activity activity) {
         if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_PARTY_DEFAULT;
+            newValue = ROOM_NAME_MULTI_VIDEOS_DEFAULT;
         }
         // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_PARTY)) {
-            ROOM_NAME_PARTY = newValue;
-            setPrefString(PREF_ROOM_NAME_PARTY, newValue, activity);
+        if (!newValue.equals(ROOM_NAME_MULTI_VIDEOS)) {
+            ROOM_NAME_MULTI_VIDEOS = newValue;
+            setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS, newValue, activity);
         }
     }
 

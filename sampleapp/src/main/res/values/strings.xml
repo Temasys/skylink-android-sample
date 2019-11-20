@@ -7,7 +7,7 @@
     <string name="title_section3"> Chat </string>
     <string name="title_section4"> File Transfer </string>
     <string name="title_section5"> Data Transfer </string>
-    <string name="title_section6"> Multi-Party Video Call </string>
+    <string name="title_section6"> Multi-Videos </string>
     <string name="action_configuration"> Configuration </string>
     <string name="guide_room_id">Connect to room to get generated roomId</string>
     <string name="initing_room_id">(Room_id) is being generated...</string>

@@ -54,7 +54,7 @@
             android:label="@string/title_section5"
             android:windowSoftInputMode="stateHidden"/>
         <activity
-            android:name=".multipartyvideo.MultiPartyVideoCallActivity"
+            android:name=".multivideos.MultiVideosActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_section6"/>
         <activity

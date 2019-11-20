@@ -621,25 +621,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     }
 
     @Override
-    public void onPresenterRequestChangeDefaultVideoDevice(SkylinkConfig.VideoDevice videoDevice) {
-        Config.setPrefString(Config.DEFAULT_VIDEO_DEVICE, videoDevice.getDeviceName(), (VideoActivity) context);
-    }
-
-    @Override
-    public void onPresenterRequestShowHideSmallView(SkylinkMedia.MediaType mediaType, boolean isShow) {
-        //show/hide all small views if mediaType is null
-        if (mediaType == null) {
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_CAMERA, true, isShow);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, true, isShow);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, isShow);
-            showHideSmallFragment(SkylinkMedia.MediaType.VIDEO_SCREEN, false, isShow);
-        } else {
-            showHideSmallFragment(mediaType, true, isShow);
-            showHideSmallFragment(mediaType, false, isShow);
-        }
-    }
-
-    @Override
     public void onPresenterRequestChangeRoomLockStatus(boolean isRoomLocked) {
         this.isLockRoom = isRoomLocked;
 

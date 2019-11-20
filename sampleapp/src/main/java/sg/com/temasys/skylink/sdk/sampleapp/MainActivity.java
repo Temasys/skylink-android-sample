@@ -13,7 +13,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.multipartyvideo.MultiPartyVideoCallActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.multivideos.MultiVideosActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton;
@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void processMultiVideo() {
-        startActivity(new Intent(this, MultiPartyVideoCallActivity.class));
+        startActivity(new Intent(this, MultiVideosActivity.class));
     }
 
     private void processVideo() {
