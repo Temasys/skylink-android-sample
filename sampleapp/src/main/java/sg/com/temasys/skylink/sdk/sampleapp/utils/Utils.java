@@ -287,6 +287,15 @@ public class Utils {
         skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
 */
 /*
+        // To limit automatic reconnect to room:
+        // - after failing to connect.
+        // - after unexpected disconnection.
+        // Maximum try to reconnect only 3 times:
+        skylinkConfig.setReconnectAttempts(3);
+        // Maximum spend only 3 seconds for each connection attempt:
+        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.CONNECT_TO_ROOM, 3000);
+*/
+/*
         // To force TURN:
         skylinkConfig.setAllowHost(false);
         skylinkConfig.setAllowStun(false);
@@ -319,6 +328,7 @@ public class Utils {
         switch (skylinkInfo) {
             case CAM_OPEN_FRONT:
             case CAM_OPEN_NON_FRONT:
+            case ROOM_RECONNECT:
                 toastLog(TAG, context, log);
                 break;
             default:
