@@ -32,11 +32,11 @@ repositories {
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "sg.com.temasys.skylink.sampleapp_2_0_0_Beta"
+        applicationId "sg.com.temasys.skylink.sampleapp_2_0_0"
         minSdkVersion 16
         targetSdkVersion 27
         versionCode 1
-        versionName "2.0.0-Beta"
+        versionName "2.0.0"
         multiDexEnabled true
     }
     // Run lint checks but don't abort build
@@ -59,7 +59,7 @@ android {
         implementation 'com.android.support:recyclerview-v7:27.1.0'
         implementation(group: 'sg.com.temasys.skylink.sdk',
                 name: 'skylink_sdk',
-                version: '2.0.0-Beta-RELEASE',
+                version: '2.0.0-RELEASE',
                 ext: 'aar') {
             transitive = true
         }

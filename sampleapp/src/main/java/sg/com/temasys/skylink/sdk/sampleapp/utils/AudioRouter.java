@@ -65,7 +65,7 @@ public class AudioRouter {
                         if (isSpeakerOn) {
                             setAudioPathOnBluetooth(true);
 
-                            presenter.onServiceRequestAudioOutputChanged(true);
+                            presenter.processAudioOutputChanged(true);
                         }
                         log = logTag + "Bluetooth: off";
                         Log.d(TAG, log);
@@ -314,7 +314,7 @@ public class AudioRouter {
         }
 
         audioManager.setSpeakerphoneOn(isSpeakerOn);
-        presenter.onServiceRequestAudioOutputChanged(isSpeakerOn);
+        presenter.processAudioOutputChanged(isSpeakerOn);
     }
 
     private static void applyDefaultAudioSetting() {
@@ -341,7 +341,7 @@ public class AudioRouter {
 
         setAudioPathOnHeadedSet(isSpeakerOn);
 
-        presenter.onServiceRequestAudioOutputChanged(isSpeakerOn);
+        presenter.processAudioOutputChanged(isSpeakerOn);
 
         Log.d(TAG, log);
     }
@@ -363,6 +363,6 @@ public class AudioRouter {
 
         setAudioPathOnBluetooth(isSpeakerOn);
 
-        presenter.onServiceRequestAudioOutputChanged(isSpeakerOn);
+        presenter.processAudioOutputChanged(isSpeakerOn);
     }
 }

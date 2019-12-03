@@ -143,7 +143,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    public void processInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
         processInputVideoResolutions(width, height, fps, captureFormat);
 
         String log = "[SA][VideoResInput] The current video input has width x height, fps: " +
@@ -158,7 +158,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     }
 
     @Override
-    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+    public void processReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
         processReceivedVideoResolutions(width, height, fps);
 
         String log = "[SA][VideoResRecv] The video (" + mediaType.toString() + ") received from Peer " + peerId +
@@ -167,7 +167,7 @@ public class VideoResolutionPresenter extends BasePresenter implements VideoReso
     }
 
     @Override
-    public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+    public void processSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
         processSentVideoResolutions(width, height, fps);
 
         String log = "[SA][VideoResSent] The video (" + mediaType + ") sent to Peer " + peerId +

@@ -12,6 +12,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -27,6 +28,7 @@ public class AudioService extends SkylinkCommonService implements AudioContract.
 
     public AudioService(Context context) {
         super(context);
+        initializeSkylinkConnection(Constants.CONFIG_TYPE.AUDIO);
     }
 
     @Override

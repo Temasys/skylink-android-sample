@@ -12,6 +12,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
@@ -27,6 +28,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
 
     public DataTransferService(Context context) {
         super(context);
+        initializeSkylinkConnection(Constants.CONFIG_TYPE.DATA);
     }
 
     @Override

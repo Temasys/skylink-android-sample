@@ -68,8 +68,8 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onViewRequestConnectedLayout() {
-        Log.d(TAG, "[onViewRequestConnectedLayout]");
+    public void processConnectedLayout() {
+        Log.d(TAG, "[processConnectedLayout]");
 
         //start to connect to room when entering room
         //if not being connected, then connect
@@ -81,7 +81,7 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
             //connect to room on Skylink connection
             processConnectToRoom();
 
-            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
+            //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -89,8 +89,8 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onViewRequestStartLocalMediaIfConfigAllow() {
-        String log = "[SA][onViewRequestStartLocalMediaIfConfigAllow] ";
+    public void processStartLocalMediaIfConfigAllow() {
+        String log = "[SA][processStartLocalMediaIfConfigAllow] ";
         if (Utils.isDefaultNoneVideoDeviceSetting()) {
             log += " Default video device setting is No device. So do not start any local media automatically! ";
             Log.w(TAG, log);
@@ -120,29 +120,29 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onViewRequestStopScreenSharing() {
+    public void processStopScreenShare() {
         multiVideoCallService.toggleScreen(false);
     }
 
     @Override
-    public void onViewRequestExit() {
+    public void processExit() {
         //process disconnect from room
         multiVideoCallService.disconnectFromRoom();
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         multiVideoCallService.disposeLocalMedia();
 
-        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
     }
 
     @Override
-    public void onViewRequestResume() {
+    public void processResumeState() {
         // restart camera to continue capturing when resume
         multiVideoCallService.toggleVideo(true);
     }
 
     @Override
-    public void onViewRequestPause() {
+    public void processPauseState() {
         //stop camera when pausing so that camera will be available for the others to use
         // just in case that user are not sharing screen
 
@@ -150,49 +150,49 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
-    public void onViewRequestSwitchCamera() {
+    public void processSwitchCamera() {
         //change to back/front camera by SkylinkSDK
         multiVideoCallService.switchCamera();
     }
 
     @Override
-    public void onViewRequestStartRecording() {
+    public void processStartRecording() {
         // start recording the view call by SkylinkSDK (with SMR key)
         multiVideoCallService.startRecording();
     }
 
     @Override
-    public void onViewRequestStopRecording() {
+    public void processStopRecording() {
         // stop recording the view call by SkylinkSDK (with SMR key)
         multiVideoCallService.stopRecording();
     }
 
     @Override
-    public void onViewRequestGetInputVideoResolution() {
+    public void processGetInputVideoResolution() {
         // get local video resolution by SkylinkSDK
         multiVideoCallService.getInputVideoResolution();
     }
 
     @Override
-    public void onViewRequestGetSentVideoResolution(int peerIndex) {
+    public void processGetSentVideoResolution(int peerIndex) {
         // get video resolution sent to remote peer(s)
         multiVideoCallService.getSentVideoResolution(peerIndex, SkylinkMedia.MediaType.VIDEO_CAMERA);
     }
 
     @Override
-    public void onViewRequestGetReceivedVideoResolution(int peerIndex) {
+    public void processGetReceivedVideoResolution(int peerIndex) {
         //get received video resolution from remote peer(s)
         multiVideoCallService.getReceivedVideoResolution(peerIndex, SkylinkMedia.MediaType.VIDEO_CAMERA);
     }
 
     @Override
-    public void onViewRequestWebrtcStatsToggle(int peerIndex) {
+    public void processToggleWebrtcStats(int peerIndex) {
 
         String peerId = multiVideoCallService.getPeerIdByIndex(peerIndex);
 
@@ -218,29 +218,23 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onViewRequestGetTransferSpeeds(int peerIndex, SkylinkMedia.MediaType mediaType, boolean forSending) {
+    public void processGetTransferSpeeds(int peerIndex, SkylinkMedia.MediaType mediaType, boolean forSending) {
         multiVideoCallService.getTransferSpeeds(peerIndex, mediaType, forSending);
     }
 
     @Override
-    public void onViewRequestRefreshConnection(int peerIndex, boolean iceRestart) {
+    public void processRefreshConnection(int peerIndex, boolean iceRestart) {
         multiVideoCallService.refreshConnection(peerIndex, iceRestart);
     }
 
     @Override
-    public String onViewRequestGetRoomIdAndNickname() {
-        //get id and nickname of the room by SkylinkSDK
-        return multiVideoCallService.getRoomIdAndNickname(Constants.CONFIG_TYPE.MULTI_VIDEOS);
-    }
-
-    @Override
-    public int onViewRequestGetTotalInRoom() {
+    public int processGetTotalInRoom() {
         //get total peers in room (include local peer)
         return multiVideoCallService.getTotalInRoom();
     }
 
     @Override
-    public List<SurfaceViewRenderer> onViewRequestGetVideoViewByIndex(int index) {
+    public List<SurfaceViewRenderer> processGetVideoViewByIndex(int index) {
         return multiVideoCallService.getVideoViewByIndex(index);
     }
 
@@ -248,45 +242,35 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
      * Get the specific peer object according to the index
      */
     @Override
-    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+    public SkylinkPeer processGetPeerByIndex(int index) {
         return multiVideoCallService.getPeerByIndex(index);
     }
 
     @Override
-    public Boolean onViewRequestGetWebRtcStatsState(int peerIndex) {
-        SkylinkPeer peer = onViewRequestGetPeerByIndex(peerIndex);
+    public Boolean processGetWebRtcStatsState(int peerIndex) {
+        SkylinkPeer peer = processGetPeerByIndex(peerIndex);
         if (peer != null)
             return isGettingWebrtcStats.get(peer.getPeerId());
         return null;
     }
 
     @Override
-    public void onViewRequestStartAudio() {
+    public void processStartAudio() {
         multiVideoCallService.createLocalAudio();
     }
 
     @Override
-    public void onViewRequestStartVideo() {
+    public void processStartVideo() {
         multiVideoCallService.createLocalVideo();
     }
 
     @Override
-    public void onViewRequestStartVideoCustom() {
-        multiVideoCallService.createLocalCustomVideo();
-    }
-
-    @Override
-    public void onViewRequestStartVideoCamera() {
-        multiVideoCallService.createLocalVideo();
-    }
-
-    @Override
-    public void onViewRequestStartVideoScreen() {
+    public void processStartScreenShare() {
         multiVideoCallService.createLocalScreen();
     }
 
     @Override
-    public void onViewRequestStartSecondVideoView() {
+    public void processStartSecondVideoView() {
         if (!Utils.isDefaultScreenDeviceSetting()) {
             // start screen sharing
             multiVideoCallService.createLocalScreen();
@@ -297,20 +281,20 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onViewRequestActivityResult(int requestCode, int resultCode, Intent data) {
+    public void processActivityResult(int requestCode, int resultCode, Intent data) {
         permissionUtils.onRequestActivityResultHandler(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK && data != null) {
             //show the stop screen share button
             permissionUtils.requestButtonOverlayPermission(context,
-                    multiVideoCallView.onPresenterRequestGetFragmentInstance());
+                    multiVideoCallView.getInstance());
         }
 
         // display overlay button if permission is grant
         // or warning dialog if permission is deny
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(context)) {
-                multiVideoCallView.onPresenterRequestShowButtonStopScreenSharing();
+                multiVideoCallView.updateUIShowButtonStopScreenSharing();
             } else {
                 permissionUtils.displayOverlayButtonPermissionWarning(context);
             }
@@ -318,7 +302,7 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onServiceRequestIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+    public void processIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onIntentRequiredHandler(intent, requestCode, skylinkInfo, (Activity) context);
     }
@@ -330,26 +314,26 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
-            multiVideoCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+            multiVideoCallView.updateUIConnected(processGetRoomId());
         } else{
-            multiVideoCallView.onPresenterRequestUpdateUIDisconnected();
+            multiVideoCallView.updateUIDisconnected();
         }
     }
 
     @Override
-    public void onServiceRequestDisconnect() {
+    public void processRoomDisconnected() {
         //stop audio routing
         AudioRouter.stopAudioRouting(context);
 
         // update UI
-        multiVideoCallView.onPresenterRequestUpdateUIDisconnected();
+        multiVideoCallView.updateUIDisconnected();
     }
 
     @Override
-    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
-        toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
+    public void processLocalAudioCaptured(SkylinkMedia localAudio) {
+        toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         AudioRouter.setPresenter(this);
         AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.MULTI_VIDEOS);
@@ -363,8 +347,8 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     }
 
     @Override
-    public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
-        String log = "[SA][onServiceRequestLocalCameraCapture] ";
+    public void processLocalCameraCaptured(SkylinkMedia localVideo) {
+        String log = "[SA][processLocalCameraCaptured] ";
 
         if (localVideo.getVideoView() == null) {
             log += "VideoView is null! Try to get video view from the SDK";
@@ -372,70 +356,70 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
 
             // Able to get video view from SDK
             SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoViewById(localVideo.getMediaId());
-            multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
+            multiVideoCallView.updateUIAddLocalMediaView(selfVideoView, localVideo.getMediaType());
 
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            multiVideoCallView.onPresenterRequestAddSelfView(localVideo.getVideoView(), localVideo.getMediaType());
+            multiVideoCallView.updateUIAddLocalMediaView(localVideo.getVideoView(), localVideo.getMediaType());
         }
     }
 
     @Override
-    public void onServiceRequestLocalScreenCapture(SkylinkMedia localVideo) {
-        String log = "[SA][onServiceRequestLocalScreenCapture] ";
+    public void processLocalScreenCaptured(SkylinkMedia localVideo) {
+        String log = "[SA][processLocalScreenCaptured] ";
 
         if (localVideo.getVideoView() == null) {
             log += "VideoView is null!";
             Log.d(TAG, log);
 
             SurfaceViewRenderer selfVideoView = multiVideoCallService.getVideoViewById(localVideo.getMediaId());
-            multiVideoCallView.onPresenterRequestAddSelfView(selfVideoView, localVideo.getMediaType());
+            multiVideoCallView.updateUIAddLocalMediaView(selfVideoView, localVideo.getMediaType());
 
         } else {
             log += "Adding VideoView as selfView.";
             Log.d(TAG, log);
-            multiVideoCallView.onPresenterRequestAddSelfView(localVideo.getVideoView(), localVideo.getMediaType());
+            multiVideoCallView.updateUIAddLocalMediaView(localVideo.getVideoView(), localVideo.getMediaType());
         }
     }
 
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer skylinkPeer) {
+    public void processRemotePeerConnected(SkylinkPeer skylinkPeer) {
         // add new peer button in action bar
-        multiVideoCallView.onPresenterRequestChangeUiRemotePeerJoin(skylinkPeer, multiVideoCallService.getTotalPeersInRoom() - 2);
+        multiVideoCallView.updateUIRemotePeerConnected(skylinkPeer, multiVideoCallService.getTotalPeersInRoom() - 2);
 
         // add new webRTCStats for peer
         isGettingWebrtcStats.put(skylinkPeer.getPeerId(), false);
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1 || remotePeer == null)
             return;
 
         // Remove the peer in button in custom bar
-        multiVideoCallView.onPresenterRequestChangeUIRemotePeerLeft(removeIndex, multiVideoCallService.getPeersList());
+        multiVideoCallView.updateUIRemotePeerDisconnected(removeIndex, multiVideoCallService.getPeersList());
 
         // remove the   webRtStats of the peer
         isGettingWebrtcStats.remove(remotePeer.getPeerId());
 
         // remote the remote peer video view
-        multiVideoCallView.onPresenterRequestRemoveRemotePeer(removeIndex);
+        multiVideoCallView.updateUIRemoveRemotePeer(removeIndex);
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteMedia) {
+    public void processRemoteVideoReceived(String remotePeerId, SkylinkMedia remoteMedia) {
         processAddRemoteView(remotePeerId, remoteMedia.getMediaType(), remoteMedia.getVideoView());
     }
 
     @Override
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
-        permissionUtils.onPermissionRequiredHandler(info, TAG, context, multiVideoCallView.onPresenterRequestGetFragmentInstance());
+    public void processPermissionRequired(PermRequesterInfo info) {
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context, multiVideoCallView.getInstance());
     }
 
     @Override
-    public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
+    public void processAudioOutputChanged(boolean isSpeakerOn) {
         if (isSpeakerOn) {
             toastLog(TAG, context, "Speaker is turned ON");
         } else {
@@ -503,7 +487,7 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
 
         int index = multiVideoCallService.getPeerIndexByPeerId(remotePeerId) - 1;
 
-        multiVideoCallView.onPresenterRequestAddRemoteView(index, mediaType, videoView);
+        multiVideoCallView.updateUIAddRemoteMediaView(index, mediaType, videoView);
     }
 
     /**

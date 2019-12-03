@@ -20,32 +20,32 @@ public interface DataTransferContract {
         /**
          * Get instance of the fragment for processing runtime permission
          */
-        Fragment onPresenterRequestGetFragmentInstance();
+        Fragment getInstance();
 
         /**
          * Update UI into connected state
          */
-        void onPresenterRequestUpdateUIConnected(String roomId);
+        void updateUIConnected(String roomId);
 
         /**
          * Update UI into disconnected state
          */
-        void onPresenterRequestUpdateUIDisconnected();
+        void updateUIDisconnected();
 
         /**
          * Update UI details when new remote peer joins at a specific index the room
          */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+        void updateUIRemotePeerConnected(SkylinkPeer newPeer, int index);
 
         /**
          * Update UI details when remote peer left the room
          */
-        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
+        void updateUIRemotePeerDisconnected(List<SkylinkPeer> peersList);
 
         /**
          * Update UI when received data from remote peer
          */
-        void onPresenterRequestChangeUIReceivedData(SkylinkPeer remotePeer, byte[] data);
+        void updateUIDataReceived(SkylinkPeer remotePeer, byte[] data);
     }
 
     interface Presenter {
@@ -53,47 +53,47 @@ public interface DataTransferContract {
         /**
          * request a init connection
          */
-        void onViewRequestConnectedLayout();
+        void processConnectedLayout();
 
         /**
          * request runtime permission for read internal storage
          */
-        boolean onViewRequestFilePermission();
+        boolean processFilePermission();
 
         /**
          * process runtime file permission result
          */
-        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+        void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
         /**
          * process logic when user deny the permission
          */
-        void onViewRequestPermissionDeny();
+        void processDenyPermission();
 
         /**
          * process selecting the specific remote peer to send message to
          */
-        void onViewRequestSelectedRemotePeer(int index);
+        void processSelectRemotePeer(int index);
 
         /**
          * process get current selected peer index
          */
-        int onViewRequestGetCurrentSelectedPeer();
+        int processGetCurrentSelectedPeer();
 
         /**
          * process get peer info at specific index
          */
-        SkylinkPeer onViewRequestGetPeerByIndex(int index);
+        SkylinkPeer processGetPeerByIndex(int index);
 
         /**
          * process send file to remote peer
          */
-        void onViewRequestSendData(byte[] data);
+        void processSendData(byte[] data);
 
         /**
          * process change state when view exit/closed
          */
-        void onViewRequestExit();
+        void processExit();
     }
 
     interface Service extends BaseService<Presenter> {

@@ -18,32 +18,32 @@ public interface ChatContract {
         /**
          * Update UI into connected state
          */
-        void onPresenterRequestUpdateUIConnected(String roomId);
+        void updateUIConnected(String roomId);
 
         /**
          * Update UI into disconnected state
          */
-        void onPresenterRequestUpdateUIDisconnected();
+        void updateUIDisconnected();
 
         /**
          * Update UI details when new remote peer joins at a specific index the room
          */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+        void updateUIRemotePeerConnected(SkylinkPeer newPeer, int index);
 
         /**
          * Update UI details when remote peer left the room
          */
-        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peersList);
+        void updateUIRemotePeerDisconnected(List<SkylinkPeer> peersList);
 
         /**
          * Update UI details when need to clear the input chat
          */
-        void onPresenterRequestClearInput();
+        void updateUIClearMessageInput();
 
         /**
          * Update UI details when we need to update the messages list when new message is sent/received
          */
-        void onPresenterRequestUpdateChatCollection();
+        void updateUIChatCollection();
     }
 
     interface Presenter {
@@ -51,42 +51,42 @@ public interface ChatContract {
         /**
          * process data to display on view
          */
-        void onViewRequestConnectedLayout();
+        void processConnectedLayout();
 
         /**
          * get list of chat message
          */
-        List<String> onViewRequestGetChatCollection();
+        List<String> processGetChatCollection();
 
         /**
          * process change state when view exit/closed
          */
-        void onViewRequestExit();
+        void processExit();
 
         /**
          * process get peer info at specific index
          */
-        SkylinkPeer onViewRequestGetPeerByIndex(int index);
+        SkylinkPeer processGetPeerByIndex(int index);
 
         /**
          * process get current selected peer index
          */
-        int onViewRequestGetCurrentSelectedPeer();
+        int processGetCurrentSelectedPeer();
 
         /**
          * process selecting the specific remote peer to send message to
          */
-        void onViewRequestSelectedRemotePeer(int index);
+        void processSelectRemotePeer(int index);
 
         /**
          * process selecting message type: server or P2P
          */
-        void onViewRequestSelectedMessageType(ChatPresenter.MESSAGE_TYPE message_type);
+        void processSelectMessageType(ChatPresenter.MESSAGE_TYPE message_type);
 
         /**
          * process sending message
          */
-        void onViewRequestSendMessage(String message);
+        void processSendMessage(String message);
     }
 
     interface Service extends BaseService<Presenter> {

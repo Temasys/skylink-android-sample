@@ -138,7 +138,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         mPeersList.add(selfPeer);
 
         //update UI to connected state
-        presenter.onServiceRequestConnect(true);
+        presenter.processRoomConnected(true);
     }
 
     /**
@@ -148,7 +148,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onConnectToRoomFailed(String errorMessage) {
         Log.d(TAG, "onConnectToRoomFailed(" + errorMessage + ")");
         toastLog(TAG, context, errorMessage);
-        presenter.onServiceRequestConnect(false);
+        presenter.processRoomConnected(false);
     }
 
     /**
@@ -168,7 +168,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         toastLogLong(TAG, context, log);
 
         //update UI to disconnected state for all types call
-        presenter.onServiceRequestDisconnect();
+        presenter.processRoomDisconnected();
     }
 
     /**
@@ -184,7 +184,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                 + roomLockStatus + ".";
         toastLog(TAG, context, log);
 
-        presenter.onServiceRequestChangeRoomLockStatus(roomLockStatus);
+        presenter.processRoomLockStatusChanged(roomLockStatus);
     }
 
     /**
@@ -240,15 +240,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onCreateLocalMedia(localMedia: " + localMedia.toString());
 
         if (!localMedia.isVideo()) {
-            presenter.onServiceRequestLocalAudioCapture(localMedia);
+            presenter.processLocalAudioCaptured(localMedia);
             localAudio = localMedia;
         } else {
             if (SkylinkMedia.MediaType.VIDEO_CAMERA == localMedia.getMediaType()
                     || SkylinkMedia.MediaType.VIDEO == localMedia.getMediaType()) {
-                presenter.onServiceRequestLocalCameraCapture(localMedia);
+                presenter.processLocalCameraCaptured(localMedia);
                 localVideo = localMedia;
             } else if (SkylinkMedia.MediaType.VIDEO_SCREEN == localMedia.getMediaType()) {
-                presenter.onServiceRequestLocalScreenCapture(localMedia);
+                presenter.processLocalScreenCaptured(localMedia);
                 localScreen = localMedia;
             }
         }
@@ -276,9 +276,9 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         }
 
         if (remoteMedia.isVideo()) {
-            presenter.onServiceRequestRemotePeerVideoReceive(remotePeerId, remoteMedia);
+            presenter.processRemoteVideoReceived(remotePeerId, remoteMedia);
         } else {
-            presenter.onServiceRequestRemotePeerAudioReceive(remotePeerId);
+            presenter.processRemoteAudioReceived(remotePeerId);
         }
     }
 
@@ -310,7 +310,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             selfPeer.updateMedia(localMedia);
         }
 
-        presenter.onServiceRequestMediaStateChange(localMedia, true);
+        presenter.processMediaStateChanged(localMedia, true);
     }
 
     /**
@@ -337,7 +337,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         remotePeer.updateMedia(remoteMedia);
 
-        presenter.onServiceRequestMediaStateChange(remoteMedia, false);
+        presenter.processMediaStateChanged(remoteMedia, false);
 
         // process remove local media id for the self peer if media state is UNAVAILABLE
         if (remoteMedia.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
@@ -359,7 +359,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         toastLog(TAG, context, log);
 
-        presenter.onServiceRequestMediaStateChange(localMedia, true);
+        presenter.processMediaStateChanged(localMedia, true);
 
         if (mPeersList != null && mPeersList.size() > 0) {
             mPeersList.get(0).removeMediaId(localMedia.getMediaId());
@@ -439,7 +439,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     public void onRequirePermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         Log.d(TAG, "onRequirePermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
-        presenter.onServiceRequestIntentRequired(intent, requestCode, skylinkInfo);
+        presenter.processIntentRequired(intent, requestCode, skylinkInfo);
     }
 
     /**
@@ -452,7 +452,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     public void onGrantPermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         Log.d(TAG, "onGrantPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
-        presenter.onServiceRequestPermissionGranted(intent, requestCode, skylinkInfo);
+        presenter.processPermissionGranted(intent, requestCode, skylinkInfo);
     }
 
     /**
@@ -465,7 +465,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      */
     public void onDenyPermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         Log.d(TAG, "onDenyPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
-        presenter.onServiceRequestPermissionDenied(intent, requestCode, skylinkInfo);
+        presenter.processPermissionDenied(intent, requestCode, skylinkInfo);
     }
 
     /**
@@ -487,7 +487,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onRequirePermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, skylinkInfo);
 
-        presenter.onServiceRequestPermissionRequired(info);
+        presenter.processPermissionRequired(info);
     }
 
     /**
@@ -507,7 +507,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onGrantPermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, skylinkInfo);
 
-        presenter.onServiceRequestPermissionGranted(info);
+        presenter.processPermissionGranted(info);
     }
 
     /**
@@ -527,7 +527,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onDenyPermission(permissions: " + permissions + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         PermRequesterInfo info = new PermRequesterInfo(permissions, requestCode, skylinkInfo);
 
-        presenter.onServiceRequestPermissionDenied(context, info);
+        presenter.processPermissionDenied(context, info);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -589,7 +589,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         SkylinkPeer remotePeer = new SkylinkPeer(remotePeerId, remotePeerName);
         mPeersList.add(remotePeer);
 
-        presenter.onServiceRequestRemotePeerJoin(remotePeer);
+        presenter.processRemotePeerConnected(remotePeer);
 
         logTag += "Your Peer " + getPeerIdNick(remotePeerId) + " connected.";
         toastLog(TAG, context, logTag);
@@ -730,7 +730,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onReceiveData(byte[] data, String remotePeerId) {
         Log.d(TAG, "onReceiveData(data: " + data.length + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestDataReceive(context, remotePeerId, data);
+        presenter.processDataReceive(context, remotePeerId, data);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -750,7 +750,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                                              boolean isPublic, String remotePeerId) {
         Log.d(TAG, "onReceiveFileTransferRequest(fileName: " + fileName + ", isPublic: " + isPublic + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileTransferPermissionRequest(remotePeerId, fileName, !isPublic);
+        presenter.processFilePermissionRequested(remotePeerId, fileName, !isPublic);
     }
 
     /**
@@ -766,7 +766,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             fileName, String remotePeerId) {
         Log.d(TAG, "onReceiveFileTransferResponse(wasAccepted: " + wasAccepted + ",fileName: " + fileName + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileTransferPermissionResponse(context, remotePeerId, fileName, wasAccepted);
+        presenter.processFilePermissionResponded(context, remotePeerId, fileName, wasAccepted);
     }
 
     /**
@@ -783,7 +783,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
                                    boolean isExplicit, String remotePeerId) {
         Log.d(TAG, "onDropFileTransfer(fileName: " + fileName + ",message: " + message + ", isExplicit: " + isExplicit + ",remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileTransferDrop(context, remotePeerId, fileName, message, isExplicit);
+        presenter.processFileDropped(context, remotePeerId, fileName, message, isExplicit);
     }
 
     /**
@@ -797,7 +797,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             remotePeerId) {
         Log.d(TAG, "onCompleteFileTransferSending(fileName: " + fileName + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileSendComplete(context, remotePeerId, fileName);
+        presenter.processFileSentCompleted(context, remotePeerId, fileName);
     }
 
     /**
@@ -811,7 +811,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             remotePeerId) {
         Log.d(TAG, "onCompleteFileTransferReceiving(fileName: " + fileName + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileReceiveComplete(remotePeerId, fileName);
+        presenter.processFileReceivedCompleted(remotePeerId, fileName);
     }
 
     /**
@@ -826,7 +826,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             fileName, String remotePeerId) {
         Log.d(TAG, "onUpdateFileTransferSendingProgress(percentage: " + percentage + ",fileName: " + fileName + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileSendProgress(context, remotePeerId, fileName, percentage);
+        presenter.processFileSentProgressed(context, remotePeerId, fileName, percentage);
     }
 
     /**
@@ -841,7 +841,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             double percentage, String fileName, String remotePeerId) {
         Log.d(TAG, "onUpdateFileTransferReceivingProgress(percentage: " + percentage + ",fileName: " + fileName + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestFileReceiveProgress(context, remotePeerId, fileName, percentage);
+        presenter.processFileReceivedProgressed(context, remotePeerId, fileName, percentage);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -863,7 +863,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             remotePeerId) {
         Log.d(TAG, "onReceiveServerMessage(message: " + message + ",isPublic: " + isPublic + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestServerMessageReceive(remotePeerId, message, !isPublic);
+        presenter.processServerMessageReceived(remotePeerId, message, !isPublic);
     }
 
     /**
@@ -881,7 +881,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             remotePeerId) {
         Log.d(TAG, "onReceiveP2PMessage(message: " + message + ",isPublic: " + isPublic + ", remotePeerId: " + remotePeerId);
 
-        presenter.onServiceRequestP2PMessageReceive(remotePeerId, message, !isPublic);
+        presenter.processP2PMessageReceived(remotePeerId, message, !isPublic);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -897,7 +897,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onStartRecording(String recordingId) {
         Log.d(TAG, "onStartRecording(recordingId: " + recordingId);
 
-        presenter.onServiceRequestRecordingStart(context, skylinkConnection.isRecording());
+        presenter.processRecordingStarted(context, skylinkConnection.isRecording());
     }
 
     /**
@@ -909,7 +909,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onStopRecording(String recordingId) {
         Log.d(TAG, "onStopRecording(recordingId: " + recordingId);
 
-        presenter.onServiceRequestRecordingStop(context, skylinkConnection.isRecording());
+        presenter.processRecordingStopped(context, skylinkConnection.isRecording());
     }
 
     /**
@@ -926,7 +926,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         toastLogLong(TAG, context, "onReceiveRecordingError(errorCode: " + errorCode + ",description: " + description + ",recordingId: " + recordingId);
 
-        presenter.onServiceRequestRecordingError(context, recordingId, errorCode, description);
+        presenter.processRecordingError(context, recordingId, errorCode, description);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -1342,7 +1342,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         // if the current demo has video resolution fragment to reflect the change
         if (videoResPresenter != null)
-            videoResPresenter.onServiceRequestInputVideoResolutionObtained(mediaType, width, height, fps, captureFormat);
+            videoResPresenter.processInputVideoResolutionObtained(mediaType, width, height, fps, captureFormat);
         else {
             String log = "[SA][obtainInputVideoResolution] The local video (" + mediaType.toString() + ") input has width x height, fps: " +
                     width + " x " + height + ", " + fps + " fps.\r\n";
@@ -1374,7 +1374,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         // if the current demo has video resolution fragment to reflect the change
         if (videoResPresenter != null && remoteMedia.getMediaType() != null)
-            videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeerId, remoteMedia.getMediaType(), width, height, fps);
+            videoResPresenter.processReceivedVideoResolutionObtained(remotePeerId, remoteMedia.getMediaType(), width, height, fps);
         else {
             String log = "[SA][obtainReceivedVideoResolution] The video (" + remoteMedia.getMediaType().toString() + ") received from Peer " + remotePeerId +
                     " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
@@ -1414,7 +1414,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         // if the current demo has video resolution fragment to reflect the change
         if (videoResPresenter != null)
-            videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeerId, mediaType, width, height, fps);
+            videoResPresenter.processSentVideoResolutionObtained(remotePeerId, mediaType, width, height, fps);
         else {
             String log = "[SA][obtainSentVideoResolution] The video (" + mediaType.toString() + ") sent to Peer " + remotePeerId +
                     " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
@@ -1538,21 +1538,21 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     protected void clearInstance() {
-        if (skylinkConnection == null)
-            return;
+//        if (skylinkConnection == null)
+//            return;
 
         //remove all peers in room
         if (mPeersList != null)
             mPeersList.clear();
 
         // reset class variables instance
-        skylinkConnection.clearInstance();
+//        skylinkConnection.clearInstance();
         localAudio = null;
         localVideo = null;
         localScreen = null;
-        skylinkConnectionManager.setSkylinkConnection(null);
+//        skylinkConnectionManager.setSkylinkConnection(null);
 
-        skylinkConnection = null;
+//        skylinkConnection = null;
     }
 
     private void disconnectRemotePeer(String remotePeerId) {
@@ -1572,6 +1572,6 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
         //update UI when remote peer left the room
         if (removedPeer != null && removeIndex != -1)
-            presenter.onServiceRequestRemotePeerLeave(removedPeer, removeIndex - 1);
+            presenter.processRemotePeerDisconnected(removedPeer, removeIndex - 1);
     }
 }

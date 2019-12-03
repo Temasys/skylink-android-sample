@@ -13,6 +13,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
@@ -30,6 +31,7 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
 
     public FileTransferService(Context context) {
         super(context);
+        initializeSkylinkConnection(Constants.CONFIG_TYPE.FILE);
     }
 
     @Override

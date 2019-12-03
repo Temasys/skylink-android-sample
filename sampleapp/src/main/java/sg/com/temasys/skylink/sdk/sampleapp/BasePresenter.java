@@ -32,64 +32,64 @@ public abstract class BasePresenter {
     // Methods which are from LifeCycleListener need to be implemented for all functions
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
     }
 
-    public void onServiceRequestDisconnect() {
+    public void processRoomDisconnected() {
     }
 
     //----------------------------------------------------------------------------------------------
     // Methods which are from RemotePeerListener need to be implemented for all functions
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
+    public void processRemotePeerConnected(SkylinkPeer newPeer) {
     }
 
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer remotePeer, int removeIndex) {
     }
 
     //----------------------------------------------------------------------------------------------
     // Methods which are from MediaListener need to be implemented for audio and video
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestRemotePeerAudioReceive(String remotePeerId) {
+    public void processRemoteAudioReceived(String remotePeerId) {
     }
 
-    public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
+    public void processRemoteVideoReceived(String remotePeerId, SkylinkMedia remoteVideo) {
     }
 
-    public void onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+    public void processInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
     }
 
-    public void onServiceRequestReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+    public void processReceivedVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
     }
 
-    public void onServiceRequestSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
+    public void processSentVideoResolutionObtained(String peerId, SkylinkMedia.MediaType mediaType, int width, int height, int fps) {
     }
 
     //----------------------------------------------------------------------------------------------
     // Methods which are from OsListener need to be implemented for audio, video, fileTransfer, multiVideo functions
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+    public void processIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
     }
 
-    public void onServiceRequestPermissionGranted(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+    public void processPermissionGranted(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         PermissionUtils.onPermissionGrantedHandler(requestCode, skylinkInfo, true);
     }
 
-    public void onServiceRequestPermissionDenied(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+    public void processPermissionDenied(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         PermissionUtils.onPermissionGrantedHandler(requestCode, skylinkInfo, false);
     }
 
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+    public void processPermissionRequired(PermRequesterInfo info) {
     }
 
-    public void onServiceRequestPermissionGranted(PermRequesterInfo info) {
+    public void processPermissionGranted(PermRequesterInfo info) {
         PermissionUtils.onPermissionGrantedHandler(info);
     }
 
-    public void onServiceRequestPermissionDenied(Context context, PermRequesterInfo info) {
+    public void processPermissionDenied(Context context, PermRequesterInfo info) {
         PermissionUtils.onPermissionDeniedHandler(info, context);
     }
 
@@ -97,17 +97,17 @@ public abstract class BasePresenter {
     // Methods which are from DataTransferListener need to be implemented for dataTransfer function
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestDataReceive(Context context, String remotePeerId, byte[] data) {
+    public void processDataReceive(Context context, String remotePeerId, byte[] data) {
     }
 
     //----------------------------------------------------------------------------------------------
     // Methods which are from FileTransferListener need to be implemented for fileTransfer function
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
+    public void processFilePermissionRequested(String remotePeerId, String fileName, boolean isPrivate) {
     }
 
-    public void onServiceRequestFileTransferPermissionResponse(Context context, String remotePeerId, String fileName, boolean isPermitted) {
+    public void processFilePermissionResponded(Context context, String remotePeerId, String fileName, boolean isPermitted) {
         if (isPermitted) {
             String log = "Sending file";
             toastLog("FileTransfer", context, log);
@@ -117,50 +117,50 @@ public abstract class BasePresenter {
         }
     }
 
-    public void onServiceRequestFileTransferDrop(Context context, String remotePeerId, String fileName, String message, boolean isExplicit) {
+    public void processFileDropped(Context context, String remotePeerId, String fileName, String message, boolean isExplicit) {
         String log = "The file transfer was dropped.\nReason : " + message;
         toastLogLong("FileTransfer", context, log);
     }
 
-    public void onServiceRequestFileSendComplete(Context context, String remotePeerId, String fileName) {
+    public void processFileSentCompleted(Context context, String remotePeerId, String fileName) {
     }
 
-    public void onServiceRequestFileReceiveComplete(String remotePeerId, String fileName) {
+    public void processFileReceivedCompleted(String remotePeerId, String fileName) {
     }
 
-    public void onServiceRequestFileSendProgress(Context context, String remotePeerId, String fileName, double percentage) {
+    public void processFileSentProgressed(Context context, String remotePeerId, String fileName, double percentage) {
     }
 
-    public void onServiceRequestFileReceiveProgress(Context context, String remotePeerId, String fileName, double percentage) {
+    public void processFileReceivedProgressed(Context context, String remotePeerId, String fileName, double percentage) {
     }
 
     //----------------------------------------------------------------------------------------------
     // Methods which are from MessagesListener need to be implemented for chat function
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+    public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
     }
 
-    public void onServiceRequestP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+    public void processP2PMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
     }
 
     //----------------------------------------------------------------------------------------------
     // Methods which are from RecordingListener need to be implemented for recording (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestRecordingStart(Context context, boolean recording) {
+    public void processRecordingStarted(Context context, boolean recording) {
         String log = "[SRS][SA] Recording Started! isRecording=" +
                 recording + ".";
         toastLogLong("MultiVideos", context, log);
     }
 
-    public void onServiceRequestRecordingStop(Context context, boolean recording) {
+    public void processRecordingStopped(Context context, boolean recording) {
         String log = "[SRS][SA] Recording Stopped! isRecording=" +
                 recording + ".";
         toastLogLong("MultiVideos", context, log);
     }
 
-    public void onServiceRequestRecordingError(Context context, String recordingId, int errorCode, String description) {
+    public void processRecordingError(Context context, String recordingId, int errorCode, String description) {
         String log = "[SRS][SA] Received Recording error with errorCode:" + errorCode +
                 "! Error: " + description;
         toastLogLong("MultiVideos", context, log);
@@ -171,7 +171,7 @@ public abstract class BasePresenter {
     // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void onServiceRequestTransferSpeedReceived(double transferSpeed, String remotePeerId, boolean forSending, Context context) {
+    public void processTransferSpeedReceived(double transferSpeed, String remotePeerId, boolean forSending, Context context) {
 
         String log;
         if (!forSending) {
@@ -187,7 +187,7 @@ public abstract class BasePresenter {
         toastLog("MultiVideos", context, log);
     }
 
-    public void onServiceRequestWebrtcStatsReceived(HashMap<String, String> stats) {
+    public void processWebrtcStatsReceived(HashMap<String, String> stats) {
         // Log the WebRTC stats.
         StringBuilder log =
                 new StringBuilder("[SA][WStatsRecv] Received stats: " +
@@ -210,21 +210,21 @@ public abstract class BasePresenter {
      *
      * @param isSpeakerOn the state of audio speaker on/off
      */
-    public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
+    public void processAudioOutputChanged(boolean isSpeakerOn) {
     }
 
-    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
+    public void processLocalAudioCaptured(SkylinkMedia localAudio) {
     }
 
-    public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
+    public void processLocalCameraCaptured(SkylinkMedia localVideo) {
     }
 
-    public void onServiceRequestLocalScreenCapture(SkylinkMedia localVideo) {
+    public void processLocalScreenCaptured(SkylinkMedia localVideo) {
     }
 
-    public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
+    public void processMediaStateChanged(SkylinkMedia media, boolean isLocal) {
     }
 
-    public void onServiceRequestChangeRoomLockStatus(boolean roomLockStatus) {
+    public void processRoomLockStatusChanged(boolean roomLocked) {
     }
 }

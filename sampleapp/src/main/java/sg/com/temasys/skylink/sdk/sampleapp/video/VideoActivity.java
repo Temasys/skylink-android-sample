@@ -23,8 +23,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionPrese
 
 public class VideoActivity extends AppCompatActivity {
 
-    private final String TAG = VideoFragment.class.getName();
-
     private final String VIDEO_MAIN_FRAGMENT_TAG = "VIDEO_MAIN_FRAGMENT";
     private final String VIDEO_RES_FRAGMENT_TAG = "VIDEO_RES_FRAGMENT";
     private final String VIDEO_LOCAL_CAMERA_VIEW_TAG = "VIDEO_LOCAL_CAMERA_VIEW_FRAGMENT";
@@ -146,7 +144,7 @@ public class VideoActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        videoPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
+        videoPresenter.processActivityResult(requestCode, resultCode, data);
     }
 
     public void onShowHideVideoResFragment(boolean isVisible) {
@@ -422,13 +420,6 @@ public class VideoActivity extends AppCompatActivity {
 
     public void resetResolution() {
         videoResolutionFragment.resetResolution();
-    }
-
-    public void resetSmallViews() {
-        onShowHideLocalCameraViewFragment(false, false);
-        onShowHideLocalScreenViewFragment(false, false);
-        onShowHideRemoteCameraViewFragment(false, false);
-        onShowHideRemoteScreenViewFragment(false, false);
     }
 
     public void resetSmallRemoteViews() {

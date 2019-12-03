@@ -11,7 +11,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
@@ -83,20 +82,20 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onViewRequestConnectedLayout() {
+    public void processConnectedLayout() {
         Log.d(TAG, "onViewLayoutRequested");
 
         //connect to room on Skylink connection
         processConnectToRoom();
 
         //get default audio output settings
-        mainView.onPresenterRequestChangeSpeakerOutput(this.currentVideoSpeaker);
+        mainView.updateUIAudioOutputChanged(this.currentVideoSpeaker);
 
-        //after connected to skylink SDK, UI will be updated latter on onServiceRequestConnect
+        //after connected to skylink SDK, UI will be updated latter on processRoomConnected
     }
 
     @Override
-    public void onViewRequestResume() {
+    public void processResumeState() {
 
         // do not process if user has not started video from camera
         if (videoService.getLocalVideo() == null) {
@@ -116,7 +115,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestPause() {
+    public void processPauseState() {
         // stop camera when pausing so that camera will be available for the others to use
         // we just stop local video camera if there is only 1 active camera at current time
         // if there is an active screen, do not stop local camera as it may be intention of the user
@@ -129,14 +128,14 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestDisconnectFromRoom() {
+    public void processDisconnectFromRoom() {
         videoService.disconnectFromRoom();
     }
 
     @Override
-    public void onViewRequestExit() {
+    public void processExit() {
         //process disconnect from room if connecting
-        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
         videoService.disconnectFromRoom();
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
@@ -144,7 +143,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestChangeAudioState() {
+    public void processChangeAudioState() {
         SkylinkMedia localAudio = videoService.getLocalAudio();
 
         // do not process if user has not started audio
@@ -161,7 +160,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestChangeVideoState() {
+    public void processChangeVideoState() {
         SkylinkMedia localVideo = videoService.getLocalVideo();
 
         // do not process if user has not started video from camera
@@ -178,7 +177,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestChangeScreenState() {
+    public void processChangeScreenState() {
         // do not process if user has not started screen sharing
         SkylinkMedia localScreen = videoService.getLocalScreen();
 
@@ -195,36 +194,36 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestChangeSpeakerOutput() {
+    public void processChangeAudioOutput() {
         //change current speakerOn
         this.currentVideoSpeaker = !this.currentVideoSpeaker;
 
-        // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+        // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
         videoService.changeSpeakerOutput(this.currentVideoSpeaker);
     }
 
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
 
     @Override
-    public void onViewRequestActivityResult(int requestCode, int resultCode, Intent data) {
+    public void processActivityResult(int requestCode, int resultCode, Intent data) {
         permissionUtils.onRequestActivityResultHandler(requestCode, resultCode, data);
 
         // for displaying overlay button permission
         if (resultCode == Activity.RESULT_OK && data != null) {
             // send request permission for displaying overlay button
             if (requestButtonOverlayPermission()) {
-                mainView.onPresenterRequestShowButtonStopScreenSharing();
+                mainView.updateUIShowButtonStopScreenShare();
             }
             return;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(context)) {
-                mainView.onPresenterRequestShowButtonStopScreenSharing();
+                mainView.updateUIShowButtonStopScreenShare();
             } else {
                 if (permissionUtils.isSendOverlayAlready()) {
                     permissionUtils.displayOverlayButtonPermissionWarning(context);
@@ -239,22 +238,22 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
      * Get the specific peer object according to the index
      */
     @Override
-    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+    public SkylinkPeer processGetPeerByIndex(int index) {
         return videoService.getPeerByIndex(index);
     }
 
     @Override
-    public void onViewRequestSwitchCamera() {
+    public void processSwitchCamera() {
         videoService.switchCamera();
     }
 
     @Override
-    public void onViewRequestStartAudio() {
+    public void processStartAudio() {
         videoService.createLocalAudio();
     }
 
     @Override
-    public void onViewRequestToggleVideo() {
+    public void processToggleVideo() {
         // implement start or stop video base on the state of the current video from camera
         SkylinkMedia localVideo = videoService.getLocalVideo();
 
@@ -267,7 +266,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestToggleScreen() {
+    public void processToggleScreen() {
         // implement start or stop video base on the state of the current video from camera
         SkylinkMedia localScreen = videoService.getLocalScreen();
 
@@ -280,28 +279,28 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestToggleScreen(boolean toActive) {
+    public void processToggleScreen(boolean toActive) {
         videoService.toggleScreen(toActive);
     }
 
     @Override
-    public void onViewRequestRemoveAudio() {
+    public void processRemoveAudio() {
         videoService.destroyLocalAudio();
     }
 
     @Override
-    public void onViewRequestRemoveVideo() {
+    public void processRemoveVideo() {
         videoService.destroyLocalVideo();
     }
 
     @Override
-    public void onViewRequestRemoveScreen() {
+    public void processRemoveScreen() {
         videoService.destroyLocalScreen();
     }
 
     @Override
-    public void onViewRequestStartLocalMediaIfConfigAllow() {
-        String log = "[SA][onViewRequestStartLocalMediaIfConfigAllow] ";
+    public void processStartLocalMediaIfConfigAllow() {
+        String log = "[SA][processStartLocalMediaIfConfigAllow] ";
         if (Utils.isDefaultNoneVideoDeviceSetting()) {
             log += " Default video device setting is No device. So do not start any local media automatically! ";
             Log.w(TAG, log);
@@ -331,12 +330,12 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onViewRequestLockRoom() {
+    public void processLockRoom() {
         videoService.lockRoom();
     }
 
     @Override
-    public void onViewRequestUnlockRoom() {
+    public void processUnlockRoom() {
         videoService.unlockRoom();
     }
 
@@ -346,7 +345,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
             processUpdateStateConnected();
         } else {
@@ -355,33 +354,33 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onServiceRequestDisconnect() {
+    public void processRoomDisconnected() {
         processDisconnectUIChange();
     }
 
     @Override
-    public void onServiceRequestIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
+    public void processIntentRequired(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onIntentRequiredHandler(intent, requestCode, skylinkInfo, (Activity) context);
     }
 
     @Override
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+    public void processPermissionRequired(PermRequesterInfo info) {
         // delegate to PermissionUtils to process the permissions
-        permissionUtils.onPermissionRequiredHandler(info, TAG, context, mainView.onPresenterRequestGetFragmentInstance());
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context, mainView.getInstance());
     }
 
     @Override
-    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
-        toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
+    public void processLocalAudioCaptured(SkylinkMedia localAudio) {
+        toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         //notify view to change the UI
-        mainView.onPresenterRequestLocalAudioCapture(localAudio.getMediaId());
+        mainView.updateUILocalAudioAdded(localAudio.getMediaId());
     }
 
     @Override
-    public void onServiceRequestLocalCameraCapture(SkylinkMedia localVideo) {
-        String log = "[SA][onServiceRequestLocalCameraCapture] ";
+    public void processLocalCameraCaptured(SkylinkMedia localVideo) {
+        String log = "[SA][processLocalCameraCaptured] ";
         toastLog(log, context, "Local video camera is on with id = " + localVideo.getMediaId());
 
         SurfaceViewRenderer selfVideoView = localVideo.getVideoView();
@@ -397,12 +396,12 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         }
 
         //notify view to change the UI
-        mainView.onPresenterRequestAddCameraSelfView(localVideo.getMediaId(), selfVideoView);
+        mainView.updateUILocalCameraAdded(localVideo.getMediaId(), selfVideoView);
     }
 
     @Override
-    public void onServiceRequestLocalScreenCapture(SkylinkMedia localScreen) {
-        String log = "[SA][onServiceRequestLocalScreenCapture] ";
+    public void processLocalScreenCaptured(SkylinkMedia localScreen) {
+        String log = "[SA][processLocalScreenCaptured] ";
         toastLog(log, context, "Local video screen is on with id = " + localScreen.getMediaId());
 
         SurfaceViewRenderer selfVideoView = localScreen.getVideoView();
@@ -418,13 +417,13 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         }
 
         //notify view to change the UI
-        mainView.onPresenterRequestAddScreenSelfView(localScreen.getMediaId(), selfVideoView);
+        mainView.updateUILocalScreenAdded(localScreen.getMediaId(), selfVideoView);
     }
 
     @Override
-    public void onServiceRequestMediaStateChange(SkylinkMedia media, boolean isLocal) {
+    public void processMediaStateChanged(SkylinkMedia media, boolean isLocal) {
         // change the UI
-        mainView.onPresenterRequestMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
+        mainView.updateUIMediaStateChange(media.getMediaType(), media.getMediaState(), isLocal);
 
         // stop audio routing when remote audio is unavailable
         if (!isLocal && !media.isVideo() && media.getMediaState() == SkylinkMedia.MediaState.UNAVAILABLE) {
@@ -433,48 +432,48 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
+    public void processRemotePeerConnected(SkylinkPeer remotePeer) {
         // Fill the new peer in button in custom bar
-        mainView.onPresenterRequestChangeUiRemotePeerJoin(remotePeer, videoService.getTotalPeersInRoom() - 2);
+        mainView.updateUIRemotePeerConnected(remotePeer, videoService.getTotalPeersInRoom() - 2);
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1 || remotePeer == null)
             return;
 
         // Remove the peer in button in custom bar
-        mainView.onPresenterRequestChangeUiRemotePeerLeft(videoService.getPeersList());
+        mainView.updateUIRemotePeerDisconnected(videoService.getPeersList());
 
         // remove the remote peer video view
-        mainView.onPresenterRequestRemoveRemotePeer();
+        mainView.updateUIRemoveRemotePeer();
 
-        videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
-        videoResPresenter.onServiceRequestSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
-        videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
-        videoResPresenter.onServiceRequestReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
+        videoResPresenter.processSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
+        videoResPresenter.processSentVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
+        videoResPresenter.processReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_CAMERA, -1, -1, -1);
+        videoResPresenter.processReceivedVideoResolutionObtained(remotePeer.getPeerId(), SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1);
     }
 
     @Override
-    public void onServiceRequestRemotePeerAudioReceive(String remotePeerId) {
+    public void processRemoteAudioReceived(String remotePeerId) {
         AudioRouter.setPresenter(this);
         AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
 
-        // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+        // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
         videoService.changeSpeakerOutput(this.currentVideoSpeaker);
 
-        mainView.onPresenterRequestReceiveRemoteAudio(remotePeerId);
+        mainView.updateUIReceiveRemoteAudio(remotePeerId);
     }
 
     @Override
-    public void onServiceRequestRemotePeerVideoReceive(String remotePeerId, SkylinkMedia remoteVideo) {
+    public void processRemoteVideoReceived(String remotePeerId, SkylinkMedia remoteVideo) {
         processAddRemoteView(remotePeerId, remoteVideo);
     }
 
     @Override
-    public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
-        mainView.onPresenterRequestChangeSpeakerOutput(isSpeakerOn);
+    public void processAudioOutputChanged(boolean isSpeakerOn) {
+        mainView.updateUIAudioOutputChanged(isSpeakerOn);
         this.currentVideoSpeaker = isSpeakerOn;
 
         if (isSpeakerOn) {
@@ -487,8 +486,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     }
 
     @Override
-    public void onServiceRequestChangeRoomLockStatus(boolean roomLockStatus) {
-        mainView.onPresenterRequestChangeRoomLockStatus(roomLockStatus);
+    public void processRoomLockStatusChanged(boolean roomLocked) {
+        mainView.updateUIRoomLockStatusChanged(roomLocked);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -509,7 +508,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
      */
     private void processDisconnectUIChange() {
         // update UI
-        mainView.onPresenterRequestDisconnectUIChange();
+        mainView.updateUIDisconnected();
     }
 
     /**
@@ -517,27 +516,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
      * when user first choose browsing file from device, permission request dialog will be display
      */
     private boolean requestButtonOverlayPermission() {
-        return permissionUtils.requestButtonOverlayPermission(context, mainView.onPresenterRequestGetFragmentInstance());
-    }
-
-    // If screen video is enabled, mute screen video and if screen video is mute, then enable it
-    private void processScreenStateChanged(boolean toMuted) {
-        //set mute screen video to sdk
-        videoService.muteLocalScreen(toMuted);
-    }
-
-    /**
-     * Get video view by remote peer id
-     */
-    private SurfaceViewRenderer processGetVideoView(String mediaId) {
-        return videoService.getVideoView(mediaId);
-    }
-
-    /**
-     * Get the remote video view from peer id
-     */
-    private SurfaceViewRenderer processGetRemoteView(String mediaId) {
-        return processGetVideoView(mediaId);
+        return permissionUtils.requestButtonOverlayPermission(context, mainView.getInstance());
     }
 
     /**
@@ -577,9 +556,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_CAMERA ||
                 remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO) {
-            mainView.onPresenterRequestAddCameraRemoteView(videoView);
+            mainView.updateUIReceiveRemoteVideo(videoView);
         } else if (remoteMedia.getMediaType() == SkylinkMedia.MediaType.VIDEO_SCREEN) {
-            mainView.onPresenterRequestAddScreenRemoteView(videoView);
+            mainView.updateUIReceiveRemoteScreen(videoView);
         }
     }
 
@@ -587,7 +566,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
      * Update UI when connected to room
      */
     private void processUpdateStateConnected() {
-        mainView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        mainView.updateUIConnected(processGetRoomId());
     }
 
     /**

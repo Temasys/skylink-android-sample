@@ -130,7 +130,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
 
         // just in case that user are not sharing screen, then stop the camera
         if (localViews[1] == null || !isStopScreenShareBtnShowing) {
-            presenter.onViewRequestResume();
+            presenter.processResumeState();
         }
     }
 
@@ -140,7 +140,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
 
         // just in case that user are not sharing screen, then stop the camera
         if (localViews[1] == null || !isStopScreenShareBtnShowing) {
-            presenter.onViewRequestPause();
+            presenter.processPauseState();
         }
     }
 
@@ -148,7 +148,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
-        presenter.onViewRequestPermissionsResult(requestCode, permissions, grantResults);
+        presenter.processPermissionsResult(requestCode, permissions, grantResults);
     }
 
     /**
@@ -214,46 +214,46 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
     public boolean onMenuItemClick(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.startAudio:
-                presenter.onViewRequestStartAudio();
+                presenter.processStartAudio();
                 break;
             case R.id.startVideo:
-                presenter.onViewRequestStartVideo();
+                presenter.processStartVideo();
                 break;
             case R.id.startScreen:
-                presenter.onViewRequestStartVideoScreen();
+                presenter.processStartScreenShare();
                 break;
             case R.id.switchCamera:
-                presenter.onViewRequestSwitchCamera();
+                presenter.processSwitchCamera();
                 break;
             case R.id.inputVideoRes:
-                presenter.onViewRequestGetInputVideoResolution();
+                presenter.processGetInputVideoResolution();
                 break;
             case R.id.sentVideoRes:
-                presenter.onViewRequestGetSentVideoResolution(currentSelectIndex);
+                presenter.processGetSentVideoResolution(currentSelectIndex);
                 break;
             case R.id.receiveVideoRes:
-                presenter.onViewRequestGetReceivedVideoResolution(currentSelectIndex);
+                presenter.processGetReceivedVideoResolution(currentSelectIndex);
                 break;
             case R.id.webRtcStats:
-                presenter.onViewRequestWebrtcStatsToggle(currentSelectIndex);
+                presenter.processToggleWebrtcStats(currentSelectIndex);
                 break;
             case R.id.sendingTransferSpeed:
                 // TODO @Muoi need to update when SDK finished get stats by specific media track
                 // currently the SDK is just able to get full stats for receiving track, no all mediaTypes or
                 // media tracks will get the same stats
-                presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, true);
+                presenter.processGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, true);
                 break;
             case R.id.receivingTransferSpeed:
                 // TODO @Muoi need to update when SDK finished get stats by specific media track
                 // currently the SDK is just able to get full stats for receiving track, no all mediaTypes or
                 // media tracks will get the same stats
-                presenter.onViewRequestGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, false);
+                presenter.processGetTransferSpeeds(currentSelectIndex, SkylinkMedia.MediaType.VIDEO_CAMERA, false);
                 break;
             case R.id.recordingStart:
-                presenter.onViewRequestStartRecording();
+                presenter.processStartRecording();
                 break;
             case R.id.recordingStop:
-                presenter.onViewRequestStopRecording();
+                presenter.processStopRecording();
                 break;
             case R.id.restart:
                 refreshConnection(currentSelectIndex, false);
@@ -289,7 +289,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
         // Exit from room only if not changing orientation
         if (!((MultiVideosActivity) context).isChangingConfigurations()) {
             //exit from room
-            presenter.onViewRequestExit();
+            presenter.processExit();
 
             //remove all views
             processEmptyLayout();
@@ -312,7 +312,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * @param roomId the id of the connected room that generated by SDK
      */
     @Override
-    public void onPresenterRequestUpdateUIConnected(String roomId) {
+    public void updateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         // update the local peer button in the action bar
         updateUILocalPeer(Config.USER_NAME_MULTI_VIDEOS);
@@ -336,10 +336,13 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * Update the UI into disconnected state
      */
     @Override
-    public void onPresenterRequestUpdateUIDisconnected() {
-        updateRoomInfo(getResources().getString(R.string.guide_room_id));
-
-        btnLocalPeer.setVisibility(GONE);
+    public void updateUIDisconnected() {
+//        if(context == null)
+//            return;
+//
+//        updateRoomInfo(getResources().getString(R.string.guide_room_id));
+//
+//        btnLocalPeer.setVisibility(GONE);
     }
 
     /**
@@ -349,7 +352,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * @param index   specific index
      */
     @Override
-    public void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index) {
+    public void updateUIRemotePeerConnected(SkylinkPeer newPeer, int index) {
         //add new remote peer button in the action bar
         updateUiRemotePeerJoin(newPeer, index);
 
@@ -377,7 +380,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * @param peerList
      */
     @Override
-    public void onPresenterRequestChangeUIRemotePeerLeft(int peerIndex, List<SkylinkPeer> peerList) {
+    public void updateUIRemotePeerDisconnected(int peerIndex, List<SkylinkPeer> peerList) {
         // re fill the peers buttons in the action bar to show the peer correctly order
         processFillPeers(peerList);
     }
@@ -389,7 +392,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * @param videoView videoView of remoteView
      */
     @Override
-    public void onPresenterRequestAddSelfView(SurfaceViewRenderer videoView, SkylinkMedia.MediaType mediaType) {
+    public void updateUIAddLocalMediaView(SurfaceViewRenderer videoView, SkylinkMedia.MediaType mediaType) {
 
         displayPeerMenuOption(0);
 
@@ -411,7 +414,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * @param remoteView videoView of remoteView
      */
     @Override
-    public void onPresenterRequestAddRemoteView(int peerIndex, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer remoteView) {
+    public void updateUIAddRemoteMediaView(int peerIndex, SkylinkMedia.MediaType mediaType, SurfaceViewRenderer remoteView) {
         // display menu option button accordingly to peerIndex
         displayPeerMenuOption(peerIndex + 1);
 
@@ -432,7 +435,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * @param viewIndex index of removed peer
      */
     @Override
-    public void onPresenterRequestRemoveRemotePeer(int viewIndex) {
+    public void updateUIRemoveRemotePeer(int viewIndex) {
         // Remove video view at viewIndex
         removePeerView(viewIndex);
 
@@ -447,12 +450,12 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * Get the instance of the view for implementing runtime permission
      */
     @Override
-    public Fragment onPresenterRequestGetFragmentInstance() {
+    public Fragment getInstance() {
         return this;
     }
 
     @Override
-    public void onPresenterRequestShowButtonStopScreenSharing() {
+    public void updateUIShowButtonStopScreenSharing() {
         if (isStopScreenShareBtnShowing) {
             return;
         }
@@ -549,9 +552,9 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
         stopScreenshareFloat.setOnClickListener(view -> {
             isStopScreenShareBtnShowing = false;
             showHideButton(stopScreenshareFloat, false);
-            onPresenterRequestAddSelfView(localViews[0], SkylinkMedia.MediaType.VIDEO_CAMERA);
+            updateUIAddLocalMediaView(localViews[0], SkylinkMedia.MediaType.VIDEO_CAMERA);
 
-            presenter.onViewRequestStopScreenSharing();
+            presenter.processStopScreenShare();
         });
 
         // init views array
@@ -575,17 +578,17 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * if current video view is from screen view, then start camera video view
      */
     private void startSecondVideoView() {
-        presenter.onViewRequestStartSecondVideoView();
+        presenter.processStartSecondVideoView();
     }
 
     /**
      * Remove all videoViews from layouts.
      */
     private void processEmptyLayout() {
-        int totalInRoom = presenter.onViewRequestGetTotalInRoom();
+        int totalInRoom = presenter.processGetTotalInRoom();
 
         for (int i = 0; i < totalInRoom; i++) {
-            List<SurfaceViewRenderer> videoViews = presenter.onViewRequestGetVideoViewByIndex(i);
+            List<SurfaceViewRenderer> videoViews = presenter.processGetVideoViewByIndex(i);
 
             if (videoViews != null && videoViews.size() > 0) {
                 for (SurfaceViewRenderer videoView : videoViews) {
@@ -614,9 +617,9 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      */
     private void requestViewLayout() {
         if (presenter != null) {
-            presenter.onViewRequestConnectedLayout();
+            presenter.processConnectedLayout();
             // start a local video base on default device setting
-            presenter.onViewRequestStartLocalMediaIfConfigAllow();
+            presenter.processStartLocalMediaIfConfigAllow();
         }
     }
 
@@ -628,7 +631,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      */
     private void refreshConnection(int peerIndex, boolean iceRestart) {
         if (presenter != null) {
-            presenter.onViewRequestRefreshConnection(peerIndex, iceRestart);
+            presenter.processRefreshConnection(peerIndex, iceRestart);
         }
     }
 
@@ -676,7 +679,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * when the user click into the peer button in action bar
      */
     private void displayPeerInfo(int index) {
-        SkylinkPeer peer = presenter.onViewRequestGetPeerByIndex(index);
+        SkylinkPeer peer = presenter.processGetPeerByIndex(index);
         if (index == 0) {
             processDisplayLocalPeer(peer);
         } else {
@@ -760,7 +763,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
 
         // need to check the current WebRTC Stats to display correct title for WebRTC Stats menu item
         // using different menu layouts for menu option WebRTC Stats
-        Boolean startOn = presenter.onViewRequestGetWebRtcStatsState(peerIndex);
+        Boolean startOn = presenter.processGetWebRtcStatsState(peerIndex);
         if (startOn != null && startOn) {
             popup.inflate(R.menu.remote_option_menu_on);
         } else {
@@ -892,7 +895,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      * process exit the demo when people press on back button in the menu
      */
     private void processReturn() {
-        presenter.onViewRequestExit();
+        presenter.processExit();
         processBack();
     }
 }

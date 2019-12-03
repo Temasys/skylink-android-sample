@@ -43,6 +43,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
     public MultiVideosService(Context context) {
         super(context);
+        initializeSkylinkConnection(Constants.CONFIG_TYPE.MULTI_VIDEOS);
     }
 
     @Override
@@ -140,10 +141,6 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     }
 
     public void createLocalAudio() {
-        if (skylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.AUDIO);
-        }
-
         //Start audio.
         if (skylinkConnection != null) {
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, null, null);
@@ -151,10 +148,6 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     }
 
     public void createLocalVideo() {
-        if (skylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
-        }
-
         // start custom camera if default video device setting is custom device
         if (Utils.isDefaultCustomVideoDeviceSetting()) {
             createLocalCustomVideo();
@@ -188,11 +181,6 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     }
 
     public void createLocalScreen() {
-        if (skylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.SCREEN_SHARE);
-        }
-
-        //Start audio.
         if (skylinkConnection != null) {
 
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
@@ -227,7 +215,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
      * - Recording should not be already started.
      * - We should not have just tried to start recording.
      * Actual start of recording will be notified via relevant callback on
-     * {@link BasePresenter#onServiceRequestRecordingStart(Context, boolean)}
+     * {@link BasePresenter#processRecordingStarted(Context, boolean)}
      */
     public void startRecording() {
         if (skylinkConnection != null) {
@@ -247,7 +235,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
      * - We must be already be recording.
      * - We should not have just tried to stop recording.
      * Actual stop of recording will be notified via relevant callback on
-     * {@link BasePresenter#onServiceRequestRecordingStop(Context, boolean)}
+     * {@link BasePresenter#processRecordingStopped(Context, boolean)}
      */
     public void stopRecording() {
         if (skylinkConnection != null) {
@@ -266,7 +254,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
      * Get the current resolution of the input video being captured by the local camera
      * and the SkylinkCaptureFormat used.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#onServiceRequestInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int, int, int, SkylinkCaptureFormat)}.
+     * {@link BasePresenter#processInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int, int, int, SkylinkCaptureFormat)}.
      * Note:
      * - Resolution may not always be available, e.g. if no video is captured.
      * - This might be different from the resolution of the video actually sent to Peers as
@@ -293,7 +281,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     /**
      * Get the current resolution of the video being sent to a specific Peer.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#onServiceRequestSentVideoResolutionObtained(String, SkylinkMedia.MediaType mediaType, int, int, int)}
+     * {@link BasePresenter#processSentVideoResolutionObtained(String, SkylinkMedia.MediaType mediaType, int, int, int)}
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get sent video resolution.
      *                  Use -1 to get sent video resolutions of all connected remote Peers.
@@ -327,7 +315,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     /**
      * Get the current resolution of the video received from a specific Peer's index.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#onServiceRequestReceivedVideoResolutionObtained(String, SkylinkMedia.MediaType, int, int, int)}
+     * {@link BasePresenter#processReceivedVideoResolutionObtained(String, SkylinkMedia.MediaType, int, int, int)}
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get received video resolution.
      *                  Use -1 to get received video resolutions of all connected remote Peers.
@@ -369,7 +357,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     /**
      * Request for full WebRTC statistics of the specified remote peer by peer index
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestWebrtcStatsReceived(HashMap)}
+     * {@link BasePresenter#processWebrtcStatsReceived(HashMap)}
      *
      * @param peerIndex Index of the remote Peer in frame for which we are getting transfer speed on.
      */
@@ -394,7 +382,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                             @Override
                             public void onReceiveWebRtcStats(HashMap<String, String> stats) {
-                                presenter.onServiceRequestWebrtcStatsReceived(stats);
+                                presenter.processWebrtcStatsReceived(stats);
                             }
                         });
             }
@@ -417,7 +405,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                         @Override
                         public void onReceiveWebRtcStats(HashMap<String, String> stats) {
-                            presenter.onServiceRequestWebrtcStatsReceived(stats);
+                            presenter.processWebrtcStatsReceived(stats);
                         }
                     });
         }
@@ -426,7 +414,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     /**
      * Request for the instantaneous transfer speed(s) of media stream(s), at the moment of request.
      * Results will be reported via
-     * {@link BasePresenter#onServiceRequestTransferSpeedReceived(double, String, boolean, Context)}
+     * {@link BasePresenter#processTransferSpeedReceived(double, String, boolean, Context)}
      *
      * @param peerIndex  Index of the remote Peer in frame for which we are getting transfer speed on.
      * @param mediaType  type of the media object to get resolution
@@ -455,7 +443,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                                     @Override
                                     public void onReceiveTransferSpeed(double transferSpeed) {
-                                        presenter.onServiceRequestTransferSpeedReceived(transferSpeed, peerId, true, context);
+                                        presenter.processTransferSpeedReceived(transferSpeed, peerId, true, context);
                                     }
                                 });
                     }
@@ -479,7 +467,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                                     @Override
                                     public void onReceiveTransferSpeed(double transferSpeed) {
-                                        presenter.onServiceRequestTransferSpeedReceived(transferSpeed, peerId, false, context);
+                                        presenter.processTransferSpeedReceived(transferSpeed, peerId, false, context);
                                     }
                                 });
                     }

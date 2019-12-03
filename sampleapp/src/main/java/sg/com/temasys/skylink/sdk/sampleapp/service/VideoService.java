@@ -46,6 +46,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public VideoService(Context context) {
         super(context);
+        initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
     }
 
     @Override
@@ -351,10 +352,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void createLocalAudio() {
         Log.d(TAG, "createLocalAudio()");
-        if (skylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
-        }
-
         //Start audio.
         if (skylinkConnection != null && localAudio == null) {
             skylinkConnection.createLocalMedia(SkylinkConfig.AudioDevice.MICROPHONE, "mobile's audio", new SkylinkCallback() {
@@ -370,11 +367,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void createLocalVideo() {
         Log.d(TAG, "createLocalVideo()");
-        if (skylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
-        }
-
-        //Start audio.
         if (skylinkConnection != null && localVideo == null) {
 
             // Get default setting for videoDevice
@@ -406,11 +398,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void createLocalScreen() {
         Log.d(TAG, "createLocalScreen()");
-        if (skylinkConnection == null) {
-            initializeSkylinkConnection(Constants.CONFIG_TYPE.VIDEO);
-        }
-
-        //Start audio.
         if (skylinkConnection != null && localScreen == null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start video.

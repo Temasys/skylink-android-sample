@@ -7,7 +7,6 @@ import org.webrtc.SurfaceViewRenderer;
 
 import java.util.List;
 
-import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
@@ -24,76 +23,76 @@ public interface VideoContract {
         /**
          * Get instance of the fragment for processing audio/camera runtime permission
          */
-        Fragment onPresenterRequestGetFragmentInstance();
-
-        /**
-         * Update UI details when disconnected from room
-         */
-        void onPresenterRequestDisconnectUIChange();
-
-        /**
-         * Update UI details when adding local video view
-         */
-        void onPresenterRequestAddCameraSelfView(String mediaId, SurfaceViewRenderer videoView);
-
-        /**
-         * Update UI details when adding local video view
-         */
-        void onPresenterRequestAddScreenSelfView(String mediaId, SurfaceViewRenderer videoView);
-
-        /**
-         * Update UI details when receiving remote audio
-         */
-        void onPresenterRequestReceiveRemoteAudio(String remotePeerId);
-
-        /**
-         * Update UI details when adding remote camera video view
-         */
-        void onPresenterRequestAddCameraRemoteView(SurfaceViewRenderer remoteVideoView);
-
-        /**
-         * Update UI details when adding remote screen video view
-         */
-        void onPresenterRequestAddScreenRemoteView(SurfaceViewRenderer videoView);
-
-        /**
-         * Update UI details when removing remote video view
-         */
-        void onPresenterRequestRemoveRemotePeer();
+        Fragment getInstance();
 
         /**
          * Update UI into connected state
          */
-        void onPresenterRequestUpdateUIConnected(String roomId);
+        void updateUIConnected(String roomId);
+
+        /**
+         * Update UI details when disconnected from room
+         */
+        void updateUIDisconnected();
 
         /**
          * Update UI details when new remote peer joins at a specific index the room
          */
-        void onPresenterRequestChangeUiRemotePeerJoin(SkylinkPeer newPeer, int index);
+        void updateUIRemotePeerConnected(SkylinkPeer newPeer, int index);
 
         /**
          * Update UI details when peers are in room
          */
-        void onPresenterRequestChangeUiRemotePeerLeft(List<SkylinkPeer> peerList);
-
-        /**
-         * Update UI details when changing speaker state (on/off)
-         */
-        void onPresenterRequestChangeSpeakerOutput(boolean isSpeakerOff);
-
-        /**
-         * Show or hide button stop screen sharing on UI
-         */
-        void onPresenterRequestShowButtonStopScreenSharing();
+        void updateUIRemotePeerDisconnected(List<SkylinkPeer> peerList);
 
         /**
          * Update UI details when local audio is on
          */
-        void onPresenterRequestLocalAudioCapture(String mediaId);
+        void updateUILocalAudioAdded(String mediaId);
 
-        void onPresenterRequestMediaStateChange(SkylinkMedia.MediaType mediaType, SkylinkMedia.MediaState mediaState, boolean isLocal);
+        /**
+         * Update UI details when adding local video view
+         */
+        void updateUILocalCameraAdded(String mediaId, SurfaceViewRenderer videoView);
 
-        void onPresenterRequestChangeRoomLockStatus(boolean isRoomLocked);
+        /**
+         * Update UI details when adding local video view
+         */
+        void updateUILocalScreenAdded(String mediaId, SurfaceViewRenderer videoView);
+
+        /**
+         * Update UI details when receiving remote audio
+         */
+        void updateUIReceiveRemoteAudio(String remotePeerId);
+
+        /**
+         * Update UI details when adding remote camera video view
+         */
+        void updateUIReceiveRemoteVideo(SurfaceViewRenderer remoteVideoView);
+
+        /**
+         * Update UI details when adding remote screen video view
+         */
+        void updateUIReceiveRemoteScreen(SurfaceViewRenderer videoView);
+
+        void updateUIMediaStateChange(SkylinkMedia.MediaType mediaType, SkylinkMedia.MediaState mediaState, boolean isLocal);
+
+        /**
+         * Update UI details when removing remote video view
+         */
+        void updateUIRemoveRemotePeer();
+
+        /**
+         * Update UI details when changing speaker state (on/off)
+         */
+        void updateUIAudioOutputChanged(boolean isSpeakerOff);
+
+        /**
+         * Show or hide button stop screen sharing on UI
+         */
+        void updateUIShowButtonStopScreenShare();
+
+        void updateUIRoomLockStatusChanged(boolean isRoomLocked);
     }
 
     interface Presenter {
@@ -101,91 +100,91 @@ public interface VideoContract {
         /**
          * process data to display on view at initiative connection
          */
-        void onViewRequestConnectedLayout();
-
-        /**
-         * process results from Activity for results
-         */
-        void onViewRequestActivityResult(int requestCode, int resultCode, Intent data);
-
-        /**
-         * process runtime permission results
-         */
-        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
-
-        /**
-         * process change audio output between headset and speaker
-         */
-        void onViewRequestChangeSpeakerOutput();
-
-        /**
-         * process change states when buttons clicked
-         */
-        void onViewRequestChangeAudioState();
-
-        void onViewRequestChangeVideoState();
-
-        void onViewRequestChangeScreenState();
-
-        /**
-         * process change state when view resumed
-         */
-        void onViewRequestResume();
-
-        /**
-         * process change state when view paused
-         */
-        void onViewRequestPause();
-
-        /**
-         * process change state when view exit/closed
-         */
-        void onViewRequestExit();
+        void processConnectedLayout();
 
         /**
          * process change state when disconnect from the room
          */
-        void onViewRequestDisconnectFromRoom();
+        void processDisconnectFromRoom();
 
         /**
-         * process get peer info at specific index
+         * process results from Activity for results
          */
-        SkylinkPeer onViewRequestGetPeerByIndex(int index);
+        void processActivityResult(int requestCode, int resultCode, Intent data);
 
         /**
-         * switch camera between front and back
+         * process runtime permission results
          */
-        void onViewRequestSwitchCamera();
+        void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+
+        void processStartLocalMediaIfConfigAllow();
 
         /**
          * start local audio
          */
-        void onViewRequestStartAudio();
+        void processStartAudio();
 
-        void onViewRequestStartLocalMediaIfConfigAllow();
+        void processToggleVideo();
 
-        void onViewRequestToggleVideo();
-
-        void onViewRequestToggleScreen();
+        void processToggleScreen();
 
 
-        void onViewRequestToggleScreen(boolean start);
+        void processToggleScreen(boolean start);
 
-        void onViewRequestRemoveAudio();
+        void processRemoveAudio();
 
-        void onViewRequestRemoveVideo();
+        void processRemoveVideo();
 
-        void onViewRequestRemoveScreen();
+        void processRemoveScreen();
 
-        void onViewRequestLockRoom();
+        /**
+         * process change states when buttons clicked
+         */
+        void processChangeAudioState();
 
-        void onViewRequestUnlockRoom();
+        void processChangeVideoState();
+
+        void processChangeScreenState();
+
+        /**
+         * process change state when view resumed
+         */
+        void processResumeState();
+
+        /**
+         * process change state when view paused
+         */
+        void processPauseState();
+
+        /**
+         * process change state when view exit/closed
+         */
+        void processExit();
+
+        /**
+         * process change audio output between headset and speaker
+         */
+        void processChangeAudioOutput();
+
+        /**
+         * process get peer info at specific index
+         */
+        SkylinkPeer processGetPeerByIndex(int index);
+
+        /**
+         * switch camera between front and back
+         */
+        void processSwitchCamera();
+
+        void processLockRoom();
+
+        void processUnlockRoom();
     }
 
     interface Service extends BaseService<Presenter> {
 
         /**
-         * set connection between service and presenter
+         * set connection between video service and video resolution presenter
          */
         void setResPresenter(VideoResolutionContract.Presenter videoResPresenter);
     }

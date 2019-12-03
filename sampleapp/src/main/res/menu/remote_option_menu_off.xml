@@ -17,7 +17,7 @@
         android:title="Received Transfer speed"/>
     <item
         android:id="@+id/recordingStart"
-        android:title="Recording stat"/>
+        android:title="Recording start"/>
     <item
         android:id="@+id/recordingStop"
         android:title="Recording stop"/>

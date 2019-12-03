@@ -62,9 +62,9 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
      * Try to connect to room when entering room
      */
     @Override
-    public void onViewRequestConnectedLayout() {
+    public void processConnectedLayout() {
 
-        Log.d(TAG, "[onViewRequestConnectedLayout]");
+        Log.d(TAG, "[processConnectedLayout]");
 
         //start to connect to room when entering room
         //if not being connected, then connect
@@ -79,17 +79,17 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
             // start local audio
             audioCallService.createLocalAudio();
 
-            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
+            //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
         }
 
         //get default audio output settings and change UI
-        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioSpeaker);
+        audioCallView.updateUIAudioOutputChanged(currentAudioSpeaker);
     }
 
     @Override
-    public void onViewRequestChangeAudioOuput() {
+    public void processChangeAudioOutput() {
         //change current speakerOn
         currentAudioSpeaker = !currentAudioSpeaker;
 
@@ -102,7 +102,7 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     }
 
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
@@ -111,19 +111,19 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
      * Get the specific peer object according to the index
      */
     @Override
-    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+    public SkylinkPeer processGetPeerByIndex(int index) {
         return audioCallService.getPeerByIndex(index);
     }
 
     @Override
-    public void onViewRequestExit() {
+    public void processExit() {
         //process disconnect from room
         audioCallService.disconnectFromRoom();
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         audioCallService.disposeLocalMedia();
 
-        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
     }
 
     //----------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
 
             // change UI to connected to room, but not connected to any peer
@@ -141,29 +141,29 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     }
 
     @Override
-    public void onServiceRequestDisconnect() {
+    public void processRoomDisconnected() {
         //stop audio routing
         AudioRouter.stopAudioRouting(context);
 
         // update UI
-        audioCallView.onPresenterRequestUpdateUIDisconnected();
+        audioCallView.updateUIDisconnected();
     }
 
     @Override
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+    public void processPermissionRequired(PermRequesterInfo info) {
         // delegate to PermissionUtils to process the permissions require
-        permissionUtils.onPermissionRequiredHandler(info, TAG, context, audioCallView.onPresenterRequestGetFragmentInstance());
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context, audioCallView.getInstance());
     }
 
     @Override
-    public void onServiceRequestLocalAudioCapture(SkylinkMedia localAudio) {
-        toastLog("[SA][onServiceRequestLocalAudioCapture]", context, "Local audio is on with id = " + localAudio.getMediaId());
+    public void processLocalAudioCaptured(SkylinkMedia localAudio) {
+        toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.getMediaId());
 
         // change the audio output base on the default setting
         AudioRouter.setPresenter(this);
         AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
 
-        // use service layer to change the audio output, update UI will be called later in onServiceRequestAudioOutputChanged
+        // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
         if(currentAudioSpeaker){
             AudioRouter.turnOnSpeaker();
         } else {
@@ -172,12 +172,12 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     }
 
     @Override
-    public void onServiceRequestAudioOutputChanged(boolean isSpeakerOn) {
+    public void processAudioOutputChanged(boolean isSpeakerOn) {
         // change the current speaker state
         this.currentAudioSpeaker = isSpeakerOn;
 
         // change button UI
-        audioCallView.onPresenterRequestChangeAudioOutput(currentAudioSpeaker);
+        audioCallView.updateUIAudioOutputChanged(currentAudioSpeaker);
 
         if (currentAudioSpeaker) {
             toastLog(TAG, context, "Speaker is turned ON");
@@ -192,15 +192,15 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
      * @param remotePeer the new peer joined in room
      */
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer remotePeer) {
+    public void processRemotePeerConnected(SkylinkPeer remotePeer) {
         // Fill the new peer in button in custom bar
         // Display new peer at most right location in action bar
-        audioCallView.onPresenterRequestChangeUIRemotePeerJoin(remotePeer,
+        audioCallView.updateUIRemotePeerConnected(remotePeer,
                 audioCallService.getTotalPeersInRoom() - 2);
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1)
             return;
@@ -208,7 +208,7 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
         // Remove the peer in button in custom bar
         // Remove a remote peer by re-fill total remote peer left in the room
         // to make sure the left peers are displayed correctly
-        audioCallView.onPresenterRequestChangeUIRemotePeerLeft(audioCallService.getPeersList());
+        audioCallView.updateUIRemotePeerDisconnected(audioCallService.getPeersList());
     }
 
     //----------------------------------------------------------------------------------------------
@@ -221,7 +221,7 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     private void processUpdateStateConnected() {
 
         // Update the view into connected state
-        audioCallView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        audioCallView.updateUIConnected(processGetRoomId());
     }
 
     /**

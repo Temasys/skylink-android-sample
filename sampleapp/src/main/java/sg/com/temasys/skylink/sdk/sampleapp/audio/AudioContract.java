@@ -20,32 +20,32 @@ public interface AudioContract {
         /**
          * Get instance of the fragment for processing runtime audio permission
          */
-        Fragment onPresenterRequestGetFragmentInstance();
-
-        /**
-         * Update audio output button UI
-         */
-        void onPresenterRequestChangeAudioOutput(boolean isSpeakerOn);
+        Fragment getInstance();
 
         /**
          * Update UI into connected state
          */
-        void onPresenterRequestUpdateUIConnected(String roomId);
+        void updateUIConnected(String roomId);
 
         /**
          * Update UI into disconnected state
          */
-        void onPresenterRequestUpdateUIDisconnected();
+        void updateUIDisconnected();
 
         /**
          * Update UI when remote peer join the room
          */
-        void onPresenterRequestChangeUIRemotePeerJoin(SkylinkPeer newPeer, int index);
+        void updateUIRemotePeerConnected(SkylinkPeer newPeer, int index);
 
         /**
          * Update UI details when remote peer left the room
          */
-        void onPresenterRequestChangeUIRemotePeerLeft(List<SkylinkPeer> peersList);
+        void updateUIRemotePeerDisconnected(List<SkylinkPeer> peersList);
+
+        /**
+         * Update audio output button UI
+         */
+        void updateUIAudioOutputChanged(boolean isSpeakerOn);
     }
 
     interface Presenter {
@@ -53,27 +53,27 @@ public interface AudioContract {
         /**
          * process data to display on view at initiative connected
          */
-        void onViewRequestConnectedLayout();
+        void processConnectedLayout();
 
         /**
          * process permission result (grant/deny)
          */
-        void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+        void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
         /**
          * process change audio output between headset and speaker
          */
-        void onViewRequestChangeAudioOuput();
+        void processChangeAudioOutput();
 
         /**
          * process change state when view exit/closed
          */
-        void onViewRequestExit();
+        void processExit();
 
         /**
          * process get peer info at specific index
          */
-        SkylinkPeer onViewRequestGetPeerByIndex(int index);
+        SkylinkPeer processGetPeerByIndex(int index);
 
     }
 

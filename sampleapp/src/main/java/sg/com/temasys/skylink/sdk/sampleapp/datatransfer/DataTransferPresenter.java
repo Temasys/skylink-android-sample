@@ -55,7 +55,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * Try to connect to room when entering room
      */
     @Override
-    public void onViewRequestConnectedLayout() {
+    public void processConnectedLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -66,7 +66,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
             //connect to room on Skylink connection
             dataTransferService.connectToRoom(Constants.CONFIG_TYPE.DATA);
 
-            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
+            //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -78,16 +78,16 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * when user first choose browsing file from device, permission request dialog will be display
      */
     @Override
-    public boolean onViewRequestFilePermission() {
+    public boolean processFilePermission() {
         return permissionUtils.requestFilePermission(context,
-                dataTransferView.onPresenterRequestGetFragmentInstance());
+                dataTransferView.getInstance());
     }
 
     /**
      * display a warning if user deny the file permission
      */
     @Override
-    public void onViewRequestPermissionDeny() {
+    public void processDenyPermission() {
         permissionUtils.displayFilePermissionWarning(context);
     }
 
@@ -95,7 +95,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * process result of permission that comes from SDK
      */
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to the PermissionUtils to process the permission
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
@@ -104,7 +104,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * Save the current index of the selected peer
      */
     @Override
-    public void onViewRequestSelectedRemotePeer(int index) {
+    public void processSelectRemotePeer(int index) {
         // check the selected index with the current selectedPeerIndex
         // if it is equal which means user in selects the peer
         if (this.selectedPeerIndex == index) {
@@ -118,7 +118,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * Get the current index of selected peer
      */
     @Override
-    public int onViewRequestGetCurrentSelectedPeer() {
+    public int processGetCurrentSelectedPeer() {
         return this.selectedPeerIndex;
     }
 
@@ -126,12 +126,12 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
      * Get the specific peer object according to the index
      */
     @Override
-    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+    public SkylinkPeer processGetPeerByIndex(int index) {
         return dataTransferService.getPeerByIndex(index);
     }
 
     @Override
-    public void onViewRequestSendData(byte[] data) {
+    public void processSendData(byte[] data) {
         // Do not allow button actions if there are no remote Peers in the room.
         if (dataTransferService.getTotalPeersInRoom() < 2) {
             String log = context.getString(R.string.warn_no_peer_message);
@@ -151,13 +151,13 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     }
 
     @Override
-    public void onViewRequestExit() {
+    public void processExit() {
         //process disconnect from room
         dataTransferService.disconnectFromRoom();
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         dataTransferService.disposeLocalMedia();
-        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
     }
 
     //----------------------------------------------------------------------------------------------
@@ -166,42 +166,42 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful)
             processUpdateStateConnected();
     }
 
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
+    public void processRemotePeerConnected(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
-        dataTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
+        dataTransferView.updateUIRemotePeerConnected(newPeer,
                 dataTransferService.getTotalPeersInRoom() - 2);
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1)
             return;
 
         // Remove the peer in button in custom bar
-        dataTransferView.onPresenterRequestChangeUiRemotePeerLeft(dataTransferService.getPeersList());
+        dataTransferView.updateUIRemotePeerDisconnected(dataTransferService.getPeersList());
     }
 
     /**
      * process SDK permission
      */
     @Override
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+    public void processPermissionRequired(PermRequesterInfo info) {
         // delegate to the PermissionUtils to process the permission
         permissionUtils.onPermissionRequiredHandler(info, TAG, context,
-                dataTransferView.onPresenterRequestGetFragmentInstance());
+                dataTransferView.getInstance());
     }
 
     @Override
-    public void onServiceRequestDataReceive(Context context, String remotePeerId, byte[] data) {
+    public void processDataReceive(Context context, String remotePeerId, byte[] data) {
         SkylinkPeer remotePeer = dataTransferService.getPeerById(remotePeerId);
-        dataTransferView.onPresenterRequestChangeUIReceivedData(remotePeer, data);
+        dataTransferView.updateUIDataReceived(remotePeer, data);
 
         toastLog("DataTransfer", this.context, "You have received an array of data");
     }
@@ -218,7 +218,7 @@ public class DataTransferPresenter extends BasePresenter implements DataTransfer
     private void processUpdateStateConnected() {
 
         // Update the view into connected state
-        dataTransferView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        dataTransferView.updateUIConnected(processGetRoomId());
     }
 
 

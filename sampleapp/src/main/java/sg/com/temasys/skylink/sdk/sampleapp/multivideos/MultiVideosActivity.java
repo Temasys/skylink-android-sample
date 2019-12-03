@@ -62,6 +62,6 @@ public class MultiVideosActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        multiVideosPresenter.onViewRequestActivityResult(requestCode, resultCode, data);
+        multiVideosPresenter.processActivityResult(requestCode, resultCode, data);
     }
 }

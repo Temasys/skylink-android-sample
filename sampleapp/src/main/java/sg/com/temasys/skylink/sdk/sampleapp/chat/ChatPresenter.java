@@ -66,7 +66,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Try to connect to room when entering room
      */
     @Override
-    public void onViewRequestConnectedLayout() {
+    public void processConnectedLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -77,21 +77,21 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             //connect to room on Skylink connection
             chatService.connectToRoom(Constants.CONFIG_TYPE.CHAT);
 
-            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
+            //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
         }
     }
 
     @Override
-    public void onViewRequestExit() {
+    public void processExit() {
         //process disconnect from room
         chatService.disconnectFromRoom();
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         chatService.disposeLocalMedia();
 
-        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
     }
 
     /**
@@ -103,7 +103,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * specific peer to send
      */
     @Override
-    public void onViewRequestSendMessage(String message) {
+    public void processSendMessage(String message) {
         // Check remote peer to send message to
         // if User did not select the specific peer to send message to,
         // then default is send to all peers in room
@@ -143,7 +143,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Get the list of message to set to the ArrayAdapter
      */
     @Override
-    public List<String> onViewRequestGetChatCollection() {
+    public List<String> processGetChatCollection() {
         return chatMessageCollection;
     }
 
@@ -151,7 +151,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Get the specific peer object according to the index
      */
     @Override
-    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+    public SkylinkPeer processGetPeerByIndex(int index) {
         return chatService.getPeerByIndex(index);
     }
 
@@ -159,7 +159,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Save the current index of the selected peer
      */
     @Override
-    public void onViewRequestSelectedRemotePeer(int index) {
+    public void processSelectRemotePeer(int index) {
         // check the selected index with the current selectedPeerIndex
         // if it is equal which means user in selects the peer
         if (this.selectedPeerIndex == index) {
@@ -173,7 +173,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Get the current index of selected peer
      */
     @Override
-    public int onViewRequestGetCurrentSelectedPeer() {
+    public int processGetCurrentSelectedPeer() {
         return this.selectedPeerIndex;
     }
 
@@ -181,7 +181,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Get the current selected message type to send message.
      */
     @Override
-    public void onViewRequestSelectedMessageType(ChatPresenter.MESSAGE_TYPE message_type) {
+    public void processSelectMessageType(ChatPresenter.MESSAGE_TYPE message_type) {
         this.messageType = message_type;
     }
 
@@ -194,7 +194,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Process update UI into connected state
      */
     @Override
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
             processUpdateStateConnected();
         }
@@ -204,12 +204,12 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * Process udate UI into dis connected state
      */
     @Override
-    public void onServiceRequestDisconnect() {
+    public void processRoomDisconnected() {
         chatMessageCollection.clear();
         selectedPeerIndex = 0;
         messageType = MESSAGE_TYPE.TYPE_SERVER;
 
-        chatView.onPresenterRequestUpdateUIDisconnected();
+        chatView.updateUIDisconnected();
     }
 
     /**
@@ -218,7 +218,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param newPeer the remote peer
      */
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
+    public void processRemotePeerConnected(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
         processAddNewPeer(newPeer, chatService.getTotalPeersInRoom() - 2);
 
@@ -228,7 +228,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 Utils.getISOTimeStamp(new Date()));
 
         // notify the adapter to update list view
-        chatView.onPresenterRequestUpdateChatCollection();
+        chatView.updateUIChatCollection();
     }
 
     /**
@@ -238,7 +238,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param removeIndex the index of the remove peer
      */
     @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer removePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer removePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1 || removePeer == null)
             return;
@@ -249,7 +249,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 "(" + removePeer.getPeerId() + ")" + " left the room." + "\n" +
                 Utils.getISOTimeStamp(new Date()));
 
-        chatView.onPresenterRequestUpdateChatCollection();
+        chatView.updateUIChatCollection();
 
         // Remove the peer in button in custom bar
         processRemoveRemotePeer();
@@ -263,7 +263,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param isPrivate    the message sent is private or public for all peers
      */
     @Override
-    public void onServiceRequestServerMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+    public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
         String chatPrefix = "[SIG] ";
         //add prefix if the chat is a private chat - not seen by other users.
         if (isPrivate) {
@@ -276,7 +276,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         if (message instanceof String) {
             String remotePeerName = chatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            chatView.onPresenterRequestUpdateChatCollection();
+            chatView.updateUIChatCollection();
         }
     }
 
@@ -288,7 +288,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param isPrivate    the message sent is private or public for all peers
      */
     @Override
-    public void onServiceRequestP2PMessageReceive(String remotePeerId, Object message, boolean isPrivate) {
+    public void processP2PMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
         //add prefix if the chat is a private chat - not seen by other users.
         String chatPrefix = "[P2P] ";
         if (isPrivate) {
@@ -301,7 +301,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         if (message instanceof String) {
             String remotePeerName = chatService.getPeerNameById(remotePeerId);
             chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            chatView.onPresenterRequestUpdateChatCollection();
+            chatView.updateUIChatCollection();
         }
     }
 
@@ -316,7 +316,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param index   the index of the new peer to add
      */
     private void processAddNewPeer(SkylinkPeer newPeer, int index) {
-        chatView.onPresenterRequestChangeUiRemotePeerJoin(newPeer, index);
+        chatView.updateUIRemotePeerConnected(newPeer, index);
     }
 
     /**
@@ -324,7 +324,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * to make sure the left peers are displayed correctly
      */
     private void processRemoveRemotePeer() {
-        chatView.onPresenterRequestChangeUiRemotePeerLeft(chatService.getPeersList());
+        chatView.updateUIRemotePeerDisconnected(chatService.getPeersList());
     }
 
     /**
@@ -354,9 +354,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         chatMessageCollection.add(prefix + message);
 
-        chatView.onPresenterRequestUpdateChatCollection();
+        chatView.updateUIChatCollection();
 
-        chatView.onPresenterRequestClearInput();
+        chatView.updateUIClearMessageInput();
     }
 
     /**
@@ -365,7 +365,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     private void processUpdateStateConnected() {
 
         // Update the view into connected state
-        chatView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        chatView.updateUIConnected(processGetRoomId());
 
         // This message is metadata message to inform the user is connected to the room
         chatMessageCollection.add("[Metadata]:You (" + Config.USER_NAME_CHAT + "_" +
@@ -373,7 +373,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 Utils.getISOTimeStamp(new Date()));
 
         // notify the adapter to update list view
-        chatView.onPresenterRequestUpdateChatCollection();
+        chatView.updateUIChatCollection();
 
     }
 

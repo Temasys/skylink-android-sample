@@ -58,7 +58,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * Try to connect to room when entering room
      */
     @Override
-    public void onViewRequestConnectedLayout() {
+    public void processConnectedLayout() {
 
         Log.d(TAG, "onViewLayoutRequested");
 
@@ -72,7 +72,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
             //connect to room on Skylink connection
             fileTransferService.connectToRoom(Constants.CONFIG_TYPE.FILE);
 
-            //after connected to skylink SDK, UI will be updated later on onServiceRequestConnect
+            //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
 
@@ -84,15 +84,15 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * when user first choose browsing file from device, permission request dialog will be display
      */
     @Override
-    public boolean onViewRequestFilePermission() {
-        return permissionUtils.requestFilePermission(context, fileTransferView.onPresenterRequestGetFragmentInstance());
+    public boolean processFilePermission() {
+        return permissionUtils.requestFilePermission(context, fileTransferView.getInstance());
     }
 
     /**
      * display a warning if user deny the file permission
      */
     @Override
-    public void onViewRequestPermissionDeny() {
+    public void processDenyPermission() {
         permissionUtils.displayFilePermissionWarning(context);
     }
 
@@ -100,7 +100,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * process result of permission that comes from SDK
      */
     @Override
-    public void onViewRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // delegate to the PermissionUtils to process the permission
         permissionUtils.onRequestPermissionsResultHandler(requestCode, permissions, grantResults, TAG);
     }
@@ -110,7 +110,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * selected before
      */
     @Override
-    public void onViewRequestSendFile(File file) {
+    public void processSendFile(File file) {
         // Do not allow button actions if there are no remote Peers in the room.
         if (fileTransferService.getTotalPeersInRoom() < 2) {
             String log = context.getString(R.string.warn_no_peer_message);
@@ -120,7 +120,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
 
         //Check file valid
         if (file != null && file.isFile()) {
-            fileTransferView.onPresenterRequestDisplayFilePreview(file.getAbsolutePath());
+            fileTransferView.updateUIDisplayFilePreview(file.getAbsolutePath());
         } else {
             String log = "Please enter a valid file path";
             toastLog(TAG, context, log);
@@ -138,14 +138,14 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     }
 
     @Override
-    public void onViewRequestExit() {
+    public void processExit() {
         //process disconnect from room
         fileTransferService.disconnectFromRoom();
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         fileTransferService.disposeLocalMedia();
 
-        //after disconnected from skylink SDK, UI will be updated latter on onServiceRequestDisconnect
+        //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
     }
 
     //----------------------------------------------------------------------------------------------
@@ -154,40 +154,40 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     //----------------------------------------------------------------------------------------------
 
     @Override
-    public void onServiceRequestConnect(boolean isSuccessful) {
+    public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
             processUpdateStateConnected();
         }
     }
 
     @Override
-    public void onServiceRequestRemotePeerJoin(SkylinkPeer newPeer) {
+    public void processRemotePeerConnected(SkylinkPeer newPeer) {
         // Fill the new peer in button in custom bar
-        fileTransferView.onPresenterRequestChangeUiRemotePeerJoin(newPeer,
+        fileTransferView.updateUIRemotePeerConnected(newPeer,
                 fileTransferService.getTotalPeersInRoom() - 2);
     }
 
     @Override
-    public void onServiceRequestRemotePeerLeave(SkylinkPeer remotePeer, int removeIndex) {
+    public void processRemotePeerDisconnected(SkylinkPeer remotePeer, int removeIndex) {
         // do not process if the left peer is local peer
         if (removeIndex == -1)
             return;
 
         // Remove the peer in button in custom bar
-        fileTransferView.onPresenterRequestChangeUiRemotePeerLeft(fileTransferService.getPeersList());
+        fileTransferView.updateUIRemotePeerDisconnected(fileTransferService.getPeersList());
     }
 
     /**
      * process SDK permission
      */
     @Override
-    public void onServiceRequestPermissionRequired(PermRequesterInfo info) {
+    public void processPermissionRequired(PermRequesterInfo info) {
         // delegate to the PermissionUtils to process the permission
-        permissionUtils.onPermissionRequiredHandler(info, TAG, context, fileTransferView.onPresenterRequestGetFragmentInstance());
+        permissionUtils.onPermissionRequiredHandler(info, TAG, context, fileTransferView.getInstance());
     }
 
     @Override
-    public void onServiceRequestFileTransferPermissionRequest(String remotePeerId, String fileName, boolean isPrivate) {
+    public void processFilePermissionRequested(String remotePeerId, String fileName, boolean isPrivate) {
         // Take note of download file name.
         if (!"".equals(fileName)) {
             SAMPLE_FILE_NAME = fileName;
@@ -197,24 +197,24 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
     }
 
     @Override
-    public void onServiceRequestFileReceiveComplete(String remotePeerId, String fileName) {
+    public void processFileReceivedCompleted(String remotePeerId, String fileName) {
         SkylinkPeer remotePeer = fileTransferService.getPeerById(remotePeerId);
-        fileTransferView.onPresenterRequestFileReceived(remotePeer, fileName);
+        fileTransferView.updateUIFileReceived(remotePeer, fileName);
     }
 
     @Override
-    public void onServiceRequestFileSendComplete(Context context, String remotePeerId, String fileName) {
-        fileTransferView.onPresenterRequestFileSent();
+    public void processFileSentCompleted(Context context, String remotePeerId, String fileName) {
+        fileTransferView.updateUIFileSent();
     }
 
     @Override
-    public void onServiceRequestFileSendProgress(Context context, String remotePeerId, String fileName, double percentage) {
-        fileTransferView.onPresenterRequestFileSendProgress((int) percentage);
+    public void processFileSentProgressed(Context context, String remotePeerId, String fileName, double percentage) {
+        fileTransferView.updateUIFileSendProgress((int) percentage);
     }
 
     @Override
-    public void onServiceRequestFileReceiveProgress(Context context, String remotePeerId, String fileName, double percentage) {
-        fileTransferView.onPresenterRequestFileReceiveProgress((int) percentage);
+    public void processFileReceivedProgressed(Context context, String remotePeerId, String fileName, double percentage) {
+        fileTransferView.updateUIFileReceiveProgress((int) percentage);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -226,7 +226,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      */
     private void processUpdateStateConnected() {
         // Update the view into connected state
-        fileTransferView.onPresenterRequestUpdateUIConnected(processGetRoomId());
+        fileTransferView.updateUIConnected(processGetRoomId());
     }
 
     /**
@@ -240,7 +240,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * Get the current index of selected peer
      */
     @Override
-    public int onViewRequestGetCurrentSelectedPeer() {
+    public int processGetCurrentSelectedPeer() {
         return this.selectedPeerIndex;
     }
 
@@ -248,7 +248,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * Get the specific peer object according to the index
      */
     @Override
-    public SkylinkPeer onViewRequestGetPeerByIndex(int index) {
+    public SkylinkPeer processGetPeerByIndex(int index) {
         return fileTransferService.getPeerByIndex(index);
     }
 
@@ -256,7 +256,7 @@ public class FileTransferPresenter extends BasePresenter implements FileTransfer
      * Save the current index of the selected peer
      */
     @Override
-    public void onViewRequestSelectedRemotePeer(int index) {
+    public void processSelectRemotePeer(int index) {
         // check the selected index with the current selectedPeerIndex
         // if it is equal which means user in selects the peer
         if (this.selectedPeerIndex == index) {
