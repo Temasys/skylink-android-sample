@@ -1,0 +1,1 @@
+Folder to hold screenshots for the sample app procedures
