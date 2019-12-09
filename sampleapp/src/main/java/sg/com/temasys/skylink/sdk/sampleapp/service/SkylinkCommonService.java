@@ -102,10 +102,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * This is the first callback from SkylinkSDK to specify whether the attempt to connect to the room was successful.
      */
     @Override
-    public void onConnectToRoomSucessful() {
-        Log.d(TAG, "onConnectToRoomSucessful");
+    public void onConnectToRoomSuccessful() {
+        Log.d(TAG, "onConnectToRoomSuccessful");
 
-        String log = "[onConnectToRoomSucessful] ";
+        String log = "[onConnectToRoomSuccessful] ";
         // get the self peer id
         String localPeerId = skylinkConnection.getLocalPeerId();
 
@@ -175,12 +175,12 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * This is triggered from SkylinkSDK when the lock status of the room that we are is changed
      */
     @Override
-    public void onChangeRoomLockStatus(boolean roomLockStatus, String remotePeerId) {
-        Log.d(TAG, "onChangeRoomLockStatus(roomLockStatus: " + roomLockStatus + ", remotePeerId: " + remotePeerId + ")");
+    public void onChangeRoomLockStatus(boolean roomLockStatus, String peerId) {
+        Log.d(TAG, "onChangeRoomLockStatus(roomLockStatus: " + roomLockStatus + ", remotePeerId: " + peerId + ")");
 
         String log = "[SA][onChangeRoomLockStatus] ";
 
-        log += "[SA] Peer " + remotePeerId + " changed Room locked status to "
+        log += "[SA] Peer " + peerId + " changed Room locked status to "
                 + roomLockStatus + ".";
         toastLog(TAG, context, log);
 
