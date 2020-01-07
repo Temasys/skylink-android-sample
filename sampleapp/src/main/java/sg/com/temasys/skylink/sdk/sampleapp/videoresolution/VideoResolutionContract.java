@@ -1,75 +1,70 @@
 package sg.com.temasys.skylink.sdk.sampleapp.videoresolution;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 
 public interface VideoResolutionContract {
     interface View extends BaseView<VideoResolutionContract.Presenter> {
-        /**
-         * Update UI details when getting local input video resolution
-         */
-        void onPresenterRequestUpdateUiResInput(VideoResolution videoInput);
 
-        /**
-         * Update UI details when getting local sent video resolution
-         */
-        void onPresenterRequestUpdateUiResSent(VideoResolution videoSent);
+        void updateUIChangeMediaType(SkylinkMedia.MediaType mediaType);
 
-        /**
-         * Update UI details when getting remote received video resolution
-         */
-        void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive);
+        void updateUIOnCameraInputWHValue(int maxWHRange, String minWHValue, String maxWHValue, String currentWHValue, int currentIndex);
 
-        /**
-         * Update text view info when changing video width and height
-         */
-        boolean onPresenterRequestUpdateUiResDimInfo(int width, int height);
+        void updateUIOnCameraInputFpsValue(String maxFps, String minFps, String fps);
 
-        /**
-         * Update text view info details when changing video frame rate
-         */
-        void onPresenterRequestUpdateUiResFpsInfo(int fps);
+        void updateUIOnCameraInputFpsValue(String maxFps, String minFps);
 
-        /**
-         * Update UI details when changing max range of video width and height seekbar
-         */
-        void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange, String minDimValue, String maxDimValue);
+        void updateUIOnCameraInputValue(String inputValue);
 
-        /**
-         * Update UI details when changing max range of video frame rate seekbar
-         */
-        void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange, int minFpsValue, int maxFpsValue);
+        void updateUIOnCameraReceivedValue(int width, int height, int fps);
 
-        /**
-         * Update text view and seek bar info  when changing video width and height
-         */
-        void onPresenterRequestUpdateResDimInfo(int index, int width, int height);
+        void updateUIOnCameraSentValue(int width, int height, int fps);
 
-        /**
-         * Update text view and seek bar info when changing video frame rate
-         */
-        void onPresenterRequestUpdateResFpsInfo(int index, int fps);
+        void updateUIOnCameraInputWHProgressValue(String valueWH);
 
+        void updateUIOnCameraInputFpsProgressValue(String valueFps);
+
+        void updateUIOnScreenInputWHValue(int maxWHRange, String minWHValue, String maxWHValue, String currentWHValue, int currentIndex);
+
+        void updateUIOnScreenInputFpsValue(String maxFps, String minFps, String fps);
+
+        void updateUIOnScreenInputValue(String inputValue);
+
+        void updateUIOnScreenReceivedValue(int width, int height, int fps);
+
+        void updateUIOnScreenSentValue(int width, int height, int fps);
+
+        void updateUIOnScreenInputWHProgressValue(String valueWH);
+
+        void updateUIOnScreenInputFpsProgressValue(String valueFps);
     }
 
     interface Presenter {
-        /**
-         * process change state when video dimension or video fps changed
-         */
-        void onViewRequestDimProgressChanged(int progress);
 
-        void onViewRequestFpsProgressChanged(int progress);
+        void processGetVideoResolutions();
 
-        void onViewRequestDimSelected(int progress);
+        void processChooseVideoCamera();
 
-        void onViewRequestFpsSelected(int progress);
+        void processChooseVideoScreen();
 
-        void onViewRequestGetVideoResolutions();
+        void processMediaTypeSelected(SkylinkMedia.MediaType videoCamera);
 
-        void onViewRequestChooseVideoCamera();
+        void processWHProgressChangedCamera(int progress);
 
-        void onViewRequestChooseVideoScreen();
+        void processWHSelectedCamera(int progress);
+
+        void processFpsProgressChangedCamera(int progress);
+
+        void processFpsSelectedCamera(int progress);
+
+        void processWHProgressChangedScreen(int progress);
+
+        void processWHSelectedScreen(int progress);
+
+        void processFpsProgressChangedScreen(int progress);
+
+        void processFpsSelectedScreen(int progress);
     }
 
     interface Service extends BaseService<VideoResolutionContract.Presenter> {

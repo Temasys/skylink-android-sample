@@ -1,7 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.videoresolution;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,16 +8,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
-import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
-import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomTriangleButton;
+import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,9 +33,13 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
     private final String TAG = VideoResolutionFragment.class.getName();
 
     private RelativeLayout frameVideoRes;
-    private CustomSeekBar seekBarWidthHeight, seekBarFps;
-    private TextView txtMinWH, txtMaxWH, txtMinFps, txtMaxFps, txtInputWH, txtSentWH, txtRecceivedWH;
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResDim, seekBarChangeListenerResFps;
+    private RelativeLayout layoutWHMinMaxCam, layoutWHMinMaxScreen, layoutFpsMinMaxCam, layoutFpsMinMaxScreen;
+    private LinearLayout layoutWHCam, layoutWHScreen;
+    private CustomSeekBar seekBarWidthHeightCam, seekBarFpsCam, seekBarWidthHeightScreen, seekBarFpsScreen;
+    private TextView txtMinWHCam, txtMaxWHCam, txtMinFpsCam, txtMaxFpsCam, txtInputWHCam, txtSentWHCam, txtRecceivedWHCam;
+    private TextView txtMinWHScreen, txtMaxWHScreen, txtMinFpsScreen, txtMaxFpsScreen, txtInputWHScreen, txtSentWHScreen, txtRecceivedWHScreen;
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResWHCam, seekBarChangeListenerResFpsCam;
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListenerResWHScreen, seekBarChangeListenerResFpsScreen;
     private ImageButton btnGetVideoRes, btnVideoScreen, btnVideoCamera;
 
     // presenter instance to implement video res logic
@@ -62,41 +65,9 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
         this.presenter = presenter;
     }
 
-    public void resetResolution() {
-        txtMinWH.setText("widthxheight");
-        txtMaxWH.setText("widthxheight");
-        txtMinFps.setText("Fps");
-        txtMaxFps.setText("Fps");
-        txtInputWH.setText("widthxheight");
-        txtSentWH.setText("widthxheight");
-        txtRecceivedWH.setText("widthxheight");
-
-        // init seekbars
-        seekBarWidthHeight.setType(CustomSeekBar.Seekbar_Type.WIDTH_HEIGHT);
-        seekBarFps.setType(CustomSeekBar.Seekbar_Type.FPS);
-        seekBarWidthHeight.setCurrentWidthHeight("WidthxHeight");
-        seekBarFps.setCurrentWidthHeight("Fps");
-
-        seekBarChangeListenerResDim = getSeekBarChangeListenerDim();
-        seekBarWidthHeight.setOnSeekBarChangeListener(seekBarChangeListenerResDim);
-
-        seekBarChangeListenerResFps = getSeekBarChangeListenerFps();
-        seekBarFps.setOnSeekBarChangeListener(seekBarChangeListenerResFps);
-    }
-
     //----------------------------------------------------------------------------------------------
     // Fragment life cycle methods
     //----------------------------------------------------------------------------------------------
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -113,106 +84,184 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
         return rootView;
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
-
     //----------------------------------------------------------------------------------------------
     // Methods called from the Presenter to update UI
     //----------------------------------------------------------------------------------------------
 
-    /**
-     * Update the value of TextView for local input video resolution
-     */
     @Override
-    public void onPresenterRequestUpdateUiResInput(VideoResolution videoInput) {
-        setUiResTvStats(videoInput, txtInputWH);
+    public void updateUIChangeMediaType(SkylinkMedia.MediaType mediaType) {
+        if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
+            seekBarWidthHeightScreen.setVisibility(View.GONE);
+            seekBarFpsScreen.setVisibility(View.GONE);
+            layoutWHScreen.setVisibility(View.GONE);
+            layoutWHMinMaxScreen.setVisibility(View.GONE);
+            layoutFpsMinMaxScreen.setVisibility(View.GONE);
+
+            seekBarWidthHeightCam.setVisibility(View.VISIBLE);
+            seekBarFpsCam.setVisibility(View.VISIBLE);
+            layoutWHCam.setVisibility(View.VISIBLE);
+            layoutWHMinMaxCam.setVisibility(View.VISIBLE);
+            layoutFpsMinMaxCam.setVisibility(View.VISIBLE);
+
+            btnVideoCamera.setBackground(getResources().getDrawable(R.drawable.button_circle_trans_selected));
+            btnVideoScreen.setBackground(getResources().getDrawable(R.drawable.button_circle_trans));
+
+        } else if (mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+            seekBarWidthHeightCam.setVisibility(View.GONE);
+            seekBarFpsCam.setVisibility(View.GONE);
+            layoutWHCam.setVisibility(View.GONE);
+            layoutWHMinMaxCam.setVisibility(View.GONE);
+            layoutFpsMinMaxCam.setVisibility(View.GONE);
+
+            seekBarWidthHeightScreen.setVisibility(View.VISIBLE);
+            seekBarFpsScreen.setVisibility(View.VISIBLE);
+            layoutWHScreen.setVisibility(View.VISIBLE);
+            layoutWHMinMaxScreen.setVisibility(View.VISIBLE);
+            layoutFpsMinMaxScreen.setVisibility(View.VISIBLE);
+
+            btnVideoScreen.setBackground(getResources().getDrawable(R.drawable.button_circle_trans_selected));
+            btnVideoCamera.setBackground(getResources().getDrawable(R.drawable.button_circle_trans));
+        }
     }
 
-    /**
-     * Update the value of TextView for local sent video resolution
-     */
+    // For camera video resolution UI
+
     @Override
-    public void onPresenterRequestUpdateUiResSent(VideoResolution videoSent) {
-        setUiResTvStats(videoSent, txtSentWH);
+    public void updateUIOnCameraInputWHValue(int maxWHRange, String minWHValue, String maxWHValue, String currentWHValue, int currentIndex) {
+        // update seekbar
+        seekBarWidthHeightCam.setMaxRange(maxWHRange);
+        if (currentIndex >= 0) {
+            seekBarWidthHeightCam.setProgress(currentIndex);
+            seekBarWidthHeightCam.setCurrentWidthHeight(currentWHValue);
+        } else {
+            seekBarWidthHeightCam.setProgress(0);
+            seekBarWidthHeightCam.setCurrentWidthHeight("N/A");
+        }
+
+        // update textview
+        txtMinWHCam.setText(minWHValue);
+        txtMaxWHCam.setText(maxWHValue);
     }
 
-    /**
-     * Update the value of TextView for received remote video resolution
-     */
     @Override
-    public void onPresenterRequestUpdateUiResReceive(VideoResolution videoReceive) {
-        setUiResTvStats(videoReceive, txtRecceivedWH);
+    public void updateUIOnCameraInputFpsValue(String maxFps, String minFps, String fps) {
+        // update seekbar on progress and max range
+        seekBarFpsCam.setProgress(Integer.valueOf(fps));
+        seekBarFpsCam.setCurrentFps(fps);
+        seekBarFpsCam.setMaxRange(Integer.valueOf(maxFps));
+
+        // update textview
+        txtMinFpsCam.setText(minFps);
+        txtMaxFpsCam.setText(maxFps);
     }
 
-    /**
-     * Update the value of TextView when changing video resolution width x height Seek bar
-     */
     @Override
-    public boolean onPresenterRequestUpdateUiResDimInfo(int width, int height) {
-        return setUiResTvDim(width, height);
+    public void updateUIOnCameraInputFpsValue(String maxFps, String minFps) {
+        // update seekbar, only on max range
+        seekBarFpsCam.setMaxRange(Integer.valueOf(maxFps));
+
+        // update textview
+        txtMinFpsCam.setText(minFps);
+        txtMaxFpsCam.setText(maxFps);
     }
 
-    /**
-     * Update the value of TextView when changing video resolution frame rate Seek bar
-     */
     @Override
-    public void onPresenterRequestUpdateUiResFpsInfo(int fps) {
-        setUiResTvFps(fps);
+    public void updateUIOnCameraInputValue(String inputValue) {
+        txtInputWHCam.setText(inputValue);
     }
 
-    /**
-     * Update the max range of the width x height resolution seek bar due to current camera
-     *
-     * @param maxDimRange
-     */
     @Override
-    public void onPresenterRequestUpdateUiResRangeDimInfo(int maxDimRange, String minDimValue, String maxDimValue) {
-        // update max rang on seekbar
-        seekBarWidthHeight.setMaxRange(maxDimRange);
-        // update max/min width x height textviews
-        txtMaxWH.setText(maxDimValue);
-        txtMinWH.setText(minDimValue);
+    public void updateUIOnCameraReceivedValue(int width, int height, int fps) {
+        String recValue = "N/A";
+        if (width > 0 && height > 0 && fps > 0) {
+            recValue = width + "x" + height + ",\n" + fps + " Fps";
+        }
+
+        txtRecceivedWHCam.setText(recValue);
     }
 
-    /**
-     * Update the max range of the frame rate resolution seek bar due to current camera
-     *
-     * @param maxFpsRange
-     */
     @Override
-    public void onPresenterRequestUpdateUiResRangeFpsInfo(int maxFpsRange, int minFpsValue, int maxFpsValue) {
-        // update max rang on seekbar
-        seekBarFps.setMaxRange(maxFpsRange);
-        // update min/max width x height textview
-        txtMinFps.setText(String.valueOf(minFpsValue));
-        txtMaxFps.setText(String.valueOf(maxFpsRange));
+    public void updateUIOnCameraSentValue(int width, int height, int fps) {
+        String sentValue = "N/A";
+        if (width > 0 && height > 0 && fps > 0) {
+            sentValue = width + "x" + height + ",\n" + fps + " Fps";
+        }
+        txtSentWHCam.setText(sentValue);
     }
 
-    /**
-     * Update the UI when changing width x height video resolution.
-     * Update on both the seek bar and the text view
-     */
     @Override
-    public void onPresenterRequestUpdateResDimInfo(int index, int width, int height) {
-        // Set the SeekBar
-        seekBarWidthHeight.setProgress(index);
-        // Set TextView
-        setUiResTvDim(width, height);
+    public void updateUIOnCameraInputWHProgressValue(String valueWH) {
+        seekBarWidthHeightCam.setCurrentWidthHeight(valueWH);
     }
 
-    /**
-     * Update the UI when changing frame rate video resolution.
-     * Update on both the seek bar and the text view
-     */
     @Override
-    public void onPresenterRequestUpdateResFpsInfo(int index, int fps) {
-        // Set the SeekBar
-        seekBarFps.setProgress(index);
-        // Set TextView
-        setUiResTvFps(fps);
+    public void updateUIOnCameraInputFpsProgressValue(String valueFps) {
+        seekBarFpsCam.setCurrentFps(valueFps);
+    }
+
+    // For screen video resolution UI
+
+    @Override
+    public void updateUIOnScreenInputWHValue(int maxWHRange, String minWHValue, String maxWHValue, String currentWHValue, int currentIndex) {
+        // update seekbar
+        seekBarWidthHeightScreen.setMaxRange(maxWHRange);
+        if (currentIndex >= 0) {
+            seekBarWidthHeightScreen.setProgress(currentIndex);
+            seekBarWidthHeightScreen.setCurrentWidthHeight(currentWHValue);
+        } else {
+            seekBarWidthHeightScreen.setProgress(0);
+            seekBarWidthHeightScreen.setCurrentWidthHeight("N/A");
+        }
+
+        // update textview
+        txtMinWHScreen.setText(minWHValue);
+        txtMaxWHScreen.setText(maxWHValue);
+    }
+
+    @Override
+    public void updateUIOnScreenInputWHProgressValue(String valueWH) {
+        seekBarWidthHeightScreen.setCurrentWidthHeight(valueWH);
+    }
+
+    @Override
+    public void updateUIOnScreenInputFpsValue(String maxFps, String minFps, String fps) {
+        // update seekbar
+        seekBarFpsScreen.setProgress(Integer.valueOf(fps) >= 0 ? Integer.valueOf(fps) : 0);
+        seekBarFpsScreen.setCurrentFps(Integer.valueOf(fps) >= 0 ? fps : "N/A");
+        seekBarFpsScreen.setMaxRange(Integer.valueOf(maxFps));
+
+        // update textview
+        txtMinFpsScreen.setText(minFps);
+        txtMaxFpsScreen.setText(maxFps);
+    }
+
+    @Override
+    public void updateUIOnScreenInputFpsProgressValue(String valueFps) {
+        seekBarFpsScreen.setCurrentFps(valueFps);
+    }
+
+    @Override
+    public void updateUIOnScreenInputValue(String inputValue) {
+        txtInputWHScreen.setText(inputValue);
+    }
+
+    @Override
+    public void updateUIOnScreenReceivedValue(int width, int height, int fps) {
+        String recValue = "N/A";
+        if (width > 0 && height > 0 && fps > 0) {
+            recValue = width + "x" + height + ",\n" + fps + " Fps";
+        }
+
+        txtRecceivedWHScreen.setText(recValue);
+    }
+
+    @Override
+    public void updateUIOnScreenSentValue(int width, int height, int fps) {
+        String sentValue = "N/A";
+        if (width > 0 && height > 0 && fps > 0) {
+            sentValue = width + "x" + height + ",\n" + fps + " Fps";
+        }
+        txtSentWHScreen.setText(sentValue);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -221,18 +270,34 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
 
     private void getControlWidgets(View rootView) {
         frameVideoRes = rootView.findViewById(R.id.frameVideoRes);
-        seekBarWidthHeight = rootView.findViewById(R.id.seekBarResWidthHeight);
-        seekBarFps = rootView.findViewById(R.id.seekBarResFps);
-        txtMinWH = rootView.findViewById(R.id.txtMinRes);
-        txtMaxWH = rootView.findViewById(R.id.txtMaxRes);
-        txtMinFps = rootView.findViewById(R.id.txtMinFps);
-        txtMaxFps = rootView.findViewById(R.id.txtMaxFps);
-        txtInputWH = rootView.findViewById(R.id.txtResInput);
-        txtSentWH = rootView.findViewById(R.id.txtResSent);
-        txtRecceivedWH = rootView.findViewById(R.id.txtResReceived);
+        seekBarWidthHeightCam = rootView.findViewById(R.id.seekBarResWidthHeightCamera);
+        seekBarFpsCam = rootView.findViewById(R.id.seekBarResFpsCamera);
+        txtMinWHCam = rootView.findViewById(R.id.txtMinRes_camera);
+        txtMaxWHCam = rootView.findViewById(R.id.txtMaxRes_camera);
+        txtMinFpsCam = rootView.findViewById(R.id.txtMinFps_camera);
+        txtMaxFpsCam = rootView.findViewById(R.id.txtMaxFps_camera);
+        txtInputWHCam = rootView.findViewById(R.id.txtResInput_cam);
+        txtSentWHCam = rootView.findViewById(R.id.txtResSent_cam);
+        txtRecceivedWHCam = rootView.findViewById(R.id.txtResReceived_cam);
         btnGetVideoRes = rootView.findViewById(R.id.btnGetVideoRes);
         btnVideoScreen = rootView.findViewById(R.id.btnVideoScreen);
         btnVideoCamera = rootView.findViewById(R.id.btnVideoCamera);
+        layoutWHCam = rootView.findViewById(R.id.layout_res_widthHeight_cam);
+        layoutWHMinMaxCam = rootView.findViewById(R.id.ll_txtDimRes_camera);
+        layoutFpsMinMaxCam = rootView.findViewById(R.id.ll_txtFpsRes_camera);
+
+        seekBarWidthHeightScreen = rootView.findViewById(R.id.seekBarResWidthHeightScreen);
+        seekBarFpsScreen = rootView.findViewById(R.id.seekBarResFpsScreen);
+        txtMinWHScreen = rootView.findViewById(R.id.txtMinRes_screen);
+        txtMaxWHScreen = rootView.findViewById(R.id.txtMaxRes_screen);
+        txtMinFpsScreen = rootView.findViewById(R.id.txtMinFps_screen);
+        txtMaxFpsScreen = rootView.findViewById(R.id.txtMaxFps_screen);
+        txtInputWHScreen = rootView.findViewById(R.id.txtResInput_screen);
+        txtSentWHScreen = rootView.findViewById(R.id.txtResSent_screen);
+        txtRecceivedWHScreen = rootView.findViewById(R.id.txtResReceived_screen);
+        layoutWHScreen = rootView.findViewById(R.id.layout_res_widthHeight_screen);
+        layoutWHMinMaxScreen = rootView.findViewById(R.id.ll_txtDimRes_screen);
+        layoutFpsMinMaxScreen = rootView.findViewById(R.id.ll_txtFpsRes_screen);
     }
 
     private void init() {
@@ -244,114 +309,65 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
 
         resetResolution();
 
-        btnGetVideoRes.setOnClickListener(view -> presenter.onViewRequestGetVideoResolutions());
+        btnGetVideoRes.setOnClickListener(view -> presenter.processGetVideoResolutions());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             btnGetVideoRes.setTooltipText("Get video resolution");
         }
 
-        btnVideoCamera.setBackground(getResources().getDrawable(R.drawable.button_circle_trans_selected));
         btnVideoCamera.setOnClickListener(view -> {
-            presenter.onViewRequestChooseVideoCamera();
+            updateUIChangeMediaType(SkylinkMedia.MediaType.VIDEO_CAMERA);
+            presenter.processChooseVideoCamera();
             btnVideoCamera.setBackground(getResources().getDrawable(R.drawable.button_circle_trans_selected));
             btnVideoScreen.setBackground(getResources().getDrawable(R.drawable.button_circle_trans));
         });
 
         btnVideoScreen.setOnClickListener(view -> {
-            presenter.onViewRequestChooseVideoScreen();
+            updateUIChangeMediaType(SkylinkMedia.MediaType.VIDEO_SCREEN);
+            presenter.processChooseVideoScreen();
             btnVideoCamera.setBackground(getResources().getDrawable(R.drawable.button_circle_trans));
             btnVideoScreen.setBackground(getResources().getDrawable(R.drawable.button_circle_trans_selected));
         });
     }
 
-    /**
-     * Set the value of TextView for local input video resolution/sent video resolution/received video resolution.
-     * If any parameters are invalid, set default text.
-     *
-     * @param textView
-     * @param videoResolution
-     */
-    private void setUiResTvStats(VideoResolution videoResolution, TextView textView) {
-        if (textView == null)
-            return;
+    public void resetResolution() {
+        txtMinWHCam.setText("widthxheight");
+        txtMaxWHCam.setText("widthxheight");
+        txtMinFpsCam.setText("Fps");
+        txtMaxFpsCam.setText("Fps");
+        txtInputWHCam.setText("widthxheight");
+        txtSentWHCam.setText("widthxheight");
+        txtRecceivedWHCam.setText("widthxheight");
 
-        if (videoResolution == null || videoResolution.getWidth() <= 0 || videoResolution.getHeight() <= 0 || videoResolution.getFps() < 0) {
-            textView.setText("N/A");
-            return;
-        }
-        // Set textView to match
-        String str = Utils.getResDimStr(videoResolution) + ",\n" + Utils.getResFpsStr(videoResolution);
-        textView.setText(str);
-    }
+        txtMinWHScreen.setText("widthxheight");
+        txtMaxWHScreen.setText("widthxheight");
+        txtMinFpsScreen.setText("Fps");
+        txtMaxFpsScreen.setText("Fps");
+        txtInputWHScreen.setText("widthxheight");
+        txtSentWHScreen.setText("widthxheight");
+        txtRecceivedWHScreen.setText("widthxheight");
 
-    /**
-     * Set the value of TextView tvResDim.
-     * If inputs are invalid, set default text.
-     *
-     * @param width  video width
-     * @param height video height
-     * @return True if inputs are valid, false otherwise.
-     */
-    private boolean setUiResTvDim(int width, int height) {
-        if (width <= 0 || height <= 0) {
-            seekBarWidthHeight.setCurrentWidthHeight("N/A");
-            return false;
-        }
-        // Set textView to match
-        seekBarWidthHeight.setCurrentWidthHeight(Utils.getResDimStr(width, height));
-        return true;
-    }
+        // init seekbars
+        seekBarWidthHeightCam.setType(CustomSeekBar.Seekbar_Type.WIDTH_HEIGHT);
+        seekBarFpsCam.setType(CustomSeekBar.Seekbar_Type.FPS);
+        seekBarWidthHeightCam.setCurrentWidthHeight("WidthxHeight");
+        seekBarFpsCam.setCurrentWidthHeight("Fps");
 
-    /**
-     * Set the value of TextView tvResFps.
-     * If input is invalid, set default text.
-     *
-     * @param fps frames per second.
-     * @return True if inputs are valid, false otherwise.
-     */
-    private boolean setUiResTvFps(int fps) {
-        if (fps < 0) {
-            seekBarFps.setCurrentFps("N/A");
-            return false;
-        }
-        // Set textView to match
-        seekBarFps.setCurrentFps(String.valueOf(fps));
-        return true;
-    }
+        seekBarWidthHeightScreen.setType(CustomSeekBar.Seekbar_Type.WIDTH_HEIGHT);
+        seekBarFpsScreen.setType(CustomSeekBar.Seekbar_Type.FPS);
+        seekBarWidthHeightScreen.setCurrentWidthHeight("WidthxHeight");
+        seekBarFpsScreen.setCurrentWidthHeight("Fps");
 
-    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerDim() {
-        return new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                presenter.onViewRequestDimProgressChanged(progress);
-            }
+        seekBarChangeListenerResWHCam = getSeekBarChangeListenerWHCam();
+        seekBarWidthHeightCam.setOnSeekBarChangeListener(seekBarChangeListenerResWHCam);
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
+        seekBarChangeListenerResFpsCam = getSeekBarChangeListenerFpsCam();
+        seekBarFpsCam.setOnSeekBarChangeListener(seekBarChangeListenerResFpsCam);
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                presenter.onViewRequestDimSelected(seekBar.getProgress());
-            }
-        };
-    }
+        seekBarChangeListenerResWHScreen = getSeekBarChangeListenerWHScreen();
+        seekBarWidthHeightScreen.setOnSeekBarChangeListener(seekBarChangeListenerResWHScreen);
 
-    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerFps() {
-        return new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                presenter.onViewRequestFpsProgressChanged(progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                presenter.onViewRequestFpsSelected(seekBar.getProgress());
-            }
-        };
+        seekBarChangeListenerResFpsScreen = getSeekBarChangeListenerFpsScreen();
+        seekBarFpsScreen.setOnSeekBarChangeListener(seekBarChangeListenerResFpsScreen);
     }
 
     private CustomTriangleButton.ButtonDirection getDirection() {
@@ -360,5 +376,77 @@ public class VideoResolutionFragment extends android.support.v4.app.Fragment imp
         }
 
         return null;
+    }
+
+    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerWHCam() {
+        return new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                presenter.processWHProgressChangedCamera(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                presenter.processWHSelectedCamera(seekBar.getProgress());
+            }
+        };
+    }
+
+    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerFpsCam() {
+        return new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                presenter.processFpsProgressChangedCamera(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                presenter.processFpsSelectedCamera(seekBar.getProgress());
+            }
+        };
+    }
+
+    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerWHScreen() {
+        return new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                presenter.processWHProgressChangedScreen(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                presenter.processWHSelectedScreen(seekBar.getProgress());
+            }
+        };
+    }
+
+    private SeekBar.OnSeekBarChangeListener getSeekBarChangeListenerFpsScreen() {
+        return new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                presenter.processFpsProgressChangedScreen(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                presenter.processFpsSelectedScreen(seekBar.getProgress());
+            }
+        };
     }
 }

@@ -136,7 +136,9 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
     public void processExit() {
         //process disconnect from room if connecting
         //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
-        videoService.disconnectFromRoom();
+        if (videoService.isConnectingOrConnected()) {
+            videoService.disconnectFromRoom();
+        }
 
         // need to call disposeLocalMedia to clear all local media objects as disconnectFromRoom no longer dispose local media
         videoService.disposeLocalMedia();
@@ -397,6 +399,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //notify view to change the UI
         mainView.updateUILocalCameraAdded(localVideo.getMediaId(), selfVideoView);
+
+        videoResPresenter.processMediaTypeSelected(SkylinkMedia.MediaType.VIDEO_CAMERA);
     }
 
     @Override
@@ -418,6 +422,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         //notify view to change the UI
         mainView.updateUILocalScreenAdded(localScreen.getMediaId(), selfVideoView);
+
+        videoResPresenter.processMediaTypeSelected(SkylinkMedia.MediaType.VIDEO_SCREEN);
     }
 
     @Override

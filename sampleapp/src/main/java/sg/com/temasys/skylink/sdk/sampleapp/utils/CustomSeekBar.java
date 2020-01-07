@@ -94,24 +94,25 @@ public class CustomSeekBar extends AppCompatSeekBar {
         int centerYOnView = getHeight() / 2;
 
         // draw divider
-        // base on the number of skylinkFormat[] size will draw the number of circle here
-        //draw [noOfDivider] sticks
-        if (noOfDivider > 0) {
-            for (int i = 0; i < noOfDivider; i++) {
-                float startPoint = getPaddingLeft() + (width / noOfDivider * i) + i;
-                if (type == Seekbar_Type.WIDTH_HEIGHT && startPoint <= getPaddingLeft() + width) {
-                    canvas.drawCircle(startPoint, centerYOnView, 5f, dividerPaint);
-                } else if (type == Seekbar_Type.FPS && startPoint <= getPaddingLeft() + width) {
-                    canvas.drawCircle(startPoint, centerYOnView, 3f, dividerPaint);
-                }
+        float space = width / noOfDivider;
+        float i = getPaddingLeft();
+
+        while (i < width + getPaddingRight()) {
+            float startPoint = i;
+            if (type == Seekbar_Type.WIDTH_HEIGHT) {
+                canvas.drawCircle(startPoint, centerYOnView, 5f, dividerPaint);
+            } else if (type == Seekbar_Type.FPS) {
+                canvas.drawCircle(startPoint, centerYOnView, 4f, dividerPaint);
             }
 
-            // draw the last stick
-            if (type == Seekbar_Type.WIDTH_HEIGHT) {
-                canvas.drawCircle(getPaddingLeft() + width, centerYOnView, 5f, dividerPaint);
-            } else if (type == Seekbar_Type.FPS) {
-                canvas.drawCircle(getPaddingLeft() + width, centerYOnView, 3f, dividerPaint);
-            }
+            i += space;
+        }
+
+        // draw the last stick
+        if (type == Seekbar_Type.WIDTH_HEIGHT) {
+            canvas.drawCircle(getPaddingLeft() + width, centerYOnView, 5f, dividerPaint);
+        } else if (type == Seekbar_Type.FPS) {
+            canvas.drawCircle(getPaddingLeft() + width, centerYOnView, 4f, dividerPaint);
         }
 
 
@@ -134,12 +135,12 @@ public class CustomSeekBar extends AppCompatSeekBar {
         if (type == Seekbar_Type.WIDTH_HEIGHT) {
             rect.left = startPos - 100;
             if (rect.left < 0) {
-                rect.left = 0;
+                rect.left = -8;
             }
 
             rect.right = rect.left + 200;
             if (rect.right > getWidth()) {
-                rect.right = getWidth();
+                rect.right = getWidth() + 8;
             }
 
             rect.top = centerYOnView - 110;

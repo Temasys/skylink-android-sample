@@ -303,6 +303,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         skylinkConfig.setFileTransfer(true);
         skylinkConfig.setMirrorLocalFrontCameraView(true);
         skylinkConfig.setReportVideoResolutionUntilStable(true);
+        skylinkConfig.setReportVideoResolutionOnVideoChange(true);
 
         // Allow only 1 remote Peer to join as our UI just support 1 remote peer
         skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
@@ -325,9 +326,6 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
             skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
             skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
         }
-
-        // set enable multitrack to false to interop with JS-SDK
-        // skylinkConfig.setMultitrackCreateEnable(false);
 
         return skylinkConfig;
     }
@@ -400,7 +398,7 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         Log.d(TAG, "createLocalScreen()");
         if (skylinkConnection != null && localScreen == null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
-            //Start video.
+            //Start screen by default video resolution in setting.
             skylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile", new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {

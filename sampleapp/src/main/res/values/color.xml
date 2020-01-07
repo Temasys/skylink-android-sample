@@ -9,4 +9,5 @@
     <color name="gray">#d2d0d0</color>
     <color name="color_white_trans_50">#80FFFFFF</color>
     <color name="color_white_trans_70">#50FFFFFF</color>
+    <color name="color_white_trans_10">#90424242</color>
 </resources>

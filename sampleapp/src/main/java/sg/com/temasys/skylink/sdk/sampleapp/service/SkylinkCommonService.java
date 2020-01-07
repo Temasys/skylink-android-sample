@@ -240,16 +240,16 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onCreateLocalMedia(localMedia: " + localMedia.toString());
 
         if (!localMedia.isVideo()) {
-            presenter.processLocalAudioCaptured(localMedia);
             localAudio = localMedia;
+            presenter.processLocalAudioCaptured(localMedia);
         } else {
             if (SkylinkMedia.MediaType.VIDEO_CAMERA == localMedia.getMediaType()
                     || SkylinkMedia.MediaType.VIDEO == localMedia.getMediaType()) {
-                presenter.processLocalCameraCaptured(localMedia);
                 localVideo = localMedia;
+                presenter.processLocalCameraCaptured(localMedia);
             } else if (SkylinkMedia.MediaType.VIDEO_SCREEN == localMedia.getMediaType()) {
-                presenter.processLocalScreenCaptured(localMedia);
                 localScreen = localMedia;
+                presenter.processLocalScreenCaptured(localMedia);
             }
         }
     }
@@ -379,7 +379,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat, String mediaId) {
         Log.d(TAG, "onObtainInputVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps);
 
-        obtainInputVideoResolution(width, height, fps, captureFormat, mediaId);
+        SkylinkMedia.MediaType mediaType = null;
+        if (localVideo != null && mediaId.equals(localVideo.getMediaId())) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
+        } else if (localScreen != null && mediaId.equals(localScreen.getMediaId())) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
+        }
+
+        if (mediaType != null)
+            obtainInputVideoResolution(width, height, fps, captureFormat, mediaType);
     }
 
     @Override
@@ -387,7 +395,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onObtainReceivedVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps +
                 ", mediaId: " + mediaId + ", remotePeerId: " + remotePeerId);
 
-        obtainReceivedVideoResolution(width, height, fps, mediaId, remotePeerId);
+        SkylinkMedia.MediaType mediaType = null;
+        SkylinkPeer remotePeer = getPeerById(remotePeerId);
+        if (remotePeer != null && remotePeer.getMediaMap().get(mediaId) != null) {
+            mediaType = remotePeer.getMediaMap().get(mediaId).getMediaType();
+        }
+
+        if (mediaType != null)
+            obtainReceivedVideoResolution(width, height, fps, mediaType, remotePeerId);
     }
 
     @Override
@@ -395,7 +410,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         Log.d(TAG, "onObtainSentVideoResolution(width: " + width + ", height: " + height + ", fps: " + fps +
                 ", mediaId: " + mediaId + ", remotePeerId: " + remotePeerId);
 
-        obtainSentVideoResolution(width, height, fps, mediaId, remotePeerId);
+        SkylinkMedia.MediaType mediaType = null;
+        if (localVideo != null && mediaId.equals(localVideo.getMediaId())) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
+        } else if (localScreen != null && mediaId.equals(localScreen.getMediaId())) {
+            mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
+        }
+
+        if (mediaType != null)
+            obtainSentVideoResolution(width, height, fps, mediaType, remotePeerId);
     }
 
     /**
@@ -1136,17 +1159,20 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
         if (videoId == null)
             return;
 
-        skylinkConnection.setInputVideoResolution(videoId, width, height, fps, new SkylinkCallback.InputVideoResolution() {
+        skylinkConnection.setInputVideoResolution(videoId, width, height, fps, new SkylinkCallback() {
             @Override
             public void onError(SkylinkError error, HashMap<String, Object> details) {
                 String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                 Log.e("SkylinkCallback", contextDescription);
                 toastLog(TAG, context, "\"Unable to setInputVideoResolution as " + contextDescription);
             }
+        });
 
+        // get input video resolution to check the result
+        skylinkConnection.getInputVideoResolution(videoId, new SkylinkCallback.InputVideoResolution() {
             @Override
             public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-                obtainInputVideoResolution(width, height, fps, captureFormat, videoId);
+                obtainInputVideoResolution(width, height, fps, captureFormat, mediaType);
             }
         });
     }
@@ -1244,49 +1270,23 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             return;
 
         String videoId = getProperLocalMediaId(mediaType);
+        String remotePeerId = null;
 
-        if (videoId == null)
-            return;
-
-        // get input video res
-        skylinkConnection.getInputVideoResolution(videoId, new SkylinkCallback.InputVideoResolution() {
-            @Override
-            public void onError(SkylinkError error, HashMap<String, Object> details) {
-                String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
-                Log.e("SkylinkCallback", contextDescription);
-                toastLog(TAG, context, "\"Unable to getInputVideoResolution as " + contextDescription);
-            }
-
-            @Override
-            public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-                obtainInputVideoResolution(width, height, fps, captureFormat, videoId);
-            }
-        });
-
-        // get sent and received video res if there is any remote peer in the room
         if (mPeersList != null && mPeersList.size() > 1) {
-            String remotePeerId = mPeersList.get(peerIndex).getPeerId();
-            if (remotePeerId != null) {
-                // get sent video res to remote peer
-                skylinkConnection.getSentVideoResolution(remotePeerId, videoId, new SkylinkCallback.SentVideoResolution() {
-                    @Override
-                    public void onError(SkylinkError error, HashMap<String, Object> details) {
-                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
-                        Log.e("SkylinkCallback", contextDescription);
-                        toastLog(TAG, context, "\"Unable to getSentVideoResolution as " + contextDescription);
-                    }
+            remotePeerId = mPeersList.get(peerIndex).getPeerId();
+        }
 
-                    @Override
-                    public void onObtainSentVideoResolution(int width, int height, int fps) {
-                        obtainSentVideoResolution(width, height, fps, videoId, remotePeerId);
-                    }
-                });
-            }
+        // if local video has not been created, get received video resolution from remote media
+        if (videoId == null) {
+            obtainInputVideoResolution(-1, -1, -1, null, mediaType);
 
             if (remotePeerId != null) {
+                obtainSentVideoResolution(-1, -1, -1, mediaType, remotePeerId);
+
                 // get received video res from remote peer
                 List<SkylinkMedia> remoteMediaList = skylinkConnection.getSkylinkMediaList(mediaType, remotePeerId);
                 if (remoteMediaList == null || remoteMediaList.size() == 0) {
+                    obtainReceivedVideoResolution(-1, -1, -1, mediaType, remotePeerId);
                     return;
                 }
 
@@ -1294,19 +1294,84 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
                 if (remoteMedia != null && remoteMedia.getMediaState() != SkylinkMedia.MediaState.UNAVAILABLE) {
                     String mediaId = remoteMedia.getMediaId();
+                    String finalRemotePeerId2 = remotePeerId;
                     skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
                         @Override
                         public void onError(SkylinkError error, HashMap<String, Object> details) {
                             String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                             Log.e("SkylinkCallback", contextDescription);
-                            toastLog(TAG, context, "\"Unable to getReceivedVideoResolution as " + contextDescription);
+                            obtainReceivedVideoResolution(-1, -1, -1, mediaType, finalRemotePeerId2);
                         }
 
                         @Override
                         public void onObtainReceivedVideoResolution(int width, int height, int fps) {
-                            obtainReceivedVideoResolution(width, height, fps, mediaId, remotePeerId);
+                            obtainReceivedVideoResolution(width, height, fps, mediaType, finalRemotePeerId2);
                         }
                     });
+                } else {
+                    obtainReceivedVideoResolution(-1, -1, -1, mediaType, remotePeerId);
+                }
+            }
+        } else {
+            // get input video res
+            skylinkConnection.getInputVideoResolution(videoId, new SkylinkCallback.InputVideoResolution() {
+                @Override
+                public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                    Log.e("SkylinkCallback", contextDescription);
+                    obtainInputVideoResolution(-1, -1, -1, null, mediaType);
+                }
+
+                @Override
+                public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
+                    obtainInputVideoResolution(width, height, fps, captureFormat, mediaType);
+                }
+            });
+
+            // get sent and received video res if there is any remote peer in the room
+            if (remotePeerId != null) {
+                // get sent video res to remote peer
+                String finalRemotePeerId1 = remotePeerId;
+                skylinkConnection.getSentVideoResolution(remotePeerId, videoId, new SkylinkCallback.SentVideoResolution() {
+                    @Override
+                    public void onError(SkylinkError error, HashMap<String, Object> details) {
+                        String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                        Log.e("SkylinkCallback", contextDescription);
+                        obtainSentVideoResolution(-1, -1, -1, mediaType, finalRemotePeerId1);
+                    }
+
+                    @Override
+                    public void onObtainSentVideoResolution(int width, int height, int fps) {
+                        obtainSentVideoResolution(width, height, fps, mediaType, finalRemotePeerId1);
+                    }
+                });
+
+                // get received video res from remote peer
+                List<SkylinkMedia> remoteMediaList = skylinkConnection.getSkylinkMediaList(mediaType, remotePeerId);
+                if (remoteMediaList == null || remoteMediaList.size() == 0) {
+                    obtainReceivedVideoResolution(-1, -1, -1, mediaType, remotePeerId);
+                    return;
+                }
+
+                SkylinkMedia remoteMedia = remoteMediaList.get(0);
+                if (remoteMedia != null && remoteMedia.getMediaState() != SkylinkMedia.MediaState.UNAVAILABLE) {
+                    String mediaId = remoteMedia.getMediaId();
+                    String finalRemotePeerId = remotePeerId;
+                    skylinkConnection.getReceivedVideoResolution(mediaId, new SkylinkCallback.ReceivedVideoResolution() {
+                        @Override
+                        public void onError(SkylinkError error, HashMap<String, Object> details) {
+                            String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                            Log.e("SkylinkCallback", contextDescription);
+                            obtainReceivedVideoResolution(-1, -1, -1, mediaType, finalRemotePeerId);
+                        }
+
+                        @Override
+                        public void onObtainReceivedVideoResolution(int width, int height, int fps) {
+                            obtainReceivedVideoResolution(width, height, fps, mediaType, finalRemotePeerId);
+                        }
+                    });
+                } else {
+                    obtainReceivedVideoResolution(-1, -1, -1, mediaType, remotePeerId);
                 }
             }
         }
@@ -1326,24 +1391,10 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param height        Video height in pixels of local captured video.
      * @param fps           Video frame per second of local captured video.
      * @param captureFormat The SkylinkCaptureFormat that is currently used by the camera.
-     * @param mediaId       Id of the local media object
+     * @param mediaType     type of the local media object
      */
     protected void obtainInputVideoResolution(int width, int height,
-                                              int fps, SkylinkCaptureFormat captureFormat, String mediaId) {
-        // TODO @Muoi need to check here as SA crash
-        // media object is removed but still got video resolution???
-
-        SkylinkMedia.MediaType mediaType = null;
-        // get the video type from videoId
-        if (localVideo != null && mediaId.equals(localVideo.getMediaId())) {
-            mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
-        } else if (localScreen != null && mediaId.equals(localScreen.getMediaId())) {
-            mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
-        }
-
-        if (mediaType == null)
-            return;
-
+                                              int fps, SkylinkCaptureFormat captureFormat, SkylinkMedia.MediaType mediaType) {
         // if the current demo has video resolution fragment to reflect the change
         if (videoResPresenter != null)
             videoResPresenter.processInputVideoResolutionObtained(mediaType, width, height, fps, captureFormat);
@@ -1365,22 +1416,16 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param width        Video width in pixels of remote Peer's video received by us.
      * @param height       Video height in pixels of remote Peer's video received by us.
      * @param fps          Video frame per second of remote Peer's video received by us.
-     * @param mediaId      id of the remote video that video resolutionc comes from
+     * @param mediaType    type of the remote video that video resolution comes from
      * @param remotePeerId PeerId of the remote Peer whose Video Resolution we are obtaining.
      */
     protected void obtainReceivedVideoResolution(int width, int height,
-                                                 int fps, String mediaId, String remotePeerId) {
-        SkylinkMedia remoteMedia = skylinkConnection.getSkylinkMedia(mediaId);
-
-        if (remoteMedia == null) {
-            return;
-        }
-
+                                                 int fps, SkylinkMedia.MediaType mediaType, String remotePeerId) {
         // if the current demo has video resolution fragment to reflect the change
-        if (videoResPresenter != null && remoteMedia.getMediaType() != null)
-            videoResPresenter.processReceivedVideoResolutionObtained(remotePeerId, remoteMedia.getMediaType(), width, height, fps);
+        if (videoResPresenter != null && mediaType != null)
+            videoResPresenter.processReceivedVideoResolutionObtained(remotePeerId, mediaType, width, height, fps);
         else {
-            String log = "[SA][obtainReceivedVideoResolution] The video (" + remoteMedia.getMediaType().toString() + ") received from Peer " + remotePeerId +
+            String log = "[SA][obtainReceivedVideoResolution] The video (" + mediaType + ") received from Peer " + remotePeerId +
                     " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
             toastLogLong(TAG, context, log);
         }
@@ -1396,26 +1441,12 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param width        Video width in pixels of local video sent to remote Peer.
      * @param height       Video height in pixels of local video sent to remote Peer.
      * @param fps          Video frame per second of local video sent to remote Peer.
-     * @param mediaId      id of the video that video resolution comes from
+     * @param mediaType    type of the video that video resolution comes from
      * @param remotePeerId PeerId of the remote Peer whom we are obtaining Video Resolution
      *                     for the video we are sending.
      */
     protected void obtainSentVideoResolution(int width, int height,
-                                             int fps, String mediaId, String remotePeerId) {
-        // TODO @Muoi need to check here as SA crash
-        // media object is removed but still got video resolution???
-
-        SkylinkMedia.MediaType mediaType = null;
-        // get the video type from videoId
-        if (localVideo != null && mediaId.equals(localVideo.getMediaId())) {
-            mediaType = SkylinkMedia.MediaType.VIDEO_CAMERA;
-        } else if (localScreen != null && mediaId.equals(localScreen.getMediaId())) {
-            mediaType = SkylinkMedia.MediaType.VIDEO_SCREEN;
-        }
-
-        if (mediaType == null)
-            return;
-
+                                             int fps, SkylinkMedia.MediaType mediaType, String remotePeerId) {
         // if the current demo has video resolution fragment to reflect the change
         if (videoResPresenter != null)
             videoResPresenter.processSentVideoResolutionObtained(remotePeerId, mediaType, width, height, fps);
@@ -1550,7 +1581,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             mPeersList.clear();
 
         // reset class variables instance
-//        skylinkConnection.clearInstance();
+        skylinkConnection.clearInstance();
         localAudio = null;
         localVideo = null;
         localScreen = null;

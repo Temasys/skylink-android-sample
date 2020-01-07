@@ -582,7 +582,7 @@ public class Utils {
      * @return
      */
     @NonNull
-    public static String getResDimStr(int width, int height) {
+    public static String getResWHStr(int width, int height) {
         return width + " x " + height;
     }
 
@@ -593,7 +593,7 @@ public class Utils {
      * @return
      */
     @NonNull
-    public static String getResDimStr(VideoResolution videoResolution) {
+    public static String getResWHStr(VideoResolution videoResolution) {
         return videoResolution.getWidth() + " x " + videoResolution.getHeight();
     }
 

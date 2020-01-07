@@ -1,5 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
+
 /**
  * Created by muoi.pham on 20/07/18.
  */
@@ -13,6 +15,15 @@ public class VideoResolution {
     // Frame rate in frames per second (fps).
     private int fps;
 
+    // The array of SkylinkCaptureFormats support by the current camera/screen.
+    private SkylinkCaptureFormat[] captureFormats;
+
+    // The selected SkylinkCaptureFormat on UI
+    private SkylinkCaptureFormat currentCaptureFormat;
+
+    // The current camera/screen name.
+    private String currentDeviceName;
+
     public VideoResolution() {
         this.width = -1;
         this.height = -1;
@@ -23,6 +34,30 @@ public class VideoResolution {
         this.width = width;
         this.height = height;
         this.fps = fps;
+    }
+
+    public SkylinkCaptureFormat[] getCaptureFormats() {
+        return captureFormats;
+    }
+
+    public void setCaptureFormats(SkylinkCaptureFormat[] captureFormats) {
+        this.captureFormats = captureFormats;
+    }
+
+    public SkylinkCaptureFormat getCurrentCaptureFormat() {
+        return currentCaptureFormat;
+    }
+
+    public void setCurrentCaptureFormat(SkylinkCaptureFormat currentCaptureFormat) {
+        this.currentCaptureFormat = currentCaptureFormat;
+    }
+
+    public String getCurrentDeviceName() {
+        return currentDeviceName;
+    }
+
+    public void setCurrentDeviceName(String currentDeviceName) {
+        this.currentDeviceName = currentDeviceName;
     }
 
     public int getWidth() {

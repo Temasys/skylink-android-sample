@@ -1210,7 +1210,6 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
 
         // reset the video resolution
         if (context != null && (context instanceof VideoActivity)) {
-            ((VideoActivity) context).resetResolution();
             ((VideoActivity) context).resetSmallRemoteViews();
         }
     }

@@ -67,8 +67,8 @@ public class VideoActivity extends AppCompatActivity {
         // if it is new state, then create view instance
         // otherwise reuse the view instance and keep states
         if (savedInstanceState == null) {
-            videoMainFragment = VideoFragment.newInstance();
             videoResolutionFragment = VideoResolutionFragment.newInstance();
+            videoMainFragment = VideoFragment.newInstance();
             localVideoCameraFragment = SmallVideoViewFragment.newInstance();
             localVideoCameraFragment.setVideoType(VIDEO_TYPE.LOCAL_CAMERA);
             localVideoScreenFragment = SmallVideoViewFragment.newInstance();
@@ -80,19 +80,19 @@ public class VideoActivity extends AppCompatActivity {
 
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.contentFrameMainScreenShare, videoMainFragment, VIDEO_MAIN_FRAGMENT_TAG)
-                    .add(R.id.contentFrameScreenRes, videoResolutionFragment, VIDEO_RES_FRAGMENT_TAG)
+                    .add(R.id.contentFrameVideoRes, videoResolutionFragment, VIDEO_RES_FRAGMENT_TAG)
+                    .add(R.id.contentFrameMainVideo, videoMainFragment, VIDEO_MAIN_FRAGMENT_TAG)
                     .add(R.id.contentFrameLocalCameraView, localVideoCameraFragment, VIDEO_LOCAL_CAMERA_VIEW_TAG)
                     .add(R.id.contentFrameLocalScreenView, localVideoScreenFragment, VIDEO_LOCAL_SCREEN_VIEW_TAG)
                     .add(R.id.contentFrameRemoteCameraView, remoteVideoCameraFragment, VIDEO_REMOTE_CAMERA_VIEW_TAG)
                     .add(R.id.contentFrameRemoteScreenView, remoteVideoScreenFragment, VIDEO_REMOTE_SCREEN_VIEW_TAG)
                     .commit();
         } else {
-            videoMainFragment = (VideoFragment) getSupportFragmentManager()
-                    .findFragmentByTag(VIDEO_MAIN_FRAGMENT_TAG);
-
             videoResolutionFragment = (VideoResolutionFragment) getSupportFragmentManager()
                     .findFragmentByTag(VIDEO_RES_FRAGMENT_TAG);
+
+            videoMainFragment = (VideoFragment) getSupportFragmentManager()
+                    .findFragmentByTag(VIDEO_MAIN_FRAGMENT_TAG);
 
             localVideoCameraFragment = (SmallVideoViewFragment) getSupportFragmentManager()
                     .findFragmentByTag(VIDEO_LOCAL_CAMERA_VIEW_TAG);
@@ -117,10 +117,10 @@ public class VideoActivity extends AppCompatActivity {
                 .commit();
 
         //link between view and presenter
-        videoPresenter.setMainView(videoMainFragment);
+        videoResPresenter.setView(videoResolutionFragment);
         videoPresenter.setVideoResPresenter(videoResPresenter);
         videoMainFragment.setPresenter(videoPresenter);
-        videoResPresenter.setView(videoResolutionFragment);
+        videoPresenter.setMainView(videoMainFragment);
     }
 
     @Override
@@ -416,10 +416,6 @@ public class VideoActivity extends AppCompatActivity {
             onShowHideRemoteScreenViewFragment(true, false);
         }
 
-    }
-
-    public void resetResolution() {
-        videoResolutionFragment.resetResolution();
     }
 
     public void resetSmallRemoteViews() {

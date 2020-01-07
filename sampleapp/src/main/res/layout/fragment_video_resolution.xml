@@ -1,129 +1,260 @@
 <RelativeLayout android:id="@+id/frameVideoRes"
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/frame_layout_round_border"
                 android:orientation="vertical"
                 android:paddingBottom="@dimen/dp_10dp"
                 tools:context="sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionFragment">
 
-    <ImageButton
-        android:id="@+id/btnGetVideoRes"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_margin="@dimen/dp_5dp"
-        android:background="@drawable/button_circle_trans"
-        android:src="@drawable/ic_get_video_res"/>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:orientation="horizontal"
-        android:paddingRight="@dimen/dp_10dp"
-        android:visibility="gone">
+    <RelativeLayout
+        android:id="@+id/ll_media_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <ImageButton
-            android:id="@+id/btnVideoCamera"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginBottom="@dimen/dp_5dp"
-            android:layout_marginTop="@dimen/dp_5dp"
-            android:layout_toLeftOf="@id/btnVideoScreen"
-            android:background="@drawable/button_circle_trans"
-            android:src="@drawable/ic_camera_green_24dp"/>
-
-        <ImageButton
-            android:id="@+id/btnVideoScreen"
+            android:id="@+id/btnGetVideoRes"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_margin="@dimen/dp_5dp"
             android:background="@drawable/button_circle_trans"
-            android:src="@drawable/ic_screen_share_green_24dp"/>
+            android:src="@drawable/ic_get_video_res"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:orientation="horizontal"
+            android:paddingRight="@dimen/dp_10dp"
+            android:visibility="visible">
+
+            <ImageButton
+                android:id="@+id/btnVideoCamera"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginBottom="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans"
+                android:src="@drawable/ic_camera_green_24dp"/>
+
+            <ImageButton
+                android:id="@+id/btnVideoScreen"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="@dimen/dp_5dp"
+                android:background="@drawable/button_circle_trans"
+                android:src="@drawable/ic_screen_share_green_24dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_seekBarResWidthHeight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_media_type"
+        android:layout_marginLeft="@dimen/dp_10dp"
+        android:layout_marginRight="@dimen/dp_10dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
+            android:id="@+id/seekBarResWidthHeightCamera"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/custom_seekbar_height"
+            android:layout_centerHorizontal="true"
+            android:progressBackgroundTint="@color/color_white"
+            android:progressTint="@android:color/transparent"
+            android:visibility="visible"
+            >
+        </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
+
+        <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
+            android:id="@+id/seekBarResWidthHeightScreen"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/custom_seekbar_height"
+            android:layout_centerHorizontal="true"
+            android:progressBackgroundTint="@color/color_white"
+            android:progressTint="@android:color/transparent"
+            android:visibility="gone"
+            >
+        </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
     </LinearLayout>
 
-    <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
-        android:id="@+id/seekBarResWidthHeight"
-        android:layout_width="@dimen/custom_seekbar_width"
-        android:layout_height="@dimen/custom_seekbar_height"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/dp_40dp"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-        android:progressBackgroundTint="@color/color_white"
-        android:progressTint="@android:color/transparent"
-        android:visibility="visible"
-        >
-    </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
+    <LinearLayout
+        android:id="@+id/ll_txtDimRes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_seekBarResWidthHeight"
+        android:layout_marginTop="@dimen/txtDimRes_margin_top"
+        android:orientation="vertical">
 
-    <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
-        android:id="@+id/seekBarResFps"
-        android:layout_width="350dp"
-        android:layout_height="@dimen/custom_seekbar_height"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/seekbar_res_fps_margin_top"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-        android:progressBackgroundTint="@color/color_white"
-        android:progressTint="@android:color/transparent"
-        android:visibility="visible">
-    </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
+        <RelativeLayout
+            android:id="@+id/ll_txtDimRes_camera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/txtMinRes"
+            <TextView
+                android:id="@+id/txtMinRes_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_20dp"
+                android:text="174x143"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+
+            <TextView
+                android:id="@+id/txtMaxRes_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/dp_20dp"
+                android:paddingRight="@dimen/dp_10dp"
+                android:text="1920x1080"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/ll_txtDimRes_screen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/txtMinRes_screen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_20dp"
+                android:text="174x143"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+
+            <TextView
+                android:id="@+id/txtMaxRes_screen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/dp_20dp"
+                android:paddingRight="@dimen/dp_10dp"
+                android:text="1920x1080"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_seekBarResFps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_txtDimRes"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/dp_10dp"
+        android:paddingRight="@dimen/dp_10dp">
+
+        <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
+            android:id="@+id/seekBarResFpsCamera"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/custom_seekbar_height"
+            android:progressBackgroundTint="@color/color_white"
+            android:progressTint="@android:color/transparent"
+            android:visibility="visible">
+        </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
+
+        <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar
+            android:id="@+id/seekBarResFpsScreen"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/custom_seekbar_height"
+            android:progressBackgroundTint="@color/color_white"
+            android:progressTint="@android:color/transparent"
+            android:visibility="gone">
+        </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomSeekBar>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_txtFpsRes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp_20dp"
-        android:layout_marginTop="@dimen/min_res_margin_top"
-        android:text="174x143"
-        android:textColor="@color/color_white"
-        android:textSize="@dimen/sp_11sp"
-        />
+        android:layout_below="@id/ll_seekBarResFps"
+        android:layout_marginTop="@dimen/txtFpsRes_margin_top"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/txtMaxRes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="@dimen/dp_20dp"
-        android:layout_marginTop="@dimen/min_res_margin_top"
-        android:paddingRight="@dimen/dp_10dp"
-        android:text="1920x1080"
-        android:textColor="@color/color_white"
-        android:textSize="@dimen/sp_11sp"
-        />
+        <RelativeLayout
+            android:id="@+id/ll_txtFpsRes_camera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/txtMinFps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp_30dp"
-        android:layout_marginTop="@dimen/min_fps_margin_top"
-        android:text="0"
-        android:textColor="@color/color_white"
-        android:textSize="@dimen/sp_11sp"
-        />
+            <TextView
+                android:id="@+id/txtMinFps_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_30dp"
+                android:text="0"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
 
-    <TextView
-        android:id="@+id/txtMaxFps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="@dimen/dp_30dp"
-        android:layout_marginTop="@dimen/min_fps_margin_top"
-        android:paddingRight="@dimen/dp_10dp"
-        android:text="30"
-        android:textColor="@color/color_white"
-        android:textSize="@dimen/sp_11sp"
-        />
+            <TextView
+                android:id="@+id/txtMaxFps_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/dp_30dp"
+                android:paddingRight="@dimen/dp_10dp"
+                android:text="30"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/ll_txtFpsRes_screen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/txtMinFps_screen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_30dp"
+                android:text="0"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+
+            <TextView
+                android:id="@+id/txtMaxFps_screen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/dp_30dp"
+                android:paddingRight="@dimen/dp_10dp"
+                android:text="30"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_11sp"
+                />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_0_5dp"
+        android:layout_below="@id/ll_txtFpsRes"
+        android:layout_marginTop="@dimen/dp_10dp"
+        android:background="@color/color_white_trans_70"/>
 
     <LinearLayout
         android:id="@+id/layout_res_lable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/seekBarResFps"
-        android:layout_marginTop="@dimen/res_label_margin_top"
+        android:layout_below="@id/divider"
         android:clickable="true"
         android:orientation="horizontal">
 
@@ -164,37 +295,85 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/layout_res_lable"
         android:layout_marginBottom="@dimen/dp_40dp"
-        android:clickable="true"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/txtResInput"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="1920x1080"
-            android:textColor="@color/color_white"
-            android:textSize="@dimen/sp_12sp"/>
+        <LinearLayout
+            android:id="@+id/layout_res_widthHeight_cam"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:orientation="horizontal"
+            android:visibility="visible">
 
-        <TextView
-            android:id="@+id/txtResSent"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="640x480"
-            android:textColor="@color/color_white"
-            android:textSize="@dimen/sp_12sp"/>
+            <TextView
+                android:id="@+id/txtResInput_cam"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="1920x1080"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_12sp"/>
 
-        <TextView
-            android:id="@+id/txtResReceived"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="640x480"
-            android:textColor="@color/color_white"
-            android:textSize="@dimen/sp_12sp"/>
+            <TextView
+                android:id="@+id/txtResSent_cam"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="640x480"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_12sp"/>
+
+            <TextView
+                android:id="@+id/txtResReceived_cam"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="640x480"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_12sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_res_widthHeight_screen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/txtResInput_screen"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="1920x1080"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_12sp"/>
+
+            <TextView
+                android:id="@+id/txtResSent_screen"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="640x480"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_12sp"/>
+
+            <TextView
+                android:id="@+id/txtResReceived_screen"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="640x480"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/sp_12sp"/>
+        </LinearLayout>
     </LinearLayout>
+
 </RelativeLayout>

@@ -7,18 +7,17 @@
                 tools:context="sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity">
 
     <FrameLayout
-        android:id="@+id/contentFrameMainScreenShare"
+        android:id="@+id/contentFrameMainVideo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
     <FrameLayout
-        android:id="@+id/contentFrameScreenRes"
+        android:id="@+id/contentFrameVideoRes"
         android:layout_width="@dimen/video_res_width"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_marginRight="@dimen/dp_20dp"
         android:layout_marginTop="@dimen/dp_20dp"
-        android:background="@android:color/transparent"
         android:visibility="visible">
     </FrameLayout>
 

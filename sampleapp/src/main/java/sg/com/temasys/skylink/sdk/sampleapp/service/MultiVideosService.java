@@ -254,7 +254,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
      * Get the current resolution of the input video being captured by the local camera
      * and the SkylinkCaptureFormat used.
      * If resolution is available, it will be returned in
-     * {@link BasePresenter#processInputVideoResolutionObtained(SkylinkMedia.MediaType mediaType, int, int, int, SkylinkCaptureFormat)}.
+     * {@link BasePresenter#processInputVideoResolutionObtained(int, int, int, SkylinkCaptureFormat)}.
      * Note:
      * - Resolution may not always be available, e.g. if no video is captured.
      * - This might be different from the resolution of the video actually sent to Peers as
@@ -272,7 +272,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                 @Override
                 public void onObtainInputVideoResolution(int width, int height, int fps, SkylinkCaptureFormat captureFormat) {
-                    obtainInputVideoResolution(width, height, fps, captureFormat, localVideo.getMediaId());
+                    obtainInputVideoResolution(width, height, fps, captureFormat, localVideo.getMediaType());
                 }
             });
         }
@@ -285,10 +285,10 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
      *
      * @param peerIndex Index of the remote Peer in frame from whom we want to get sent video resolution.
      *                  Use -1 to get sent video resolutions of all connected remote Peers.
-     * @param videoType Type of the SkylinkMedia video object that to get video resolution
+     * @param mediaType Type of the SkylinkMedia video object that to get video resolution
      */
-    public void getSentVideoResolution(int peerIndex, SkylinkMedia.MediaType videoType) {
-        String mediaId = getProperLocalMediaId(videoType);
+    public void getSentVideoResolution(int peerIndex, SkylinkMedia.MediaType mediaType) {
+        String mediaId = getProperLocalMediaId(mediaType);
 
         if (skylinkConnection != null) {
             if (peerIndex != -1 && mediaId != null) {
@@ -305,7 +305,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                             @Override
                             public void onObtainSentVideoResolution(int width, int height, int fps) {
-                                obtainSentVideoResolution(width, height, fps, mediaId, remotePeerId);
+                                obtainSentVideoResolution(width, height, fps, mediaType, remotePeerId);
                             }
                         });
             }
@@ -348,7 +348,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                 @Override
                 public void onObtainReceivedVideoResolution(int width, int height, int fps) {
-                    obtainReceivedVideoResolution(width, height, fps, mediaId, remotePeerId);
+                    obtainReceivedVideoResolution(width, height, fps, remoteMedia.getMediaType(), remotePeerId);
                 }
             });
         }
