@@ -63,5 +63,7 @@
     <dimen name="txtFpsRes_margin_top">-30dp</dimen>
     <dimen name="seekbar_control_padding">20px</dimen>
     <dimen name="seekbar_control_padding_right">40px</dimen>
+    <dimen name="sp_6sp">6sp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 
 </resources>

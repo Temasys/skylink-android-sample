@@ -37,6 +37,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     // view widgets
     private Button btnSendServerMessage;
     private Button btnSendP2PMessage;
+    private Button btnMsgFormatString, btnMsgFormatJson, btnMsgFormatArray;
     private ListView listViewChats;
     private BaseAdapter adapter;
     private EditText editChatMessage;
@@ -137,6 +138,46 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             case R.id.btnSendMsg:
                 processSendMessage();
                 break;
+            case R.id.msgFormatString:
+                processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_STRING);
+                break;
+            case R.id.msgFormatJson:
+                processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_OBJECT);
+                break;
+            case R.id.msgFormatArray:
+                processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_ARRAY);
+                break;
+        }
+    }
+
+    private void processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT formatMsg) {
+        presenter.processSelectMessageFormat(formatMsg);
+
+        switch (formatMsg) {
+            case FORMAT_STRING:
+                btnMsgFormatString.setSelected(true);
+                btnMsgFormatJson.setSelected(false);
+                btnMsgFormatArray.setSelected(false);
+                btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg_selected);
+                btnMsgFormatJson.setBackgroundResource(R.drawable.button_format_msg);
+                btnMsgFormatArray.setBackgroundResource(R.drawable.button_format_msg);
+                break;
+            case FORMAT_JSON_OBJECT:
+                btnMsgFormatJson.setSelected(true);
+                btnMsgFormatString.setSelected(false);
+                btnMsgFormatArray.setSelected(false);
+                btnMsgFormatJson.setBackgroundResource(R.drawable.button_format_msg_selected);
+                btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg);
+                btnMsgFormatArray.setBackgroundResource(R.drawable.button_format_msg);
+                break;
+            case FORMAT_JSON_ARRAY:
+                btnMsgFormatArray.setSelected(true);
+                btnMsgFormatString.setSelected(false);
+                btnMsgFormatJson.setSelected(false);
+                btnMsgFormatArray.setBackgroundResource(R.drawable.button_format_msg_selected);
+                btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg);
+                btnMsgFormatJson.setBackgroundResource(R.drawable.button_format_msg);
+                break;
         }
     }
 
@@ -203,22 +244,17 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      * Notify the chat collection to update the new message
      */
     @Override
-    public void updateUIChatCollection() {
+    public void updateUIChatCollection(boolean isLocalMessage) {
         //notify adapter and update list view selection
         if (adapter != null) {
             adapter.notifyDataSetChanged();
             if (adapter != null) {
                 listViewChats.setSelection(adapter.getCount() - 1);
+
+                if(isLocalMessage)
+                    updateUIClearMessageInput();
             }
         }
-    }
-
-    /**
-     * Clear the input from edit text
-     */
-    @Override
-    public void updateUIClearMessageInput() {
-        editChatMessage.setText("");
     }
 
     /**
@@ -235,7 +271,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
 
     /**
      * Update UI into disconnected state
-     * */
+     */
     @Override
     public void updateUIDisconnected() {
 //        if(context == null)
@@ -287,6 +323,9 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnSendP2PMessage = rootView.findViewById(R.id.btnP2PMsg);
         editChatMessage = rootView.findViewById(R.id.editMsg);
         btnSend = rootView.findViewById(R.id.btnSendMsg);
+        btnMsgFormatString = rootView.findViewById(R.id.msgFormatString);
+        btnMsgFormatJson = rootView.findViewById(R.id.msgFormatJson);
+        btnMsgFormatArray = rootView.findViewById(R.id.msgFormatArray);
     }
 
     /**
@@ -316,6 +355,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnSendP2PMessage.setOnClickListener(this);
         btnSend.setOnClickListener(this);
 
+        btnMsgFormatString.setOnClickListener(this);
+        btnMsgFormatJson.setOnClickListener(this);
+        btnMsgFormatArray.setOnClickListener(this);
+
         btnLocalPeer.setOnLongClickListener(this);
         btnRemotePeer1.setOnLongClickListener(this);
         btnRemotePeer2.setOnLongClickListener(this);
@@ -340,6 +383,9 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             btnSendServerMessage.setTextColor(context.getColor(R.color.color_white));
         }
+
+        btnMsgFormatString.setSelected(true);
+        btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg_selected);
 
         // default sending option is sending message to all peers in the room
     }
@@ -399,8 +445,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         // get the input text from the user
         String message = editChatMessage.getText().toString();
 
-        // delegate to the presenter to implement sending message
-        presenter.processSendMessage(message);
+        if (message != null && message.length() > 0) {
+            // delegate to the presenter to implement sending message
+            presenter.processSendMessage(message);
+        }
     }
 
     /**
@@ -437,5 +485,12 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     private void processReturn() {
         presenter.processExit();
         processBack();
+    }
+
+    /**
+     * Clear the input from edit text
+     */
+    private void updateUIClearMessageInput() {
+        editChatMessage.setText("");
     }
 }

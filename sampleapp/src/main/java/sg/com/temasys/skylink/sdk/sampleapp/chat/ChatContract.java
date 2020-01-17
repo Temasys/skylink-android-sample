@@ -4,6 +4,7 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BaseService;
 import sg.com.temasys.skylink.sdk.sampleapp.BaseView;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.MessageModel;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 
 /**
@@ -36,14 +37,9 @@ public interface ChatContract {
         void updateUIRemotePeerDisconnected(List<SkylinkPeer> peersList);
 
         /**
-         * Update UI details when need to clear the input chat
-         */
-        void updateUIClearMessageInput();
-
-        /**
          * Update UI details when we need to update the messages list when new message is sent/received
          */
-        void updateUIChatCollection();
+        void updateUIChatCollection(boolean isLocalMessaege);
     }
 
     interface Presenter {
@@ -56,7 +52,7 @@ public interface ChatContract {
         /**
          * get list of chat message
          */
-        List<String> processGetChatCollection();
+        List<MessageModel> processGetChatCollection();
 
         /**
          * process change state when view exit/closed
@@ -87,6 +83,8 @@ public interface ChatContract {
          * process sending message
          */
         void processSendMessage(String message);
+
+        void processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT formatMsg);
     }
 
     interface Service extends BaseService<Presenter> {

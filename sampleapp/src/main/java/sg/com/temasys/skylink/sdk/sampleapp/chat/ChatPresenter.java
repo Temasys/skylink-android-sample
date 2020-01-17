@@ -3,6 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.chat;
 import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,10 +13,13 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.ChatService;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.MessageModel;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
-import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.getUserNameByType;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -31,7 +35,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     private ChatService chatService;
 
     // when screen orientation changed, we need to maintain the message list
-    private List<String> chatMessageCollection = new ArrayList<String>();
+    private List<MessageModel> chatMessageCollection = new ArrayList<MessageModel>();
 
     // the index of the peer on the action bar that user selected to send message privately
     // default is 0 - send message to all peers
@@ -39,10 +43,21 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     // message type to be sent
     private MESSAGE_TYPE messageType = MESSAGE_TYPE.TYPE_SERVER;
+    private MESSAGE_FORMAT messageFormat = MESSAGE_FORMAT.FORMAT_STRING;
+
+    private static final String PEER_USERNAME = "senderId";
+    private static final String MESSAGE_CONTENT = "data";
+    private static final String TIMESTAMP = "timeStamp";
 
     public enum MESSAGE_TYPE {
         TYPE_SERVER,
         TYPE_P2P
+    }
+
+    public enum MESSAGE_FORMAT {
+        FORMAT_STRING,
+        FORMAT_JSON_OBJECT,
+        FORMAT_JSON_ARRAY
     }
 
     public ChatPresenter(Context context) {
@@ -104,49 +119,34 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * to send message via server or P2P directly
      * default value is send to all peers in group and send via server if user do not selected any
      * specific peer to send
+     * Base on the selected message format, will form the proper message type to send
+     * The acceptable types are 'java.lang.String', 'org.json.JSONObject', 'org.json.JSONArray'.
      */
     @Override
     public void processSendMessage(String message) {
-        // Check remote peer to send message to
-        // if User did not select the specific peer to send message to,
-        // then default is send to all peers in room
-        if (selectedPeerIndex == 0) {
-            //add message to list view for displaying
-            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
-                processAddSelfMessageToChatCollection(null, false, message);
-
-                // using service to send message to remote peer(s) via signaling server
-                chatService.sendServerMessage(null, message);
-            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
-                processAddSelfMessageToChatCollection(null, true, message);
-
-                // using service to send message to remote peer(s) directly P2P
-                chatService.sendP2PMessage(null, message);
-            }
-        } else {
-            // get the selected peer to send message to
-            SkylinkPeer selectedPeer = chatService.getPeerByIndex(selectedPeerIndex);
-
-            // send message to the selected peer
-            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
-                processAddSelfMessageToChatCollection(selectedPeer.getPeerId(), false, message);
-
-                // using service to send message to remote peer(s) via signaling server
-                chatService.sendServerMessage(selectedPeer.getPeerId(), message);
-            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
-                processAddSelfMessageToChatCollection(selectedPeer.getPeerId(), true, message);
-
-                // using service to send message to remote peer(s) directly P2P
-                chatService.sendP2PMessage(selectedPeer.getPeerId(), message);
-            }
+        switch (this.messageFormat) {
+            case FORMAT_STRING:
+                processSendMessageString(message);
+                break;
+            case FORMAT_JSON_OBJECT:
+                processSendMessageJson(message);
+                break;
+            case FORMAT_JSON_ARRAY:
+                processSendMessageArray(message);
+                break;
         }
+    }
+
+    @Override
+    public void processSelectMessageFormat(MESSAGE_FORMAT formatMsg) {
+        this.messageFormat = formatMsg;
     }
 
     /**
      * Get the list of message to set to the ArrayAdapter
      */
     @Override
-    public List<String> processGetChatCollection() {
+    public List<MessageModel> processGetChatCollection() {
         return chatMessageCollection;
     }
 
@@ -225,13 +225,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         // Fill the new peer in button in custom bar
         processAddNewPeer(newPeer, chatService.getTotalPeersInRoom() - 2);
 
-        // Adding info to message collection
-        // This message is metadata message to inform the peer join the room
-        chatMessageCollection.add("[Metadata]:" + newPeer.toString() + " joined the room." + "\n" +
-                Utils.getISOTimeStamp(new Date()));
-
-        // notify the adapter to update list view
-        chatView.updateUIChatCollection();
+        // Add meta data into the message collection
+        addMetadataMessage(newPeer, " joined the room.");
     }
 
     /**
@@ -246,20 +241,15 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         if (removeIndex == -1 || removePeer == null)
             return;
 
-        // Adding info to message collection
-        // This message is metadata message to inform the peer left the room
-        chatMessageCollection.add("[Metadata]:" + removePeer.getPeerName() +
-                "(" + removePeer.getPeerId() + ")" + " left the room." + "\n" +
-                Utils.getISOTimeStamp(new Date()));
-
-        chatView.updateUIChatCollection();
-
         // Remove the peer in button in custom bar
         processRemoveRemotePeer();
+
+        // Add meta data into the message collection
+        addMetadataMessage(removePeer, " left the room.");
     }
 
     /**
-     * process logic when receiving message from the server
+     * process logic when receiving message from the server, both normal server message and server message history
      *
      * @param remotePeerId the remote peer that message was sent
      * @param message
@@ -267,28 +257,125 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      */
     @Override
     public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
-        String chatPrefix = "[SIG] ";
+
+        // do not process null message
+        // if user has hasPersistentMessage and input encryptedKey, but there is no message history before user join the room,
+        // OR user do not has hasPersistentMessage configured
+        // user will get null message from SDK
+        if (message == null)
+            return;
+
+        String userName;
+        String messageContent;
+        String timeStamp;
+
         //add prefix if the chat is a private chat - not seen by other users.
         if (isPrivate) {
-            chatPrefix = "[PTE]" + chatPrefix;
+            if (message instanceof String) {
+                String messageString = (String) message;
+
+                userName = chatService.getPeerNameById(remotePeerId);
+                messageContent = messageString;
+                timeStamp = Utils.getDefaultTimeStamp(new Date());
+
+                // Add remote message into the message collection
+                addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
+
+            } else if (message instanceof JSONObject) {
+                try {
+                    JSONObject messageJson = (JSONObject) message;
+
+                    userName = messageJson.getString(PEER_USERNAME);
+                    messageContent = messageJson.getString(MESSAGE_CONTENT);
+                    timeStamp = messageJson.getString(TIMESTAMP);
+
+                    addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (message instanceof JSONArray) {
+                try {
+                    JSONArray messageArray = (JSONArray) message;
+
+                    for (int i = 0; i < messageArray.length(); i++) {
+                        JSONObject messageJson = messageArray.getJSONObject(i);
+
+                        userName = messageJson.getString(PEER_USERNAME);
+                        messageContent = messageJson.getString(MESSAGE_CONTENT);
+                        timeStamp = messageJson.getString(TIMESTAMP);
+
+                        addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
-            chatPrefix = "[GRP]" + chatPrefix;
-        }
+            // normal public message if remotePeerId is not null
+            // messageHistory if remotePeer is null
+            // check the type  of message then process properly
+            if (message instanceof String) {
 
-        String remotePeerName = null;
-        String data = null;
+                ChatListAdapter.MessageRowType messageRowType;
 
-        // add message to listview and update ui
-        if (message instanceof String) {
-            remotePeerName = chatService.getPeerNameById(remotePeerId);
-            data = (String) message;
-        } else if (message instanceof JSONObject) {
-            JSONObject jsonMessage = (JSONObject) message;
-            try {
-                remotePeerName = jsonMessage.getString("senderId");
-                data = jsonMessage.getString("data");
-            } catch (JSONException e) {
-                e.printStackTrace();
+                if (remotePeerId != null) {
+                    userName = chatService.getPeerNameById(remotePeerId);
+                    messageContent = (String) message;
+                    timeStamp = Utils.getDefaultTimeStamp(new Date());
+                    messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG;
+                } else { // process message history
+                    userName = "Undefined";
+                    messageContent = (String) message;
+                    timeStamp = "Undefined";
+                    messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY;
+                }
+
+                addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+
+            } else if (message instanceof JSONObject) {
+                try {
+                    JSONObject messageJson = (JSONObject) message;
+
+                    userName = messageJson.getString(PEER_USERNAME);
+                    messageContent = messageJson.getString(MESSAGE_CONTENT);
+                    timeStamp = messageJson.getString(TIMESTAMP);
+
+                    ChatListAdapter.MessageRowType messageRowType;
+
+                    if (remotePeerId != null)
+                        messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG;
+                    else
+                        messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY;
+
+                    addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (message instanceof JSONArray) {
+                try {
+                    JSONArray messageArray = (JSONArray) message;
+
+                    for (int i = 0; i < messageArray.length(); i++) {
+                        JSONObject messageJson = messageArray.getJSONObject(i);
+                        userName = messageJson.getString(PEER_USERNAME);
+                        messageContent = messageJson.getString(MESSAGE_CONTENT);
+                        timeStamp = messageJson.getString(TIMESTAMP);
+
+                        ChatListAdapter.MessageRowType messageRowType;
+
+                        if (remotePeerId != null)
+                            messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG;
+                        else
+                            messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY;
+
+                        addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -298,6 +385,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     /**
      * process logic when receiving message directly P2P from the remote peer
+     * Note that P2P message does not support message history
      *
      * @param remotePeerId the remote peer that message was sent
      * @param message
@@ -305,19 +393,58 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      */
     @Override
     public void processP2PMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
-        //add prefix if the chat is a private chat - not seen by other users.
-        String chatPrefix = "[P2P] ";
+        if (message == null)
+            return;
+
+        ChatListAdapter.MessageRowType messageRowType;
         if (isPrivate) {
-            chatPrefix = "[PTE]" + chatPrefix;
+            messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_P2P;
         } else {
-            chatPrefix = "[GRP]" + chatPrefix;
+            messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_P2P;
         }
 
-        // add message to listview and update ui
+        String userName;
+        String messageContent;
+        String timeStamp;
+
         if (message instanceof String) {
-            String remotePeerName = chatService.getPeerNameById(remotePeerId);
-            chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            chatView.updateUIChatCollection();
+            String messageString = (String) message;
+
+            userName = chatService.getPeerNameById(remotePeerId);
+            messageContent = messageString;
+            timeStamp = Utils.getDefaultTimeStamp(new Date());
+
+            addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+
+        } else if (message instanceof JSONObject) {
+            try {
+                JSONObject messageJson = (JSONObject) message;
+
+                userName = messageJson.getString(PEER_USERNAME);
+                messageContent = messageJson.getString(MESSAGE_CONTENT);
+                timeStamp = messageJson.getString(TIMESTAMP);
+
+                addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else if (message instanceof JSONArray) {
+            try {
+                JSONArray messageArray = (JSONArray) message;
+
+                for (int i = 0; i < messageArray.length(); i++) {
+                    JSONObject messageJson = messageArray.getJSONObject(i);
+
+                    userName = messageJson.getString(PEER_USERNAME);
+                    messageContent = messageJson.getString(MESSAGE_CONTENT);
+                    timeStamp = messageJson.getString(TIMESTAMP);
+
+                    addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -344,38 +471,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     }
 
     /**
-     * Retrieves self message written in edit text and adds it to the chatMessageCollection.
-     * Will refresh listView to display new chatMessageCollection.
-     *
-     * @param remotePeerId remote peer id to send msg, null value if sending to all peers in room
-     * @param isP2P        is send P2P msg or server msg
-     * @param message      msg to be sent
-     */
-    private void processAddSelfMessageToChatCollection(String remotePeerId, boolean isP2P, String message) {
-        boolean isPrivateMessage = true;
-
-        // Do not allow button actions if there are no Peers in the room.
-        if ("".equals(remotePeerId)) {
-            return;
-        } else if (remotePeerId == null) {
-            isPrivateMessage = false;
-        }
-
-        // adding prefix to the message
-        String localPeerId = chatService.getPeerId();
-        String prefix = "You---" + Config.USER_NAME_CHAT + " (" + localPeerId + ")" + " : ";
-
-        prefix += isPrivateMessage ? "[PTE]" : "[GRP]";
-        prefix += isP2P ? "[P2P] " : "[SIG] ";
-
-        chatMessageCollection.add(prefix + message);
-
-        chatView.updateUIChatCollection();
-
-        chatView.updateUIClearMessageInput();
-    }
-
-    /**
      * Update UI when connected to room
      */
     private void processUpdateStateConnected() {
@@ -383,14 +478,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         // Update the view into connected state
         chatView.updateUIConnected(processGetRoomId());
 
-        // This message is metadata message to inform the user is connected to the room
-        chatMessageCollection.add("[Metadata]:You (" + Config.USER_NAME_CHAT + "_" +
-                chatService.getPeerId() + ") joined the room." + "\n" +
-                Utils.getISOTimeStamp(new Date()));
-
-        // notify the adapter to update list view
-        chatView.updateUIChatCollection();
-
+        addMetadataMessage(new SkylinkPeer(chatService.getPeerId(),
+                        Utils.getUserNameByType(Constants.CONFIG_TYPE.CHAT)),
+                " joined the room.");
     }
 
     /**
@@ -398,5 +488,212 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      */
     private String processGetRoomId() {
         return chatService.getRoomId();
+    }
+
+    /**
+     * Send message in String format
+     * Just send the message content that was inputted by the user to the remote peers
+     */
+    private void processSendMessageString(String message) {
+        // Check remote peer to send message to
+        // if User did not select the specific peer to send message to,
+        // then default is send to all peers in room
+
+        ChatListAdapter.MessageRowType messageRowType = null;
+        if (selectedPeerIndex == 0) {
+            //add message to list view for displaying
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+                chatService.sendServerMessage(null, message);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_SIG;
+
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+                chatService.sendP2PMessage(null, message);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_P2P;
+            }
+        } else {
+            // get the selected peer to send message to
+            SkylinkPeer selectedPeer = chatService.getPeerByIndex(selectedPeerIndex);
+
+            // send message to the selected peer
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+                chatService.sendServerMessage(selectedPeer.getPeerId(), message);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_SIG;
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+                chatService.sendP2PMessage(selectedPeer.getPeerId(), message);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_P2P;
+            }
+        }
+
+        addLocalMessage(chatService.getPeerId(), getUserNameByType(Constants.CONFIG_TYPE.CHAT),
+                message, Utils.getDefaultTimeStamp(new Date()), messageRowType);
+    }
+
+    /**
+     * Send message in JSONObject format
+     * JSONObject will have 3 items: PEER_USERNAME, MESSAGE_CONTENT, TIMESTAMP
+     */
+    private void processSendMessageJson(String message) {
+        // Check remote peer to send message to
+        // if User did not select the specific peer to send message to,
+        // then default is send to all peers in room
+
+        JSONObject sentMessage;
+        String peerId = chatService.getPeerId();
+        String userName = getUserNameByType(Constants.CONFIG_TYPE.CHAT);
+        String timeStamp = Utils.getDefaultTimeStamp(new Date());
+        ChatListAdapter.MessageRowType messageRowType = null;
+
+        if (selectedPeerIndex == 0) {
+            //add message to list view for displaying
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+
+                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                chatService.sendServerMessage(null, sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_SIG;
+
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+
+                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                chatService.sendP2PMessage(null, sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_P2P;
+            }
+        } else {
+            // get the selected peer to send message to
+            SkylinkPeer selectedPeer = chatService.getPeerByIndex(selectedPeerIndex);
+
+            // send message to the selected peer
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+
+                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                chatService.sendServerMessage(selectedPeer.getPeerId(), sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_SIG;
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+
+                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                chatService.sendP2PMessage(selectedPeer.getPeerId(), sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_P2P;
+            }
+        }
+
+        addLocalMessage(peerId, userName, message, timeStamp, messageRowType);
+    }
+
+    /**
+     * Send message in JSONObject format
+     * JSONObject will have 3 items: PEER_USERNAME, MESSAGE_CONTENT, TIMESTAMP
+     */
+    private void processSendMessageArray(String message) {
+        // Check remote peer to send message to
+        // if User did not select the specific peer to send message to,
+        // then default is send to all peers in room
+
+        JSONArray sentMessage = new JSONArray();
+        String peerId = chatService.getPeerId();
+        String userName = getUserNameByType(Constants.CONFIG_TYPE.CHAT);
+        String timeStamp = Utils.getDefaultTimeStamp(new Date());
+        ChatListAdapter.MessageRowType messageRowType = null;
+
+        JSONObject jsonObjectMessage;
+
+        if (selectedPeerIndex == 0) {
+            //add message to list view for displaying
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+
+                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                sentMessage.put(jsonObjectMessage);
+                chatService.sendServerMessage(null, sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_SIG;
+
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+
+                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                sentMessage.put(jsonObjectMessage);
+                chatService.sendP2PMessage(null, sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_P2P;
+            }
+        } else {
+            // get the selected peer to send message to
+            SkylinkPeer selectedPeer = chatService.getPeerByIndex(selectedPeerIndex);
+
+            // send message to the selected peer
+            if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
+
+                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                sentMessage.put(jsonObjectMessage);
+                chatService.sendServerMessage(selectedPeer.getPeerId(), sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_SIG;
+            } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
+
+                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+
+                sentMessage.put(jsonObjectMessage);
+                chatService.sendP2PMessage(selectedPeer.getPeerId(), sentMessage);
+                messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_P2P;
+            }
+        }
+
+        addLocalMessage(peerId, userName, message, timeStamp, messageRowType);
+    }
+
+    private JSONObject createMessageJSONObject(String userName, String message, String timeStamp) {
+        JSONObject sentMessage = new JSONObject();
+        try {
+            sentMessage.put(PEER_USERNAME, userName);
+            sentMessage.put(MESSAGE_CONTENT, message);
+            sentMessage.put(TIMESTAMP, timeStamp);
+            return sentMessage;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private void addMetadataMessage(SkylinkPeer peer, String metadata) {
+
+        // Adding info to message collection
+        // This message is metadata message to inform the peer join the room
+        MessageModel messageModel = new MessageModel();
+        messageModel.setPeerId(peer.getPeerId());
+        messageModel.setPeerUserName(peer.getPeerName());
+        messageModel.setMessageContent(metadata);
+        messageModel.setTimeStamp(Utils.getDefaultTimeStamp(new Date()));
+        messageModel.setMessageRowType(ChatListAdapter.MessageRowType.CHAT_METADATA);
+
+        chatMessageCollection.add(messageModel);
+        chatView.updateUIChatCollection(false);
+    }
+
+    private void addLocalMessage(String localPeerId, String userName, String message,
+                                 String timeStamp, ChatListAdapter.MessageRowType messageRowType) {
+        MessageModel messageModel = new MessageModel();
+        messageModel.setPeerId(localPeerId);
+        messageModel.setPeerUserName(userName);
+        messageModel.setMessageContent(message);
+        messageModel.setTimeStamp(timeStamp);
+        messageModel.setMessageRowType(messageRowType);
+
+        chatMessageCollection.add(messageModel);
+        chatView.updateUIChatCollection(true);
+    }
+
+    private void addRemoteMessage(String remotePeerId, String userName, String messageContent,
+                                  String timeStamp, ChatListAdapter.MessageRowType messageRowType) {
+        MessageModel messageModel = new MessageModel();
+        messageModel.setPeerId(remotePeerId);
+        messageModel.setPeerUserName(userName);
+        messageModel.setMessageContent(messageContent);
+        messageModel.setTimeStamp(timeStamp);
+        messageModel.setMessageRowType(messageRowType);
+
+        chatMessageCollection.add(messageModel);
+        chatView.updateUIChatCollection(false);
     }
 }

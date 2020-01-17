@@ -10,4 +10,9 @@
     <color name="color_white_trans_50">#80FFFFFF</color>
     <color name="color_white_trans_70">#50FFFFFF</color>
     <color name="color_white_trans_10">#90424242</color>
+    <color name="color_chat_group_sig">#dcdadf</color>
+    <color name="color_chat_group_p2p">#e9e8eb</color>
+    <color name="color_chat_pte_sig">#f6f6f7</color>
+    <color name="color_chat_pte_p2p">#ffffff</color>
+
 </resources>

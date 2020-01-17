@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical">
@@ -14,6 +15,50 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:visibility="visible"></ListView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_0_5dp"
+        android:background="@color/cardview_shadow_start_color"
+        android:translationZ="@dimen/dp_0_5dp"></View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp_5dp"
+        android:layout_marginTop="@dimen/dp_5dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/msgFormatString"
+            android:layout_width="@dimen/dp_70dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:background="@drawable/button_format_msg"
+            android:text="String"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_9sp"/>
+
+        <Button
+            android:id="@+id/msgFormatJson"
+            android:layout_width="@dimen/dp_70dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:layout_marginLeft="@dimen/dp_20dp"
+            android:layout_marginRight="@dimen/dp_20dp"
+            android:background="@drawable/button_format_msg"
+            android:text="JSONObject"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_9sp"/>
+
+        <Button
+            android:id="@+id/msgFormatArray"
+            android:layout_width="@dimen/dp_70dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:background="@drawable/button_format_msg"
+            android:text="JSONArray"
+            android:textColor="@color/color_white"
+            android:textSize="@dimen/sp_9sp"/>
+    </LinearLayout>
 
     <!--input text-->
     <RelativeLayout
@@ -50,8 +95,8 @@
                 android:id="@+id/btnP2PMsg"
                 android:layout_width="@dimen/dp_50dp"
                 android:layout_height="@dimen/dp_20dp"
-                android:layout_marginLeft="@dimen/dp_5dp"
                 android:layout_marginBottom="@dimen/dp_10dp"
+                android:layout_marginLeft="@dimen/dp_5dp"
                 android:background="@drawable/button_message_type"
                 android:stateListAnimator="@null"
                 android:text="P2P"
@@ -84,7 +129,6 @@
             android:layout_alignParentRight="true"
             android:background="@drawable/button_msg_send"
             android:src="@drawable/ic_send_32dp"/>
-
 
     </RelativeLayout>
 

@@ -32,6 +32,9 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     public ChatService(Context context) {
         super(context);
         initializeSkylinkConnection(Constants.CONFIG_TYPE.CHAT);
+        // set the encryption key for server message
+        if (skylinkConnection != null)
+            skylinkConnection.setEncryptSecret("demo");
     }
 
     @Override
@@ -46,7 +49,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      *                     message is to be broadcast to all remote peers in the room.
      * @param message      User defined data
      */
-    public void sendServerMessage(String remotePeerId, String message) {
+    public void sendServerMessage(String remotePeerId, Object message) {
         if (skylinkConnection != null) {
             skylinkConnection.sendServerMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
@@ -68,7 +71,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      * @param message      User defined data
      * @throws SkylinkException if the system was unable to send the message.
      */
-    public void sendP2PMessage(String remotePeerId, String message) {
+    public void sendP2PMessage(String remotePeerId, Object message) {
         if (skylinkConnection != null) {
             skylinkConnection.sendP2PMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override

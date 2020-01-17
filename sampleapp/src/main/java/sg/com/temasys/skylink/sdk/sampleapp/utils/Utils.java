@@ -142,6 +142,19 @@ public class Utils {
     }
 
     /**
+     * Returns the date in default device time format
+     *
+     * @param date
+     * @return GTM+08 timestamp
+     */
+    public static String getDefaultTimeStamp(Date date) {
+        TimeZone tz = TimeZone.getDefault();
+        DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
+        df.setTimeZone(tz);
+        return df.format(date);
+    }
+
+    /**
      * Remove video from containing layout, if any.
      *
      * @param videoView

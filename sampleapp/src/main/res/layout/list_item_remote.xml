@@ -1,51 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="horizontal"
-              android:gravity="center_vertical"
+<RelativeLayout android:id="@+id/ll_row_remote"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/color_chat_group_sig"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/dp_10dp"
     >
 
     <Button
         android:id="@+id/btnChatUser"
         android:layout_width="@dimen/dp_50dp"
         android:layout_height="@dimen/dp_50dp"
-        android:textColor="@android:color/white"
+        android:layout_marginTop="@dimen/dp_5dp"
         android:background="@drawable/button_circle_avatar_chat"
-        android:layout_marginTop="@dimen/dp_10dp"
-        android:layout_marginLeft="@dimen/dp_10dp"
-        android:layout_marginBottom="@dimen/dp_10dp"/>
+        android:gravity="center"
+        android:textColor="@color/color_white"
+        android:text="M"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/txtRemotePeerUser"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginRight="@dimen/dp_10dp"
-        android:layout_marginBottom="@dimen/dp_10dp"
-        android:layout_marginTop="@dimen/dp_10dp">
+        android:layout_marginBottom="@dimen/dp_3dp"
+        android:layout_marginLeft="@dimen/dp_10dp"
+        android:layout_toRightOf="@id/btnChatUser"
+        android:text="peerId1234"
+        android:textSize="@dimen/sp_9sp"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtRemotePeerUser"
+        android:layout_marginLeft="@dimen/dp_10dp"
+        android:layout_toRightOf="@id/btnChatUser">
 
         <TextView
-            android:id="@+id/txtRemotePeerChat"
+            android:id="@+id/txtRemoteChatContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="peerId1234"
-            android:layout_marginLeft="@dimen/dp_10dp"
-            android:textSize="@dimen/sp_9sp"
-            android:layout_weight="5"
-            android:layout_marginBottom="@dimen/dp_3dp"/>
-
-        <TextView
-            android:id="@+id/txtChatContent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginRight="@dimen/dp_70dp"
             android:background="@drawable/button_corner_chat_content"
-            android:padding="@dimen/dp_7dp"
-            android:layout_marginLeft="@dimen/dp_10dp"
             android:gravity="center_vertical"
-            android:text="fdsjfnsdjfnsdmvnmv"
-            android:layout_weight="2"
+            android:paddingBottom="@dimen/dp_7dp"
+            android:paddingLeft="@dimen/dp_7dp"
+            android:paddingRight="@dimen/dp_10dp"
+            android:paddingTop="@dimen/dp_7dp"
+            android:text="pham thi muoi"
+            android:textColor="@android:color/black"
             />
-    </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtRemoteTimeStamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtRemoteChatContent"
+            android:layout_marginLeft="-90dp"
+            android:layout_marginRight="@dimen/dp_5dp"
+            android:layout_toRightOf="@id/txtRemoteChatContent"
+            android:text="timeStamp timeStamp"
+            android:textColor="@color/color_black"
+            android:textSize="@dimen/sp_6sp"/>
+    </RelativeLayout>
 
 
-</LinearLayout>
+</RelativeLayout>
+

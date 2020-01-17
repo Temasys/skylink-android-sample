@@ -1035,6 +1035,31 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
     }
 
     /**
+     * Get nickName or userName combined with peerId of a peer in room
+     *
+     * @param peerId null is local peer, no null is specific peer
+     * @return Desired nickName or userName of the peer
+     */
+    public String getPeerUserName(String peerId) {
+
+        //get local peer from SDK
+        if (peerId == null && skylinkConnection != null) {
+            peerId = skylinkConnection.getLocalPeerId();
+        }
+
+        String peerIdShow = peerId;
+
+        //can not get local peer
+        if (peerId == null) {
+            peerIdShow = "Self";
+        }
+
+        String peerUserName = getUserDataString(peerIdShow);
+
+        return peerUserName;
+    }
+
+    /**
      * Return the SkylinkPeer with the specific peerId
      *
      * @param peerId id of the peer need to search
@@ -1066,7 +1091,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
 
     public String getPeerNameById(String peerId) {
         if (skylinkConnection != null) {
-            return getPeerIdNick(peerId);
+            return getPeerUserName(peerId);
         }
 
         return null;

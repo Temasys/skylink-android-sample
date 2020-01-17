@@ -8,25 +8,36 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.service.model.MessageModel;
 
-public class ChatListAdapter extends ArrayAdapter<String> {
+public class ChatListAdapter extends ArrayAdapter<MessageModel> {
 
-    private Context context = null;
-    private List<String> chatCollection = null;
-    private VIEW_TYPE viewType = VIEW_TYPE.CHAT_METADATA;
+    private Context context;
+    private List<MessageModel> chatCollection;
 
-    enum VIEW_TYPE {
+    private MessageRowType viewType = MessageRowType.CHAT_METADATA;
+
+    public enum MessageRowType {
         CHAT_METADATA,
-        CHAT_LOCAL,
-        CHAT_REMOTE
+        CHAT_LOCAL_GRP_SIG,
+        CHAT_LOCAL_GRP_P2P,
+        CHAT_LOCAL_PTE_SIG,
+        CHAT_LOCAL_PTE_P2P,
+        CHAT_REMOTE_GRP_SIG_HISTORY,
+        CHAT_REMOTE_GRP_SIG,
+        CHAT_REMOTE_GRP_P2P,
+        CHAT_REMOTE_PTE_SIG,
+        CHAT_REMOTE_PTE_P2P
     }
 
-    public ChatListAdapter(@NonNull Context context, int resource, @NonNull List<String> objects) {
+    public ChatListAdapter(@NonNull Context context, int resource, @NonNull List<MessageModel> objects) {
         super(context, resource, objects);
         this.context = context;
         chatCollection = objects;
@@ -38,52 +49,155 @@ public class ChatListAdapter extends ArrayAdapter<String> {
         View listItem = convertView;
 
         // get the correct message content the the position from the collection
-        String chatContent = chatCollection.get(position);
+        MessageModel chatListRow = chatCollection.get(position);
 
-        // base on the content, decide it is from local or remote peer
-        if (chatContent.startsWith("[Metadata]")) {
-            listItem = LayoutInflater.from(context).inflate(R.layout.list_item_metadata, parent, false);
-            viewType = VIEW_TYPE.CHAT_METADATA;
-        } else if (chatContent.startsWith("You")) {
-            listItem = LayoutInflater.from(context).inflate(R.layout.list_item_local, parent, false);
-            viewType = VIEW_TYPE.CHAT_LOCAL;
-        } else {
-            listItem = LayoutInflater.from(context).inflate(R.layout.list_item_remote, parent, false);
-            viewType = VIEW_TYPE.CHAT_REMOTE;
-        }
-
-        if (viewType != VIEW_TYPE.CHAT_METADATA) {
-            // get the view controls from the list view
-            TextView txtContent = listItem.findViewById(R.id.txtChatContent);
-            TextView txtPeerId = listItem.findViewById(R.id.txtRemotePeerChat);
-
-            // set the value for the view controls
-            txtContent.setText(chatContent.split(":")[1]);
-
-            // extract the local username and local peer id
-            if (viewType == VIEW_TYPE.CHAT_LOCAL) {
-                txtPeerId.setText(chatContent.split(":")[0].split("---")[1]);
-            }
-
-            // only for remote
-            if (viewType == VIEW_TYPE.CHAT_REMOTE) {
-                Button btnUser = listItem.findViewById(R.id.btnChatUser);
-
-                // set the remote avatar is the first character of username
-                btnUser.setText(chatContent.charAt(0) + "");
-
-                // extract remote username and remote peer id from chatContent
-                txtPeerId.setText(chatContent.split(":")[0]);
-            }
-        } else {
-            TextView txtMetadata = listItem.findViewById(R.id.txtMetadataChat);
-            txtMetadata.setText(chatContent.split("\n")[0].split(":")[1]);
-
-            TextView txtDateTime = listItem.findViewById(R.id.txtChatDateTime);
-            txtDateTime.setText(chatContent.split("\n")[1]);
+        switch (chatListRow.getMessageRowType()) {
+            case CHAT_METADATA:
+                listItem = LayoutInflater.from(context).inflate(R.layout.list_item_metadata, parent, false);
+                processMetadataRow(chatListRow, listItem);
+                break;
+            case CHAT_LOCAL_GRP_SIG:
+            case CHAT_LOCAL_GRP_P2P:
+            case CHAT_LOCAL_PTE_SIG:
+            case CHAT_LOCAL_PTE_P2P:
+                listItem = LayoutInflater.from(context).inflate(R.layout.list_item_local_chat, parent, false);
+                processLocalMessageRow(chatListRow.getMessageRowType(), listItem, chatListRow);
+                break;
+            case CHAT_REMOTE_GRP_SIG:
+            case CHAT_REMOTE_GRP_P2P:
+            case CHAT_REMOTE_PTE_SIG:
+            case CHAT_REMOTE_PTE_P2P:
+                listItem = LayoutInflater.from(context).inflate(R.layout.list_item_remote, parent, false);
+                processRemoteMessageRow(chatListRow.getMessageRowType(), listItem, chatListRow);
+                break;
+            case CHAT_REMOTE_GRP_SIG_HISTORY:
+                listItem = LayoutInflater.from(context).inflate(R.layout.list_item_remote, parent, false);
+                processMessageHistoryRow(chatListRow.getMessageRowType(), listItem, chatListRow);
+                break;
         }
 
         return listItem;
+    }
 
+    private void processMessageHistoryRow(MessageRowType messageRowType, View listItem, MessageModel chatListRow) {
+        viewType = messageRowType;
+
+        // get the view controls from the list view
+        RelativeLayout layoutRow = listItem.findViewById(R.id.ll_row_remote);
+        Button buttonUseAvatar = listItem.findViewById(R.id.btnChatUser);
+        TextView txtUserName = listItem.findViewById(R.id.txtRemotePeerUser);
+        TextView txtDateTime = listItem.findViewById(R.id.txtRemoteTimeStamp);
+        TextView txtRemoteMessageContent = listItem.findViewById(R.id.txtRemoteChatContent);
+
+        String chatContent = "";
+
+        switch (messageRowType) {
+            case CHAT_REMOTE_GRP_SIG:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_group_sig));
+                chatContent = "[GRP][SIG] ";
+                break;
+            case CHAT_REMOTE_GRP_P2P:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_group_p2p));
+                chatContent = "[GRP][P2P] ";
+                break;
+            case CHAT_REMOTE_PTE_SIG:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_pte_sig));
+                chatContent = "[PTE][SIG] ";
+                break;
+            case CHAT_REMOTE_PTE_P2P:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_pte_p2p));
+                chatContent = "[PTE][P2P] ";
+                break;
+        }
+
+        String userName = chatListRow.getPeerUserName();
+        buttonUseAvatar.setText(userName.substring(0, 1));
+        txtUserName.setText(userName);
+        txtDateTime.setText(chatListRow.getTimeStamp());
+        txtRemoteMessageContent.setText(chatContent + chatListRow.getMessageContent());
+    }
+
+    private void processRemoteMessageRow(MessageRowType messageRowType, View listItem, MessageModel chatListRow) {
+        viewType = messageRowType;
+
+        // get the view controls from the list view
+        RelativeLayout layoutRow = listItem.findViewById(R.id.ll_row_remote);
+        Button buttonUseAvatar = listItem.findViewById(R.id.btnChatUser);
+        TextView txtUserName = listItem.findViewById(R.id.txtRemotePeerUser);
+        TextView txtDateTime = listItem.findViewById(R.id.txtRemoteTimeStamp);
+        TextView txtRemoteMessageContent = listItem.findViewById(R.id.txtRemoteChatContent);
+
+        String chatContent = "";
+
+        switch (messageRowType) {
+            case CHAT_REMOTE_GRP_SIG:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_group_sig));
+                chatContent = "[GRP][SIG] ";
+                break;
+            case CHAT_REMOTE_GRP_P2P:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_group_p2p));
+                chatContent = "[GRP][P2P] ";
+                break;
+            case CHAT_REMOTE_PTE_SIG:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_pte_sig));
+                chatContent = "[PTE][SIG] ";
+                break;
+            case CHAT_REMOTE_PTE_P2P:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_pte_p2p));
+                chatContent = "[PTE][P2P] ";
+                break;
+        }
+
+        String userName = chatListRow.getPeerUserName();
+        buttonUseAvatar.setText(userName.substring(0, 1));
+        txtUserName.setText(chatListRow.getPeerUserName() + "(" + chatListRow.getPeerId() + ")");
+        txtDateTime.setText(chatListRow.getTimeStamp());
+        txtRemoteMessageContent.setText(chatContent + chatListRow.getMessageContent());
+    }
+
+    private void processLocalMessageRow(MessageRowType messageRowType, View listItem, MessageModel chatListRow) {
+        viewType = messageRowType;
+
+        // get the view controls from the list view
+        LinearLayout layoutRow = listItem.findViewById(R.id.ll_row_local);
+        TextView txtLocalUser = listItem.findViewById(R.id.txtLocalPeerUser);
+        TextView txtDateTime = listItem.findViewById(R.id.txtLocalTimeStamp);
+        TextView txtLocalChatContent = listItem.findViewById(R.id.txtLocalChatContent);
+
+        String chatContent = "";
+
+        switch (messageRowType) {
+            case CHAT_LOCAL_GRP_SIG:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_group_sig));
+                chatContent = "[GRP][SIG] ";
+                break;
+            case CHAT_LOCAL_GRP_P2P:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_group_p2p));
+                chatContent = "[GRP][P2P] ";
+                break;
+            case CHAT_LOCAL_PTE_SIG:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_pte_sig));
+                chatContent = "[PTE][SIG] ";
+                break;
+            case CHAT_LOCAL_PTE_P2P:
+                layoutRow.setBackground(context.getResources().getDrawable(R.drawable.background_ripple_chat_pte_p2p));
+                chatContent = "[PTE][P2P] ";
+                break;
+        }
+
+        txtLocalUser.setText(chatListRow.getPeerUserName() + "(" + chatListRow.getPeerId() + ")");
+        txtDateTime.setText(chatListRow.getTimeStamp());
+        txtLocalChatContent.setText(chatContent + chatListRow.getMessageContent());
+    }
+
+    private void processMetadataRow(MessageModel chatListRow, View listItem) {
+        viewType = MessageRowType.CHAT_METADATA;
+
+        // get the view controls from the list view
+        TextView txtMetadata = listItem.findViewById(R.id.txtMetadataChat);
+        TextView txtDateTime = listItem.findViewById(R.id.txtChatDateTime);
+
+        txtMetadata.setText(chatListRow.getPeerUserName() + "(" + chatListRow.getPeerId() + ")" + chatListRow.getMessageContent());
+        txtDateTime.setText(chatListRow.getTimeStamp());
     }
 }
