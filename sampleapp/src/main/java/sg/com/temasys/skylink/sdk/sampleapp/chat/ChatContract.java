@@ -82,7 +82,7 @@ public interface ChatContract {
         /**
          * process sending message
          */
-        void processSendMessage(String message);
+        void processSendMessage(String message, String encryptedSecret);
 
         void processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT formatMsg);
     }

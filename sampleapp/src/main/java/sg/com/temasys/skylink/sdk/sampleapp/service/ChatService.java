@@ -32,9 +32,6 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     public ChatService(Context context) {
         super(context);
         initializeSkylinkConnection(Constants.CONFIG_TYPE.CHAT);
-        // set the encryption key for server message
-        if (skylinkConnection != null)
-            skylinkConnection.setEncryptSecret("demo");
     }
 
     @Override
@@ -130,5 +127,11 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
 
     public void disposeLocalMedia() {
         clearInstance();
+    }
+
+    public void setEncryptedSecret(String value){
+        // set the encryption key for server message
+        if (skylinkConnection != null)
+            skylinkConnection.setEncryptSecret(value);
     }
 }

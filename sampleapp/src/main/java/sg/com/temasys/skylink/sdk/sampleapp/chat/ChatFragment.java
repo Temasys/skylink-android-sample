@@ -21,6 +21,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton;
 
 /**
  * A simple {@link CustomActionBar} subclass.
@@ -42,6 +43,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     private BaseAdapter adapter;
     private EditText editChatMessage;
     private ImageButton btnSend;
+    private CustomImageButton btnMsgEncryptSecret;
+    private EditText editMsgEncryptionSecret;
+    private View dividerEncryptionSecret;
+    private boolean showMessageEncryptionSecret = false;
 
     public static ChatFragment newInstance() {
         return new ChatFragment();
@@ -147,6 +152,9 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             case R.id.msgFormatArray:
                 processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_ARRAY);
                 break;
+            case R.id.btn_show_hide_encryption_secret:
+                changeUIMessageEncryptionSecret();
+                break;
         }
     }
 
@@ -222,6 +230,11 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         return true;
     }
 
+    private void changeUIMessageEncryptionSecret() {
+        this.showMessageEncryptionSecret = !this.showMessageEncryptionSecret;
+        setUIEncryptionSecret(this.showMessageEncryptionSecret);
+    }
+
     @Override
     public void onDetach() {
 
@@ -251,7 +264,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             if (adapter != null) {
                 listViewChats.setSelection(adapter.getCount() - 1);
 
-                if(isLocalMessage)
+                if (isLocalMessage)
                     updateUIClearMessageInput();
             }
         }
@@ -304,12 +317,6 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         processFillPeers(peersList);
     }
 
-    /**
-     * Update information about room id on the action bar
-     *
-     * @param roomId
-     */
-
     //----------------------------------------------------------------------------------------------
     // private methods for internal process
     //----------------------------------------------------------------------------------------------
@@ -326,6 +333,9 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnMsgFormatString = rootView.findViewById(R.id.msgFormatString);
         btnMsgFormatJson = rootView.findViewById(R.id.msgFormatJson);
         btnMsgFormatArray = rootView.findViewById(R.id.msgFormatArray);
+        btnMsgEncryptSecret = rootView.findViewById(R.id.btn_show_hide_encryption_secret);
+        dividerEncryptionSecret = rootView.findViewById(R.id.divider_encryption_secret);
+        editMsgEncryptionSecret = rootView.findViewById(R.id.edit_message_encryption_secret);
     }
 
     /**
@@ -358,6 +368,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnMsgFormatString.setOnClickListener(this);
         btnMsgFormatJson.setOnClickListener(this);
         btnMsgFormatArray.setOnClickListener(this);
+        btnMsgEncryptSecret.setOnClickListener(this);
 
         btnLocalPeer.setOnLongClickListener(this);
         btnRemotePeer1.setOnLongClickListener(this);
@@ -384,10 +395,12 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             btnSendServerMessage.setTextColor(context.getColor(R.color.color_white));
         }
 
+        // default sending option is sending message to all peers in the room in String format
         btnMsgFormatString.setSelected(true);
         btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg_selected);
 
-        // default sending option is sending message to all peers in the room
+        // default is no encryption secret feature, will show the encryption secret UI when getting info from presenter
+        setUIEncryptionSecret(false);
     }
 
     /**
@@ -445,9 +458,14 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         // get the input text from the user
         String message = editChatMessage.getText().toString();
 
+        String encryptedSecret = null;
+        if (this.showMessageEncryptionSecret) {
+            encryptedSecret = editMsgEncryptionSecret.getText().toString().trim();
+        }
+
         if (message != null && message.length() > 0) {
             // delegate to the presenter to implement sending message
-            presenter.processSendMessage(message);
+            presenter.processSendMessage(message, encryptedSecret);
         }
     }
 
@@ -492,5 +510,20 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      */
     private void updateUIClearMessageInput() {
         editChatMessage.setText("");
+    }
+
+    /**
+     * Display or hide the encryption secret UI
+     */
+    private void setUIEncryptionSecret(boolean isVisible) {
+        if (isVisible) {
+            dividerEncryptionSecret.setVisibility(View.VISIBLE);
+            editMsgEncryptionSecret.setVisibility(View.VISIBLE);
+            editMsgEncryptionSecret.requestFocus();
+        } else {
+            dividerEncryptionSecret.setVisibility(View.GONE);
+            editMsgEncryptionSecret.setVisibility(View.GONE);
+            editChatMessage.requestFocus();
+        }
     }
 }

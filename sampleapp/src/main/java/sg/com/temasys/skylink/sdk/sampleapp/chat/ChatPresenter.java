@@ -123,7 +123,14 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * The acceptable types are 'java.lang.String', 'org.json.JSONObject', 'org.json.JSONArray'.
      */
     @Override
-    public void processSendMessage(String message) {
+    public void processSendMessage(String message, String encryptedSecret) {
+        // Need to set the encryption secret before sending the message
+        if (encryptedSecret != null && encryptedSecret.length() > 0) {
+            chatService.setEncryptedSecret(encryptedSecret);
+        } else {
+            chatService.setEncryptedSecret(null);
+        }
+
         switch (this.messageFormat) {
             case FORMAT_STRING:
                 processSendMessageString(message);
