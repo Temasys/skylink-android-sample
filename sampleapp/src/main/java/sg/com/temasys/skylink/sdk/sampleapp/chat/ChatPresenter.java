@@ -3,6 +3,9 @@ package sg.com.temasys.skylink.sdk.sampleapp.chat;
 import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -272,12 +275,25 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             chatPrefix = "[GRP]" + chatPrefix;
         }
 
+        String remotePeerName = null;
+        String data = null;
+
         // add message to listview and update ui
         if (message instanceof String) {
-            String remotePeerName = chatService.getPeerNameById(remotePeerId);
-            chatMessageCollection.add(remotePeerName + " : " + chatPrefix + message);
-            chatView.updateUIChatCollection();
+            remotePeerName = chatService.getPeerNameById(remotePeerId);
+            data = (String) message;
+        } else if (message instanceof JSONObject) {
+            JSONObject jsonMessage = (JSONObject) message;
+            try {
+                remotePeerName = jsonMessage.getString("senderId");
+                data = jsonMessage.getString("data");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
+
+        chatMessageCollection.add(remotePeerName + " : " + chatPrefix + data);
+        chatView.updateUIChatCollection();
     }
 
     /**

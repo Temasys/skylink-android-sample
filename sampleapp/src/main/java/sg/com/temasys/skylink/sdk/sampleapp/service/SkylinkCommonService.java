@@ -856,12 +856,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      *                     or 'org.json.JSONArray'.
      * @param isPublic     Flag to specify whether the message was sent to us only (as opposed to
      *                     broadcast to all peers in the room).
+     * @param timeStamp    The timestamp of the message,
+     *                     The number of milliseconds since the epoch of 1970-01-01T00:00:00Z (midnight, January 1, 1970 UTC).
      * @param remotePeerId The id of the remote peer
      */
     @Override
-    public void onReceiveServerMessage(Object message, boolean isPublic, String
+    public void onReceiveServerMessage(Object message, boolean isPublic, Long timeStamp, String
             remotePeerId) {
-        Log.d(TAG, "onReceiveServerMessage(message: " + message + ",isPublic: " + isPublic + ", remotePeerId: " + remotePeerId);
+        Log.d(TAG, "onReceiveServerMessage(message: " + message + ",isPublic: " + isPublic + ", timeStamp: " + timeStamp + ", remotePeerId: " + remotePeerId);
 
         presenter.processServerMessageReceived(remotePeerId, message, !isPublic);
     }
@@ -874,12 +876,14 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      *                     or 'org.json.JSONArray'.
      * @param isPublic     Flag to specify whether the message was sent to us only (as opposed to
      *                     broadcast to all peers in the room).
+     * @param timeStamp    The timestamp of the message,
+     *                     The number of milliseconds since the epoch of 1970-01-01T00:00:00Z (midnight, January 1, 1970 UTC).
      * @param remotePeerId The id of the remote peer
      */
     @Override
-    public void onReceiveP2PMessage(Object message, boolean isPublic, String
+    public void onReceiveP2PMessage(Object message, boolean isPublic, Long timeStamp, String
             remotePeerId) {
-        Log.d(TAG, "onReceiveP2PMessage(message: " + message + ",isPublic: " + isPublic + ", remotePeerId: " + remotePeerId);
+        Log.d(TAG, "onReceiveP2PMessage(message: " + message + ",isPublic: " + isPublic + ", timeStamp: " + timeStamp + ", remotePeerId: " + remotePeerId);
 
         presenter.processP2PMessageReceived(remotePeerId, message, !isPublic);
     }
