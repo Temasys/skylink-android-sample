@@ -78,15 +78,101 @@ public class Config {
      */
     public static String DEFAULT_VIDEO_DEVICE = "defaultVideoDevice";
     public static String DEFAULT_VIDEO_RESOLUTION = "defaultVideoResolution";
+    public static String DEFAULT_SCREEN_RESOLUTION = "defaultScreenResolution";
 
     public static String VIDEO_RESOLUTION_VGA = "vga";
     public static String VIDEO_RESOLUTION_HDR = "hdr";
     public static String VIDEO_RESOLUTION_FHD = "fhd";
 
+    public static String SCREEN_RESOLUTION_LARGE = "large";
+    public static String SCREEN_RESOLUTION_MEDIUM = "medium";
+    public static String SCREEN_RESOLUTION_SMALL = "small";
+
+    public static final String HAS_DATA_TRANSFER_CONFIG = "hasDataTransfer";
+    public static final String HAS_PEER_MESSAGING_CONFIG = "hasPeerMessage";
+    public static final String HAS_FILE_TRANSFER_CONFIG = "hasFileConfig";
+    public static final String DEFAULT_ENCRYPTED_SECRET_CONFIG = "defaultEncryptedSecret";
+    public static final String USE_HW_ACC_CONFIG = "useHWAccConfig";
+    public static final String USE_H246_PROFILE_CONFIG = "useH246ProfileConfig";
+    public static final String USE_VP8_ENCODER_CONFIG = "useVP8EncoderConfig";
+    public static final String USE_AUDIO_STEREO_CONFIG = "userAudioStereoConfig";
+    public static final String USE_AUTO_GAIN_CONTROL_CONFIG = "useAutoGainControlConfig";
+    public static final String USE_AUDIO_ECHO_CANCELLATION_CONFIG = "userAudioEchoCancellationConfig";
+    public static final String USE_AUDIO_HIGH_PASS_CONFIG = "useAudioHighPassConfig";
+    public static final String USE_AUDIO_NOISE_SUPPRESSION_CONFIG = "useAudioNoiseSuppressionConfig";
+    public static final String MIRROR_LOCAL_VIEW_CONFIG = "mirrorLocalViewConfig";
+    public static final String REPORT_VIDEO_RES_STABLE_CONFIG = "reportVideoResUntilStableConfig";
+    public static final String REPORT_VIDEO_RES_ON_CHANGED_CONFIG = "reportVideoResOnChangedConfig";
+    public static final String NO_OF_REPORT_VIDEO_RES_UNTILL_STABLE_CONFIG = "noOfReportVideoResUntilStableConfig";
+    public static final String TIME_OF_REPORT_VIDEO_RES_NEXT_CHECKING_CONFIG = "timeOfReportVideoResForNextChecking";
+    public static final String MAX_AUDIO_BITRATE_CONFIG = "maxOfAudioBitrate";
+    public static final String MAX_VIDEO_BITRATE_CONFIG = "maxOfVideoBitrate";
+    public static final String MAX_DATA_BITRATE_CONFIG = "maxOfDataBitrate";
+    public static final String MAX_PEER_IN_AUDIO_ROOM_CONFIG = "maxOfPeerInAudioRoom";
+    public static final String MAX_PEER_IN_VIDEO_ROOM_CONFIG = "maxOfPeerInVideoRoom";
+    public static final String MAX_PEER_IN_NO_MEDIA_ROOM_CONFIG = "maxOfPeerInNoMediaRoom";
+    public static final String USE_TURN_SERVER_CONFIG = "useTurnServerConfig";
+    public static final String USE_STURN_SERVER_CONFIG = "useSturnServerConfig";
+    public static final String USE_HOST_SERVER_CONFIG = "useHostServerConfig";
+    public static final String ALLOW_ICE_RESTART_CONFIG = "allowIceRestartConfig";
+    public static final String RECONNECT_ATTEMPS_CONFIG = "reconnectAttemps";
+    public static final String RECONNECT_DELAY_CONFIG = "reconnectDelays";
+    public static final String USE_MULTI_TRACKS_UP_CONFIG = "useMultiTracksUPConfig";
+    public static final String DEFAULT_AUDIO_VIDEO_SEND_CONFIG = "audioVideoSendConfig";
+    public static final String DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG = "audioVideoReceiveConfig";
+
+
+    public static final String AUDIO_AND_VIDEO = "audioAndVideo";
+    public static final String AUDIO_ONLY = "audioOnly";
+    public static final String VIDEO_ONLY = "videoOnly";
+    public static final String NO_AUDIO_NO_VIDEO = "noAudioNoVideo";
+
+    public static final String DEFAULT_AUDIO_CODEC_CONFIG = "audioCodecConfig";
+    public static final String AUDIO_CODEC_OPUS = "opus";
+    public static final String AUDIO_CODEC_ISAC = "isac";
+    public static final String DEFAULT_SOCKET_TRANSPORT_CONFIG = "socketTransportConfig";
+    public static final String SOCKET_POLLING = "polling";
+    public static final String SOCKET_WEB = "webSocket";
+    public static final String DEFAULT_NETWORK_TRANSPORT_CONFIG = "networkTransportConfig";
+    public static final String NETWORK_UDP = "udp";
+    public static final String NETWORK_TCP = "tcp";
+    public static final String DEFAULT_ROOM_SIZE_CONFIG = "roomSizeConfig";
+    public static final String ROOM_SIZE_XS = "extraSmall";
+    public static final String ROOM_SIZE_S = "small";
+    public static final String ROOM_SIZE_M = "medium";
+    public static final String ROOM_SIZE_L = "large";
+
     public enum VideoResolution {
         VGA,
         HDR,
         FHD
+    }
+
+    // Custom ScreenResolution
+    // Normally the screen size on mobile has height = 2*width in portrait mode
+    public enum ScreenResolution {
+        LARGE_PORTRAIT(800, 1600),
+        MEDIUM_PORTRAIT(500, 1000),
+        SMALL_PORTRAIT(230, 460),
+        LARGE_LANDSCAPE(1600, 800),
+        MEDIUM_LANDSCAPE(1000, 500),
+        SMALL_LANDSCAPE(460, 230);
+
+        ScreenResolution(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        int width;
+        int height;
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
     }
 
     private Config() {

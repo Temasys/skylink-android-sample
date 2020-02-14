@@ -25,8 +25,8 @@
                 android:layout_height="wrap_content"
                 android:text="Current selected Key"
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                tools:textColor="?attr/colorPrimary"
-                android:textIsSelectable="true"/>
+                android:textIsSelectable="true"
+                tools:textColor="?attr/colorPrimary"/>
 
             <TextView
                 android:id="@+id/currentKey"
@@ -109,6 +109,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     android:layout_marginRight="10dp"
+                    android:backgroundTint="@color/color_white"
                     android:clickable="true"
                     app:fabSize="normal"
                     app:srcCompat="@android:drawable/ic_input_add"/>

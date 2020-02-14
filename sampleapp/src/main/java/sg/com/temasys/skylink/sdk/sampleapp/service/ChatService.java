@@ -131,7 +131,7 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
 
     public void setEncryptedSecret(String value){
         // set the encryption key for server message
-        if (skylinkConnection != null)
-            skylinkConnection.setEncryptSecret(value);
+//        if (skylinkConnection != null)
+//            skylinkConnection.setEncryptSecret(value);
     }
 }

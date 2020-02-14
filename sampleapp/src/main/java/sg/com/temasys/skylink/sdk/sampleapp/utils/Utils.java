@@ -61,12 +61,55 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ALLOW_ICE_RESTART_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_AND_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_CODEC_OPUS;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_CODEC_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_VIDEO_SEND_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_NETWORK_TRANSPORT_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_ROOM_SIZE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SCREEN_RESOLUTION;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SOCKET_TRANSPORT_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_DATA_TRANSFER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_ENCRYPTED_SECRET_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_FILE_TRANSFER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_PEER_MESSAGING_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_AUDIO_BITRATE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_DATA_BITRATE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_PEER_IN_AUDIO_ROOM_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_PEER_IN_NO_MEDIA_ROOM_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_PEER_IN_VIDEO_ROOM_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_VIDEO_BITRATE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MIRROR_LOCAL_VIEW_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NETWORK_UDP;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NO_OF_REPORT_VIDEO_RES_UNTILL_STABLE_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREFERENCES_NAME;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.RECONNECT_ATTEMPS_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.RECONNECT_DELAY_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.REPORT_VIDEO_RES_ON_CHANGED_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.REPORT_VIDEO_RES_STABLE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_SIZE_S;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_LARGE;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SOCKET_WEB;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.TIME_OF_REPORT_VIDEO_RES_NEXT_CHECKING_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_AUDIO_ECHO_CANCELLATION_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_AUDIO_HIGH_PASS_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_AUDIO_NOISE_SUPPRESSION_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_AUDIO_STEREO_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_AUTO_GAIN_CONTROL_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_H246_PROFILE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_HOST_SERVER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_HW_ACC_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_MULTI_TRACKS_UP_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_STURN_SERVER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_TURN_SERVER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_VP8_ENCODER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 
 public class Utils {
 
@@ -755,7 +798,11 @@ public class Utils {
     }
 
     public static String getDefaultVideoResolution() {
-        return sharedPref.getString(DEFAULT_VIDEO_RESOLUTION, VIDEO_RESOLUTION_FHD);
+        return sharedPref.getString(DEFAULT_VIDEO_RESOLUTION, VIDEO_RESOLUTION_VGA);
+    }
+
+    public static String getDefaultScreenResolution() {
+        return sharedPref.getString(DEFAULT_SCREEN_RESOLUTION, SCREEN_RESOLUTION_LARGE);
     }
 
     /**
@@ -840,6 +887,160 @@ public class Utils {
         return false;
     }
 
+    public static String getDefaultAudioVideoSendConfig() {
+        return sharedPref.getString(DEFAULT_AUDIO_VIDEO_SEND_CONFIG, AUDIO_AND_VIDEO);
+    }
+
+    public static String getDefaultAudioVideoRecConfig() {
+        return sharedPref.getString(DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG, AUDIO_AND_VIDEO);
+    }
+
+    public static String getDefaultAudioCodecConfig() {
+        return sharedPref.getString(DEFAULT_AUDIO_CODEC_CONFIG, AUDIO_CODEC_OPUS);
+    }
+
+    public static String getDefaultSocketTransportConfig() {
+        return sharedPref.getString(DEFAULT_SOCKET_TRANSPORT_CONFIG, SOCKET_WEB);
+    }
+
+    public static String getDefaultNetworkTransportConfig() {
+        return sharedPref.getString(DEFAULT_NETWORK_TRANSPORT_CONFIG, NETWORK_UDP);
+    }
+
+    public static String getDefaultRoomsizeConfig() {
+        return sharedPref.getString(DEFAULT_ROOM_SIZE_CONFIG, ROOM_SIZE_S);
+    }
+
+    public static boolean getDefaultDataTransferConfig() {
+        return sharedPref.getBoolean(HAS_DATA_TRANSFER_CONFIG, true);
+    }
+
+    public static boolean getDefaultFileTransferConfig() {
+        return sharedPref.getBoolean(HAS_FILE_TRANSFER_CONFIG, true);
+    }
+
+    public static boolean getDefaultMessageConfig() {
+        return sharedPref.getBoolean(HAS_PEER_MESSAGING_CONFIG, true);
+    }
+
+    public static String getDefaultEncryptedSecretMessageConfig() {
+        return sharedPref.getString(DEFAULT_ENCRYPTED_SECRET_CONFIG, null);
+    }
+
+    public static boolean getDefaultVideoHwAccConfig() {
+        return sharedPref.getBoolean(USE_HW_ACC_CONFIG, true);
+    }
+
+    public static boolean getDefaultH246ProfileConfig() {
+        return sharedPref.getBoolean(USE_H246_PROFILE_CONFIG, true);
+    }
+
+    public static boolean getDefaultVp8EncoderConfig() {
+        return sharedPref.getBoolean(USE_VP8_ENCODER_CONFIG, true);
+    }
+
+    public static boolean getDefaultAudioStereoConfig() {
+        return sharedPref.getBoolean(USE_AUDIO_STEREO_CONFIG, true);
+    }
+
+    public static boolean getDefaultAudioAutoGainConfig() {
+        return sharedPref.getBoolean(USE_AUTO_GAIN_CONTROL_CONFIG, true);
+    }
+
+    public static boolean getDefaultAudioEchoCancellationConfig() {
+        return sharedPref.getBoolean(USE_AUDIO_ECHO_CANCELLATION_CONFIG, true);
+    }
+
+    public static boolean getDefaultAudioHighPassFilterConfig() {
+        return sharedPref.getBoolean(USE_AUDIO_HIGH_PASS_CONFIG, true);
+    }
+
+    public static boolean getDefaultAudioNoiseSuppressionConfig() {
+        return sharedPref.getBoolean(USE_AUDIO_NOISE_SUPPRESSION_CONFIG, true);
+    }
+
+    public static boolean getDefaultMirrorlocalViewConfig() {
+        return sharedPref.getBoolean(MIRROR_LOCAL_VIEW_CONFIG, true);
+    }
+
+    public static boolean getDefaultAutoReportVideoResOnChangeConfig() {
+        return sharedPref.getBoolean(REPORT_VIDEO_RES_ON_CHANGED_CONFIG, true);
+    }
+
+    public static boolean getDefaultAutoReportVideoUntillStableConfig() {
+        return sharedPref.getBoolean(REPORT_VIDEO_RES_STABLE_CONFIG, true);
+    }
+
+    public static int getDefaultNoOfCheckingVideoResForStableConfig() {
+        String intStr = sharedPref.getString(NO_OF_REPORT_VIDEO_RES_UNTILL_STABLE_CONFIG, "5");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultTimeWaitingForNextCheckingVideoResConfig() {
+        String intStr = sharedPref.getString(TIME_OF_REPORT_VIDEO_RES_NEXT_CHECKING_CONFIG, "275");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultMaxAudioBitrateConfig() {
+        String intStr = sharedPref.getString(MAX_AUDIO_BITRATE_CONFIG, "-1");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultMaxVideoBitrateConfig() {
+        String intStr = sharedPref.getString(MAX_VIDEO_BITRATE_CONFIG, "-1");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultMaxDataBitrateConfig() {
+        String intStr = sharedPref.getString(MAX_DATA_BITRATE_CONFIG, "-1");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultMaxPeerInAudioRoomConfig() {
+        String intStr = sharedPref.getString(MAX_PEER_IN_AUDIO_ROOM_CONFIG, "8");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultMaxPeerInVideoRoomConfig() {
+        String intStr = sharedPref.getString(MAX_PEER_IN_VIDEO_ROOM_CONFIG, "4");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultMaxPeerInNoMediaRoomConfig() {
+        String intStr = sharedPref.getString(MAX_PEER_IN_NO_MEDIA_ROOM_CONFIG, "16");
+        return Integer.parseInt(intStr);
+    }
+
+    public static boolean getDefaultTurnConfig() {
+        return sharedPref.getBoolean(USE_TURN_SERVER_CONFIG, true);
+    }
+
+    public static boolean getDefaultSTurnConfig() {
+        return sharedPref.getBoolean(USE_STURN_SERVER_CONFIG, true);
+    }
+
+    public static boolean getDefaultHostConfig() {
+        return sharedPref.getBoolean(USE_HOST_SERVER_CONFIG, true);
+    }
+
+    public static boolean getDefaultIceRestartConfig() {
+        return sharedPref.getBoolean(ALLOW_ICE_RESTART_CONFIG, true);
+    }
+
+    public static int getDefaultNoOfReconnectAttempsConfig() {
+        String intStr = sharedPref.getString(RECONNECT_ATTEMPS_CONFIG, "-1");
+        return Integer.parseInt(intStr);
+    }
+
+    public static int getDefaultNoOfReconnectDelayConfig() {
+        String intStr = sharedPref.getString(RECONNECT_DELAY_CONFIG, "1000");
+        return Integer.parseInt(intStr);
+    }
+
+    public static boolean getDefaultMultiTrackConfig() {
+        return sharedPref.getBoolean(USE_MULTI_TRACKS_UP_CONFIG, true);
+    }
+
     /**
      * Get the bitmap from Uri
      */
@@ -915,6 +1116,10 @@ public class Utils {
         }
 
         return false;
+    }
+
+    public static String getDeviceModel() {
+        return android.os.Build.MANUFACTURER + "_" + android.os.Build.MODEL + "_";
     }
 
 

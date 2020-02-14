@@ -5,7 +5,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -82,6 +87,8 @@ public class ConfigRoomFragment extends Fragment {
     private EditText edtUserNameFile;
     private EditText edtUserNameMultiVideos;
     private EditText edtUserNameVideo;
+
+    private ActionBar actionBar;
 
     public ConfigRoomFragment() {
         // Required empty public constructor
@@ -190,7 +197,78 @@ public class ConfigRoomFragment extends Fragment {
             }
         });
 
+        // setup the action bar
+        setActionBar();
+
         return view;
+    }
+
+    private void setActionBar() {
+        actionBar = ((SettingActivity) getActivity()).getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayShowHomeEnabled(true);
+
+        actionBar.setTitle("Rooms setting");
+
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Get menu inflater object.
+        MenuInflater menuInflater = getActivity().getMenuInflater();
+        // Inflate the custom overflow menu
+        menuInflater.inflate(R.menu.setting_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // action with ID action_refresh was selected
+            case R.id.action_reset:
+                // Set UI values to default values
+                edtRoomNameAudio.setText(ROOM_NAME_AUDIO_DEFAULT);
+                edtRoomNameChat.setText(ROOM_NAME_CHAT_DEFAULT);
+                edtRoomNameData.setText(ROOM_NAME_DATA_DEFAULT);
+                edtRoomNameFile.setText(ROOM_NAME_FILE_DEFAULT);
+                edtRoomNameMultiVideos.setText(ROOM_NAME_MULTI_VIDEOS_DEFAULT);
+                edtRoomNameVideo.setText(ROOM_NAME_VIDEO_DEFAULT);
+
+                edtUserNameAudio.setText(USER_NAME_AUDIO_DEFAULT);
+                edtUserNameChat.setText(USER_NAME_CHAT_DEFAULT);
+                edtUserNameData.setText(USER_NAME_DATA_DEFAULT);
+                edtUserNameFile.setText(USER_NAME_FILE_DEFAULT);
+                edtUserNameMultiVideos.setText(USER_NAME_MULTI_VIDEOS_DEFAULT);
+                edtUserNameVideo.setText(USER_NAME_VIDEO_DEFAULT);
+
+                // Set Config values to default values and write to Preferences if it had changed.
+                setRoomNameAudio(ROOM_NAME_AUDIO_DEFAULT, getActivity());
+                setRoomNameChat(ROOM_NAME_CHAT_DEFAULT, getActivity());
+                setRoomNameData(ROOM_NAME_DATA_DEFAULT, getActivity());
+                setRoomNameFile(ROOM_NAME_FILE_DEFAULT, getActivity());
+                setRoomNameMultiVideos(ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+                setRoomNameVideo(ROOM_NAME_VIDEO_DEFAULT, getActivity());
+
+                setUserNameAudio(USER_NAME_AUDIO_DEFAULT, getActivity());
+                setUserNameChat(USER_NAME_CHAT_DEFAULT, getActivity());
+                setUserNameData(USER_NAME_DATA_DEFAULT, getActivity());
+                setUserNameFile(USER_NAME_FILE_DEFAULT, getActivity());
+                setUserNameMultiVideos(USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+                setUserNameVideo(USER_NAME_VIDEO_DEFAULT, getActivity());
+
+                break;
+            case android.R.id.home:
+                FragmentManager fm = ((SettingActivity) getContext()).getSupportFragmentManager();
+                if (fm.getBackStackEntryCount() > 0) {
+                    fm.popBackStack();
+                    return true;
+                }
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void setFocusChangeListener(final EditText editText, final String valueType) {

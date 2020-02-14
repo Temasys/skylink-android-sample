@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -51,6 +52,8 @@ public class ConfigKeyFragment extends Fragment {
     public static final String APP_KEY_LIST_NO_SMR = "appKeyListNoSmr";
     private KeyInfo keyInfoSmrDefault;
     private KeyInfo keyInfoNoSmrDefault;
+
+    private ActionBar actionBar;
 
     RadioGroup rGroup;
     EditText keyText;
@@ -129,12 +132,28 @@ public class ConfigKeyFragment extends Fragment {
             }
         });
 
+        // setup the action bar
+        setActionBar();
+
         return view;
     }
 
     //----------------------------------------------------------------------------------------------
     // Internal methods
     //----------------------------------------------------------------------------------------------
+
+    private void setActionBar() {
+        actionBar = ((SettingActivity) getActivity()).getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayShowHomeEnabled(true);
+
+        actionBar.setTitle("Keys setting");
+
+        setHasOptionsMenu(true);
+    }
+
     private void createKey() {
         getDialogBox();
         btnCancel.setOnClickListener(new View.OnClickListener() {

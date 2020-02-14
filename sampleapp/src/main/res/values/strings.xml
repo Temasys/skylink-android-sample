@@ -37,7 +37,8 @@
     <string name="radio_headset">Headset</string>
     <string name="radio_speaker">Speaker</string>
     <string name="default_camera_output">Default video device</string>
-    <string name="default_video_resolution">Default video resolution</string>
+    <string name="default_video_resolution_cam">Default video resolution for camera video</string>
+    <string name="default_video_resolution_screen">Default video resolution for screen video</string>
     <string name="video_res_VGA">VGA (640x480)</string>
     <string name="video_res_HDR">HDR (1280x720)</string>
     <string name="video_res_FHD">FHD (1920x1080)</string>
@@ -46,5 +47,4 @@
     <string name="enable_speaker">Enabled Speaker</string>
     <string name="enable_headset">Enabled Headset</string>
     <string name="no_camera">No device</string>
-
 </resources>

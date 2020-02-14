@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.util.Log;
 
 import org.webrtc.SurfaceViewRenderer;
@@ -19,6 +20,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -27,6 +29,9 @@ import sg.com.temasys.skylink.sdk.sampleapp.videoresolution.VideoResolutionContr
 
 import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_BACK;
 import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_FRONT;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_LARGE;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_MEDIUM;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_SMALL;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
@@ -396,17 +401,51 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
 
     public void createLocalScreen() {
         Log.d(TAG, "createLocalScreen()");
+
+        //get default video resolution (widthxheight) from setting to create local screen with preferred resolution (optional)
+        int width = 800, height = 1600;
+        String screenResolution = Utils.getDefaultScreenResolution();
+        int screenOrientation = context.getResources().getConfiguration().orientation;
+
+        if (screenResolution.equals(SCREEN_RESOLUTION_LARGE)) {
+            if (screenOrientation == Configuration.ORIENTATION_PORTRAIT) {
+                width = Config.ScreenResolution.LARGE_PORTRAIT.getWidth();
+                height = Config.ScreenResolution.LARGE_PORTRAIT.getHeight();
+            } else if (screenOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                width = Config.ScreenResolution.LARGE_LANDSCAPE.getWidth();
+                height = Config.ScreenResolution.LARGE_LANDSCAPE.getHeight();
+            }
+        } else if (screenResolution.equals(SCREEN_RESOLUTION_MEDIUM)) {
+            if (screenOrientation == Configuration.ORIENTATION_PORTRAIT) {
+                width = Config.ScreenResolution.MEDIUM_PORTRAIT.getWidth();
+                height = Config.ScreenResolution.MEDIUM_PORTRAIT.getHeight();
+            } else if (screenOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                width = Config.ScreenResolution.MEDIUM_LANDSCAPE.getWidth();
+                height = Config.ScreenResolution.MEDIUM_LANDSCAPE.getHeight();
+            }
+        } else if (screenResolution.equals(SCREEN_RESOLUTION_SMALL)) {
+            if (screenOrientation == Configuration.ORIENTATION_PORTRAIT) {
+                width = Config.ScreenResolution.SMALL_PORTRAIT.getWidth();
+                height = Config.ScreenResolution.SMALL_PORTRAIT.getHeight();
+            } else if (screenOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                width = Config.ScreenResolution.SMALL_LANDSCAPE.getWidth();
+                height = Config.ScreenResolution.SMALL_LANDSCAPE.getHeight();
+            }
+        }
+
+        int defaultScreenFps = 60;
         if (skylinkConnection != null && localScreen == null) {
             SkylinkConfig.VideoDevice videoDevice = SkylinkConfig.VideoDevice.SCREEN;
             //Start screen by default video resolution in setting.
-            skylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile", new SkylinkCallback() {
-                @Override
-                public void onError(SkylinkError error, HashMap<String, Object> details) {
-                    String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
-                    Log.e("SkylinkCallback", contextDescription);
-                    toastLog(TAG, context, "\"Unable to createLocalScreen as " + contextDescription);
-                }
-            });
+            skylinkConnection.createLocalMedia(videoDevice, "screen capture from mobile",
+                    width, height, defaultScreenFps, new SkylinkCallback() {
+                        @Override
+                        public void onError(SkylinkError error, HashMap<String, Object> details) {
+                            String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
+                            Log.e("SkylinkCallback", contextDescription);
+                            toastLog(TAG, context, "\"Unable to createLocalScreen as " + contextDescription);
+                        }
+                    });
         }
     }
 
