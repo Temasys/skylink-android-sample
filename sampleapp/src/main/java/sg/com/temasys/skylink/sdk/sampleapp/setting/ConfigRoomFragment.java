@@ -1,8 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.setting;
 
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -14,42 +12,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_MULTI_VIDEOS;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_NAME_VIDEO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_MULTI_VIDEOS;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USER_NAME_VIDEO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameAudio;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameChat;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameData;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameFile;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameMultiVideos;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setRoomNameVideo;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameAudio;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameChat;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameData;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameFile;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameMultiVideos;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setUserNameVideo;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.getPrefBoolean;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.getPrefString;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setPrefBoolean;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.setPrefString;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_COMMON_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_MULTI_VIDEOS_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_COMMON_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_MULTI_VIDEOS_DEFAULT;
@@ -60,19 +42,35 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VID
  */
 public class ConfigRoomFragment extends Fragment {
 
-    public static final String PREF_ROOM_NAME_AUDIO = "RoomNameAudio";
-    public static final String PREF_ROOM_NAME_CHAT = "RoomNameChat";
-    public static final String PREF_ROOM_NAME_DATA = "RoomNameData";
-    public static final String PREF_ROOM_NAME_FILE = "RoomNameFile";
-    public static final String PREF_ROOM_NAME_MULTI_VIDEOS = "RoomNameMultiVideos";
-    public static final String PREF_ROOM_NAME_VIDEO = "RoomNameVideo";
+    public static final String PREF_ROOM_NAME_AUDIO_SAVED = "RoomNameAudioSaved";
+    public static final String PREF_ROOM_NAME_AUDIO_INPUT_VALUE = "RoomNameAudioInputted";
+    public static final String PREF_ROOM_NAME_CHAT_SAVED = "RoomNameChatSaved";
+    public static final String PREF_ROOM_NAME_CHAT_INPUT_VALUE = "RoomNameChatInputted";
+    public static final String PREF_ROOM_NAME_DATA_SAVED = "RoomNameDataSaved";
+    public static final String PREF_ROOM_NAME_DATA_INPUT_VALUE = "RoomNameDataInputted";
+    public static final String PREF_ROOM_NAME_FILE_SAVED = "RoomNameFileSaved";
+    public static final String PREF_ROOM_NAME_FILE_INPUT_VALUE = "RoomNameFileInputted";
+    public static final String PREF_ROOM_NAME_MULTI_VIDEOS_SAVED = "RoomNameMultiVideosSaved";
+    public static final String PREF_ROOM_NAME_MULTI_VIDEOS_INPUT_VALUE = "RoomNameMultiVideosInputted";
+    public static final String PREF_ROOM_NAME_VIDEO_SAVED = "RoomNameVideoSaved";
+    public static final String PREF_ROOM_NAME_VIDEO_INPUT_VALUE = "RoomNameVideoInputted";
+    public static final String PREF_ROOM_NAME_COMMON_SAVED = "RoomNameCommonSaved";
 
-    public static final String PREF_USER_NAME_AUDIO = "UserNameAudio";
-    public static final String PREF_USER_NAME_CHAT = "UserNameChat";
-    public static final String PREF_USER_NAME_DATA = "UserNameData";
-    public static final String PREF_USER_NAME_FILE = "UserNameFile";
-    public static final String PREF_USER_NAME_MULTI_VIDEOS = "UserNameMultiVideos";
-    public static final String PREF_USER_NAME_VIDEO = "UserNameVideo";
+    public static final String PREF_USER_NAME_AUDIO_SAVED = "UserNameAudioSaved";
+    public static final String PREF_USER_NAME_AUDIO_INPUT_VALUE = "UserNameAudioInputted";
+    public static final String PREF_USER_NAME_CHAT_SAVED = "UserNameChatSaved";
+    public static final String PREF_USER_NAME_CHAT_INPUT_VALUE = "UserNameChatInputted";
+    public static final String PREF_USER_NAME_DATA_SAVED = "UserNameDataSaved";
+    public static final String PREF_USER_NAME_DATA_INPUT_VALUE = "UserNameDataInputted";
+    public static final String PREF_USER_NAME_FILE_SAVED = "UserNameFileSaved";
+    public static final String PREF_USER_NAME_FILE_INPUT_VALUE = "UserNameFileInputted";
+    public static final String PREF_USER_NAME_MULTI_VIDEOS_SAVED = "UserNameMultiVideosSaved";
+    public static final String PREF_USER_NAME_MULTI_VIDEOS_INPUT_VALUE = "UserNameMultiVideosInputted";
+    public static final String PREF_USER_NAME_VIDEO_SAVED = "UserNameVideoSaved";
+    public static final String PREF_USER_NAME_VIDEO_INPUT_VALUE = "UserNameVideoInputted";
+    public static final String PREF_USER_NAME_COMMON_SAVED = "UserNameCommonSaved";
+
+    public static final String PREF_USE_COMMON_SETTING = "UserCommonSetting";
 
     private EditText edtRoomNameAudio;
     private EditText edtRoomNameChat;
@@ -80,6 +78,7 @@ public class ConfigRoomFragment extends Fragment {
     private EditText edtRoomNameFile;
     private EditText edtRoomNameMultiVideos;
     private EditText edtRoomNameVideo;
+    private EditText edtRoomNameCommon;
 
     private EditText edtUserNameAudio;
     private EditText edtUserNameChat;
@@ -87,6 +86,9 @@ public class ConfigRoomFragment extends Fragment {
     private EditText edtUserNameFile;
     private EditText edtUserNameMultiVideos;
     private EditText edtUserNameVideo;
+    private EditText edtUserNameCommon;
+    private Switch switchUseCommon;
+    private Button btnReset;
 
     private ActionBar actionBar;
 
@@ -97,73 +99,44 @@ public class ConfigRoomFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        final SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        final SharedPreferences.Editor editor = sharedPref.edit();
-
         View view = inflater.inflate(R.layout.fragment_room, container, false);
 
-        // Audio Function Value Set
-        edtUserNameAudio = (EditText) view.findViewById(R.id.edtUserNameAudio);
-        edtUserNameAudio.setText(USER_NAME_AUDIO);
+        getControlWidgets(view);
+        initControls();
 
-        edtRoomNameAudio = (EditText) view.findViewById(R.id.edtRoomNameAudio);
-        edtRoomNameAudio.setText(ROOM_NAME_AUDIO);
+        switchUseCommon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                switch (buttonView.getId()) {
+                    case R.id.switch_use_common_settings:
+                        setPrefBoolean(PREF_USE_COMMON_SETTING, isChecked, getActivity());
+                        changeUISeparateSetting(isChecked);
 
-        // Chat Function Value Set
-        edtUserNameChat = (EditText) view.findViewById(R.id.edtUserNameChat);
-        edtUserNameChat.setText(USER_NAME_CHAT);
+                        if (isChecked) {
+                            processSaveCommonValue(edtRoomNameCommon.getText().toString(), edtUserNameCommon.getText().toString());
+                        } else {
+                            // change the saved value
+                            setPrefString(PREF_ROOM_NAME_AUDIO_SAVED, edtRoomNameAudio.getText().toString(), getActivity());
+                            setPrefString(PREF_ROOM_NAME_VIDEO_SAVED, edtRoomNameVideo.getText().toString(), getActivity());
+                            setPrefString(PREF_ROOM_NAME_CHAT_SAVED, edtRoomNameChat.getText().toString(), getActivity());
+                            setPrefString(PREF_ROOM_NAME_FILE_SAVED, edtRoomNameFile.getText().toString(), getActivity());
+                            setPrefString(PREF_ROOM_NAME_DATA_SAVED, edtRoomNameData.getText().toString(), getActivity());
+                            setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, edtRoomNameMultiVideos.getText().toString(), getActivity());
 
-        edtRoomNameChat = (EditText) view.findViewById(R.id.edtRoomNameChat);
-        edtRoomNameChat.setText(ROOM_NAME_CHAT);
-
-        // Data Transfer Function Value Set
-        edtUserNameData = (EditText) view.findViewById(R.id.edtUserNameData);
-        edtUserNameData.setText(USER_NAME_DATA);
-
-        edtRoomNameData = (EditText) view.findViewById(R.id.edtRoomNameData);
-        edtRoomNameData.setText(ROOM_NAME_DATA);
-
-        // File Transfer Function Value Set
-        edtUserNameFile = (EditText) view.findViewById(R.id.edtUserNameFile);
-        edtUserNameFile.setText(USER_NAME_FILE);
-
-        edtRoomNameFile = (EditText) view.findViewById(R.id.edtRoomNameFile);
-        edtRoomNameFile.setText(ROOM_NAME_FILE);
-
-        // Multi Videos Function Value Set
-        edtUserNameMultiVideos = (EditText) view.findViewById(R.id.edtUserNameMultiVideos);
-        edtUserNameMultiVideos.setText(USER_NAME_MULTI_VIDEOS);
-
-        edtRoomNameMultiVideos = (EditText) view.findViewById(R.id.edtRoomNameMultiVideos);
-        edtRoomNameMultiVideos.setText(ROOM_NAME_MULTI_VIDEOS);
-
-        // Video Function Value Set
-        edtUserNameVideo = (EditText) view.findViewById(R.id.edtUserNameVideo);
-        edtUserNameVideo.setText(USER_NAME_VIDEO);
-
-        edtRoomNameVideo = (EditText) view.findViewById(R.id.edtRoomNameVideo);
-        edtRoomNameVideo.setText(ROOM_NAME_VIDEO);
-
-        // Set Listener actions for each EditText field.
-        //  - Room names.
-        setFocusChangeListener(edtRoomNameAudio, PREF_ROOM_NAME_AUDIO);
-        setFocusChangeListener(edtRoomNameChat, PREF_ROOM_NAME_CHAT);
-        setFocusChangeListener(edtRoomNameData, PREF_ROOM_NAME_DATA);
-        setFocusChangeListener(edtRoomNameFile, PREF_ROOM_NAME_FILE);
-        setFocusChangeListener(edtRoomNameMultiVideos, PREF_ROOM_NAME_MULTI_VIDEOS);
-        setFocusChangeListener(edtRoomNameVideo, PREF_ROOM_NAME_VIDEO);
-        //  - User names.
-        setFocusChangeListener(edtUserNameAudio, PREF_USER_NAME_AUDIO);
-        setFocusChangeListener(edtUserNameChat, PREF_USER_NAME_CHAT);
-        setFocusChangeListener(edtUserNameData, PREF_USER_NAME_DATA);
-        setFocusChangeListener(edtUserNameFile, PREF_USER_NAME_FILE);
-        setFocusChangeListener(edtUserNameMultiVideos, PREF_USER_NAME_MULTI_VIDEOS);
-        setFocusChangeListener(edtUserNameVideo, PREF_USER_NAME_VIDEO);
+                            setPrefString(PREF_USER_NAME_AUDIO_SAVED, edtUserNameAudio.getText().toString(), getActivity());
+                            setPrefString(PREF_USER_NAME_VIDEO_SAVED, edtUserNameVideo.getText().toString(), getActivity());
+                            setPrefString(PREF_USER_NAME_DATA_SAVED, edtUserNameData.getText().toString(), getActivity());
+                            setPrefString(PREF_USER_NAME_FILE_SAVED, edtUserNameFile.getText().toString(), getActivity());
+                            setPrefString(PREF_USER_NAME_CHAT_SAVED, edtUserNameChat.getText().toString(), getActivity());
+                            setPrefString(PREF_USER_NAME_MULTI_VIDEOS_SAVED, edtUserNameMultiVideos.getText().toString(), getActivity());
+                        }
+                        break;
+                }
+            }
+        });
 
         // Button to reset all values to Default values (from Constants.java)
-        final Button button = (Button) view.findViewById(R.id.btnResetDefault);
-        button.setOnClickListener(new View.OnClickListener() {
+        btnReset.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Set UI values to default values
                 edtRoomNameAudio.setText(ROOM_NAME_AUDIO_DEFAULT);
@@ -172,6 +145,7 @@ public class ConfigRoomFragment extends Fragment {
                 edtRoomNameFile.setText(ROOM_NAME_FILE_DEFAULT);
                 edtRoomNameMultiVideos.setText(ROOM_NAME_MULTI_VIDEOS_DEFAULT);
                 edtRoomNameVideo.setText(ROOM_NAME_VIDEO_DEFAULT);
+                edtRoomNameCommon.setText(ROOM_NAME_COMMON_DEFAULT);
 
                 edtUserNameAudio.setText(USER_NAME_AUDIO_DEFAULT);
                 edtUserNameChat.setText(USER_NAME_CHAT_DEFAULT);
@@ -179,21 +153,51 @@ public class ConfigRoomFragment extends Fragment {
                 edtUserNameFile.setText(USER_NAME_FILE_DEFAULT);
                 edtUserNameMultiVideos.setText(USER_NAME_MULTI_VIDEOS_DEFAULT);
                 edtUserNameVideo.setText(USER_NAME_VIDEO_DEFAULT);
+                edtUserNameCommon.setText(USER_NAME_COMMON_DEFAULT);
 
-                // Set Config values to default values and write to Preferences if it had changed.
-                setRoomNameAudio(ROOM_NAME_AUDIO_DEFAULT, getActivity());
-                setRoomNameChat(ROOM_NAME_CHAT_DEFAULT, getActivity());
-                setRoomNameData(ROOM_NAME_DATA_DEFAULT, getActivity());
-                setRoomNameFile(ROOM_NAME_FILE_DEFAULT, getActivity());
-                setRoomNameMultiVideos(ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
-                setRoomNameVideo(ROOM_NAME_VIDEO_DEFAULT, getActivity());
+                // Reset saved and input value store in share preference
+                setPrefString(PREF_ROOM_NAME_AUDIO_SAVED, ROOM_NAME_AUDIO_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_AUDIO_INPUT_VALUE, ROOM_NAME_AUDIO_DEFAULT, getActivity());
 
-                setUserNameAudio(USER_NAME_AUDIO_DEFAULT, getActivity());
-                setUserNameChat(USER_NAME_CHAT_DEFAULT, getActivity());
-                setUserNameData(USER_NAME_DATA_DEFAULT, getActivity());
-                setUserNameFile(USER_NAME_FILE_DEFAULT, getActivity());
-                setUserNameMultiVideos(USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
-                setUserNameVideo(USER_NAME_VIDEO_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_CHAT_SAVED, ROOM_NAME_CHAT_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_CHAT_INPUT_VALUE, ROOM_NAME_CHAT_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_DATA_SAVED, ROOM_NAME_DATA_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_DATA_INPUT_VALUE, ROOM_NAME_DATA_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_FILE_SAVED, ROOM_NAME_FILE_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_FILE_INPUT_VALUE, ROOM_NAME_FILE_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_INPUT_VALUE, ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_VIDEO_SAVED, ROOM_NAME_VIDEO_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_VIDEO_INPUT_VALUE, ROOM_NAME_VIDEO_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_COMMON_SAVED, ROOM_NAME_COMMON_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_AUDIO_SAVED, USER_NAME_AUDIO_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_AUDIO_INPUT_VALUE, USER_NAME_AUDIO_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_CHAT_SAVED, USER_NAME_CHAT_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_CHAT_INPUT_VALUE, USER_NAME_CHAT_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_DATA_SAVED, USER_NAME_DATA_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_DATA_INPUT_VALUE, USER_NAME_DATA_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_FILE_SAVED, USER_NAME_FILE_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_FILE_INPUT_VALUE, USER_NAME_FILE_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_MULTI_VIDEOS_SAVED, USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_MULTI_VIDEOS_INPUT_VALUE, USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_VIDEO_SAVED, USER_NAME_VIDEO_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_VIDEO_INPUT_VALUE, USER_NAME_VIDEO_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_COMMON_SAVED, USER_NAME_COMMON_DEFAULT, getActivity());
+
+                switchUseCommon.setChecked(false);
+                switchUseCommon.setSelected(false);
             }
         });
 
@@ -201,6 +205,176 @@ public class ConfigRoomFragment extends Fragment {
         setActionBar();
 
         return view;
+    }
+
+    private void initControls() {
+        String inputValueRoomNameAudio = getPrefString(PREF_ROOM_NAME_AUDIO_INPUT_VALUE, ROOM_NAME_AUDIO_DEFAULT, getActivity());
+        edtRoomNameAudio.setText(inputValueRoomNameAudio);
+
+        String inputValueRoomNameVideo = getPrefString(PREF_ROOM_NAME_VIDEO_INPUT_VALUE, ROOM_NAME_VIDEO_DEFAULT, getActivity());
+        edtRoomNameVideo.setText(inputValueRoomNameVideo);
+
+        String inputValueRoomNameChat = getPrefString(PREF_ROOM_NAME_CHAT_INPUT_VALUE, ROOM_NAME_CHAT_DEFAULT, getActivity());
+        edtRoomNameChat.setText(inputValueRoomNameChat);
+
+        String inputValueRoomNameFile = getPrefString(PREF_ROOM_NAME_FILE_INPUT_VALUE, ROOM_NAME_FILE_DEFAULT, getActivity());
+        edtRoomNameFile.setText(inputValueRoomNameFile);
+
+        String inputValueRoomNameData = getPrefString(PREF_ROOM_NAME_DATA_INPUT_VALUE, ROOM_NAME_DATA_DEFAULT, getActivity());
+        edtRoomNameData.setText(inputValueRoomNameData);
+
+        String inputValueRoomNameMultiVideos = getPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_INPUT_VALUE, ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+        edtRoomNameMultiVideos.setText(inputValueRoomNameMultiVideos);
+
+        String valueRoomNameCommon = getPrefString(PREF_ROOM_NAME_COMMON_SAVED, ROOM_NAME_COMMON_DEFAULT, getActivity());
+        edtRoomNameCommon.setText(valueRoomNameCommon);
+
+
+        String inputValueUserNameAudio = getPrefString(PREF_USER_NAME_AUDIO_INPUT_VALUE, USER_NAME_AUDIO_DEFAULT, getActivity());
+        edtUserNameAudio.setText(inputValueUserNameAudio);
+
+        String inputValueUserNameVideo = getPrefString(PREF_USER_NAME_VIDEO_INPUT_VALUE, USER_NAME_VIDEO_DEFAULT, getActivity());
+        edtUserNameVideo.setText(inputValueUserNameVideo);
+
+        String inputValueUserNameChat = getPrefString(PREF_USER_NAME_CHAT_INPUT_VALUE, USER_NAME_CHAT_DEFAULT, getActivity());
+        edtUserNameChat.setText(inputValueUserNameChat);
+
+        String inputValueUserNameFile = getPrefString(PREF_USER_NAME_FILE_INPUT_VALUE, USER_NAME_FILE_DEFAULT, getActivity());
+        edtUserNameFile.setText(inputValueUserNameFile);
+
+        String inputValueUserNameData = getPrefString(PREF_USER_NAME_DATA_INPUT_VALUE, USER_NAME_DATA_DEFAULT, getActivity());
+        edtUserNameData.setText(inputValueUserNameData);
+
+        String inputValueUserNameMultiVideos = getPrefString(PREF_USER_NAME_MULTI_VIDEOS_INPUT_VALUE, USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+        edtUserNameMultiVideos.setText(inputValueUserNameMultiVideos);
+
+        String valueUserNameCommon = getPrefString(PREF_USER_NAME_COMMON_SAVED, USER_NAME_COMMON_DEFAULT, getActivity());
+        edtUserNameCommon.setText(valueUserNameCommon);
+
+        boolean useCommonSetting = getPrefBoolean(PREF_USE_COMMON_SETTING, false, getActivity());
+        switchUseCommon.setChecked(useCommonSetting);
+
+        changeUISeparateSetting(useCommonSetting);
+
+        setFocusChangeListener(edtRoomNameAudio, PREF_ROOM_NAME_AUDIO_SAVED);
+        setFocusChangeListener(edtRoomNameChat, PREF_ROOM_NAME_CHAT_SAVED);
+        setFocusChangeListener(edtRoomNameData, PREF_ROOM_NAME_DATA_SAVED);
+        setFocusChangeListener(edtRoomNameFile, PREF_ROOM_NAME_FILE_SAVED);
+        setFocusChangeListener(edtRoomNameMultiVideos, PREF_ROOM_NAME_MULTI_VIDEOS_SAVED);
+        setFocusChangeListener(edtRoomNameVideo, PREF_ROOM_NAME_VIDEO_SAVED);
+        setFocusChangeListener(edtRoomNameCommon, PREF_ROOM_NAME_COMMON_SAVED);
+        //  - User names.
+        setFocusChangeListener(edtUserNameAudio, PREF_USER_NAME_AUDIO_SAVED);
+        setFocusChangeListener(edtUserNameChat, PREF_USER_NAME_CHAT_SAVED);
+        setFocusChangeListener(edtUserNameData, PREF_USER_NAME_DATA_SAVED);
+        setFocusChangeListener(edtUserNameFile, PREF_USER_NAME_FILE_SAVED);
+        setFocusChangeListener(edtUserNameMultiVideos, PREF_USER_NAME_MULTI_VIDEOS_SAVED);
+        setFocusChangeListener(edtUserNameVideo, PREF_USER_NAME_VIDEO_SAVED);
+        setFocusChangeListener(edtUserNameCommon, PREF_USER_NAME_COMMON_SAVED);
+    }
+
+    private void getControlWidgets(View view) {
+        edtUserNameAudio = (EditText) view.findViewById(R.id.edtUserNameAudio);
+        edtRoomNameAudio = (EditText) view.findViewById(R.id.edtRoomNameAudio);
+        edtUserNameChat = (EditText) view.findViewById(R.id.edtUserNameChat);
+        edtRoomNameChat = (EditText) view.findViewById(R.id.edtRoomNameChat);
+        edtUserNameData = (EditText) view.findViewById(R.id.edtUserNameData);
+        edtRoomNameData = (EditText) view.findViewById(R.id.edtRoomNameData);
+        edtUserNameFile = (EditText) view.findViewById(R.id.edtUserNameFile);
+        edtRoomNameFile = (EditText) view.findViewById(R.id.edtRoomNameFile);
+        edtUserNameMultiVideos = (EditText) view.findViewById(R.id.edtUserNameMultiVideos);
+        edtRoomNameMultiVideos = (EditText) view.findViewById(R.id.edtRoomNameMultiVideos);
+        edtUserNameVideo = (EditText) view.findViewById(R.id.edtUserNameVideo);
+        edtRoomNameVideo = (EditText) view.findViewById(R.id.edtRoomNameVideo);
+        edtUserNameCommon = (EditText) view.findViewById(R.id.edtUserNameCommon);
+        edtRoomNameCommon = (EditText) view.findViewById(R.id.edtRoomNameCommon);
+        switchUseCommon = (Switch) view.findViewById(R.id.switch_use_common_settings);
+        btnReset = (Button) view.findViewById(R.id.btnResetDefault);
+    }
+
+    private void processSaveCommonValue(String savedRoomNameCommon, String savedUserNameCommon) {
+        // change the saved value
+        setPrefString(PREF_ROOM_NAME_AUDIO_SAVED, savedRoomNameCommon, getActivity());
+        setPrefString(PREF_ROOM_NAME_VIDEO_SAVED, savedRoomNameCommon, getActivity());
+        setPrefString(PREF_ROOM_NAME_CHAT_SAVED, savedRoomNameCommon, getActivity());
+        setPrefString(PREF_ROOM_NAME_FILE_SAVED, savedRoomNameCommon, getActivity());
+        setPrefString(PREF_ROOM_NAME_DATA_SAVED, savedRoomNameCommon, getActivity());
+        setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, savedRoomNameCommon, getActivity());
+        setPrefString(PREF_ROOM_NAME_COMMON_SAVED, savedRoomNameCommon, getActivity());
+
+        setPrefString(PREF_USER_NAME_AUDIO_SAVED, savedUserNameCommon, getActivity());
+        setPrefString(PREF_USER_NAME_VIDEO_SAVED, savedUserNameCommon, getActivity());
+        setPrefString(PREF_USER_NAME_DATA_SAVED, savedUserNameCommon, getActivity());
+        setPrefString(PREF_USER_NAME_FILE_SAVED, savedUserNameCommon, getActivity());
+        setPrefString(PREF_USER_NAME_CHAT_SAVED, savedUserNameCommon, getActivity());
+        setPrefString(PREF_USER_NAME_MULTI_VIDEOS_SAVED, savedUserNameCommon, getActivity());
+        setPrefString(PREF_USER_NAME_COMMON_SAVED, savedUserNameCommon, getActivity());
+    }
+
+    private void changeUISeparateSetting(boolean useCommonSetting) {
+        if (useCommonSetting) {
+            // change the UI
+            edtRoomNameAudio.setEnabled(false);
+            edtRoomNameAudio.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtRoomNameChat.setEnabled(false);
+            edtRoomNameChat.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtRoomNameData.setEnabled(false);
+            edtRoomNameData.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtRoomNameFile.setEnabled(false);
+            edtRoomNameFile.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtRoomNameMultiVideos.setEnabled(false);
+            edtRoomNameMultiVideos.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtRoomNameVideo.setEnabled(false);
+            edtRoomNameVideo.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameAudio.setEnabled(false);
+            edtUserNameAudio.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameChat.setEnabled(false);
+            edtUserNameChat.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameData.setEnabled(false);
+            edtUserNameData.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameFile.setEnabled(false);
+            edtUserNameFile.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameMultiVideos.setEnabled(false);
+            edtUserNameMultiVideos.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameVideo.setEnabled(false);
+            edtUserNameVideo.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+
+            edtRoomNameCommon.setEnabled(true);
+            edtRoomNameCommon.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameCommon.setEnabled(true);
+            edtUserNameCommon.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+
+        } else {
+            edtRoomNameAudio.setEnabled(true);
+            edtRoomNameAudio.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtRoomNameChat.setEnabled(true);
+            edtRoomNameChat.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtRoomNameData.setEnabled(true);
+            edtRoomNameData.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtRoomNameFile.setEnabled(true);
+            edtRoomNameFile.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtRoomNameMultiVideos.setEnabled(true);
+            edtRoomNameMultiVideos.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtRoomNameVideo.setEnabled(true);
+            edtRoomNameVideo.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameAudio.setEnabled(true);
+            edtUserNameAudio.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameChat.setEnabled(true);
+            edtUserNameChat.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameData.setEnabled(true);
+            edtUserNameData.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameFile.setEnabled(true);
+            edtUserNameFile.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameMultiVideos.setEnabled(true);
+            edtUserNameMultiVideos.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+            edtUserNameVideo.setEnabled(true);
+            edtUserNameVideo.setBackground(getResources().getDrawable(R.drawable.custom_edit_text));
+
+            edtRoomNameCommon.setEnabled(false);
+            edtRoomNameCommon.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+            edtUserNameCommon.setEnabled(false);
+            edtUserNameCommon.setBackground(getResources().getDrawable(R.drawable.custom_edit_text_disable));
+        }
     }
 
     private void setActionBar() {
@@ -235,6 +409,7 @@ public class ConfigRoomFragment extends Fragment {
                 edtRoomNameFile.setText(ROOM_NAME_FILE_DEFAULT);
                 edtRoomNameMultiVideos.setText(ROOM_NAME_MULTI_VIDEOS_DEFAULT);
                 edtRoomNameVideo.setText(ROOM_NAME_VIDEO_DEFAULT);
+                edtRoomNameCommon.setText(ROOM_NAME_COMMON_DEFAULT);
 
                 edtUserNameAudio.setText(USER_NAME_AUDIO_DEFAULT);
                 edtUserNameChat.setText(USER_NAME_CHAT_DEFAULT);
@@ -242,21 +417,49 @@ public class ConfigRoomFragment extends Fragment {
                 edtUserNameFile.setText(USER_NAME_FILE_DEFAULT);
                 edtUserNameMultiVideos.setText(USER_NAME_MULTI_VIDEOS_DEFAULT);
                 edtUserNameVideo.setText(USER_NAME_VIDEO_DEFAULT);
+                edtUserNameCommon.setText(USER_NAME_COMMON_DEFAULT);
 
-                // Set Config values to default values and write to Preferences if it had changed.
-                setRoomNameAudio(ROOM_NAME_AUDIO_DEFAULT, getActivity());
-                setRoomNameChat(ROOM_NAME_CHAT_DEFAULT, getActivity());
-                setRoomNameData(ROOM_NAME_DATA_DEFAULT, getActivity());
-                setRoomNameFile(ROOM_NAME_FILE_DEFAULT, getActivity());
-                setRoomNameMultiVideos(ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
-                setRoomNameVideo(ROOM_NAME_VIDEO_DEFAULT, getActivity());
+                // Reset saved and input value store in share preference
+                setPrefString(PREF_ROOM_NAME_AUDIO_SAVED, ROOM_NAME_AUDIO_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_AUDIO_INPUT_VALUE, ROOM_NAME_AUDIO_DEFAULT, getActivity());
 
-                setUserNameAudio(USER_NAME_AUDIO_DEFAULT, getActivity());
-                setUserNameChat(USER_NAME_CHAT_DEFAULT, getActivity());
-                setUserNameData(USER_NAME_DATA_DEFAULT, getActivity());
-                setUserNameFile(USER_NAME_FILE_DEFAULT, getActivity());
-                setUserNameMultiVideos(USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
-                setUserNameVideo(USER_NAME_VIDEO_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_CHAT_SAVED, ROOM_NAME_CHAT_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_CHAT_INPUT_VALUE, ROOM_NAME_CHAT_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_DATA_SAVED, ROOM_NAME_DATA_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_DATA_INPUT_VALUE, ROOM_NAME_DATA_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_FILE_SAVED, ROOM_NAME_FILE_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_FILE_INPUT_VALUE, ROOM_NAME_FILE_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_INPUT_VALUE, ROOM_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_VIDEO_SAVED, ROOM_NAME_VIDEO_DEFAULT, getActivity());
+                setPrefString(PREF_ROOM_NAME_VIDEO_INPUT_VALUE, ROOM_NAME_VIDEO_DEFAULT, getActivity());
+
+                setPrefString(PREF_ROOM_NAME_COMMON_SAVED, ROOM_NAME_COMMON_DEFAULT, getActivity());
+
+
+                setPrefString(PREF_USER_NAME_AUDIO_SAVED, USER_NAME_AUDIO_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_AUDIO_INPUT_VALUE, USER_NAME_AUDIO_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_CHAT_SAVED, USER_NAME_CHAT_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_CHAT_INPUT_VALUE, USER_NAME_CHAT_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_DATA_SAVED, USER_NAME_DATA_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_DATA_INPUT_VALUE, USER_NAME_DATA_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_FILE_SAVED, USER_NAME_FILE_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_FILE_INPUT_VALUE, USER_NAME_FILE_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_MULTI_VIDEOS_SAVED, USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_MULTI_VIDEOS_INPUT_VALUE, USER_NAME_MULTI_VIDEOS_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_VIDEO_SAVED, USER_NAME_VIDEO_DEFAULT, getActivity());
+                setPrefString(PREF_USER_NAME_VIDEO_INPUT_VALUE, USER_NAME_VIDEO_DEFAULT, getActivity());
+
+                setPrefString(PREF_USER_NAME_COMMON_SAVED, USER_NAME_COMMON_DEFAULT, getActivity());
 
                 break;
             case android.R.id.home:
@@ -281,55 +484,63 @@ public class ConfigRoomFragment extends Fragment {
 
                     switch (valueType) {
                         // Room name types
-                        case PREF_ROOM_NAME_AUDIO:
-                            setRoomNameAudio(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_AUDIO);
+                        case PREF_ROOM_NAME_AUDIO_SAVED:
+                            setPrefString(PREF_ROOM_NAME_AUDIO_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_ROOM_NAME_AUDIO_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_ROOM_NAME_CHAT:
-                            setRoomNameChat(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_CHAT);
+                        case PREF_ROOM_NAME_CHAT_SAVED:
+                            setPrefString(PREF_ROOM_NAME_CHAT_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_ROOM_NAME_CHAT_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_ROOM_NAME_DATA:
-                            setRoomNameData(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_DATA);
+                        case PREF_ROOM_NAME_DATA_SAVED:
+                            setPrefString(PREF_ROOM_NAME_DATA_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_ROOM_NAME_DATA_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_ROOM_NAME_FILE:
-                            setRoomNameFile(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_FILE);
+                        case PREF_ROOM_NAME_FILE_SAVED:
+                            setPrefString(PREF_ROOM_NAME_FILE_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_ROOM_NAME_FILE_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_ROOM_NAME_MULTI_VIDEOS:
-                            setRoomNameMultiVideos(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_MULTI_VIDEOS);
+                        case PREF_ROOM_NAME_MULTI_VIDEOS_SAVED:
+                            setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_ROOM_NAME_VIDEO:
-                            setRoomNameVideo(uiValue, getActivity());
-                            editText.setText(ROOM_NAME_VIDEO);
+                        case PREF_ROOM_NAME_VIDEO_SAVED:
+                            setPrefString(PREF_ROOM_NAME_VIDEO_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_ROOM_NAME_VIDEO_INPUT_VALUE, uiValue, getActivity());
+                            break;
+                        case PREF_ROOM_NAME_COMMON_SAVED:
+                            setPrefString(PREF_ROOM_NAME_COMMON_SAVED, uiValue, getActivity());
+                            processSaveCommonValue(edtRoomNameCommon.getText().toString(), edtUserNameCommon.getText().toString());
                             break;
 
                         // User name types
-                        case PREF_USER_NAME_AUDIO:
-                            setUserNameAudio(uiValue, getActivity());
-                            editText.setText(USER_NAME_AUDIO);
+                        case PREF_USER_NAME_AUDIO_SAVED:
+                            setPrefString(PREF_USER_NAME_AUDIO_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_USER_NAME_AUDIO_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_USER_NAME_CHAT:
-                            setUserNameChat(uiValue, getActivity());
-                            editText.setText(USER_NAME_CHAT);
+                        case PREF_USER_NAME_CHAT_SAVED:
+                            setPrefString(PREF_USER_NAME_CHAT_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_USER_NAME_CHAT_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_USER_NAME_DATA:
-                            setUserNameData(uiValue, getActivity());
-                            editText.setText(USER_NAME_DATA);
+                        case PREF_USER_NAME_DATA_SAVED:
+                            setPrefString(PREF_USER_NAME_DATA_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_USER_NAME_DATA_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_USER_NAME_FILE:
-                            setUserNameFile(uiValue, getActivity());
-                            editText.setText(USER_NAME_FILE);
+                        case PREF_USER_NAME_FILE_SAVED:
+                            setPrefString(PREF_USER_NAME_FILE_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_USER_NAME_FILE_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_USER_NAME_MULTI_VIDEOS:
-                            setUserNameMultiVideos(uiValue, getActivity());
-                            editText.setText(USER_NAME_MULTI_VIDEOS);
+                        case PREF_USER_NAME_MULTI_VIDEOS_SAVED:
+                            setPrefString(PREF_USER_NAME_MULTI_VIDEOS_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_USER_NAME_MULTI_VIDEOS_INPUT_VALUE, uiValue, getActivity());
                             break;
-                        case PREF_USER_NAME_VIDEO:
-                            setUserNameVideo(uiValue, getActivity());
-                            editText.setText(USER_NAME_VIDEO);
+                        case PREF_USER_NAME_VIDEO_SAVED:
+                            setPrefString(PREF_USER_NAME_VIDEO_SAVED, uiValue, getActivity());
+                            setPrefString(PREF_USER_NAME_VIDEO_INPUT_VALUE, uiValue, getActivity());
+                            break;
+                        case PREF_USER_NAME_COMMON_SAVED:
+                            setPrefString(PREF_USER_NAME_COMMON_SAVED, uiValue, getActivity());
+                            processSaveCommonValue(edtRoomNameCommon.getText().toString(), edtUserNameCommon.getText().toString());
                             break;
                     }
                 }

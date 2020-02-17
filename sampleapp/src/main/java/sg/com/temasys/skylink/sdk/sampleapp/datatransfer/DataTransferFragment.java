@@ -28,6 +28,8 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
@@ -310,7 +312,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
     @Override
     public void updateUIConnected(String roomId) {
         updateRoomInfo(roomId);
-        updateUILocalPeer(Config.USER_NAME_DATA);
+        updateUILocalPeer(Config.getPrefString(ConfigRoomFragment.PREF_USER_NAME_DATA_SAVED, Constants.USER_NAME_DATA_DEFAULT, context));
     }
 
     /**
@@ -387,7 +389,7 @@ public class DataTransferFragment extends CustomActionBar implements DataTransfe
 
     private void initControls() {
         // init setting value for room name in action bar
-        txtRoomName.setText(Config.ROOM_NAME_DATA);
+        txtRoomName.setText(Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_DATA_SAVED, Constants.ROOM_NAME_DATA_DEFAULT, context));
         // default sending data option
         txtDataPathInfo.setText("Data source path to send to all peers : ");
 

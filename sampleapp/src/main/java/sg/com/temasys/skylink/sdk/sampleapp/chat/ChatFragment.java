@@ -19,7 +19,9 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton;
 
@@ -70,7 +72,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("[SA][Chat][onCreate]", Config.ROOM_NAME_CHAT);
+        Log.e("[SA][Chat][onCreate]", Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_CHAT_SAVED, Constants.ROOM_NAME_CHAT_DEFAULT, context));
     }
 
     @Override
@@ -279,7 +281,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     @Override
     public void updateUIConnected(String roomId) {
         updateRoomInfo(roomId);
-        updateUILocalPeer(Config.USER_NAME_CHAT);
+        updateUILocalPeer(Config.getPrefString(ConfigRoomFragment.PREF_USER_NAME_CHAT_SAVED, Constants.USER_NAME_CHAT_DEFAULT, context));
     }
 
     /**
@@ -380,7 +382,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnRemotePeer7.setOnLongClickListener(this);
 
         // init setting value for room name in action bar
-        txtRoomName.setText(Config.ROOM_NAME_CHAT);
+        txtRoomName.setText(Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_CHAT_SAVED, Constants.ROOM_NAME_CHAT_DEFAULT, context));
 
         //Defining the ArrayAdapter to set items to ListView
         adapter = new ChatListAdapter(context, R.layout.list_item_remote, presenter.processGetChatCollection());

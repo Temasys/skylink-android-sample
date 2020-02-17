@@ -18,221 +18,279 @@
             android:paddingTop="@dimen/dp_10dp"
             >
 
+            <Switch
+                android:id="@+id/switch_use_common_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/dp_5dp"
+                android:layout_marginTop="@dimen/dp_10dp"
+                android:text="Use common settings"/>
+
+            <RelativeLayout
+                android:id="@+id/ll_separate_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/txtAudio"
+                    style="@style/SettingTextViewLabel"
+                    android:text="Audio Config"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_audio"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/txtAudio">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="Room name"/>
+
+                    <EditText
+                        android:id="@+id/edtRoomNameAudio"
+                        style="@style/SettingEdittext"
+                        android:text="AudioRoom"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_audio_user_name"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/ll_audio">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="User name"/>
+
+                    <EditText
+                        android:id="@+id/edtUserNameAudio"
+                        style="@style/SettingEdittext"
+                        android:text="AudioUser"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtVideo"
+                    style="@style/SettingTextViewLabel"
+                    android:layout_below="@id/ll_audio_user_name"
+                    android:text="Video Config"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_video"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/txtVideo">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="Room name"/>
+
+                    <EditText
+                        android:id="@+id/edtRoomNameVideo"
+                        style="@style/SettingEdittext"
+                        android:text="VideoRoom"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_video_user_name"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/ll_video">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="User name"/>
+
+                    <EditText
+                        android:id="@+id/edtUserNameVideo"
+                        style="@style/SettingEdittext"
+                        android:text="VideoUser"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtChat"
+                    style="@style/SettingTextViewLabel"
+                    android:layout_below="@id/ll_video_user_name"
+                    android:text="Chat Config"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_chat"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/txtChat">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="Room name"/>
+
+                    <EditText
+                        android:id="@+id/edtRoomNameChat"
+                        style="@style/SettingEdittext"
+                        android:text="VideoRoom"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_chat_user_name"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/ll_chat">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="User name"/>
+
+                    <EditText
+                        android:id="@+id/edtUserNameChat"
+                        style="@style/SettingEdittext"
+                        android:text="ChatUser"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtData"
+                    style="@style/SettingTextViewLabel"
+                    android:layout_below="@id/ll_chat_user_name"
+                    android:text="Data Transfer Config"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_data"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/txtData">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="Room name"/>
+
+                    <EditText
+                        android:id="@+id/edtRoomNameData"
+                        style="@style/SettingEdittext"
+                        android:text="DataRoom"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_data_user_name"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/ll_data">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="User name"/>
+
+                    <EditText
+                        android:id="@+id/edtUserNameData"
+                        style="@style/SettingEdittext"
+                        android:text="DataUser"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtFile"
+                    style="@style/SettingTextViewLabel"
+                    android:layout_below="@id/ll_data_user_name"
+                    android:text="File Transfer Config"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_file"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/txtFile">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="Room name"/>
+
+                    <EditText
+                        android:id="@+id/edtRoomNameFile"
+                        style="@style/SettingEdittext"
+                        android:text="FileRoom"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_file_user_name"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/ll_file">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="User name"/>
+
+                    <EditText
+                        android:id="@+id/edtUserNameFile"
+                        style="@style/SettingEdittext"
+                        android:text="FileUser"/>
+                </LinearLayout>
+
+
+                <TextView
+                    android:id="@+id/txtMultiVideos"
+                    style="@style/SettingTextViewLabel"
+                    android:layout_below="@id/ll_file_user_name"
+                    android:text="Multi-Videos Config"/>
+
+                <LinearLayout
+                    android:id="@+id/ll_MultiVideos"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/txtMultiVideos">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="Room name"/>
+
+                    <EditText
+                        android:id="@+id/edtRoomNameMultiVideos"
+                        style="@style/SettingEdittext"
+                        android:text="MultiVideosRoom"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_MultiVideos_user_name"
+                    style="@style/SettingLayout"
+                    android:layout_below="@id/ll_MultiVideos">
+
+                    <TextView
+                        style="@style/SettingTextViewItem"
+                        android:text="User name"/>
+
+                    <EditText
+                        android:id="@+id/edtUserNameMultiVideos"
+                        style="@style/SettingEdittext"
+                        android:text="MultiVideosUser"/>
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/ll_common_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/ll_separate_settings">
+
             <TextView
-                android:id="@+id/txtAudio"
+                android:id="@+id/txtUseCommon"
                 style="@style/SettingTextViewLabel"
-                android:text="Audio Config"/>
+                android:text="Use common setting for all demos"/>
 
             <LinearLayout
-                android:id="@+id/ll_audio"
+                android:id="@+id/ll_common_room_name"
                 style="@style/SettingLayout"
-                android:layout_below="@id/txtAudio">
+                android:layout_below="@id/txtUseCommon">
 
                 <TextView
                     style="@style/SettingTextViewItem"
                     android:text="Room name"/>
 
                 <EditText
-                    android:id="@+id/edtRoomNameAudio"
+                    android:id="@+id/edtRoomNameCommon"
                     style="@style/SettingEdittext"
-                    android:text="AudioRoom"/>
+                    android:text="demo"/>
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/ll_audio_user_name"
+                android:id="@+id/ll_common_user_name"
                 style="@style/SettingLayout"
-                android:layout_below="@id/ll_audio">
+                android:layout_below="@id/ll_common_room_name">
 
                 <TextView
                     style="@style/SettingTextViewItem"
                     android:text="User name"/>
 
                 <EditText
-                    android:id="@+id/edtUserNameAudio"
+                    android:id="@+id/edtUserNameCommon"
                     style="@style/SettingEdittext"
-                    android:text="AudioUser"/>
+                    android:text="demo"/>
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtVideo"
-                style="@style/SettingTextViewLabel"
-                android:layout_below="@id/ll_audio_user_name"
-                android:text="Video Config"/>
-
-            <LinearLayout
-                android:id="@+id/ll_video"
-                style="@style/SettingLayout"
-                android:layout_below="@id/txtVideo">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="Room name"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameVideo"
-                    style="@style/SettingEdittext"
-                    android:text="VideoRoom"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_video_user_name"
-                style="@style/SettingLayout"
-                android:layout_below="@id/ll_video">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="User name"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameVideo"
-                    style="@style/SettingEdittext"
-                    android:text="VideoUser"/>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtChat"
-                style="@style/SettingTextViewLabel"
-                android:layout_below="@id/ll_video_user_name"
-                android:text="Chat Config"/>
-
-            <LinearLayout
-                android:id="@+id/ll_chat"
-                style="@style/SettingLayout"
-                android:layout_below="@id/txtChat">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="Room name"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameChat"
-                    style="@style/SettingEdittext"
-                    android:text="VideoRoom"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_chat_user_name"
-                style="@style/SettingLayout"
-                android:layout_below="@id/ll_chat">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="User name"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameChat"
-                    style="@style/SettingEdittext"
-                    android:text="ChatUser"/>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtData"
-                style="@style/SettingTextViewLabel"
-                android:layout_below="@id/ll_chat_user_name"
-                android:text="Data Transfer Config"/>
-
-            <LinearLayout
-                android:id="@+id/ll_data"
-                style="@style/SettingLayout"
-                android:layout_below="@id/txtData">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="Room name"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameData"
-                    style="@style/SettingEdittext"
-                    android:text="DataRoom"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_data_user_name"
-                style="@style/SettingLayout"
-                android:layout_below="@id/ll_data">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="User name"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameData"
-                    style="@style/SettingEdittext"
-                    android:text="DataUser"/>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtFile"
-                style="@style/SettingTextViewLabel"
-                android:layout_below="@id/ll_data_user_name"
-                android:text="File Transfer Config"/>
-
-            <LinearLayout
-                android:id="@+id/ll_file"
-                style="@style/SettingLayout"
-                android:layout_below="@id/txtFile">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="Room name"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameFile"
-                    style="@style/SettingEdittext"
-                    android:text="FileRoom"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_file_user_name"
-                style="@style/SettingLayout"
-                android:layout_below="@id/ll_file">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="User name"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameFile"
-                    style="@style/SettingEdittext"
-                    android:text="FileUser"/>
-            </LinearLayout>
-
-
-            <TextView
-                android:id="@+id/txtMultiVideos"
-                style="@style/SettingTextViewLabel"
-                android:layout_below="@id/ll_file_user_name"
-                android:text="Multi-Videos Config"/>
-
-            <LinearLayout
-                android:id="@+id/ll_MultiVideos"
-                style="@style/SettingLayout"
-                android:layout_below="@id/txtMultiVideos">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="Room name"/>
-
-                <EditText
-                    android:id="@+id/edtRoomNameMultiVideos"
-                    style="@style/SettingEdittext"
-                    android:text="MultiVideosRoom"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_MultiVideos_user_name"
-                style="@style/SettingLayout"
-                android:layout_below="@id/ll_MultiVideos">
-
-                <TextView
-                    style="@style/SettingTextViewItem"
-                    android:text="User name"/>
-
-                <EditText
-                    android:id="@+id/edtUserNameMultiVideos"
-                    style="@style/SettingEdittext"
-                    android:text="MultiVideosUser"/>
-            </LinearLayout>
+            </RelativeLayout>
 
         </RelativeLayout>
 

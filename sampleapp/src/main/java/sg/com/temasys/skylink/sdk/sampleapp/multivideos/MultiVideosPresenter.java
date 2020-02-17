@@ -19,6 +19,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.service.MultiVideosService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.PermRequesterInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils;
@@ -436,7 +437,7 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
      */
     private void processConnectToRoom() {
         //get roomName from setting
-        String log = "Entering multi videos room : \"" + Config.ROOM_NAME_MULTI_VIDEOS + "\".";
+        String log = "Entering multi videos room : \"" + Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, Constants.USER_NAME_MULTI_VIDEOS_DEFAULT, context) + "\".";
         toastLog(TAG, context, log);
 
         //connect to SkylinkSDK

@@ -30,6 +30,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton;
@@ -289,7 +290,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         updateRoomInfo(roomId);
 
         // update the local peer avatar with the user name configured in default setting
-        updateUILocalPeer(Config.USER_NAME_VIDEO);
+        updateUILocalPeer(Config.getPrefString(ConfigRoomFragment.PREF_USER_NAME_VIDEO_SAVED, Constants.USER_NAME_VIDEO_DEFAULT, context));
 
         // Change the connect button UI to disconnect button
         btnConnectDisconnect.setImageResource(R.drawable.ic_disconnect_white_25dp);
@@ -756,7 +757,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
         // init setting value for room name and room id in action bar
         // Update the UI when connecting to room: change the room_id
         updateRoomInfo(getResources().getString(R.string.guide_room_id));
-        txtRoomName.setText(Config.ROOM_NAME_VIDEO);
+        txtRoomName.setText(Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_VIDEO_SAVED, Constants.ROOM_NAME_VIDEO_DEFAULT, context));
         btnVideoRes.setDirection(CustomTriangleButton.ButtonDirection.TOP_RIGHT);
 
         // Set init audio/video state

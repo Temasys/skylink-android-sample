@@ -6,31 +6,6 @@ import android.content.SharedPreferences;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_MULTI_VIDEOS;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_ROOM_NAME_VIDEO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_AUDIO;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_CHAT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_DATA;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_FILE;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_MULTI_VIDEOS;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment.PREF_USER_NAME_VIDEO;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_AUDIO_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_CHAT_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_DATA_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_MULTI_VIDEOS_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.ROOM_NAME_VIDEO_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_AUDIO_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_CHAT_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_DATA_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_FILE_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_MULTI_VIDEOS_DEFAULT;
-import static sg.com.temasys.skylink.sdk.sampleapp.utils.Constants.USER_NAME_VIDEO_DEFAULT;
-
 /**
  * Created by phyo.pwint on 27/7/16.
  */
@@ -51,22 +26,6 @@ public class Config {
     private static String APP_KEY_DESCRIPTION = "Sample App Key description.";
     // Is Skylink Media Relay (SMR) enabled for this App key.
     private static boolean IS_APP_KEY_SMR = false;
-
-    // Config values for room names.
-    public static String ROOM_NAME_AUDIO = ROOM_NAME_AUDIO_DEFAULT;
-    public static String ROOM_NAME_CHAT = ROOM_NAME_CHAT_DEFAULT;
-    public static String ROOM_NAME_DATA = ROOM_NAME_DATA_DEFAULT;
-    public static String ROOM_NAME_FILE = ROOM_NAME_FILE_DEFAULT;
-    public static String ROOM_NAME_MULTI_VIDEOS = ROOM_NAME_MULTI_VIDEOS_DEFAULT;
-    public static String ROOM_NAME_VIDEO = ROOM_NAME_VIDEO_DEFAULT;
-
-    // Config values for user names.
-    public static String USER_NAME_AUDIO = USER_NAME_AUDIO_DEFAULT;
-    public static String USER_NAME_CHAT = USER_NAME_CHAT_DEFAULT;
-    public static String USER_NAME_DATA = USER_NAME_DATA_DEFAULT;
-    public static String USER_NAME_FILE = USER_NAME_FILE_DEFAULT;
-    public static String USER_NAME_MULTI_VIDEOS = USER_NAME_MULTI_VIDEOS_DEFAULT;
-    public static String USER_NAME_VIDEO = USER_NAME_VIDEO_DEFAULT;
 
     // Constants for saving default settings of audio and video
     // Is speaker mode the default for audio demo.
@@ -228,24 +187,6 @@ public class Config {
         setAppKeySmr(appKeySmr, activity);
     }
 
-    public static void loadRoomUserNames(Activity activity) {
-        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        // Populate room and user names with values from Preferences if they exist.
-        ROOM_NAME_AUDIO = sharedPref.getString(PREF_ROOM_NAME_AUDIO, ROOM_NAME_AUDIO);
-        ROOM_NAME_VIDEO = sharedPref.getString(PREF_ROOM_NAME_VIDEO, ROOM_NAME_VIDEO);
-        ROOM_NAME_CHAT = sharedPref.getString(PREF_ROOM_NAME_CHAT, ROOM_NAME_CHAT);
-        ROOM_NAME_DATA = sharedPref.getString(PREF_ROOM_NAME_DATA, ROOM_NAME_DATA);
-        ROOM_NAME_FILE = sharedPref.getString(PREF_ROOM_NAME_FILE, ROOM_NAME_FILE);
-        ROOM_NAME_MULTI_VIDEOS = sharedPref.getString(PREF_ROOM_NAME_MULTI_VIDEOS, ROOM_NAME_MULTI_VIDEOS);
-
-        USER_NAME_AUDIO = sharedPref.getString(PREF_USER_NAME_AUDIO, USER_NAME_AUDIO);
-        USER_NAME_VIDEO = sharedPref.getString(PREF_USER_NAME_VIDEO, USER_NAME_VIDEO);
-        USER_NAME_CHAT = sharedPref.getString(PREF_USER_NAME_CHAT, USER_NAME_CHAT);
-        USER_NAME_DATA = sharedPref.getString(PREF_USER_NAME_DATA, USER_NAME_DATA);
-        USER_NAME_FILE = sharedPref.getString(PREF_USER_NAME_FILE, USER_NAME_FILE);
-        USER_NAME_MULTI_VIDEOS = sharedPref.getString(PREF_USER_NAME_MULTI_VIDEOS, USER_NAME_MULTI_VIDEOS);
-    }
-
     /**
      * Get Preferences for specified activity and set boolean value for specific key.
      *
@@ -265,13 +206,23 @@ public class Config {
      *
      * @param key
      * @param value
-     * @param activity
+     * @param context
      */
-    public static void setPrefString(String key, String value, Activity activity) {
-        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+    public static void setPrefString(String key, String value, Context context) {
+        final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(key, value);
         editor.commit();
+    }
+
+    public static String getPrefString(String key, String defaultValue, Context context) {
+        final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return sharedPref.getString(key, defaultValue);
+    }
+
+    public static Boolean getPrefBoolean(String key, boolean defaultValue, Context context) {
+        final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(key, defaultValue);
     }
 
     //----------------------------------------------------------------------------------------------
@@ -331,234 +282,6 @@ public class Config {
         if (IS_APP_KEY_SMR != appKeySmr) {
             IS_APP_KEY_SMR = appKeySmr;
             setPrefBoolean(PREF_SELECTED_APP_KEY_SMR, appKeySmr, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setUserNameAudio(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_AUDIO_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_AUDIO)) {
-            USER_NAME_AUDIO = newValue;
-            setPrefString(PREF_USER_NAME_AUDIO, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setUserNameChat(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_CHAT_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_CHAT)) {
-            USER_NAME_CHAT = newValue;
-            setPrefString(PREF_USER_NAME_CHAT, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setUserNameData(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_DATA_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_DATA)) {
-            USER_NAME_DATA = newValue;
-            setPrefString(PREF_USER_NAME_DATA, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setUserNameFile(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_FILE_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_FILE)) {
-            USER_NAME_FILE = newValue;
-            setPrefString(PREF_USER_NAME_FILE, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setUserNameMultiVideos(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_MULTI_VIDEOS_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_MULTI_VIDEOS)) {
-            USER_NAME_MULTI_VIDEOS = newValue;
-            setPrefString(PREF_USER_NAME_MULTI_VIDEOS, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setUserNameVideo(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = USER_NAME_VIDEO_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(USER_NAME_VIDEO)) {
-            USER_NAME_VIDEO = newValue;
-            setPrefString(PREF_USER_NAME_VIDEO, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameAudio(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_AUDIO_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_AUDIO)) {
-            ROOM_NAME_AUDIO = newValue;
-            setPrefString(PREF_ROOM_NAME_AUDIO, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameChat(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_CHAT_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_CHAT)) {
-            ROOM_NAME_CHAT = newValue;
-            setPrefString(PREF_ROOM_NAME_CHAT, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameData(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_DATA_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_DATA)) {
-            ROOM_NAME_DATA = newValue;
-            setPrefString(PREF_ROOM_NAME_DATA, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameFile(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_FILE_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_FILE)) {
-            ROOM_NAME_FILE = newValue;
-            setPrefString(PREF_ROOM_NAME_FILE, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameMultiVideos(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_MULTI_VIDEOS_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_MULTI_VIDEOS)) {
-            ROOM_NAME_MULTI_VIDEOS = newValue;
-            setPrefString(PREF_ROOM_NAME_MULTI_VIDEOS, newValue, activity);
-        }
-    }
-
-    /**
-     * Set Config value.
-     * If value is null or "", set to Default value.
-     * Write to Preferences only if new value differs from current value.
-     *
-     * @param newValue
-     * @param activity
-     */
-    public static void setRoomNameVideo(String newValue, Activity activity) {
-        if (newValue == null || "".equals(newValue)) {
-            newValue = ROOM_NAME_VIDEO_DEFAULT;
-        }
-        // Write to Config and Preferences only if value changed.
-        if (!newValue.equals(ROOM_NAME_VIDEO)) {
-            ROOM_NAME_VIDEO = newValue;
-            setPrefString(PREF_ROOM_NAME_VIDEO, newValue, activity);
         }
     }
 }

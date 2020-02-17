@@ -29,6 +29,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -315,7 +317,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
     public void updateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         // update the local peer button in the action bar
-        updateUILocalPeer(Config.USER_NAME_MULTI_VIDEOS);
+        updateUILocalPeer(Config.getPrefString(ConfigRoomFragment.PREF_USER_NAME_MULTI_VIDEOS_SAVED, Constants.USER_NAME_MULTI_VIDEOS_DEFAULT, context));
 
         // Remove any existing Peer View at index.
         // This may sometimes be the case, for e.g. in screen sharing.
@@ -502,7 +504,7 @@ public class MultiVideosFragment extends CustomActionBar implements MultiVideosC
      */
     private void initControls() {
         // init setting value for room name in action bar
-        txtRoomName.setText(Config.ROOM_NAME_MULTI_VIDEOS);
+        txtRoomName.setText(Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, Constants.ROOM_NAME_MULTI_VIDEOS_DEFAULT, context));
 
         // set onClick event for buttons in layout
         btnBack.setOnClickListener(this);

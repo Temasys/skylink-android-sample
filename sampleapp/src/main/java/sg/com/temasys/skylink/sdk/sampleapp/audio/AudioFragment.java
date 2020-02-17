@@ -22,6 +22,8 @@ import java.util.List;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
 
 /**
@@ -188,7 +190,7 @@ public class AudioFragment extends CustomActionBar implements AudioContract.View
         updateRoomInfo(roomId);
 
         // update the local peer button in the action bar
-        updateUILocalPeer(Config.USER_NAME_AUDIO);
+        updateUILocalPeer(Config.getPrefString(ConfigRoomFragment.PREF_USER_NAME_AUDIO_SAVED, Constants.USER_NAME_AUDIO_DEFAULT, context));
 
         // update the image to show local peer in the room
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -296,7 +298,7 @@ public class AudioFragment extends CustomActionBar implements AudioContract.View
      */
     private void initControls() {
         // init setting value for room name in action bar
-        txtRoomName.setText(Config.ROOM_NAME_AUDIO);
+        txtRoomName.setText(Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_AUDIO_SAVED, Constants.ROOM_NAME_AUDIO_DEFAULT, context));
 
         // set onClick event for buttons in layout
         btnBack.setOnClickListener(this);

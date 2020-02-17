@@ -60,6 +60,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.VideoResolution;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
+import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ALLOW_ICE_RESTART_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_AND_VIDEO;
@@ -110,6 +111,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_STURN_SERV
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_TURN_SERVER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_VP8_ENCODER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.getPrefString;
 
 public class Utils {
 
@@ -656,17 +658,17 @@ public class Utils {
     public static String getRoomNameByType(Constants.CONFIG_TYPE typeCall) {
         switch (typeCall) {
             case AUDIO:
-                return Config.ROOM_NAME_AUDIO;
+                return getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_AUDIO_SAVED, Constants.ROOM_NAME_AUDIO_DEFAULT, context);
             case CHAT:
-                return Config.ROOM_NAME_CHAT;
+                return getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_CHAT_SAVED, Constants.ROOM_NAME_CHAT_DEFAULT, context);
             case DATA:
-                return Config.ROOM_NAME_DATA;
+                return getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_DATA_SAVED, Constants.ROOM_NAME_DATA_DEFAULT, context);
             case FILE:
-                return Config.ROOM_NAME_FILE;
+                return getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_FILE_SAVED, Constants.ROOM_NAME_FILE_DEFAULT, context);
             case MULTI_VIDEOS:
-                return Config.ROOM_NAME_MULTI_VIDEOS;
+                return getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_MULTI_VIDEOS_SAVED, Constants.ROOM_NAME_MULTI_VIDEOS_DEFAULT, context);
             case VIDEO:
-                return Config.ROOM_NAME_VIDEO;
+                return getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_VIDEO_SAVED, Constants.ROOM_NAME_VIDEO_DEFAULT, context);
         }
 
         return null;
@@ -675,17 +677,17 @@ public class Utils {
     public static String getUserNameByType(Constants.CONFIG_TYPE typeCall) {
         switch (typeCall) {
             case AUDIO:
-                return Config.USER_NAME_AUDIO;
+                return getPrefString(ConfigRoomFragment.PREF_USER_NAME_AUDIO_SAVED, Constants.USER_NAME_AUDIO_DEFAULT, context);
             case CHAT:
-                return Config.USER_NAME_CHAT;
+                return getPrefString(ConfigRoomFragment.PREF_USER_NAME_CHAT_SAVED, Constants.USER_NAME_CHAT_DEFAULT, context);
             case DATA:
-                return Config.USER_NAME_DATA;
+                return getPrefString(ConfigRoomFragment.PREF_USER_NAME_DATA_SAVED, Constants.USER_NAME_DATA_DEFAULT, context);
             case FILE:
-                return Config.USER_NAME_FILE;
+                return getPrefString(ConfigRoomFragment.PREF_USER_NAME_FILE_SAVED, Constants.USER_NAME_FILE_DEFAULT, context);
             case MULTI_VIDEOS:
-                return Config.USER_NAME_MULTI_VIDEOS;
+                return getPrefString(ConfigRoomFragment.PREF_USER_NAME_MULTI_VIDEOS_SAVED, Constants.USER_NAME_MULTI_VIDEOS_DEFAULT, context);
             case VIDEO:
-                return Config.USER_NAME_VIDEO;
+                return getPrefString(ConfigRoomFragment.PREF_USER_NAME_VIDEO_SAVED, Constants.USER_NAME_VIDEO_DEFAULT, context);
         }
 
         return null;

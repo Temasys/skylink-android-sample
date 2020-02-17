@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Load selected App key and Room User setting details
         Config.loadSelectedAppKey(this);
-        Config.loadRoomUserNames(this);
 
         //init utils
         Utils utils = new Utils(this);
