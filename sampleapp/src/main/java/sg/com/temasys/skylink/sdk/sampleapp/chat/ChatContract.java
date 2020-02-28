@@ -40,6 +40,18 @@ public interface ChatContract {
          * Update UI details when we need to update the messages list when new message is sent/received
          */
         void updateUIChatCollection(boolean isLocalMessaege);
+
+        void updateUIEncryptionKeys(List<String> encryptionKeyList);
+
+        void getStoredServerMessages();
+
+        void initUIEncryptionSelectedKey(String storedSelectedEncryptionKey, String storedSelectedEncryptionValue, int pos);
+
+        void initUIStoreMessageSetting(boolean storedMessageSetting);
+
+        void initUIEncryptionKeys(List<String> encryptionList);
+
+        void initMessageFormats(List<String> messageFormatList);
     }
 
     interface Presenter {
@@ -82,9 +94,19 @@ public interface ChatContract {
         /**
          * process sending message
          */
-        void processSendMessage(String message, String encryptedSecret);
+        void processSendMessage(String message);
 
         void processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT formatMsg);
+
+        void processAddEncryption(String enryptionKey, String encryptionValue);
+
+        String processGetEncryptionValueFromKey(String encryptionKey);
+
+        void processGetStoredSeverMessages();
+
+        void processStoreMessageSet(boolean isChecked);
+
+        void processSelectSecretKey(String secretKey);
     }
 
     interface Service extends BaseService<Presenter> {

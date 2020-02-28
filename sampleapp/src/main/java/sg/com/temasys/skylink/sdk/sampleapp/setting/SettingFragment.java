@@ -40,8 +40,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
 
     private TextView txtRoomSettingName, txtKeySettingName;
     private RadioGroup rdGroupAudioOutput, rdGroupVideoOutput, rdGroupVideoDevice, rdGroupCameraResolution,
-            rdGroupScreenResolution, rdGroupAudioVideoSend, rdGroupAudioVideoRec, rdGroupAudioCodec,
-            rdGroupWebSocketTransport, rdGroupNetworkTransport, rdGroupRoomSize;
+            rdGroupScreenResolution;
     private RadioButton audioHeadset, audioSpeaker, videoHeadset, videoSpeaker, cameraNone, cameraCustom, cameraFront,
             cameraBack, screenDevice, rdVideoResVGA, rdVideoResHDR, rdVideoResFHD, rdVideoResLarge,
             rdVideoResMedium, rdVideoResSmall, rdAudioVideoSend, rdAudioSendOnly, rdVideoSendOnly,
@@ -55,8 +54,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
             switchUseTurnServer, switchUseSturnServer, switchUseHostServer, switchAllowIceRestart, switchUseMultiTracksUP;
     private EditText editVideoResStableNo, editVideoResWaitNo, editMaxAudioBitrate, editMaxVideoBitrate,
             editMaxDataBitrate, editMaxAudioRoomPeer, editMaxVideoRoomPeer, editMaxNoneMediaRoomPeer,
-            editReconnectAttempts, editReconnectDelay, editEncryptedSecret;
-
+            editReconnectAttempts, editReconnectDelay, editGetStoredMessageTimeout;
 
     private SettingContract.Presenter mPresenter;
 
@@ -511,12 +509,6 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     @Override
-    public void onEncryptedSecretFilled(String defaultEncryptedSecret) {
-        if (defaultEncryptedSecret != null)
-            editEncryptedSecret.setText(defaultEncryptedSecret);
-    }
-
-    @Override
     public void onVideoHwAccSelected(boolean useHWAcc) {
         switchUseHWAcceleration.setChecked(useHWAcc);
     }
@@ -644,6 +636,11 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     @Override
     public void onNoOfReconnectDelayFilled(int noOfReconnectDelay) {
         editReconnectDelay.setText(noOfReconnectDelay + "");
+    }
+
+    @Override
+    public void onNoOfGetStoredMessageTimeout(int timeout) {
+        editGetStoredMessageTimeout.setText(timeout + "");
     }
 
     private void processSettingRoom() {
@@ -809,7 +806,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         editMaxNoneMediaRoomPeer = rootView.findViewById(R.id.editMaxPeersOfNoAudioNoVideo);
         editReconnectAttempts = rootView.findViewById(R.id.editReconnectAttempt);
         editReconnectDelay = rootView.findViewById(R.id.editReconnectDelay);
-        editEncryptedSecret = rootView.findViewById(R.id.edit_encrypted_secret);
+        editGetStoredMessageTimeout = rootView.findViewById(R.id.editStoredMessageTimeout);
     }
 
     private void setActionBar() {
@@ -912,7 +909,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         editMaxNoneMediaRoomPeer.setOnFocusChangeListener(this);
         editReconnectAttempts.setOnFocusChangeListener(this);
         editReconnectDelay.setOnFocusChangeListener(this);
-        editEncryptedSecret.setOnFocusChangeListener(this);
+        editGetStoredMessageTimeout.setOnFocusChangeListener(this);
     }
 
     /**
@@ -991,9 +988,6 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
         switch (v.getId()) {
-            case R.id.edit_encrypted_secret:
-                mPresenter.onProcessEncrytedSecretValue(editEncryptedSecret.getText().toString());
-                break;
             case R.id.editNumCheckStable:
                 mPresenter.onProcessNumCheckStableValue(editVideoResStableNo.getText().toString());
                 break;
@@ -1024,6 +1018,8 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
             case R.id.editReconnectDelay:
                 mPresenter.onProcessReconnectDelayValue(editReconnectDelay.getText().toString());
                 break;
+            case R.id.editStoredMessageTimeout:
+                mPresenter.onProcessGetStoredMessageTimeoutValue(editGetStoredMessageTimeout.getText().toString());
         }
     }
 }

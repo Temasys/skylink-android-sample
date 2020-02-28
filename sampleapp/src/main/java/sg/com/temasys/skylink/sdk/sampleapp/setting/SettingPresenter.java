@@ -15,15 +15,16 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_ONLY;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_CODEC_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_VIDEO_SEND_CONFIG;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_ENCRYPTED_SECRET_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_NETWORK_TRANSPORT_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_ROOM_SIZE_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SCREEN_RESOLUTION;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SOCKET_TRANSPORT_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_AUDIO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_STORED_MESSAGE_TIMEOUT_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.GET_STORED_MESSAGE_TIMEOUT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_DATA_TRANSFER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_FILE_TRANSFER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_PEER_MESSAGING_CONFIG;
@@ -210,9 +211,6 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
         boolean hasMessaging = Utils.getDefaultMessageConfig();
         mSettingView.onMessagingSelected(hasMessaging);
 
-        String defaultEncryptedSecret = Utils.getDefaultEncryptedSecretMessageConfig();
-        mSettingView.onEncryptedSecretFilled(defaultEncryptedSecret);
-
         boolean useHWAcc = Utils.getDefaultVideoHwAccConfig();
         mSettingView.onVideoHwAccSelected(useHWAcc);
 
@@ -290,6 +288,9 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
 
         int noOfReconnectDelay = Utils.getDefaultNoOfReconnectDelayConfig();
         mSettingView.onNoOfReconnectDelayFilled(noOfReconnectDelay);
+
+        int noOfStoredMsgTimeout = Utils.getDefaultNoOfStoredMsgTimeoutConfig();
+        mSettingView.onNoOfGetStoredMessageTimeout(noOfStoredMsgTimeout);
     }
 
     @Override
@@ -481,11 +482,6 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
     }
 
     @Override
-    public void onProcessEncrytedSecretValue(String value) {
-        Config.setPrefString(DEFAULT_ENCRYPTED_SECRET_CONFIG, value, (SettingActivity) mContext);
-    }
-
-    @Override
     public void onProcessNumCheckStableValue(String value) {
         Config.setPrefString(NO_OF_REPORT_VIDEO_RES_UNTILL_STABLE_CONFIG, value, (SettingActivity) mContext);
     }
@@ -536,6 +532,11 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
     }
 
     @Override
+    public void onProcessGetStoredMessageTimeoutValue(String value) {
+        Config.setPrefString(GET_STORED_MESSAGE_TIMEOUT, value, (SettingActivity) mContext);
+    }
+
+    @Override
     public void onProcessResetAllValues() {
         Config.setPrefBoolean(DEFAULT_SPEAKER_AUDIO, true, (SettingActivity) mContext);
         Config.setPrefBoolean(DEFAULT_SPEAKER_VIDEO, true, (SettingActivity) mContext);
@@ -547,7 +548,7 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
         Config.setPrefBoolean(HAS_PEER_MESSAGING_CONFIG, true, (SettingActivity) mContext);
         Config.setPrefBoolean(HAS_FILE_TRANSFER_CONFIG, true, (SettingActivity) mContext);
         Config.setPrefBoolean(USE_AUDIO_STEREO_CONFIG, true, (SettingActivity) mContext);
-        Config.setPrefString(DEFAULT_ENCRYPTED_SECRET_CONFIG, "", (SettingActivity) mContext);
+        Config.setPrefString(DEFAULT_STORED_MESSAGE_TIMEOUT_CONFIG, "30", (SettingActivity) mContext);
         Config.setPrefBoolean(USE_HW_ACC_CONFIG, true, (SettingActivity) mContext);
         Config.setPrefBoolean(USE_H246_PROFILE_CONFIG, true, (SettingActivity) mContext);
         Config.setPrefBoolean(USE_VP8_ENCODER_CONFIG, true, (SettingActivity) mContext);

@@ -2,8 +2,13 @@ package sg.com.temasys.skylink.sdk.sampleapp.service;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
+
+import org.json.JSONArray;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
@@ -48,9 +53,12 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      */
     public void sendServerMessage(String remotePeerId, Object message) {
         if (skylinkConnection != null) {
+
             skylinkConnection.sendServerMessage(message, remotePeerId, new SkylinkCallback() {
                 @Override
                 public void onError(SkylinkError error, HashMap<String, Object> details) {
+                    presenter.processMessageSendFailed();
+
                     String contextDescription = (String) details.get(SkylinkEvent.CONTEXT_DESCRIPTION);
                     Log.e("SkylinkCallback", contextDescription);
                     toastLog(TAG, context, "\"Unable to sendServerMessage as " + contextDescription);
@@ -113,6 +121,9 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);
 
+        // Set timeout for getting stored message
+        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.GET_STORED_MESSAGE, Utils.getDefaultNoOfStoredMsgTimeoutConfig() * 1000);
+
         // Set some common configs.
         Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
@@ -129,9 +140,45 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         clearInstance();
     }
 
-    public void setEncryptedSecret(String value){
-        // set the encryption key for server message
-//        if (skylinkConnection != null)
-//            skylinkConnection.setEncryptSecret(value);
+    public void setSelectedEncryptedSecret(String secretId) {
+        if (skylinkConnection != null)
+            skylinkConnection.setSelectedSecretId(secretId);
+    }
+
+    public void getStoredMessages() {
+
+        final JSONArray[] messages = {new JSONArray()};
+
+        if (skylinkConnection != null) {
+            skylinkConnection.getStoredMessages(new SkylinkCallback.StoredMessages() {
+                @Override
+                public void onObtainStoredMessages(JSONArray storedMessages, Map<SkylinkError, JSONArray> errors) {
+                    if (storedMessages != null) {
+                        messages[0] = storedMessages;
+                        Log.d(TAG, "result returned from stored msg history: " + storedMessages.toString());
+
+                        presenter.processStoredMessagesResult(storedMessages);
+                    }
+                    if (errors != null && errors.size() > 0) {
+                        Log.e(TAG, "errors from stored msg history: " + errors.toString());
+                        Toast.makeText(context, "There are errors on stored messages! Please check log!", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+    }
+
+    public void setStoreMessage(boolean toPersist) {
+        skylinkConnection.setMessagePersist(toPersist);
+    }
+
+    public void setEncryptedMap(List<String> encryptionKeys, List<String> encryptionValues) {
+        Map<String, String> encryptionMap = new HashMap<>();
+
+        for (int i = 0; i < encryptionKeys.size(); i++) {
+            encryptionMap.put(encryptionKeys.get(i), encryptionValues.get(i));
+        }
+
+        skylinkConnection.setEncryptSecretsMap(encryptionMap);
     }
 }

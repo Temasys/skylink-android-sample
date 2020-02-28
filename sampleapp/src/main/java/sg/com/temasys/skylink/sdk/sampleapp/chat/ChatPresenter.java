@@ -2,6 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.chat;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +31,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
     private final String TAG = ChatPresenter.class.getName();
 
+    Context context;
+
     private ChatContract.View chatView;
 
     private ChatService chatService;
@@ -45,9 +48,15 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     private MESSAGE_TYPE messageType = MESSAGE_TYPE.TYPE_SERVER;
     private MESSAGE_FORMAT messageFormat = MESSAGE_FORMAT.FORMAT_STRING;
 
-    private static final String PEER_USERNAME = "senderId";
+    private static final String PEER_USER_ID = "senderId";
+    private static final String PEER_USERNAME = "senderName";
     private static final String MESSAGE_CONTENT = "data";
     private static final String TIMESTAMP = "timeStamp";
+    //    private Map<String, String> encryptionMap = new HashMap<String, String>();
+    private List<String> encryptionKeys = null;
+    private List<String> encryptionValues = null;
+
+    private boolean sentResult = true;
 
     public enum MESSAGE_TYPE {
         TYPE_SERVER,
@@ -61,6 +70,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     }
 
     public ChatPresenter(Context context) {
+        this.context = context;
         chatService = new ChatService(context);
         this.chatService.setPresenter(this);
     }
@@ -123,13 +133,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * The acceptable types are 'java.lang.String', 'org.json.JSONObject', 'org.json.JSONArray'.
      */
     @Override
-    public void processSendMessage(String message, String encryptedSecret) {
-        // Need to set the encryption secret before sending the message
-        if (encryptedSecret != null && encryptedSecret.length() > 0) {
-            chatService.setEncryptedSecret(encryptedSecret);
-        } else {
-            chatService.setEncryptedSecret(null);
-        }
+    public void processSendMessage(String message) {
+        sentResult = true;
 
         switch (this.messageFormat) {
             case FORMAT_STRING:
@@ -147,6 +152,138 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void processSelectMessageFormat(MESSAGE_FORMAT formatMsg) {
         this.messageFormat = formatMsg;
+    }
+
+    @Override
+    public void processAddEncryption(String enryptionKey, String encryptionValue) {
+        // need to check existing encryptionValue in the map
+        // in order to save to share pref
+        for (String value : encryptionKeys) {
+            if (value.equals(enryptionKey)) {
+                Toast.makeText(context, "Encryption key is existing!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        for (String value : encryptionValues) {
+            if (value.equals(encryptionValue)) {
+                Toast.makeText(context, "Encryption value is existing!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        this.encryptionKeys.add(enryptionKey);
+        this.encryptionValues.add(encryptionValue);
+
+        chatService.setEncryptedMap(encryptionKeys, encryptionValues);
+
+        // no save as not handle the order of key-value
+        // save the encryption key-value to share pref
+        Utils.saveEncryptionMap(context, encryptionKeys, encryptionValues);
+
+        chatView.updateUIEncryptionKeys(encryptionKeys);
+    }
+
+    private List<String> initMessageFormatList() {
+        List<String> list = new ArrayList<String>();
+        list.add("String");
+        list.add("JSONObject");
+        list.add("JSONArray");
+
+        return list;
+    }
+
+    @Override
+    public String processGetEncryptionValueFromKey(String encryptionKey) {
+
+        int pos = Utils.getKeyPosition(encryptionKey, encryptionKeys);
+
+        return encryptionValues.get(pos);
+    }
+
+    @Override
+    public void processGetStoredSeverMessages() {
+        chatService.getStoredMessages();
+    }
+
+    @Override
+    public void processStoreMessageSet(boolean isChecked) {
+        chatService.setStoreMessage(isChecked);
+
+        Utils.saveStoreMessageSet(context, isChecked);
+    }
+
+    @Override
+    public void processSelectSecretKey(String secretKey) {
+        chatService.setSelectedEncryptedSecret(secretKey);
+
+        Utils.saveSelectedEncrytionKey(context, secretKey);
+    }
+
+    @Override
+    public void processStoredMessagesResult(JSONArray messages) {
+        // remove the UI for getting message history in the dataset
+        chatMessageCollection.remove(1);
+        chatView.updateUIChatCollection(false);
+
+        if (messages == null || messages.length() == 0) {
+            return;
+        }
+
+        Object message;
+
+        // process stored messages
+        for (int i = 0; i < messages.length(); i++) {
+            String userName, messageContent;
+            String timeStamp;
+            JSONObject messageJson = null;
+            JSONArray messageArray = null;
+            try {
+                message = messages.get(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                continue;
+            }
+
+            if (message instanceof JSONArray) {
+                messageArray = (JSONArray) message;
+
+                try {
+                    messageJson = messageArray.getJSONObject(0);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (message instanceof JSONObject) {
+                messageJson = (JSONObject) message;
+            }
+
+            try {
+                userName = messageJson.getString(PEER_USERNAME);
+            } catch (JSONException e) {
+                // use peerId as senderName if userName is not present
+                try {
+                    userName = messageJson.getString(PEER_USER_ID);
+                } catch (JSONException e1) {
+                    userName = "N/A";
+                }
+            }
+            try {
+                messageContent = messageJson.getString(MESSAGE_CONTENT);
+            } catch (JSONException e) {
+                messageContent = "N/A";
+            }
+            try {
+                Long timeStampLong = messageJson.getLong(TIMESTAMP);
+
+                timeStamp = Utils.getDefaultShortTimeStamp(new Date(timeStampLong));
+
+            } catch (JSONException e) {
+                timeStamp = "Not correct format as Long or N/A";
+            }
+
+            addRemoteMessage(userName, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY);
+
+        }
     }
 
     /**
@@ -207,6 +344,51 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
             processUpdateStateConnected();
+
+            if (encryptionKeys == null || encryptionValues == null) {
+                encryptionKeys = new ArrayList<>();
+                encryptionValues = new ArrayList<>();
+            } else {
+                encryptionKeys.clear();
+                encryptionValues.clear();
+            }
+
+            // load the stored encyption map, selected encryption value and storeMessage setting in share pref
+            if (Utils.getStoredEncryptionList(context) != null) {
+                List<String> storedJson = Utils.getStoredEncryptionList(context);
+
+                for (String json : storedJson) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(json);
+
+                        String key = jsonObject.getString("encryptionKey");
+                        String value = jsonObject.getString("encryptionValue");
+
+                        encryptionKeys.add(key);
+                        encryptionValues.add(value);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            // save to SDK
+            chatService.setEncryptedMap(encryptionKeys, encryptionValues);
+
+            // update UI
+            chatView.initUIEncryptionKeys(encryptionKeys);
+            chatView.initMessageFormats(initMessageFormatList());
+
+            String selectedEncryptionKey = Utils.getStoredSelectedEncryptionKey(context);
+            if (selectedEncryptionKey != null) {
+                chatService.setSelectedEncryptedSecret(selectedEncryptionKey);
+                int position = Utils.getKeyPosition(selectedEncryptionKey, encryptionKeys);
+                chatView.initUIEncryptionSelectedKey(selectedEncryptionKey, encryptionValues.get(position), position + 1);
+            }
+
+            boolean toPersist = Utils.getStoredMessageSetting(context);
+            chatService.setStoreMessage(toPersist);
+            chatView.initUIStoreMessageSetting(toPersist);
         }
     }
 
@@ -263,7 +445,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
      * @param isPrivate    the message sent is private or public for all peers
      */
     @Override
-    public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
+    public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate, Long timeStamp) {
 
         // do not process null message
         // if user has hasPersistentMessage and input encryptedKey, but there is no message history before user join the room,
@@ -274,7 +456,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
         String userName;
         String messageContent;
-        String timeStamp;
 
         //add prefix if the chat is a private chat - not seen by other users.
         if (isPrivate) {
@@ -283,10 +464,9 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
                 userName = chatService.getPeerNameById(remotePeerId);
                 messageContent = messageString;
-                timeStamp = Utils.getDefaultTimeStamp(new Date());
 
                 // Add remote message into the message collection
-                addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
+                addRemoteMessage(remotePeerId, userName, messageContent, Utils.getDefaultShortTimeStamp(new Date(timeStamp)), ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
 
             } else if (message instanceof JSONObject) {
                 try {
@@ -294,9 +474,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
                     userName = messageJson.getString(PEER_USERNAME);
                     messageContent = messageJson.getString(MESSAGE_CONTENT);
-                    timeStamp = messageJson.getString(TIMESTAMP);
 
-                    addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
+                    addRemoteMessage(remotePeerId, userName, messageContent, Utils.getDefaultShortTimeStamp(new Date(timeStamp)), ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -310,9 +489,8 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
                         userName = messageJson.getString(PEER_USERNAME);
                         messageContent = messageJson.getString(MESSAGE_CONTENT);
-                        timeStamp = messageJson.getString(TIMESTAMP);
 
-                        addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
+                        addRemoteMessage(remotePeerId, userName, messageContent, Utils.getDefaultShortTimeStamp(new Date(timeStamp)), ChatListAdapter.MessageRowType.CHAT_REMOTE_PTE_SIG);
                     }
 
                 } catch (JSONException e) {
@@ -330,16 +508,14 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 if (remotePeerId != null) {
                     userName = chatService.getPeerNameById(remotePeerId);
                     messageContent = (String) message;
-                    timeStamp = Utils.getDefaultTimeStamp(new Date());
                     messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG;
                 } else { // process message history
                     userName = "Undefined";
                     messageContent = (String) message;
-                    timeStamp = "Undefined";
                     messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY;
                 }
 
-                addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+                addRemoteMessage(remotePeerId, userName, messageContent, Utils.getDefaultShortTimeStamp(new Date(timeStamp)), messageRowType);
 
             } else if (message instanceof JSONObject) {
                 try {
@@ -347,7 +523,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
                     userName = messageJson.getString(PEER_USERNAME);
                     messageContent = messageJson.getString(MESSAGE_CONTENT);
-                    timeStamp = messageJson.getString(TIMESTAMP);
 
                     ChatListAdapter.MessageRowType messageRowType;
 
@@ -356,7 +531,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                     else
                         messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY;
 
-                    addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+                    addRemoteMessage(remotePeerId, userName, messageContent, Utils.getDefaultShortTimeStamp(new Date(timeStamp)), messageRowType);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -369,7 +544,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                         JSONObject messageJson = messageArray.getJSONObject(i);
                         userName = messageJson.getString(PEER_USERNAME);
                         messageContent = messageJson.getString(MESSAGE_CONTENT);
-                        timeStamp = messageJson.getString(TIMESTAMP);
 
                         ChatListAdapter.MessageRowType messageRowType;
 
@@ -378,7 +552,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                         else
                             messageRowType = ChatListAdapter.MessageRowType.CHAT_REMOTE_GRP_SIG_HISTORY;
 
-                        addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
+                        addRemoteMessage(remotePeerId, userName, messageContent, Utils.getDefaultShortTimeStamp(new Date(timeStamp)), messageRowType);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -419,7 +593,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
             userName = chatService.getPeerNameById(remotePeerId);
             messageContent = messageString;
-            timeStamp = Utils.getDefaultTimeStamp(new Date());
+            timeStamp = Utils.getDefaultShortTimeStamp(new Date());
 
             addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
 
@@ -429,7 +603,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
                 userName = messageJson.getString(PEER_USERNAME);
                 messageContent = messageJson.getString(MESSAGE_CONTENT);
-                timeStamp = messageJson.getString(TIMESTAMP);
+                timeStamp = Utils.getDefaultShortTimeStamp(new Date(messageJson.getLong(TIMESTAMP)));
 
                 addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
 
@@ -445,7 +619,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
                     userName = messageJson.getString(PEER_USERNAME);
                     messageContent = messageJson.getString(MESSAGE_CONTENT);
-                    timeStamp = messageJson.getString(TIMESTAMP);
+                    timeStamp = Utils.getDefaultShortTimeStamp(new Date(messageJson.getLong(TIMESTAMP)));
 
                     addRemoteMessage(remotePeerId, userName, messageContent, timeStamp, messageRowType);
                 }
@@ -453,6 +627,11 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void processMessageSendFailed() {
+        sentResult = false;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -488,6 +667,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         addMetadataMessage(new SkylinkPeer(chatService.getPeerId(),
                         Utils.getUserNameByType(Constants.CONFIG_TYPE.CHAT)),
                 " joined the room.");
+        addMessageHistoryMetaData();
     }
 
     /**
@@ -531,13 +711,15 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             }
         }
 
-        addLocalMessage(chatService.getPeerId(), getUserNameByType(Constants.CONFIG_TYPE.CHAT),
-                message, Utils.getDefaultTimeStamp(new Date()), messageRowType);
+        if (sentResult) {
+            addLocalMessage(chatService.getPeerId(), getUserNameByType(Constants.CONFIG_TYPE.CHAT),
+                    message, new Date().getTime(), messageRowType);
+        }
     }
 
     /**
      * Send message in JSONObject format
-     * JSONObject will have 3 items: PEER_USERNAME, MESSAGE_CONTENT, TIMESTAMP
+     * JSONObject will have 3 items: PEER_USERNAME, MESSAGE_CONTENT
      */
     private void processSendMessageJson(String message) {
         // Check remote peer to send message to
@@ -547,21 +729,20 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         JSONObject sentMessage;
         String peerId = chatService.getPeerId();
         String userName = getUserNameByType(Constants.CONFIG_TYPE.CHAT);
-        String timeStamp = Utils.getDefaultTimeStamp(new Date());
         ChatListAdapter.MessageRowType messageRowType = null;
 
         if (selectedPeerIndex == 0) {
             //add message to list view for displaying
             if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
 
-                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+                sentMessage = createMessageJSONObject(userName, message);
 
                 chatService.sendServerMessage(null, sentMessage);
                 messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_SIG;
 
             } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
 
-                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+                sentMessage = createMessageJSONObject(userName, message);
 
                 chatService.sendP2PMessage(null, sentMessage);
                 messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_GRP_P2P;
@@ -573,20 +754,22 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             // send message to the selected peer
             if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
 
-                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+                sentMessage = createMessageJSONObject(userName, message);
 
                 chatService.sendServerMessage(selectedPeer.getPeerId(), sentMessage);
                 messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_SIG;
             } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
 
-                sentMessage = createMessageJSONObject(userName, message, timeStamp);
+                sentMessage = createMessageJSONObject(userName, message);
 
                 chatService.sendP2PMessage(selectedPeer.getPeerId(), sentMessage);
                 messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_P2P;
             }
         }
 
-        addLocalMessage(peerId, userName, message, timeStamp, messageRowType);
+        if (sentResult) {
+            addLocalMessage(peerId, userName, message, new Date().getTime(), messageRowType);
+        }
     }
 
     /**
@@ -601,7 +784,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         JSONArray sentMessage = new JSONArray();
         String peerId = chatService.getPeerId();
         String userName = getUserNameByType(Constants.CONFIG_TYPE.CHAT);
-        String timeStamp = Utils.getDefaultTimeStamp(new Date());
         ChatListAdapter.MessageRowType messageRowType = null;
 
         JSONObject jsonObjectMessage;
@@ -610,7 +792,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             //add message to list view for displaying
             if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
 
-                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+                jsonObjectMessage = createMessageJSONObject(userName, message);
 
                 sentMessage.put(jsonObjectMessage);
                 chatService.sendServerMessage(null, sentMessage);
@@ -618,7 +800,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
 
             } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
 
-                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+                jsonObjectMessage = createMessageJSONObject(userName, message);
 
                 sentMessage.put(jsonObjectMessage);
                 chatService.sendP2PMessage(null, sentMessage);
@@ -631,14 +813,14 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             // send message to the selected peer
             if (messageType == MESSAGE_TYPE.TYPE_SERVER) {
 
-                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+                jsonObjectMessage = createMessageJSONObject(userName, message);
 
                 sentMessage.put(jsonObjectMessage);
                 chatService.sendServerMessage(selectedPeer.getPeerId(), sentMessage);
                 messageRowType = ChatListAdapter.MessageRowType.CHAT_LOCAL_PTE_SIG;
             } else if (messageType == MESSAGE_TYPE.TYPE_P2P) {
 
-                jsonObjectMessage = createMessageJSONObject(userName, message, timeStamp);
+                jsonObjectMessage = createMessageJSONObject(userName, message);
 
                 sentMessage.put(jsonObjectMessage);
                 chatService.sendP2PMessage(selectedPeer.getPeerId(), sentMessage);
@@ -646,15 +828,16 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             }
         }
 
-        addLocalMessage(peerId, userName, message, timeStamp, messageRowType);
+        if (sentResult) {
+            addLocalMessage(peerId, userName, message, new Date().getTime(), messageRowType);
+        }
     }
 
-    private JSONObject createMessageJSONObject(String userName, String message, String timeStamp) {
+    private JSONObject createMessageJSONObject(String userName, String message) {
         JSONObject sentMessage = new JSONObject();
         try {
             sentMessage.put(PEER_USERNAME, userName);
             sentMessage.put(MESSAGE_CONTENT, message);
-            sentMessage.put(TIMESTAMP, timeStamp);
             return sentMessage;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -678,13 +861,23 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
         chatView.updateUIChatCollection(false);
     }
 
+    private void addMessageHistoryMetaData() {
+        // Adding info to message collection
+        // This message is metadata message to add the button get message history
+        MessageModel messageModel = new MessageModel();
+        messageModel.setMessageRowType(ChatListAdapter.MessageRowType.CHAT_METADATA_MSG_HISTORY);
+
+        chatMessageCollection.add(messageModel);
+        chatView.updateUIChatCollection(false);
+    }
+
     private void addLocalMessage(String localPeerId, String userName, String message,
-                                 String timeStamp, ChatListAdapter.MessageRowType messageRowType) {
+                                 Long timeStamp, ChatListAdapter.MessageRowType messageRowType) {
         MessageModel messageModel = new MessageModel();
         messageModel.setPeerId(localPeerId);
         messageModel.setPeerUserName(userName);
         messageModel.setMessageContent(message);
-        messageModel.setTimeStamp(timeStamp);
+        messageModel.setTimeStamp(Utils.getDefaultShortTimeStamp(new Date(timeStamp)));
         messageModel.setMessageRowType(messageRowType);
 
         chatMessageCollection.add(messageModel);

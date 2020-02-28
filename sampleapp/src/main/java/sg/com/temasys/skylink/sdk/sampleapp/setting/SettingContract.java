@@ -81,8 +81,6 @@ public interface SettingContract {
 
         void onMessagingSelected(boolean hasMessaging);
 
-        void onEncryptedSecretFilled(String defaultEncryptedSecret);
-
         void onVideoHwAccSelected(boolean useHWAcc);
 
         void onH246ProfileSelected(boolean useH246Profile);
@@ -134,6 +132,8 @@ public interface SettingContract {
         void onNoOfReconnectAttemptsFilled(int noOfReconnectAttempts);
 
         void onNoOfReconnectDelayFilled(int noOfReconnectDelay);
+
+        void onNoOfGetStoredMessageTimeout(int timeout);
     }
 
     interface Presenter {
@@ -202,8 +202,6 @@ public interface SettingContract {
 
         void onProcessRoomSize(SkylinkConfig.SkylinkRoomSize roomSize);
 
-        void onProcessEncrytedSecretValue(String value);
-
         void onProcessNumCheckStableValue(String value);
 
         void onProcessNumWaitSValue(String value);
@@ -225,5 +223,7 @@ public interface SettingContract {
         void onProcessReconnectDelayValue(String value);
 
         void onProcessResetAllValues();
+
+        void onProcessGetStoredMessageTimeoutValue(String value);
     }
 }

@@ -4,6 +4,20 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/dp_10dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:layout_width="@dimen/dp_30dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:background="@drawable/button_circle_trans_green"
+            android:src="@drawable/ic_get_video_res"/>
+    </LinearLayout>
+
     <ListView
         android:id="@+id/lv_messages"
         android:layout_width="match_parent"
@@ -23,31 +37,67 @@
         android:translationZ="@dimen/dp_0_5dp"
         android:visibility="visible"></View>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/layout_message_encryption_secret"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/dp_30dp"
         android:layout_marginBottom="@dimen/dp_5dp"
         android:layout_marginLeft="@dimen/dp_5dp"
         android:layout_marginRight="@dimen/dp_10dp"
         android:layout_marginTop="@dimen/dp_5dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <EditText
-            android:id="@+id/edit_message_encryption_secret"
+            android:id="@+id/edit_message_encryption_secret_key"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/dp_5dp"
             android:layout_marginLeft="@dimen/dp_10dp"
             android:layout_marginRight="@dimen/dp_10dp"
             android:layout_marginTop="@dimen/dp_5dp"
+            android:layout_weight="3"
             android:background="@android:color/transparent"
-            android:hint="Enter message encryption secret here "
-            android:maxLines="3"
+            android:hint="Enter encryption id"
+            android:maxLines="1"
             android:textSize="@dimen/sp_12sp"
             android:visibility="visible"/>
-    </LinearLayout>
+
+        <View
+            android:id="@+id/div_10"
+            android:layout_width="@dimen/dp_0_5dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:layout_toRightOf="@id/edit_message_encryption_secret_key"
+            android:background="@color/primary_dark"
+            />
+
+        <EditText
+            android:id="@+id/edit_message_encryption_secret_value"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/dp_5dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_marginRight="@dimen/dp_30dp"
+            android:layout_marginTop="@dimen/dp_5dp"
+            android:layout_toRightOf="@id/div_10"
+            android:layout_weight="7"
+            android:background="@android:color/transparent"
+            android:hint="Enter encryption value"
+            android:maxLines="1"
+            android:textSize="@dimen/sp_12sp"
+            android:visibility="visible"/>
+
+        <ImageButton
+            android:id="@+id/btn_add_secret"
+            android:layout_width="@dimen/dp_25dp"
+            android:layout_height="@dimen/dp_25dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/dp_5dp"
+            android:background="@drawable/button_circle_trans_green"
+            android:src="@drawable/ic_add_small_18dp"/>
+    </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
@@ -55,68 +105,58 @@
         android:background="@color/cardview_shadow_start_color"
         android:translationZ="@dimen/dp_0_5dp"></View>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_40dp"
         android:gravity="center_vertical">
 
+        <ImageButton
+            android:id="@+id/btn_show_hide_encryption_secret"
+            android:layout_width="@dimen/dp_30dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:background="@drawable/button_circle_trans_green"
+            android:src="@drawable/ic_encryption_secret"
+            android:visibility="visible">
+
+        </ImageButton>
+
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/dp_10dp"
-            android:gravity="center_vertical">
-
-            <sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton
-                android:id="@+id/btn_show_hide_encryption_secret"
-                android:layout_width="@dimen/dp_30dp"
-                android:layout_height="@dimen/dp_30dp"
-                android:background="@drawable/button_circle_trans_green"
-                android:src="@drawable/ic_encryption_secret"
-                android:visibility="visible">
-
-            </sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/dp_5dp"
-            android:layout_marginTop="@dimen/dp_5dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:layout_marginLeft="@dimen/dp_5dp"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/msgFormatString"
-                android:layout_width="@dimen/dp_70dp"
-                android:layout_height="@dimen/dp_30dp"
-                android:background="@drawable/button_format_msg"
-                android:text="String"
-                android:textColor="@color/color_white"
-                android:textSize="@dimen/sp_9sp"/>
+            <Switch
+                android:id="@+id/switch_store_msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_10dp"/>
 
-            <Button
-                android:id="@+id/msgFormatJson"
-                android:layout_width="@dimen/dp_70dp"
-                android:layout_height="@dimen/dp_30dp"
-                android:layout_marginLeft="@dimen/dp_20dp"
-                android:layout_marginRight="@dimen/dp_20dp"
-                android:background="@drawable/button_format_msg"
-                android:text="JSONObject"
-                android:textColor="@color/color_white"
-                android:textSize="@dimen/sp_9sp"/>
-
-            <Button
-                android:id="@+id/msgFormatArray"
-                android:layout_width="@dimen/dp_70dp"
-                android:layout_height="@dimen/dp_30dp"
-                android:background="@drawable/button_format_msg"
-                android:text="JSONArray"
-                android:textColor="@color/color_white"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Store message"
                 android:textSize="@dimen/sp_9sp"/>
         </LinearLayout>
 
-    </RelativeLayout>
 
+        <Spinner
+            android:id="@+id/spinner_secretIds"
+            android:layout_width="@dimen/dp_120dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_marginRight="@dimen/dp_20dp"
+            ></Spinner>
+
+        <Spinner
+            android:id="@+id/spinner_message_format"
+            android:layout_width="@dimen/dp_120dp"
+            android:layout_height="@dimen/dp_30dp"
+            android:layout_marginRight="@dimen/dp_10dp"></Spinner>
+
+
+    </LinearLayout>
 
     <!--input text-->
     <RelativeLayout

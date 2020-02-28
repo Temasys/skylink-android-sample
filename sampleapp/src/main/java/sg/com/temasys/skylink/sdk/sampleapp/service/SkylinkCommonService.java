@@ -888,7 +888,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
             remotePeerId) {
         Log.d(TAG, "onReceiveServerMessage(message: " + message + ",isPublic: " + isPublic + ", timeStamp: " + timeStamp + ", remotePeerId: " + remotePeerId);
 
-        presenter.processServerMessageReceived(remotePeerId, message, !isPublic);
+        presenter.processServerMessageReceived(remotePeerId, message, !isPublic, timeStamp);
     }
 
     /**

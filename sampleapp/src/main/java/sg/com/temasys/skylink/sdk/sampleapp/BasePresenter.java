@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.json.JSONArray;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -138,12 +140,15 @@ public abstract class BasePresenter {
     // Methods which are from MessagesListener need to be implemented for chat function
     //----------------------------------------------------------------------------------------------
 
-    public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
+    public void processServerMessageReceived(String remotePeerId, Object message, boolean isPrivate, Long timeStamp) {
     }
 
     public void processP2PMessageReceived(String remotePeerId, Object message, boolean isPrivate) {
     }
 
+    public void processMessageSendFailed(){
+
+    }
     //----------------------------------------------------------------------------------------------
     // Methods which are from RecordingListener need to be implemented for recording (in Multi Video function)
     //----------------------------------------------------------------------------------------------
@@ -226,5 +231,8 @@ public abstract class BasePresenter {
     }
 
     public void processRoomLockStatusChanged(boolean roomLocked) {
+    }
+
+    public void processStoredMessagesResult(JSONArray storedMessages) {
     }
 }

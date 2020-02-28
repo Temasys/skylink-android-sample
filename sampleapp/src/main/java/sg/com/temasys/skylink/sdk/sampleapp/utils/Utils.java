@@ -21,6 +21,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -45,7 +46,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.crypto.Mac;
@@ -76,8 +80,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKE
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_SPEAKER_VIDEO;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_DEVICE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_VIDEO_RESOLUTION;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.GET_STORED_MESSAGE_TIMEOUT;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_DATA_TRANSFER_CONFIG;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_ENCRYPTED_SECRET_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_FILE_TRANSFER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.HAS_PEER_MESSAGING_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_AUDIO_BITRATE_CONFIG;
@@ -90,6 +94,9 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MIRROR_LOCAL_V
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NETWORK_UDP;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NO_OF_REPORT_VIDEO_RES_UNTILL_STABLE_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREFERENCES_NAME;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREF_SELECTED_ENCRYPTION_KEY;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREF_STORED_MSG_ENCRYPTION_LIST;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREF_STORE_MSG_SET;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.RECONNECT_ATTEMPS_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.RECONNECT_DELAY_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.REPORT_VIDEO_RES_ON_CHANGED_CONFIG;
@@ -117,6 +124,7 @@ public class Utils {
 
     public static final String TIME_ZONE_UTC = "UTC";
     public static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
+    public static final String SHORT_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
     private static final String TAG = Utils.class.getName();
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static final String EXTERNAL_STORAGE = "ExternalStorage";
@@ -195,6 +203,19 @@ public class Utils {
     public static String getDefaultTimeStamp(Date date) {
         TimeZone tz = TimeZone.getDefault();
         DateFormat df = new SimpleDateFormat(ISO_TIME_FORMAT);
+        df.setTimeZone(tz);
+        return df.format(date);
+    }
+
+    /**
+     * Returns the date in default device time format
+     *
+     * @param date
+     * @return GTM+08 timestamp
+     */
+    public static String getDefaultShortTimeStamp(Date date) {
+        TimeZone tz = TimeZone.getDefault();
+        DateFormat df = new SimpleDateFormat(SHORT_TIME_FORMAT);
         df.setTimeZone(tz);
         return df.format(date);
     }
@@ -306,6 +327,17 @@ public class Utils {
                 }
             }
         }
+        return -1;
+    }
+
+    public static int getKeyPosition(String key, List<String> valueList) {
+
+        for (int i = 0; i < valueList.size(); i++) {
+            if (valueList.get(i).equals(key)) {
+                return i;
+            }
+        }
+
         return -1;
     }
 
@@ -925,10 +957,6 @@ public class Utils {
         return sharedPref.getBoolean(HAS_PEER_MESSAGING_CONFIG, true);
     }
 
-    public static String getDefaultEncryptedSecretMessageConfig() {
-        return sharedPref.getString(DEFAULT_ENCRYPTED_SECRET_CONFIG, null);
-    }
-
     public static boolean getDefaultVideoHwAccConfig() {
         return sharedPref.getBoolean(USE_HW_ACC_CONFIG, true);
     }
@@ -1043,6 +1071,101 @@ public class Utils {
         return sharedPref.getBoolean(USE_MULTI_TRACKS_UP_CONFIG, true);
     }
 
+    public static void showHideKeyboard(Activity context, boolean isShow) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        if (isShow)
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+        else {
+            View view = context.getCurrentFocus();
+            //If no view currently has focus, create a new one, just so we can grab a window token from it
+            if (view == null) {
+                view = new View(context);
+            }
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    public static void saveEncryptionMap(Context context, List<String> encryptionKey, List<String> encryptionValues) {
+        Set<String> setValue = new HashSet<>();
+        for (int i = 0; i < encryptionKey.size(); i++) {
+            JSONObject object = new JSONObject();
+            try {
+                object.put("encryptionKey", encryptionKey.get(i));
+                object.put("encryptionValue", encryptionValues.get(i));
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            setValue.add(object.toString());
+        }
+
+        Config.setPrefList(PREF_STORED_MSG_ENCRYPTION_LIST, setValue, context);
+    }
+
+    private static Set<String> convertListToSet(List<String> list) {
+        Set<String> set = new HashSet<>();
+
+        for (String value : list) {
+            set.add(value);
+        }
+
+        return set;
+    }
+
+    public static void saveStoreMessageSet(Context context, boolean isChecked) {
+        Config.setPrefBoolean(PREF_STORE_MSG_SET, isChecked, context);
+    }
+
+    public static void saveSelectedEncrytionKey(Context context, String secretKey) {
+        Config.setPrefString(PREF_SELECTED_ENCRYPTION_KEY, secretKey, context);
+    }
+
+    public static List<String> getStoredEncryptionList(Context context) {
+        Set set = Config.getPrefStringSet(PREF_STORED_MSG_ENCRYPTION_LIST, context);
+        return convertSetToList(set);
+    }
+
+    public static String getStoredSelectedEncryptionKey(Context context) {
+        return Config.getPrefString(PREF_SELECTED_ENCRYPTION_KEY, null, context);
+    }
+
+    public static boolean getStoredMessageSetting(Context context) {
+        return Config.getPrefBoolean(PREF_STORE_MSG_SET, false, context);
+    }
+
+    public static List<String> getKeyListFromMap(Map<String, String> map) {
+        List<String> results = new ArrayList<String>();
+
+        Object[] arr = map.keySet().toArray();
+
+        for (Object obj : arr) {
+            results.add((String) obj);
+        }
+
+        return results;
+    }
+
+    public static int getDefaultNoOfStoredMsgTimeoutConfig() {
+        String intStr = sharedPref.getString(GET_STORED_MESSAGE_TIMEOUT, "30");
+        return Integer.parseInt(intStr);
+    }
+
+    public static List<String> convertSetToList(Set<String> setValues) {
+        List<String> results = new ArrayList<>();
+
+        if (setValues == null)
+            return results;
+
+        Object[] values = setValues.toArray();
+        for (Object value : values) {
+            results.add((String) value);
+        }
+
+        return results;
+    }
+
     /**
      * Get the bitmap from Uri
      */
@@ -1125,7 +1248,7 @@ public class Utils {
     }
 
 
-    /////////////////////////////Create custom video capturer from camera///////////////////////////
+/////////////////////////////Create custom video capturer from camera///////////////////////////
 
     enum CameraState {
         CAMERA_OPENED, CAMERA_CLOSED, CAMERA_SWITCHED

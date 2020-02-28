@@ -559,7 +559,8 @@
                 android:background="@drawable/custom_edit_text"
                 android:hint="Enter default encrypted secret for server message"
                 android:padding="@dimen/dp_5dp"
-                android:textSize="@dimen/sp_12sp"/>
+                android:textSize="@dimen/sp_12sp"
+                android:visibility="gone"/>
         </LinearLayout>
 
         <View
@@ -1155,7 +1156,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:text="Maximum remote peers in no audio and no video room"
+                android:text="Maximum remote peers in no audio\n and no video room"
                 android:textSize="@dimen/sp_11sp"/>
 
             <EditText
@@ -1429,6 +1430,37 @@
                 android:gravity="center"
                 android:padding="@dimen/dp_5dp"
                 android:text="1000"/>
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_0_5dp"
+            android:layout_marginLeft="@dimen/dp_10dp"
+            android:layout_marginRight="@dimen/dp_10dp"
+            android:background="@color/cardview_dark_background"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp_10dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="Time for getting stored message\nIn seconds"
+                android:textSize="@dimen/sp_11sp"/>
+
+            <EditText
+                android:id="@+id/editStoredMessageTimeout"
+                android:layout_width="@dimen/dp_70dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/custom_edit_text"
+                android:gravity="center"
+                android:padding="@dimen/dp_5dp"
+                android:text="30"/>
         </RelativeLayout>
 
         <View

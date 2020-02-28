@@ -65,5 +65,7 @@
     <dimen name="seekbar_control_padding_right">40px</dimen>
     <dimen name="sp_6sp">6sp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="dp_130dp">130dp</dimen>
+    <dimen name="dp_120dp">120dp</dimen>
 
 </resources>

@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.Set;
+
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
@@ -19,6 +21,10 @@ public class Config {
     private static final String PREF_SELECTED_APP_KEY_SECRET = "SelectedAppKeySecret";
     private static final String PREF_SELECTED_APP_KEY_DESC = "SelectedAppKeyDesc";
     private static final String PREF_SELECTED_APP_KEY_SMR = "SelectedAppKeySmr";
+
+    public static final String PREF_STORED_MSG_ENCRYPTION_LIST = "EncryptionValues";
+    public static final String PREF_SELECTED_ENCRYPTION_KEY = "SelectedEncryptionKey";
+    public static final String PREF_STORE_MSG_SET = "ToPersistSer";
 
     // Config values for Selected App key.
     private static String APP_KEY = "App key.";
@@ -50,7 +56,6 @@ public class Config {
     public static final String HAS_DATA_TRANSFER_CONFIG = "hasDataTransfer";
     public static final String HAS_PEER_MESSAGING_CONFIG = "hasPeerMessage";
     public static final String HAS_FILE_TRANSFER_CONFIG = "hasFileConfig";
-    public static final String DEFAULT_ENCRYPTED_SECRET_CONFIG = "defaultEncryptedSecret";
     public static final String USE_HW_ACC_CONFIG = "useHWAccConfig";
     public static final String USE_H246_PROFILE_CONFIG = "useH246ProfileConfig";
     public static final String USE_VP8_ENCODER_CONFIG = "useVP8EncoderConfig";
@@ -76,9 +81,11 @@ public class Config {
     public static final String ALLOW_ICE_RESTART_CONFIG = "allowIceRestartConfig";
     public static final String RECONNECT_ATTEMPS_CONFIG = "reconnectAttemps";
     public static final String RECONNECT_DELAY_CONFIG = "reconnectDelays";
+    public static final String GET_STORED_MESSAGE_TIMEOUT = "storedMessageTimeout";
     public static final String USE_MULTI_TRACKS_UP_CONFIG = "useMultiTracksUPConfig";
     public static final String DEFAULT_AUDIO_VIDEO_SEND_CONFIG = "audioVideoSendConfig";
     public static final String DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG = "audioVideoReceiveConfig";
+    public static final String DEFAULT_STORED_MESSAGE_TIMEOUT_CONFIG = "storedMessageTimeout";
 
 
     public static final String AUDIO_AND_VIDEO = "audioAndVideo";
@@ -192,10 +199,10 @@ public class Config {
      *
      * @param key
      * @param value
-     * @param activity
+     * @param context
      */
-    public static void setPrefBoolean(String key, boolean value, Activity activity) {
-        final SharedPreferences sharedPref = activity.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+    public static void setPrefBoolean(String key, boolean value, Context context) {
+        final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(key, value);
         editor.commit();
@@ -215,6 +222,20 @@ public class Config {
         editor.commit();
     }
 
+    /**
+     * Get Preferences for specified activity and set a list of String value for specific key.
+     *
+     * @param key
+     * @param value
+     * @param context
+     */
+    public static void setPrefList(String key, Set<String> value, Context context) {
+        final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putStringSet(key, value);
+        editor.commit();
+    }
+
     public static String getPrefString(String key, String defaultValue, Context context) {
         final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return sharedPref.getString(key, defaultValue);
@@ -223,6 +244,11 @@ public class Config {
     public static Boolean getPrefBoolean(String key, boolean defaultValue, Context context) {
         final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return sharedPref.getBoolean(key, defaultValue);
+    }
+
+    public static Set<String> getPrefStringSet(String key, Context context) {
+        final SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return sharedPref.getStringSet(key, null);
     }
 
     //----------------------------------------------------------------------------------------------

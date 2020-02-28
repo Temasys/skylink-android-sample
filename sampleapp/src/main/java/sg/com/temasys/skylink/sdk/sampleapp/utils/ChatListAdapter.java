@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.MessageModel;
 
 public class ChatListAdapter extends ArrayAdapter<MessageModel> {
@@ -23,9 +25,11 @@ public class ChatListAdapter extends ArrayAdapter<MessageModel> {
     private List<MessageModel> chatCollection;
 
     private MessageRowType viewType = MessageRowType.CHAT_METADATA;
+    private ImageButton btnGetMsgHistory;
 
     public enum MessageRowType {
         CHAT_METADATA,
+        CHAT_METADATA_MSG_HISTORY,
         CHAT_LOCAL_GRP_SIG,
         CHAT_LOCAL_GRP_P2P,
         CHAT_LOCAL_PTE_SIG,
@@ -55,6 +59,10 @@ public class ChatListAdapter extends ArrayAdapter<MessageModel> {
             case CHAT_METADATA:
                 listItem = LayoutInflater.from(context).inflate(R.layout.list_item_metadata, parent, false);
                 processMetadataRow(chatListRow, listItem);
+                break;
+            case CHAT_METADATA_MSG_HISTORY:
+                listItem = LayoutInflater.from(context).inflate(R.layout.list_item_metadata_msg_history, parent, false);
+                processMetadataMsgHisRow(chatListRow, listItem);
                 break;
             case CHAT_LOCAL_GRP_SIG:
             case CHAT_LOCAL_GRP_P2P:
@@ -199,5 +207,21 @@ public class ChatListAdapter extends ArrayAdapter<MessageModel> {
 
         txtMetadata.setText(chatListRow.getPeerUserName() + "(" + chatListRow.getPeerId() + ")" + chatListRow.getMessageContent());
         txtDateTime.setText(chatListRow.getTimeStamp());
+    }
+
+    private void processMetadataMsgHisRow(MessageModel chatListRow, View listItem) {
+        viewType = MessageRowType.CHAT_METADATA_MSG_HISTORY;
+
+        // get the view controls from the list view
+        btnGetMsgHistory = listItem.findViewById(R.id.btn_get_msg_history);
+
+        btnGetMsgHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (context instanceof ChatActivity) {
+                    ((ChatActivity) context).onUserGetStoredMessages();
+                }
+            }
+        });
     }
 }

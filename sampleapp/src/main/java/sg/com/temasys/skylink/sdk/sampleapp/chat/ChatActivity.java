@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * Created by muoi.pham on 20/07/18.
@@ -48,6 +49,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
+        Utils.showHideKeyboard(this, false);
         return true;
     }
 
@@ -57,5 +59,9 @@ public class ChatActivity extends AppCompatActivity {
 
         //Save the fragment's instance when changing configuration
         getSupportFragmentManager().putFragment(outState, CHAT_FRAGMENT_TAG, chatFragment);
+    }
+
+    public void onUserGetStoredMessages() {
+        chatFragment.getStoredServerMessages();
     }
 }

@@ -8,12 +8,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
+import android.widget.Switch;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -23,14 +29,14 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.ChatListAdapter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomActionBar;
-import sg.com.temasys.skylink.sdk.sampleapp.utils.CustomImageButton;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 /**
  * A simple {@link CustomActionBar} subclass.
  * This class is responsible for display UI and get user interaction
  */
 public class ChatFragment extends CustomActionBar implements ChatContract.View, View.OnClickListener,
-        View.OnLongClickListener {
+        View.OnLongClickListener, AdapterView.OnItemSelectedListener, CompoundButton.OnCheckedChangeListener {
 
     private final String TAG = ChatFragment.class.getName();
 
@@ -40,15 +46,21 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     // view widgets
     private Button btnSendServerMessage;
     private Button btnSendP2PMessage;
-    private Button btnMsgFormatString, btnMsgFormatJson, btnMsgFormatArray;
     private ListView listViewChats;
-    private BaseAdapter adapter;
+    private ChatListAdapter adapter;
     private EditText editChatMessage;
     private ImageButton btnSend;
-    private CustomImageButton btnMsgEncryptSecret;
+    private ImageButton btnEncryptionOption;
     private EditText editMsgEncryptionSecret;
     private View dividerEncryptionSecret;
+    private RelativeLayout msgEncryptionLayout;
+    private EditText editEncryptionKey, editEncryptionValue;
+    private ImageButton btnEncryptionAdd;
+    private Spinner spinnerSecretIds, spinnerMsgFormat;
+    private Switch switchStoreMessage;
+
     private boolean showMessageEncryptionSecret = false;
+    private ArrayAdapter<String> encryptionKeyAdapter, msgFormatAdapter;
 
     public static ChatFragment newInstance() {
         return new ChatFragment();
@@ -145,50 +157,33 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             case R.id.btnSendMsg:
                 processSendMessage();
                 break;
-            case R.id.msgFormatString:
-                processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_STRING);
-                break;
-            case R.id.msgFormatJson:
-                processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_OBJECT);
-                break;
-            case R.id.msgFormatArray:
-                processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_ARRAY);
-                break;
             case R.id.btn_show_hide_encryption_secret:
                 changeUIMessageEncryptionSecret();
+                break;
+            case R.id.btn_add_secret:
+                processAddEncryption();
                 break;
         }
     }
 
-    private void processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT formatMsg) {
-        presenter.processSelectMessageFormat(formatMsg);
+    private void processAddEncryption() {
+        String enryptionKey = editEncryptionKey.getText().toString();
+        String encryptionValue = editEncryptionValue.getText().toString();
 
-        switch (formatMsg) {
-            case FORMAT_STRING:
-                btnMsgFormatString.setSelected(true);
-                btnMsgFormatJson.setSelected(false);
-                btnMsgFormatArray.setSelected(false);
-                btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg_selected);
-                btnMsgFormatJson.setBackgroundResource(R.drawable.button_format_msg);
-                btnMsgFormatArray.setBackgroundResource(R.drawable.button_format_msg);
-                break;
-            case FORMAT_JSON_OBJECT:
-                btnMsgFormatJson.setSelected(true);
-                btnMsgFormatString.setSelected(false);
-                btnMsgFormatArray.setSelected(false);
-                btnMsgFormatJson.setBackgroundResource(R.drawable.button_format_msg_selected);
-                btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg);
-                btnMsgFormatArray.setBackgroundResource(R.drawable.button_format_msg);
-                break;
-            case FORMAT_JSON_ARRAY:
-                btnMsgFormatArray.setSelected(true);
-                btnMsgFormatString.setSelected(false);
-                btnMsgFormatJson.setSelected(false);
-                btnMsgFormatArray.setBackgroundResource(R.drawable.button_format_msg_selected);
-                btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg);
-                btnMsgFormatJson.setBackgroundResource(R.drawable.button_format_msg);
-                break;
+        if (enryptionKey.length() == 0) {
+            editEncryptionKey.requestFocus();
+            return;
         }
+        if (encryptionValue.length() == 0) {
+            editEncryptionValue.requestFocus();
+            return;
+        }
+
+        presenter.processAddEncryption(enryptionKey, encryptionValue);
+
+        Utils.showHideKeyboard(getActivity(), false);
+
+        changeUIMessageEncryptionSecret();
     }
 
     @Override
@@ -247,6 +242,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         // in case of changing screen orientation, do not close the connection
         if (!((ChatActivity) context).isChangingConfigurations()) {
             // Inform the presenter to implement closing the connection
+            Utils.showHideKeyboard(getActivity(), false);
             presenter.processExit();
         }
     }
@@ -272,6 +268,33 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         }
     }
 
+    @Override
+    public void updateUIEncryptionKeys(List<String> encryptionKeyList) {
+        updateEncryptionKeys(encryptionKeyList);
+    }
+
+    @Override
+    public void getStoredServerMessages() {
+        presenter.processGetStoredSeverMessages();
+    }
+
+    @Override
+    public void initUIEncryptionSelectedKey(String storedSelectedEncryptionKey, String storedSelectedEncryptionValue, int pos) {
+        editEncryptionKey.setText(storedSelectedEncryptionKey);
+        editEncryptionValue.setText(storedSelectedEncryptionValue);
+        spinnerSecretIds.setSelection(pos);
+    }
+
+    @Override
+    public void initUIStoreMessageSetting(boolean isSelected) {
+        switchStoreMessage.setChecked(isSelected);
+    }
+
+    @Override
+    public void initUIEncryptionKeys(List<String> encryptionList) {
+        updateEncryptionKeys(encryptionList);
+    }
+
     /**
      * Update GUI into connected state when connected to room
      * Show room id and local peer button and display local avatar by the first character of the local username
@@ -282,6 +305,11 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     public void updateUIConnected(String roomId) {
         updateRoomInfo(roomId);
         updateUILocalPeer(Config.getPrefString(ConfigRoomFragment.PREF_USER_NAME_CHAT_SAVED, Constants.USER_NAME_CHAT_DEFAULT, context));
+
+        // hide the encryption input UI
+        this.showMessageEncryptionSecret = false;
+        setUIEncryptionSecret(this.showMessageEncryptionSecret);
+        editChatMessage.requestFocus();
     }
 
     /**
@@ -332,12 +360,17 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnSendP2PMessage = rootView.findViewById(R.id.btnP2PMsg);
         editChatMessage = rootView.findViewById(R.id.editMsg);
         btnSend = rootView.findViewById(R.id.btnSendMsg);
-        btnMsgFormatString = rootView.findViewById(R.id.msgFormatString);
-        btnMsgFormatJson = rootView.findViewById(R.id.msgFormatJson);
-        btnMsgFormatArray = rootView.findViewById(R.id.msgFormatArray);
-        btnMsgEncryptSecret = rootView.findViewById(R.id.btn_show_hide_encryption_secret);
+        btnEncryptionOption = rootView.findViewById(R.id.btn_show_hide_encryption_secret);
         dividerEncryptionSecret = rootView.findViewById(R.id.divider_encryption_secret);
-        editMsgEncryptionSecret = rootView.findViewById(R.id.edit_message_encryption_secret);
+        editMsgEncryptionSecret = rootView.findViewById(R.id.edit_message_encryption_secret_key);
+
+        msgEncryptionLayout = rootView.findViewById(R.id.layout_message_encryption_secret);
+        editEncryptionKey = rootView.findViewById(R.id.edit_message_encryption_secret_key);
+        editEncryptionValue = rootView.findViewById(R.id.edit_message_encryption_secret_value);
+        btnEncryptionAdd = rootView.findViewById(R.id.btn_add_secret);
+        spinnerSecretIds = rootView.findViewById(R.id.spinner_secretIds);
+        spinnerMsgFormat = rootView.findViewById(R.id.spinner_message_format);
+        switchStoreMessage = rootView.findViewById(R.id.switch_store_msg);
     }
 
     /**
@@ -367,10 +400,8 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnSendP2PMessage.setOnClickListener(this);
         btnSend.setOnClickListener(this);
 
-        btnMsgFormatString.setOnClickListener(this);
-        btnMsgFormatJson.setOnClickListener(this);
-        btnMsgFormatArray.setOnClickListener(this);
-        btnMsgEncryptSecret.setOnClickListener(this);
+        btnEncryptionOption.setOnClickListener(this);
+        btnEncryptionAdd.setOnClickListener(this);
 
         btnLocalPeer.setOnLongClickListener(this);
         btnRemotePeer1.setOnLongClickListener(this);
@@ -380,6 +411,10 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnRemotePeer5.setOnLongClickListener(this);
         btnRemotePeer6.setOnLongClickListener(this);
         btnRemotePeer7.setOnLongClickListener(this);
+
+        spinnerSecretIds.setOnItemSelectedListener(this);
+        spinnerMsgFormat.setOnItemSelectedListener(this);
+        switchStoreMessage.setOnCheckedChangeListener(this);
 
         // init setting value for room name in action bar
         txtRoomName.setText(Config.getPrefString(ConfigRoomFragment.PREF_ROOM_NAME_CHAT_SAVED, Constants.ROOM_NAME_CHAT_DEFAULT, context));
@@ -396,13 +431,6 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             btnSendServerMessage.setTextColor(context.getColor(R.color.color_white));
         }
-
-        // default sending option is sending message to all peers in the room in String format
-        btnMsgFormatString.setSelected(true);
-        btnMsgFormatString.setBackgroundResource(R.drawable.button_format_msg_selected);
-
-        // default is no encryption secret feature, will show the encryption secret UI when getting info from presenter
-        setUIEncryptionSecret(false);
     }
 
     /**
@@ -460,14 +488,9 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         // get the input text from the user
         String message = editChatMessage.getText().toString();
 
-        String encryptedSecret = null;
-        if (this.showMessageEncryptionSecret) {
-            encryptedSecret = editMsgEncryptionSecret.getText().toString().trim();
-        }
-
         if (message != null && message.length() > 0) {
             // delegate to the presenter to implement sending message
-            presenter.processSendMessage(message, encryptedSecret);
+            presenter.processSendMessage(message);
         }
     }
 
@@ -504,6 +527,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      */
     private void processReturn() {
         presenter.processExit();
+        Utils.showHideKeyboard(getActivity(), false);
         processBack();
     }
 
@@ -514,18 +538,102 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         editChatMessage.setText("");
     }
 
+    private void updateEncryptionKeys(List<String> encryptionKeyList) {
+        List<String> encryptions = new ArrayList<String>();
+        encryptions.add(0, "choose");
+        for (String item : encryptionKeyList) {
+            encryptions.add(item);
+        }
+
+        encryptionKeyAdapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_spinner_item, encryptions);
+        encryptionKeyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSecretIds.setAdapter(encryptionKeyAdapter);
+        encryptionKeyAdapter.notifyDataSetChanged();
+
+        if (encryptions.size() > 1) {
+            spinnerSecretIds.setSelection(encryptions.size());
+        }
+    }
+
+    @Override
+    public void initMessageFormats(List<String> messageFormatList) {
+        msgFormatAdapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_spinner_item, messageFormatList);
+        msgFormatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMsgFormat.setAdapter(msgFormatAdapter);
+    }
+
     /**
      * Display or hide the encryption secret UI
      */
     private void setUIEncryptionSecret(boolean isVisible) {
         if (isVisible) {
             dividerEncryptionSecret.setVisibility(View.VISIBLE);
-            editMsgEncryptionSecret.setVisibility(View.VISIBLE);
-            editMsgEncryptionSecret.requestFocus();
+
+            msgEncryptionLayout.setVisibility(View.VISIBLE);
+            editEncryptionKey.requestFocus();
+
+            Utils.showHideKeyboard(getActivity(), true);
+
         } else {
             dividerEncryptionSecret.setVisibility(View.GONE);
-            editMsgEncryptionSecret.setVisibility(View.GONE);
+            msgEncryptionLayout.setVisibility(View.GONE);
             editChatMessage.requestFocus();
+        }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        switch (parent.getId()) {
+            case R.id.spinner_secretIds:
+                processChooseSecretKey(position, parent.getSelectedItem().toString());
+                break;
+            case R.id.spinner_message_format:
+                processChooseMsgFormat(position);
+                break;
+        }
+    }
+
+    private void processChooseMsgFormat(int position) {
+        switch (position) {
+            case 0:
+                presenter.processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_STRING);
+                break;
+            case 1:
+                presenter.processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_OBJECT);
+                break;
+            case 2:
+                presenter.processSelectMessageFormat(ChatPresenter.MESSAGE_FORMAT.FORMAT_JSON_ARRAY);
+                break;
+        }
+    }
+
+    private void processChooseSecretKey(int position, String secretKey) {
+        if (position == 0) {
+            editEncryptionKey.setText("");
+            editEncryptionValue.setText("");
+            presenter.processSelectSecretKey(null);
+        } else {
+            // fill UI to edit text for editing key and value
+            String secretValue = presenter.processGetEncryptionValueFromKey(secretKey);
+            editEncryptionKey.setText(secretKey);
+            editEncryptionValue.setText(secretValue);
+            presenter.processSelectSecretKey(secretKey);
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        switch (buttonView.getId()) {
+            case R.id.switch_store_msg:
+                presenter.processStoreMessageSet(isChecked);
+                break;
         }
     }
 }

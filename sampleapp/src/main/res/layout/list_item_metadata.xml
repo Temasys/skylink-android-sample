@@ -11,7 +11,10 @@
         android:id="@+id/txtMetadataChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp_10dp"
+        android:layout_marginRight="@dimen/dp_10dp"
         android:layout_marginTop="@dimen/dp_20dp"
+        android:gravity="center"
         android:text="You join the room"
         android:textSize="@dimen/sp_14sp"
         />
