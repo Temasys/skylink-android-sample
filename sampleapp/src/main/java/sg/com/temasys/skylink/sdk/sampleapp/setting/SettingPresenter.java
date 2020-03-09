@@ -185,10 +185,14 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
         }
 
         String defaultNetworkTransport = Utils.getDefaultNetworkTransportConfig();
-        if (defaultNetworkTransport.equals(NETWORK_UDP)) {
-            mSettingView.onNetworkTransportUDPSelected();
-        } else if (defaultNetworkTransport.equals(NETWORK_TCP)) {
-            mSettingView.onNetworkTransportTCPSelected();
+        if (defaultNetworkTransport != null) {
+            if (defaultNetworkTransport.equals(NETWORK_UDP)) {
+                mSettingView.onNetworkTransportUDPSelected();
+            } else if (defaultNetworkTransport.equals(NETWORK_TCP)) {
+                mSettingView.onNetworkTransportTCPSelected();
+            }
+        } else {
+            mSettingView.onNetworkTransportDefaultSelected();
         }
 
         String defaultRoomSize = Utils.getDefaultRoomsizeConfig();
@@ -452,6 +456,11 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
 
     @Override
     public void onProcessNetworkTransport(SkylinkConfig.NetworkTransport networkTransport) {
+        if (networkTransport == null) {
+            Config.setPrefString(DEFAULT_NETWORK_TRANSPORT_CONFIG, null, (SettingActivity) mContext);
+            return;
+        }
+
         switch (networkTransport) {
             case UDP:
                 Config.setPrefString(DEFAULT_NETWORK_TRANSPORT_CONFIG, NETWORK_UDP, (SettingActivity) mContext);
@@ -579,7 +588,7 @@ public class SettingPresenter extends BasePresenter implements SettingContract.P
         Config.setPrefString(DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG, AUDIO_AND_VIDEO, (SettingActivity) mContext);
         Config.setPrefString(DEFAULT_AUDIO_CODEC_CONFIG, AUDIO_CODEC_OPUS, (SettingActivity) mContext);
         Config.setPrefString(DEFAULT_SOCKET_TRANSPORT_CONFIG, SOCKET_WEB, (SettingActivity) mContext);
-        Config.setPrefString(DEFAULT_NETWORK_TRANSPORT_CONFIG, NETWORK_UDP, (SettingActivity) mContext);
+        Config.setPrefString(DEFAULT_NETWORK_TRANSPORT_CONFIG, null, (SettingActivity) mContext);
         Config.setPrefString(DEFAULT_ROOM_SIZE_CONFIG, ROOM_SIZE_S, (SettingActivity) mContext);
 
         onViewLayoutRequested();

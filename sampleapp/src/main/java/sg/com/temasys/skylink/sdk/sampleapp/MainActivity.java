@@ -41,6 +41,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Utils utils = new Utils(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // hide any soft key board if present
+        Utils.showHideKeyboard(this, false);
+    }
+
     private void getControlWidgets() {
         btnMainAudio = findViewById(R.id.btnMainAudio);
         btnMainVideo = findViewById(R.id.btnMainVideo);

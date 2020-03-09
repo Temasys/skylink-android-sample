@@ -202,8 +202,6 @@ public class SkylinkConnectionManager {
         String mRoomName = Utils.getRoomNameByType(typeCall);
         String mUserName = Utils.getUserNameByType(typeCall);
 
-        SkylinkConfig skylinkConfig = skylinkCommonService.getSkylinkConfig();
-
         // The skylinkConnectionString should not be logged in production,
         // as it contains potentially sensitive information like the Skylink App Key ID.
         skylinkConnection.connectToRoom(Config.getAppKey(), Config.getAppKeySecret(), mRoomName, mUserName,

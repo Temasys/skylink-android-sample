@@ -151,19 +151,19 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
                 break;
             case R.id.btnRemotePeer4:
                 changeRemotePeerUI(4, true);
-                displayPeerInfo(4);
+                processSelectPeer(4);
                 break;
             case R.id.btnRemotePeer5:
                 changeRemotePeerUI(5, true);
-                displayPeerInfo(5);
+                processSelectPeer(5);
                 break;
             case R.id.btnRemotePeer6:
                 changeRemotePeerUI(6, true);
-                displayPeerInfo(6);
+                processSelectPeer(6);
                 break;
             case R.id.btnRemotePeer7:
                 changeRemotePeerUI(7, true);
-                displayPeerInfo(7);
+                processSelectPeer(7);
                 break;
             case R.id.btnChoose:
                 requestPermission();
@@ -316,7 +316,7 @@ public class FileTransferFragment extends CustomActionBar implements FileTransfe
 
     /**
      * Update UI into disconnected state
-     * */
+     */
     @Override
     public void updateUIDisconnected() {
 //        if(context == null)

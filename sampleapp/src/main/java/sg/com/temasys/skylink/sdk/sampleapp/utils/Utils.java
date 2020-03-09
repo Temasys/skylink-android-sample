@@ -59,6 +59,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCaptureFormat;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConnection;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
+import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkInfo;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.KeyInfo;
@@ -68,6 +69,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ALLOW_ICE_RESTART_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_AND_VIDEO;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_CODEC_ISAC;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.AUDIO_CODEC_OPUS;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_CODEC_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.DEFAULT_AUDIO_VIDEO_RECEIVE_CONFIG;
@@ -91,6 +93,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_PEER_IN_NO
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_PEER_IN_VIDEO_ROOM_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MAX_VIDEO_BITRATE_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.MIRROR_LOCAL_VIEW_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NETWORK_TCP;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NETWORK_UDP;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.NO_OF_REPORT_VIDEO_RES_UNTILL_STABLE_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.PREFERENCES_NAME;
@@ -101,8 +104,12 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.RECONNECT_ATTE
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.RECONNECT_DELAY_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.REPORT_VIDEO_RES_ON_CHANGED_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.REPORT_VIDEO_RES_STABLE_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_SIZE_L;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_SIZE_M;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_SIZE_S;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.ROOM_SIZE_XS;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_LARGE;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SOCKET_POLLING;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SOCKET_WEB;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.TIME_OF_REPORT_VIDEO_RES_NEXT_CHECKING_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_AUDIO_ECHO_CANCELLATION_CONFIG;
@@ -117,6 +124,8 @@ import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_MULTI_TRAC
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_STURN_SERVER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_TURN_SERVER_CONFIG;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.USE_VP8_ENCODER_CONFIG;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
+import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.getPrefString;
 
@@ -355,52 +364,142 @@ public class Utils {
      * @param skylinkConfig
      */
     public static SkylinkConfig skylinkConfigCommonOptions(SkylinkConfig skylinkConfig) {
-/*
-        // To limit audio/video/data bandwidth:
-        skylinkConfig.setMaxAudioBitrate(20);  // Default is not limited.
-        skylinkConfig.setMaxVideoBitrate(256); // Default is 512 kbps.
-        skylinkConfig.setMaxDataBitrate(30);   // Default is not limited.
-*/
-/*
-        // To NOT limit audio/video/data bandwidth:
-        // Audio and Data by default are already not limited.
-        skylinkConfig.setMaxVideoBitrate(-1); // Default is 512 kbps.
-*/
-/*
-        // To set the start up camera to back:
-        skylinkConfig.setDefaultVideoDevice(SkylinkConfig.VideoDevice.CAMERA_BACK);
-        // By default, the default VideoDevice is the front camera.
-*/
-/*
-        // To set local video resolution (only use those supported by camera):
-        skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR); // Default is 480 (VGA).
-        skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);   // Default is 640 (VGA).
-*/
-/*
-        // To limit automatic reconnect to room:
-        // - after failing to connect.
-        // - after unexpected disconnection.
-        // Maximum try to reconnect only 3 times:
-        skylinkConfig.setReconnectAttempts(3);
-        // Maximum spend only 3 seconds for each connection attempt:
-        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.CONNECT_TO_ROOM, 3000);
-*/
-/*
-        // To force TURN:
-        skylinkConfig.setAllowHost(false);
-        skylinkConfig.setAllowStun(false);
-*/
-        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.FILE_SEND_REQUEST, Constants.TIME_OUT);
+        // Set the room size
+        String defaultRoomSize = Utils.getDefaultRoomsizeConfig();
+        if (defaultRoomSize.equals(ROOM_SIZE_XS)) {
+            skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.EXTRA_SMALL);
+        } else if (defaultRoomSize.equals(ROOM_SIZE_S)) {
+            skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
+        } else if (defaultRoomSize.equals(ROOM_SIZE_M)) {
+            skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
+        } else if (defaultRoomSize.equals(ROOM_SIZE_L)) {
+            skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);
+        }
 
-        // SDK_DETAILED_LOGGING
-        skylinkConfig.setAdvancedOption("SdkAdvancedOption)!", new Boolean(true));
-        // OFF_ANS_VIA_USER_DATA
-        skylinkConfig.setAdvancedOption("OffererAnswererViaUserData", new Boolean(true));
-        // SDK_RUNTIME_CRASH
-        skylinkConfig.setAdvancedOption("SdkAdvancedOption)@", new Boolean(true));
-        // SDK_LOCK_LOG
-        // skylinkConfig.getAdvancedOptions().put("SdkAdvancedOption)#", new Boolean(true));
+        // Set default video resolution setting for video demo
+        String videoResolution = Utils.getDefaultVideoResolution();
+        if (videoResolution.equals(VIDEO_RESOLUTION_VGA)) {
+            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_VGA);
+            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_VGA);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_HDR)) {
+            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);
+            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR);
+        } else if (videoResolution.equals(VIDEO_RESOLUTION_FHD)) {
+            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
+            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
+        }
 
+        // Set default audio codec
+        String defaultAudioCodec = Utils.getDefaultAudioCodecConfig();
+        if (defaultAudioCodec.equals(AUDIO_CODEC_OPUS)) {
+            skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.OPUS);
+        } else if (defaultAudioCodec.equals(AUDIO_CODEC_ISAC)) {
+            skylinkConfig.setPreferredAudioCodec(SkylinkConfig.AudioCodec.ISAC);
+        }
+
+        // Set default socket transport
+        String defaultWebSocketTransport = Utils.getDefaultSocketTransportConfig();
+        if (defaultWebSocketTransport.equals(SOCKET_POLLING)) {
+            skylinkConfig.setPreferredSocketTransport(SkylinkConfig.SocketTransport.POLLING);
+        } else if (defaultWebSocketTransport.equals(SOCKET_WEB)) {
+            skylinkConfig.setPreferredSocketTransport(SkylinkConfig.SocketTransport.WEBSOCKET);
+        }
+
+        String defaultNetworkTransport = Utils.getDefaultNetworkTransportConfig();
+        try {
+            if (defaultNetworkTransport == null) {
+                skylinkConfig.setNetworkTransport(null);
+            } else {
+                if (defaultNetworkTransport.equals(NETWORK_UDP)) {
+                    skylinkConfig.setNetworkTransport(SkylinkConfig.NetworkTransport.UDP);
+                } else if (defaultNetworkTransport.equals(NETWORK_TCP)) {
+                    skylinkConfig.setNetworkTransport(SkylinkConfig.NetworkTransport.TCP);
+                }
+            }
+        } catch (SkylinkException e) {
+            String error = "[SA] Unable to set NetworkTransport! Error: " +
+                    e.getLocalizedMessage();
+            toastLog(TAG, context, error);
+        }
+
+        boolean defaultP2pMessagingConfig = Utils.getDefaultMessageConfig();
+        skylinkConfig.setP2PMessaging(defaultP2pMessagingConfig);
+
+        boolean defaultFileTransferConfig = Utils.getDefaultFileTransferConfig();
+        skylinkConfig.setFileTransfer(defaultFileTransferConfig);
+
+        boolean hasDataTransfer = Utils.getDefaultDataTransferConfig();
+        skylinkConfig.setDataTransfer(hasDataTransfer);
+
+        boolean useHWAcc = Utils.getDefaultVideoHwAccConfig();
+        skylinkConfig.setEnableVideoHwAcceleration(useHWAcc);
+
+        boolean useH246Profile = Utils.getDefaultH246ProfileConfig();
+        skylinkConfig.setEnableH264HighProfile(useH246Profile);
+
+        boolean useIntelVP8Encoder = Utils.getDefaultVp8EncoderConfig();
+        skylinkConfig.setEnableIntelVp8Encoder(useIntelVP8Encoder);
+
+        boolean useAudioSterio = Utils.getDefaultAudioStereoConfig();
+        skylinkConfig.setAudioStereo(useAudioSterio);
+
+        boolean useAudioAutoGain = Utils.getDefaultAudioAutoGainConfig();
+        skylinkConfig.setAudioAutoGainControl(useAudioAutoGain);
+
+        boolean useAudioEchoCancellation = Utils.getDefaultAudioEchoCancellationConfig();
+        skylinkConfig.setAudioEchoCancellation(useAudioEchoCancellation);
+
+        boolean useAudioHighPassFilter = Utils.getDefaultAudioHighPassFilterConfig();
+        skylinkConfig.setAudioHighPassFilter(useAudioHighPassFilter);
+
+        boolean useAudioNoiseSuppression = Utils.getDefaultAudioNoiseSuppressionConfig();
+        skylinkConfig.setAudioNoiseSuppression(useAudioNoiseSuppression);
+
+        boolean useMirrorLocalView = Utils.getDefaultMirrorlocalViewConfig();
+        skylinkConfig.setMirrorLocalFrontCameraView(useMirrorLocalView);
+
+        boolean autoReportVideoRes = Utils.getDefaultAutoReportVideoResOnChangeConfig();
+        skylinkConfig.setReportVideoResolutionOnVideoChange(autoReportVideoRes);
+
+        boolean autoReportVideoResUntillStable = Utils.getDefaultAutoReportVideoUntillStableConfig();
+        skylinkConfig.setReportVideoResolutionUntilStable(autoReportVideoResUntillStable);
+
+        int noOfCheckingVideoResForStable = Utils.getDefaultNoOfCheckingVideoResForStableConfig();
+        skylinkConfig.setVideoResNumCheckStable(noOfCheckingVideoResForStable);
+
+        int noOfTimeWaitingForNextCheckingVideoRes = Utils.getDefaultTimeWaitingForNextCheckingVideoResConfig();
+        skylinkConfig.setVideoResNumWaitMs(noOfTimeWaitingForNextCheckingVideoRes);
+
+        int maxAudioBitrate = Utils.getDefaultMaxAudioBitrateConfig();
+        skylinkConfig.setMaxAudioBitrate(maxAudioBitrate);
+
+        int maxVideoBitrate = Utils.getDefaultMaxVideoBitrateConfig();
+        skylinkConfig.setMaxVideoBitrate(maxVideoBitrate);
+
+        int maxDataBitrate = Utils.getDefaultMaxDataBitrateConfig();
+        skylinkConfig.setMaxDataBitrate(maxDataBitrate);
+
+        boolean useTurnServer = Utils.getDefaultTurnConfig();
+        skylinkConfig.setAllowTurn(useTurnServer);
+
+        boolean useSTurnServer = Utils.getDefaultSTurnConfig();
+        skylinkConfig.setAllowStun(useSTurnServer);
+
+        boolean useHostServer = Utils.getDefaultHostConfig();
+        skylinkConfig.setAllowHost(useHostServer);
+
+        boolean allowIceRestart = Utils.getDefaultIceRestartConfig();
+        skylinkConfig.setAllowIceRestart(allowIceRestart);
+
+        boolean useMultiTrack = Utils.getDefaultMultiTrackConfig();
+        skylinkConfig.setMultitrackCreateEnable(useMultiTrack);
+
+        int noOfReconnectAttempts = Utils.getDefaultNoOfReconnectAttempsConfig();
+        skylinkConfig.setReconnectAttempts(noOfReconnectAttempts);
+
+        int noOfReconnectDelay = Utils.getDefaultNoOfReconnectDelayConfig();
+        skylinkConfig.setReconnectionDelay(noOfReconnectDelay);
+        
         return skylinkConfig;
     }
 
@@ -938,7 +1037,7 @@ public class Utils {
     }
 
     public static String getDefaultNetworkTransportConfig() {
-        return sharedPref.getString(DEFAULT_NETWORK_TRANSPORT_CONFIG, NETWORK_UDP);
+        return sharedPref.getString(DEFAULT_NETWORK_TRANSPORT_CONFIG, null);
     }
 
     public static String getDefaultRoomsizeConfig() {

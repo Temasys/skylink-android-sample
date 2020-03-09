@@ -25,9 +25,6 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_FRONT;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
@@ -83,38 +80,19 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // MultiVideos config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        skylinkConfig.setP2PMessaging(false);
-        skylinkConfig.setFileTransfer(false);
-        skylinkConfig.setMirrorLocalFrontCameraView(true);
 
-        // Allow only 3 remote Peers to join, due to current UI design.
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-
-        // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
-
-        // Set some common configs.
+        // Set some common configs base on the default setting on the setting page
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 
-        // set enable multitrack to false to interop with JS-SDK
-        // skylinkConfig.setMultitrackCreateEnable(false);
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
-        //Set default video resolution setting
-        String videoResolution = Utils.getDefaultVideoResolution();
-        if (videoResolution.equals(VIDEO_RESOLUTION_VGA)) {
-            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_VGA);
-            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_VGA);
-        } else if (videoResolution.equals(VIDEO_RESOLUTION_HDR)) {
-            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);
-            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR);
-        } else if (videoResolution.equals(VIDEO_RESOLUTION_FHD)) {
-            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
-            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
-        }
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
+
+        skylinkConfig.setMirrorLocalFrontCameraView(true);
+
+        // just allow 3 remote peers join the room as the UI supported maximum 3 remote peers
+        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
         return skylinkConfig;
     }
@@ -422,6 +400,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
      */
     public void getTransferSpeeds(int peerIndex, SkylinkMedia.MediaType mediaType, boolean forSending) {
         String peerId = mPeersList.get(peerIndex).getPeerId();
+        String peerName = mPeersList.get(peerIndex).getPeerName() + "(" + peerId + ")";
 
         if (peerId == null)
             return;
@@ -443,7 +422,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                                     @Override
                                     public void onReceiveTransferSpeed(double transferSpeed) {
-                                        presenter.processTransferSpeedReceived(transferSpeed, peerId, true, context);
+                                        presenter.processTransferSpeedReceived(transferSpeed, peerName, true, context);
                                     }
                                 });
                     }
@@ -467,7 +446,7 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
                                     @Override
                                     public void onReceiveTransferSpeed(double transferSpeed) {
-                                        presenter.processTransferSpeedReceived(transferSpeed, peerId, false, context);
+                                        presenter.processTransferSpeedReceived(transferSpeed, peerName, false, context);
                                     }
                                 });
                     }

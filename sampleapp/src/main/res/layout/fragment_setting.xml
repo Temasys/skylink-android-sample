@@ -1353,6 +1353,13 @@
                 android:orientation="horizontal">
 
                 <RadioButton
+                    android:id="@+id/rdNetworkDefault"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Default"/>
+
+                <RadioButton
                     android:id="@+id/rdNetworkUDP"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"

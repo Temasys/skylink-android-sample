@@ -107,6 +107,8 @@ public interface ChatContract {
         void processStoreMessageSet(boolean isChecked);
 
         void processSelectSecretKey(String secretKey);
+
+        void processDeleteEncryption(String enryptionKey, String encryptionValue);
     }
 
     interface Service extends BaseService<Presenter> {

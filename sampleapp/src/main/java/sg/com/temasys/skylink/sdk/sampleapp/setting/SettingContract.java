@@ -63,6 +63,8 @@ public interface SettingContract {
 
         void onPollingTransportSelected();
 
+        void onNetworkTransportDefaultSelected();
+
         void onNetworkTransportUDPSelected();
 
         void onNetworkTransportTCPSelected();

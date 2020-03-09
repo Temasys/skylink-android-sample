@@ -24,8 +24,6 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 public class AudioService extends SkylinkCommonService implements AudioContract.Service {
 
-    private final int MAX_REMOTE_PEER = 5;
-
     public AudioService(Context context) {
         super(context);
         initializeSkylinkConnection(Constants.CONFIG_TYPE.AUDIO);
@@ -64,24 +62,16 @@ public class AudioService extends SkylinkCommonService implements AudioContract.
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // AudioVideo config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
-        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-        skylinkConfig.setP2PMessaging(false);
-        skylinkConfig.setFileTransfer(false);
-
-        // Allow only maximum 5 remote Peers to join.
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
-
-        // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.SMALL);
-
-        // Set some common configs.
+        // Set some common configs base on the default setting on the setting page
         Utils.skylinkConfigCommonOptions(skylinkConfig);
 
-        // set enable multitrack to false to interop with JS-SDK
-        // skylinkConfig.setMultitrackCreateEnable(false);
+        skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+        skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
+
+        int maxRemotePeer = Utils.getDefaultMaxPeerInAudioRoomConfig();
+        skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
 
         return skylinkConfig;
     }

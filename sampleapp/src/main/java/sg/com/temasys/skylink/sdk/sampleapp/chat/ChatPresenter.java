@@ -221,6 +221,21 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     }
 
     @Override
+    public void processDeleteEncryption(String enryptionKey, String encryptionValue) {
+
+        this.encryptionKeys.remove(enryptionKey);
+        this.encryptionValues.remove(encryptionValue);
+
+        chatService.setEncryptedMap(encryptionKeys, encryptionValues);
+
+        // no save as not handle the order of key-value
+        // save the encryption key-value to share pref
+        Utils.saveEncryptionMap(context, encryptionKeys, encryptionValues);
+
+        chatView.updateUIEncryptionKeys(encryptionKeys);
+    }
+
+    @Override
     public void processStoredMessagesResult(JSONArray messages) {
         // remove the UI for getting message history in the dataset
         chatMessageCollection.remove(1);
@@ -559,9 +574,6 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
                 }
             }
         }
-
-        chatMessageCollection.add(remotePeerName + " : " + chatPrefix + data);
-        chatView.updateUIChatCollection();
     }
 
     /**

@@ -27,8 +27,6 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
 
     private final String TAG = FileTransferService.class.getName();
 
-    private final int MAX_REMOTE_PEER = 7;
-
     public FileTransferService(Context context) {
         super(context);
         initializeSkylinkConnection(Constants.CONFIG_TYPE.FILE);
@@ -120,19 +118,20 @@ public class FileTransferService extends SkylinkCommonService implements FileTra
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // FileTransfer config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        // Set some common configs base on the default setting on the setting page
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);
+
+        int maxRemotePeer = Utils.getDefaultMaxPeerInNoMediaRoomConfig();
+        skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+
         skylinkConfig.setFileTransfer(true);
+        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.FILE_SEND_REQUEST, Constants.TIME_OUT_FILE_SEND_REQUEST);
 
-        // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
-        // set to 7 remote peers connected as our UI just support maximum 8 peers
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-
-        // Set some common configs.
-        Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
     }
 

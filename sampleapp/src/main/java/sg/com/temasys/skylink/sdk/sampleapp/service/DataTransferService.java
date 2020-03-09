@@ -47,7 +47,7 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
      * @param remotePeerId remotePeerID of a specified peer
      * @param data         Array of bytes
      */
-    public void sendData(String remotePeerId, byte[] data){
+    public void sendData(String remotePeerId, byte[] data) {
         if (skylinkConnection == null)
             return;
 
@@ -81,19 +81,19 @@ public class DataTransferService extends SkylinkCommonService implements DataTra
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // DataTransfer config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        // Set some common configs base on the default setting on the setting page
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);
+
+        int maxRemotePeer = Utils.getDefaultMaxPeerInNoMediaRoomConfig();
+        skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
+
         skylinkConfig.setDataTransfer(true);
 
-        // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.MEDIUM);
-        // set to 7 remote peers connected as our UI just support maximum 8 peers
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-
-        // Set some common configs.
-        Utils.skylinkConfigCommonOptions(skylinkConfig);
         return skylinkConfig;
     }
 

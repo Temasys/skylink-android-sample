@@ -176,15 +176,15 @@ public abstract class BasePresenter {
     // Methods which are from StatsListener need to be implemented for stats (in Multi Video function)
     //----------------------------------------------------------------------------------------------
 
-    public void processTransferSpeedReceived(double transferSpeed, String remotePeerId, boolean forSending, Context context) {
+    public void processTransferSpeedReceived(double transferSpeed, String remotePeer, boolean forSending, Context context) {
 
         String log;
         if (!forSending) {
             String direction = "Recv";
-            log = "[SA][TransSpeed] Transfer speed " + direction + " from Peer " + remotePeerId + ": " + transferSpeed + " kbps";
+            log = "[SA][TransSpeed] Transfer speed " + direction + " from Peer " + remotePeer + ": " + transferSpeed + " kbps";
         } else {
             String direction = "Send";
-            log = "[SA][TransSpeed] Transfer speed " + direction + " to Peer " + remotePeerId + ": " + transferSpeed + " kbps";
+            log = "[SA][TransSpeed] Transfer speed " + direction + " to Peer " + remotePeer + ": " + transferSpeed + " kbps";
         }
         // Log the transfer speeds.
 

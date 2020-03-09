@@ -2,12 +2,12 @@
 <resources>
 
     <string name="app_name">SampleApp 2.0.0</string>
-    <string name="title_section1"> Audio Call </string>
-    <string name="title_section2"> Video Call </string>
+    <string name="title_section1"> Audio </string>
+    <string name="title_section2"> Video </string>
     <string name="title_section3"> Chat </string>
     <string name="title_section4"> File Transfer </string>
     <string name="title_section5"> Data Transfer </string>
-    <string name="title_section6"> Multi-Videos </string>
+    <string name="title_section6"> Multi Videos </string>
     <string name="action_configuration"> Configuration </string>
     <string name="guide_room_id">Connect to room to get generated roomId</string>
     <string name="initing_room_id">(Room_id) is being generated...</string>
@@ -21,11 +21,11 @@
     <string name="webrtc_stats_off">WebRTC Stats (OFF)</string>
     <string name="webrtc_stats_on">WebRTC Stats (ON)</string>
     <string name="audio">Audio</string>
-    <string name="video">Video</string>
+    <string name="video">One to one Media</string>
     <string name="chat">Chat</string>
     <string name="fileTransfer">File Transfer</string>
-    <string name="dataTransfer">Data Transfer</string>
-    <string name="multiVideo">Multi Videos</string>
+    <string name="dataTransfer">Data Streaming</string>
+    <string name="multiVideo">Multiparty</string>
     <string name="stop_screenShare">Stop Screen Sharing</string>
     <string name="settings">Settings</string>
     <string name="default_audio_output">Default audio output for audio</string>

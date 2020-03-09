@@ -224,7 +224,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Settings.canDrawOverlays(context)) {
+            if (Settings.canDrawOverlays(context) && data != null) {
                 mainView.updateUIShowButtonStopScreenShare();
             } else {
                 if (permissionUtils.isSendOverlayAlready()) {

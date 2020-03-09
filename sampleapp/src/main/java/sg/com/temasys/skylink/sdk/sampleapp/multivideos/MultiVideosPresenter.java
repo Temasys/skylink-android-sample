@@ -294,7 +294,7 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
         // display overlay button if permission is grant
         // or warning dialog if permission is deny
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Settings.canDrawOverlays(context)) {
+            if (Settings.canDrawOverlays(context) && data != null) {
                 multiVideoCallView.updateUIShowButtonStopScreenSharing();
             } else {
                 permissionUtils.displayOverlayButtonPermissionWarning(context);
@@ -318,7 +318,7 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     public void processRoomConnected(boolean isSuccessful) {
         if (isSuccessful) {
             multiVideoCallView.updateUIConnected(processGetRoomId());
-        } else{
+        } else {
             multiVideoCallView.updateUIDisconnected();
         }
     }

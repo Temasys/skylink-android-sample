@@ -32,9 +32,6 @@ import static sg.com.temasys.skylink.sdk.rtc.SkylinkConfig.VideoDevice.CAMERA_FR
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_LARGE;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_MEDIUM;
 import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.SCREEN_RESOLUTION_SMALL;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_FHD;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_HDR;
-import static sg.com.temasys.skylink.sdk.sampleapp.setting.Config.VIDEO_RESOLUTION_VGA;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 
@@ -300,37 +297,21 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // VideoCall config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+
+        // Set some common configs base on the default setting on the setting page
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-        skylinkConfig.setP2PMessaging(true);
-        skylinkConfig.setFileTransfer(true);
+
+        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.EXTRA_SMALL);
+
         skylinkConfig.setMirrorLocalFrontCameraView(true);
         skylinkConfig.setReportVideoResolutionUntilStable(true);
         skylinkConfig.setReportVideoResolutionOnVideoChange(true);
 
-        // Allow only 1 remote Peer to join as our UI just support 1 remote peer
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
-
-        // Set the room size
-        skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.EXTRA_SMALL);
-
-        // Set some common configs.
-        Utils.skylinkConfigCommonOptions(skylinkConfig);
-
-        //Set default video resolution setting
-        String videoResolution = Utils.getDefaultVideoResolution();
-        if (videoResolution.equals(VIDEO_RESOLUTION_VGA)) {
-            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_VGA);
-            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_VGA);
-        } else if (videoResolution.equals(VIDEO_RESOLUTION_HDR)) {
-            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_HDR);
-            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_HDR);
-        } else if (videoResolution.equals(VIDEO_RESOLUTION_FHD)) {
-            skylinkConfig.setDefaultVideoWidth(SkylinkConfig.VIDEO_WIDTH_FHD);
-            skylinkConfig.setDefaultVideoHeight(SkylinkConfig.VIDEO_HEIGHT_FHD);
-        }
+        // just 1 to 1 video call
+        skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
         return skylinkConfig;
     }

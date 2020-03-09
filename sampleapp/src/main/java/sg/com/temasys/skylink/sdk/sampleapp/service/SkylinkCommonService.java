@@ -102,8 +102,8 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * This is the first callback from SkylinkSDK to specify whether the attempt to connect to the room was successful.
      */
     @Override
-    public void onConnectToRoomSuccessful() {
-        Log.d(TAG, "onConnectToRoomSuccessful");
+    public void onConnectToRoomSucessful() {
+        Log.d(TAG, "onConnectToRoomSucessful");
 
         String log = "[onConnectToRoomSuccessful] ";
         // get the self peer id
@@ -487,7 +487,7 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param skylinkInfo
      */
     public void onDenyPermission(Intent intent, int requestCode, SkylinkInfo skylinkInfo) {
-        Log.d(TAG, "onDenyPermission(intent: " + intent.getAction() + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
+        Log.d(TAG, "onDenyPermission(intent: " + intent + ", requestCode: " + requestCode + ", SkylinkInfo: " + skylinkInfo.getDescription());
         presenter.processPermissionDenied(intent, requestCode, skylinkInfo);
     }
 
@@ -1442,15 +1442,15 @@ public abstract class SkylinkCommonService implements LifeCycleListener, MediaLi
      * @param height       Video height in pixels of remote Peer's video received by us.
      * @param fps          Video frame per second of remote Peer's video received by us.
      * @param mediaType    type of the remote video that video resolution comes from
-     * @param remotePeerId PeerId of the remote Peer whose Video Resolution we are obtaining.
+     * @param remotePeer PeerId of the remote Peer whose Video Resolution we are obtaining.
      */
     protected void obtainReceivedVideoResolution(int width, int height,
-                                                 int fps, SkylinkMedia.MediaType mediaType, String remotePeerId) {
+                                                 int fps, SkylinkMedia.MediaType mediaType, String remotePeer) {
         // if the current demo has video resolution fragment to reflect the change
         if (videoResPresenter != null && mediaType != null)
-            videoResPresenter.processReceivedVideoResolutionObtained(remotePeerId, mediaType, width, height, fps);
+            videoResPresenter.processReceivedVideoResolutionObtained(remotePeer, mediaType, width, height, fps);
         else {
-            String log = "[SA][obtainReceivedVideoResolution] The video (" + mediaType + ") received from Peer " + remotePeerId +
+            String log = "[SA][obtainReceivedVideoResolution] The video (" + mediaType + ") received from Peer " + remotePeer +
                     " has width x height, fps: " + width + " x " + height + ", " + fps + " fps.\r\n";
             toastLogLong(TAG, context, log);
         }

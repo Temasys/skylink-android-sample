@@ -89,7 +89,7 @@
             android:visibility="visible"/>
 
         <ImageButton
-            android:id="@+id/btn_add_secret"
+            android:id="@+id/btn_add_or_delete_secret"
             android:layout_width="@dimen/dp_25dp"
             android:layout_height="@dimen/dp_25dp"
             android:layout_alignParentRight="true"

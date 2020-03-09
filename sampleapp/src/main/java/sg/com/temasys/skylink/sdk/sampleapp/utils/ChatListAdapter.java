@@ -157,7 +157,11 @@ public class ChatListAdapter extends ArrayAdapter<MessageModel> {
         }
 
         String userName = chatListRow.getPeerUserName();
-        buttonUseAvatar.setText(userName.substring(0, 1));
+        String displayName = null;
+        if (userName != null && userName.length() > 0) {
+            displayName = userName.substring(0, 1);
+        }
+        buttonUseAvatar.setText(displayName);
         txtUserName.setText(chatListRow.getPeerUserName() + "(" + chatListRow.getPeerId() + ")");
         txtDateTime.setText(chatListRow.getTimeStamp());
         txtRemoteMessageContent.setText(chatContent + chatListRow.getMessageContent());

@@ -14,7 +14,6 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
-import sg.com.temasys.skylink.sdk.rtc.SkylinkException;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
@@ -74,7 +73,6 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
      * @param remotePeerId Id of the remote peer to whom we will send a message. Use 'null' if the
      *                     message is to be sent to all our remote peers in the room.
      * @param message      User defined data
-     * @throws SkylinkException if the system was unable to send the message.
      */
     public void sendP2PMessage(String remotePeerId, Object message) {
         if (skylinkConnection != null) {
@@ -109,23 +107,22 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
     @Override
     public SkylinkConfig getSkylinkConfig() {
         SkylinkConfig skylinkConfig = new SkylinkConfig();
-        // Chat config options can be:
-        // NO_AUDIO_NO_VIDEO | AUDIO_ONLY | VIDEO_ONLY | AUDIO_AND_VIDEO
+        // Set some common configs base on the default setting on the setting page
+        Utils.skylinkConfigCommonOptions(skylinkConfig);
+
         skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
         skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-        skylinkConfig.setP2PMessaging(true);
 
-        // set to 7 remote peers connected as our UI just support maximum 8 peers
-        skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
-
-        // Set the room size
         skylinkConfig.setSkylinkRoomSize(SkylinkConfig.SkylinkRoomSize.LARGE);
 
-        // Set timeout for getting stored message
-        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.GET_STORED_MESSAGE, Utils.getDefaultNoOfStoredMsgTimeoutConfig() * 1000);
+        int maxRemotePeer = Utils.getDefaultMaxPeerInNoMediaRoomConfig();
+        skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.NO_AUDIO_NO_VIDEO);
 
-        // Set some common configs.
-        Utils.skylinkConfigCommonOptions(skylinkConfig);
+        skylinkConfig.setP2PMessaging(true);
+
+        // Set timeout for getting stored message
+        skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.GET_MESSAGE_STORED, Utils.getDefaultNoOfStoredMsgTimeoutConfig() * 1000);
+
         return skylinkConfig;
     }
 
@@ -153,15 +150,20 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
             skylinkConnection.getStoredMessages(new SkylinkCallback.StoredMessages() {
                 @Override
                 public void onObtainStoredMessages(JSONArray storedMessages, Map<SkylinkError, JSONArray> errors) {
-                    if (storedMessages != null) {
-                        messages[0] = storedMessages;
-                        Log.d(TAG, "result returned from stored msg history: " + storedMessages.toString());
+                    if (storedMessages == null && errors == null) {
+                        Toast.makeText(context, "There is no stored messages!", Toast.LENGTH_LONG).show();
+                        presenter.processStoredMessagesResult(null);
+                    } else {
+                        if (storedMessages != null) {
+                            messages[0] = storedMessages;
+                            Log.d(TAG, "result returned from stored msg history: " + storedMessages.toString());
 
-                        presenter.processStoredMessagesResult(storedMessages);
-                    }
-                    if (errors != null && errors.size() > 0) {
-                        Log.e(TAG, "errors from stored msg history: " + errors.toString());
-                        Toast.makeText(context, "There are errors on stored messages! Please check log!", Toast.LENGTH_LONG).show();
+                            presenter.processStoredMessagesResult(storedMessages);
+                        }
+                        if (errors != null) {
+                            Log.e(TAG, "errors from stored msg history: " + errors.toString());
+                            Toast.makeText(context, "There are errors on stored messages! Please check log!", Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             });

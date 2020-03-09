@@ -51,16 +51,21 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
     private EditText editChatMessage;
     private ImageButton btnSend;
     private ImageButton btnEncryptionOption;
-    private EditText editMsgEncryptionSecret;
     private View dividerEncryptionSecret;
     private RelativeLayout msgEncryptionLayout;
     private EditText editEncryptionKey, editEncryptionValue;
-    private ImageButton btnEncryptionAdd;
+    private ImageButton btnEncryptionAddOrDelete;
     private Spinner spinnerSecretIds, spinnerMsgFormat;
     private Switch switchStoreMessage;
 
     private boolean showMessageEncryptionSecret = false;
     private ArrayAdapter<String> encryptionKeyAdapter, msgFormatAdapter;
+    private ENCRYPTION_MODE encryptionMode = ENCRYPTION_MODE.ADD;
+
+    public enum ENCRYPTION_MODE {
+        ADD,
+        DELETE
+    }
 
     public static ChatFragment newInstance() {
         return new ChatFragment();
@@ -160,13 +165,13 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             case R.id.btn_show_hide_encryption_secret:
                 changeUIMessageEncryptionSecret();
                 break;
-            case R.id.btn_add_secret:
-                processAddEncryption();
+            case R.id.btn_add_or_delete_secret:
+                processAddOrDeleteEncryption();
                 break;
         }
     }
 
-    private void processAddEncryption() {
+    private void processAddOrDeleteEncryption() {
         String enryptionKey = editEncryptionKey.getText().toString();
         String encryptionValue = editEncryptionValue.getText().toString();
 
@@ -179,11 +184,13 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             return;
         }
 
-        presenter.processAddEncryption(enryptionKey, encryptionValue);
-
-        Utils.showHideKeyboard(getActivity(), false);
-
-        changeUIMessageEncryptionSecret();
+        if (encryptionMode == ENCRYPTION_MODE.ADD) {
+            presenter.processAddEncryption(enryptionKey, encryptionValue);
+            Utils.showHideKeyboard(getActivity(), false);
+            changeUIMessageEncryptionSecret();
+        } else if (encryptionMode == ENCRYPTION_MODE.DELETE) {
+            presenter.processDeleteEncryption(enryptionKey, encryptionValue);
+        }
     }
 
     @Override
@@ -362,12 +369,11 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnSend = rootView.findViewById(R.id.btnSendMsg);
         btnEncryptionOption = rootView.findViewById(R.id.btn_show_hide_encryption_secret);
         dividerEncryptionSecret = rootView.findViewById(R.id.divider_encryption_secret);
-        editMsgEncryptionSecret = rootView.findViewById(R.id.edit_message_encryption_secret_key);
 
         msgEncryptionLayout = rootView.findViewById(R.id.layout_message_encryption_secret);
         editEncryptionKey = rootView.findViewById(R.id.edit_message_encryption_secret_key);
         editEncryptionValue = rootView.findViewById(R.id.edit_message_encryption_secret_value);
-        btnEncryptionAdd = rootView.findViewById(R.id.btn_add_secret);
+        btnEncryptionAddOrDelete = rootView.findViewById(R.id.btn_add_or_delete_secret);
         spinnerSecretIds = rootView.findViewById(R.id.spinner_secretIds);
         spinnerMsgFormat = rootView.findViewById(R.id.spinner_message_format);
         switchStoreMessage = rootView.findViewById(R.id.switch_store_msg);
@@ -401,7 +407,7 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
         btnSend.setOnClickListener(this);
 
         btnEncryptionOption.setOnClickListener(this);
-        btnEncryptionAdd.setOnClickListener(this);
+        btnEncryptionAddOrDelete.setOnClickListener(this);
 
         btnLocalPeer.setOnLongClickListener(this);
         btnRemotePeer1.setOnLongClickListener(this);
@@ -568,6 +574,18 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
      * Display or hide the encryption secret UI
      */
     private void setUIEncryptionSecret(boolean isVisible) {
+        String encryptionKey = editEncryptionKey.getText().toString();
+        String encryptionValue = editEncryptionValue.getText().toString();
+
+        // change the add button to delete button base on the value of edit text
+        if (encryptionKey != null && encryptionKey.length() > 0) {
+            btnEncryptionAddOrDelete.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_remove_small_18dp));
+            encryptionMode = ENCRYPTION_MODE.DELETE;
+        } else {
+            btnEncryptionAddOrDelete.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_add_small_18dp));
+            encryptionMode = ENCRYPTION_MODE.ADD;
+        }
+
         if (isVisible) {
             dividerEncryptionSecret.setVisibility(View.VISIBLE);
 
@@ -575,7 +593,6 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             editEncryptionKey.requestFocus();
 
             Utils.showHideKeyboard(getActivity(), true);
-
         } else {
             dividerEncryptionSecret.setVisibility(View.GONE);
             msgEncryptionLayout.setVisibility(View.GONE);
@@ -614,6 +631,8 @@ public class ChatFragment extends CustomActionBar implements ChatContract.View, 
             editEncryptionKey.setText("");
             editEncryptionValue.setText("");
             presenter.processSelectSecretKey(null);
+
+            setUIEncryptionSecret(this.showMessageEncryptionSecret);
         } else {
             // fill UI to edit text for editing key and value
             String secretValue = presenter.processGetEncryptionValueFromKey(secretKey);

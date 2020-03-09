@@ -46,7 +46,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
             rdVideoResMedium, rdVideoResSmall, rdAudioVideoSend, rdAudioSendOnly, rdVideoSendOnly,
             rdNoneAudioVideoSend, rdAudioVideoRec, rdAudioRecOnly, rdVideoRecOnly,
             rdNoneAudioVideoRec, rdAudioCodecOPUS, rdAudioCodecISAC, rdSocketPolling, rdSocketWeb,
-            rdNetworkUDP, rdNetworkTCP, rdRoomSizeSX, rdRoomSizeS, rdRoomSizeM, rdRoomSizeL;
+            rdNetworkDefault, rdNetworkUDP, rdNetworkTCP, rdRoomSizeSX, rdRoomSizeS, rdRoomSizeM, rdRoomSizeL;
     private Switch switchHasDataTransfer, switchHasPeerMessage, switchHasFileTransfer, switchUseHWAcceleration,
             switchUseH246Profile, switchUseVP8Encoder, switchUseAudioStereo, switchUseAutoGainControl,
             switchUseAudioEchoCancellation, switchUseAudioHighPassFilter, switchUseAudioNoiseSuppression,
@@ -231,6 +231,9 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
                 break;
             case R.id.rdNetworkUDP:
                 mPresenter.onProcessNetworkTransport(SkylinkConfig.NetworkTransport.UDP);
+                break;
+            case R.id.rdNetworkDefault:
+                mPresenter.onProcessNetworkTransport(null);
                 break;
             case R.id.rdNetworkTCP:
                 mPresenter.onProcessNetworkTransport(SkylinkConfig.NetworkTransport.TCP);
@@ -450,13 +453,22 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
     }
 
     @Override
+    public void onNetworkTransportDefaultSelected() {
+        rdNetworkDefault.setChecked(true);
+        rdNetworkUDP.setChecked(false);
+        rdNetworkTCP.setChecked(false);
+    }
+
+    @Override
     public void onNetworkTransportUDPSelected() {
         rdNetworkUDP.setChecked(true);
+        rdNetworkDefault.setChecked(false);
         rdNetworkTCP.setChecked(false);
     }
 
     @Override
     public void onNetworkTransportTCPSelected() {
+        rdNetworkDefault.setChecked(false);
         rdNetworkUDP.setChecked(false);
         rdNetworkTCP.setChecked(true);
     }
@@ -767,6 +779,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         rdSocketPolling = rootView.findViewById(R.id.rdSocketPolling);
         rdSocketWeb = rootView.findViewById(R.id.rdSocketWebSocket);
 
+        rdNetworkDefault = rootView.findViewById(R.id.rdNetworkDefault);
         rdNetworkUDP = rootView.findViewById(R.id.rdNetworkUDP);
         rdNetworkTCP = rootView.findViewById(R.id.rdNetworkTCP);
 
@@ -860,6 +873,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         rdSocketPolling.setOnClickListener(this);
         rdSocketWeb.setOnClickListener(this);
 
+        rdNetworkDefault.setOnClickListener(this);
         rdNetworkUDP.setOnClickListener(this);
         rdNetworkTCP.setOnClickListener(this);
 
@@ -894,7 +908,7 @@ public class SettingFragment extends Fragment implements SettingContract.View, V
         rdAudioVideoRec.setChecked(true);
         rdAudioCodecOPUS.setChecked(true);
         rdSocketWeb.setChecked(true);
-        rdNetworkUDP.setChecked(true);
+        rdNetworkDefault.setChecked(true);
         rdRoomSizeS.setChecked(true);
 
         switchHasDataTransfer.setOnClickListener(this);
