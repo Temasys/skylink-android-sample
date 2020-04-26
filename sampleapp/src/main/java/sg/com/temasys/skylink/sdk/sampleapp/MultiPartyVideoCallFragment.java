@@ -803,6 +803,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
     @Override
     public void onConnect(boolean isSuccessful, String message) {
         if (isSuccessful) {
+
+            // start audio routing and turn on speaker
+            AudioRouter.startAudioRouting(context.getApplicationContext());
+            AudioRouter.turnOnSpeaker();
+
             String log = "Connected to room " + ROOM_NAME + " (" + skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
             toastLogLong(TAG, context, log);
@@ -816,6 +821,11 @@ public class MultiPartyVideoCallFragment extends Fragment implements
 
     @Override
     public void onDisconnect(int errorCode, String message) {
+
+        // turn off speaker to the normal state and stop audio routing
+        AudioRouter.turnOffSpeaker();
+        AudioRouter.stopAudioRouting(context.getApplicationContext());
+
         String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {
             log += "We have successfully disconnected from the room.";

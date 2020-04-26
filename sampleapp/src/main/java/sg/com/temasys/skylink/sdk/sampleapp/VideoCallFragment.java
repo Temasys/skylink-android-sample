@@ -1385,6 +1385,11 @@ public class VideoCallFragment extends Fragment
         if (isSuccessful) {
             connecting = false;
             onConnectUIChange();
+
+            // start audio routing and turn on speaker
+            AudioRouter.startAudioRouting(context.getApplicationContext());
+            AudioRouter.turnOnSpeaker();
+
             String log = "[SA][Video][onConnect] Connected to room " + roomName + " (" +
                     skylinkConnection.getRoomId() +
                     ") as " + skylinkConnection.getPeerId() + " (" + MY_USER_NAME + ").";
@@ -1400,6 +1405,11 @@ public class VideoCallFragment extends Fragment
     @Override
     public void onDisconnect(int errorCode, String message) {
         onDisconnectUIChange();
+
+        // turn off speaker to the normal state and stop audio routing
+        AudioRouter.turnOffSpeaker();
+        AudioRouter.stopAudioRouting(context.getApplicationContext());
+
         connecting = false;
         String log = "[onDisconnect] ";
         if (errorCode == Errors.DISCONNECT_FROM_ROOM) {

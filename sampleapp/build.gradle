@@ -22,7 +22,7 @@ sonarqube {
     properties {
         property "sonar.projectKey", "AND-Sample"
         property "sonar.projectName", "Skylink Android SDK - Sample App"
-        property "sonar.projectVersion", "0.11.0"
+        property "sonar.projectVersion", "0.11.1"
         property "sonar.language", "java"
         property "sonar.sources", "src"
         property "sonar.binaries", "build"
@@ -41,11 +41,11 @@ android {
     compileSdkVersion 25
     buildToolsVersion '27.0.3'
     defaultConfig {
-        applicationId "sg.com.temasys.skylink.sampleapp_0_10_0"
+        applicationId "sg.com.temasys.skylink.sampleapp_0_11_1"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
-        versionName "0.11.0"
+        versionName "0.11.1"
     }
     // Run lint checks but don't abort build
     lintOptions {
