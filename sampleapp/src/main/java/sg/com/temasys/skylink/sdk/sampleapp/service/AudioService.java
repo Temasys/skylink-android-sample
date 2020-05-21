@@ -12,6 +12,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -72,6 +73,13 @@ public class AudioService extends SkylinkCommonService implements AudioContract.
 
         int maxRemotePeer = Utils.getDefaultMaxPeerInAudioRoomConfig();
         skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY);
+
+        // set unsupportedHWAEC list to the skylinkConfig
+        AudioRouter.unsupportedHWAECList.add("Mi A2");
+        AudioRouter.unsupportedHWAECList.add("TA-1196");
+        AudioRouter.unsupportedHWAECList.add("TA-1119");
+
+        skylinkConfig.setUnsupportedAECModels(AudioRouter.unsupportedHWAECList);
 
         return skylinkConfig;
     }

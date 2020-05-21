@@ -1,6 +1,8 @@
 package sg.com.temasys.skylink.sdk.sampleapp.audio;
 
 import android.content.Context;
+import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
@@ -79,13 +81,30 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
             // start local audio
             audioCallService.createLocalAudio();
 
+            // change the audio output base on the default setting
+            AudioRouter.setPresenter(this);
+            AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
+
+            if (Utils.isDefaultSpeakerSettingForAudio() && AudioRouter.unsupportedHWAECList.contains(Build.MODEL)) {
+                // temporary turn off speaker first to avoid echo for Xiaomi device in the black list
+                AudioRouter.turnOffSpeaker();
+
+                currentAudioSpeaker = false;
+            } else {
+                // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
+                if (currentAudioSpeaker) {
+                    AudioRouter.turnOnSpeaker();
+                } else {
+                    AudioRouter.turnOffSpeaker();
+                }
+            }
+
+            audioCallView.updateUIAudioOutputChanged(currentAudioSpeaker);
+
             //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
         }
-
-        //get default audio output settings and change UI
-        audioCallView.updateUIAudioOutputChanged(currentAudioSpeaker);
     }
 
     @Override
@@ -94,9 +113,9 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
         currentAudioSpeaker = !currentAudioSpeaker;
 
         // change audio output (speaker state) in AudioRouter
-        if(currentAudioSpeaker){
+        if (currentAudioSpeaker) {
             AudioRouter.turnOnSpeaker();
-        } else{
+        } else {
             AudioRouter.turnOffSpeaker();
         }
     }
@@ -158,17 +177,6 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     @Override
     public void processLocalAudioCaptured(SkylinkMedia localAudio) {
         toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.getMediaId());
-
-        // change the audio output base on the default setting
-        AudioRouter.setPresenter(this);
-        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
-
-        // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
-        if(currentAudioSpeaker){
-            AudioRouter.turnOnSpeaker();
-        } else {
-            AudioRouter.turnOffSpeaker();
-        }
     }
 
     @Override
@@ -209,6 +217,28 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
         // Remove a remote peer by re-fill total remote peer left in the room
         // to make sure the left peers are displayed correctly
         audioCallView.updateUIRemotePeerDisconnected(audioCallService.getPeersList());
+    }
+
+    @Override
+    public void processRemoteAudioReceived(String remotePeerId) {
+
+        // Add delay 3 seconds for audio speaker turned on to avoid audio echo if the device model is not supported AEC
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // turn on speaker now as default setting
+                if (Utils.isDefaultSpeakerSettingForAudio() && (AudioRouter.unsupportedHWAECList.contains(Build.MODEL))) {
+                    // temporary turn off speaker first to avoid echo for Xiaomi device in the black list
+                    AudioRouter.turnOnSpeaker();
+
+                    currentAudioSpeaker = true;
+
+                    //get default audio output settings and change UI
+                    audioCallView.updateUIAudioOutputChanged(currentAudioSpeaker);
+                }
+            }
+        }, 3000);
     }
 
     //----------------------------------------------------------------------------------------------

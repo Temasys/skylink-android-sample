@@ -415,11 +415,11 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     @Override
     public void updateUIReceiveRemoteAudio(String remotePeerId) {
         btnAudioSpeaker.setEnabled(true);
-        if (Utils.isDefaultSpeakerSettingForVideo()) {
-            btnAudioSpeaker.setMuted(false);
-        } else {
-            btnAudioSpeaker.setMuted(true);
-        }
+//        if (Utils.isDefaultSpeakerSettingForVideo()) {
+//            btnAudioSpeaker.setMuted(false);
+//        } else {
+//            btnAudioSpeaker.setMuted(true);
+//        }
     }
 
     /**

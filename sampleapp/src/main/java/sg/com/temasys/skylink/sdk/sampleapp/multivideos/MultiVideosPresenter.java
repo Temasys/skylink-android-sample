@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -100,6 +101,24 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
 
         // start local audio
         multiVideoCallService.createLocalAudio();
+
+        // change the audio output base on the default setting
+        AudioRouter.setPresenter(this);
+        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
+
+        boolean currentVideoSpeaker = Utils.isDefaultSpeakerSettingForVideo();
+
+        if (currentVideoSpeaker && AudioRouter.unsupportedHWAECList.contains(Build.MODEL)) {
+            // temporary turn off speaker first to avoid echo for deviceS in the black list
+            AudioRouter.turnOffSpeaker();
+        } else {
+            // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
+            if (currentVideoSpeaker) {
+                AudioRouter.turnOnSpeaker();
+            } else {
+                AudioRouter.turnOffSpeaker();
+            }
+        }
 
         // check the default setting for video device and start local video accordingly
         if (Utils.isDefaultCameraDeviceSetting()) {
@@ -335,16 +354,6 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
     @Override
     public void processLocalAudioCaptured(SkylinkMedia localAudio) {
         toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.getMediaId());
-
-        AudioRouter.setPresenter(this);
-        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.MULTI_VIDEOS);
-
-        // Turn on/off speaker by the default setting for video speaker
-        if (Utils.isDefaultSpeakerSettingForVideo()) {
-            AudioRouter.turnOnSpeaker();
-        } else {
-            AudioRouter.turnOffSpeaker();
-        }
     }
 
     @Override
@@ -407,6 +416,23 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
 
         // remote the remote peer video view
         multiVideoCallView.updateUIRemoveRemotePeer(removeIndex);
+    }
+
+    @Override
+    public void processRemoteAudioReceived(String remotePeerId) {
+
+        // Add delay 3 seconds for audio speaker turned on to avoid audio echo if the device model is not supported AEC
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // turn on speaker now as default setting
+                if (Utils.isDefaultSpeakerSettingForVideo() && (AudioRouter.unsupportedHWAECList.contains(Build.MODEL))) {
+                    // temporary turn off speaker first to avoid echo for Xiaomi device in the black list
+                    AudioRouter.turnOnSpeaker();
+                }
+            }
+        }, 3000);
     }
 
     @Override

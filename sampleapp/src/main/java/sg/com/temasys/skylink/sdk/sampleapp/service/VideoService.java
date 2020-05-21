@@ -313,6 +313,13 @@ public class VideoService extends SkylinkCommonService implements VideoContract.
         // just 1 to 1 video call
         skylinkConfig.setMaxRemotePeersConnected(1, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
 
+        // set unsupportedHWAEC list to the skylinkConfig
+        AudioRouter.unsupportedHWAECList.add("Mi A2");
+        AudioRouter.unsupportedHWAECList.add("TA-1196");
+        AudioRouter.unsupportedHWAECList.add("TA-1119");
+
+        skylinkConfig.setUnsupportedAECModels(AudioRouter.unsupportedHWAECList);
+
         return skylinkConfig;
     }
 

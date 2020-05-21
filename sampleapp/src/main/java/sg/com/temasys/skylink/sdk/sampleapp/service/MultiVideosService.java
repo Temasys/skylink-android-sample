@@ -21,6 +21,7 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 import sg.com.temasys.skylink.sdk.sampleapp.multivideos.MultiVideosContract;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
+import sg.com.temasys.skylink.sdk.sampleapp.utils.AudioRouter;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Constants;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
@@ -93,6 +94,13 @@ public class MultiVideosService extends SkylinkCommonService implements MultiVid
 
         // just allow 3 remote peers join the room as the UI supported maximum 3 remote peers
         skylinkConfig.setMaxRemotePeersConnected(MAX_REMOTE_PEER, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO);
+
+        // set unsupportedHWAEC list to the skylinkConfig
+        AudioRouter.unsupportedHWAECList.add("Mi A2");
+        AudioRouter.unsupportedHWAECList.add("TA-1196");
+        AudioRouter.unsupportedHWAECList.add("TA-1119");
+
+        skylinkConfig.setUnsupportedAECModels(AudioRouter.unsupportedHWAECList);
 
         return skylinkConfig;
     }

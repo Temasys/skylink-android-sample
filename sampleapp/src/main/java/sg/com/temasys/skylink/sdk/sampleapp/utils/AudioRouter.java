@@ -9,6 +9,9 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.util.Log;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import sg.com.temasys.skylink.sdk.sampleapp.BasePresenter;
 
 /**
@@ -32,6 +35,9 @@ public class AudioRouter {
     private static boolean isSpeakerOn;
 
     private static Constants.CONFIG_TYPE callType;
+
+    // list of device models that are unsupported hardware acoustic echo cancellation
+    public static Set<String> unsupportedHWAECList = new HashSet<String>();
 
     private AudioRouter() {
         headsetBroadcastReceiver = new BroadcastReceiver() {
@@ -163,7 +169,6 @@ public class AudioRouter {
 
         //use default setting for initialize
         callType = typeCall;
-        applyDefaultAudioSetting();
 
         log = logTag + "Starting audio routing is complete.";
         Log.d(TAG, log);

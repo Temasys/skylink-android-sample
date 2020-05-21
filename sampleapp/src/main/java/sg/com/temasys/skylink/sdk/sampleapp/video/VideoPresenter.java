@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -89,7 +90,7 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         processConnectToRoom();
 
         //get default audio output settings
-        mainView.updateUIAudioOutputChanged(this.currentVideoSpeaker);
+//        mainView.updateUIAudioOutputChanged(this.currentVideoSpeaker);
 
         //after connected to skylink SDK, UI will be updated latter on processRoomConnected
     }
@@ -312,6 +313,26 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
         // start local audio
         videoService.createLocalAudio();
 
+        // change the audio output base on the default setting
+        AudioRouter.setPresenter(this);
+        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.AUDIO);
+
+        if (Utils.isDefaultSpeakerSettingForVideo() && AudioRouter.unsupportedHWAECList.contains(Build.MODEL)) {
+            // temporary turn off speaker first to avoid echo for deviceS in the black list
+            AudioRouter.turnOffSpeaker();
+
+            currentVideoSpeaker = false;
+        } else {
+            // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
+            if (currentVideoSpeaker) {
+                AudioRouter.turnOnSpeaker();
+            } else {
+                AudioRouter.turnOffSpeaker();
+            }
+        }
+
+        mainView.updateUIAudioOutputChanged(currentVideoSpeaker);
+
         // check the default setting for video device and start local video accordingly
         if (Utils.isDefaultCameraDeviceSetting()) {
             videoService.createLocalVideo();
@@ -463,13 +484,26 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void processRemoteAudioReceived(String remotePeerId) {
-        AudioRouter.setPresenter(this);
-        AudioRouter.startAudioRouting(context, Constants.CONFIG_TYPE.VIDEO);
-
-        // use service layer to change the audio output, update UI will be called later in processAudioOutputChanged
-        videoService.changeSpeakerOutput(this.currentVideoSpeaker);
 
         mainView.updateUIReceiveRemoteAudio(remotePeerId);
+
+        // Add delay 3 seconds for audio speaker turned on to avoid audio echo if the device model is not supported AEC
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // turn on speaker now as default setting
+                if (Utils.isDefaultSpeakerSettingForVideo() && (AudioRouter.unsupportedHWAECList.contains(Build.MODEL))) {
+                    // temporary turn off speaker first to avoid echo for Xiaomi device in the black list
+                    AudioRouter.turnOnSpeaker();
+
+                    currentVideoSpeaker = true;
+
+                    //get default audio output settings and change UI
+                    mainView.updateUIAudioOutputChanged(currentVideoSpeaker);
+                }
+            }
+        }, 3000);
     }
 
     @Override
@@ -484,10 +518,10 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
         if (isSpeakerOn) {
             String log = context.getString(R.string.enable_speaker);
-//            toastLog(TAG, context, log);
+            toastLog(TAG, context, log);
         } else {
             String log = context.getString(R.string.enable_headset);
-//            toastLog(TAG, context, log);
+            toastLog(TAG, context, log);
         }
     }
 
