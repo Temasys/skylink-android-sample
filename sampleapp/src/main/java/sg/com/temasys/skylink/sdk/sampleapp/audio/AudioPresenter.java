@@ -55,7 +55,7 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
     }
 
     //----------------------------------------------------------------------------------------------
-    // Override methods from AudioContract.Presenter for view to call
+    // Override methods from ScreenContract.Presenter for view to call
     // These methods are responsible for processing requests from view
     //----------------------------------------------------------------------------------------------
 

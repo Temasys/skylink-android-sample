@@ -3,22 +3,22 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.appcompat.app.AppCompatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.datatransfer.DataTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.filetransfer.FileTransferActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.multivideos.MultiVideosActivity;
+import sg.com.temasys.skylink.sdk.sampleapp.screen.ScreenActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
-import sg.com.temasys.skylink.sdk.sampleapp.video.ScreenActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {

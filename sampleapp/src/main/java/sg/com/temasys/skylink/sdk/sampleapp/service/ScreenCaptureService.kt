@@ -86,9 +86,9 @@ class ScreenCaptureService : Service() {
 
             screenVideoCapturer = createScreenVideoCapturer(intent)
 
-            // how to pass screenCapturer into videoService ???
+//            screenService.createLocalCustomVideo(screenCapturer)
 
-//            videoService.createLocalCustomVideo(screenCapturer)
+
 
 
         } else {
