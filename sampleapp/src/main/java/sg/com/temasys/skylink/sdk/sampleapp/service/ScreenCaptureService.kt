@@ -7,22 +7,14 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
-import android.media.AudioFormat
-import android.media.AudioPlaybackCaptureConfiguration
-import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import java.io.File
-import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.concurrent.thread
-import kotlin.experimental.and
+import org.webrtc.ScreenCapturerAndroid
+import org.webrtc.VideoCapturer
 
 
 class ScreenCaptureService : Service() {
@@ -30,8 +22,7 @@ class ScreenCaptureService : Service() {
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var mediaProjection: MediaProjection? = null
 
-    private lateinit var audioCaptureThread: Thread
-    private var audioRecord: AudioRecord? = null
+    private var screenVideoCapturer: VideoCapturer? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -45,6 +36,10 @@ class ScreenCaptureService : Service() {
         // see: https://partnerissuetracker.corp.google.com/issues/139732252
         mediaProjectionManager =
                 applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+    }
+
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
     }
 
     private fun createNotificationChannel() {
@@ -70,11 +65,11 @@ class ScreenCaptureService : Service() {
                                     Activity.RESULT_OK,
                                     intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                             ) as MediaProjection
-                    startAudioCapture()
+                    startScreenCapture()
                     Service.START_STICKY
                 }
                 ACTION_STOP -> {
-                    stopAudioCapture()
+                    stopScreenCapture()
                     Service.START_NOT_STICKY
                 }
                 else -> throw IllegalArgumentException("Unexpected action received: ${intent.action}")
@@ -84,117 +79,62 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun startAudioCapture() {
+    private fun startScreenCapture() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection!!)
-                    .addMatchingUsage(AudioAttributes.USAGE_MEDIA) // TODO provide UI options for inclusion/exclusion
-                    .build()
 
-            /**
-             * Using hardcoded values for the audio format, Mono PCM samples with a sample rate of 8000Hz
-             * These can be changed according to your application's needs
-             */
-            val audioFormat = AudioFormat.Builder()
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setSampleRate(8000)
-                    .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
-                    .build()
+            val intent = mediaProjectionManager.createScreenCaptureIntent()
 
-            audioRecord = AudioRecord.Builder()
-                    .setAudioFormat(audioFormat)
-                    // For optimal performance, the buffer size
-                    // can be optionally specified to store audio samples.
-                    // If the value is not specified,
-                    // uses a single frame and lets the
-                    // native code figure out the minimum buffer size.
-                    .setBufferSizeInBytes(BUFFER_SIZE_IN_BYTES)
-                    .setAudioPlaybackCaptureConfig(config)
-                    .build()
+            screenVideoCapturer = createScreenVideoCapturer(intent)
 
-            audioRecord!!.startRecording()
-            audioCaptureThread = thread(start = true) {
-                val outputFile = createAudioFile()
-                Log.d(LOG_TAG, "Created file for capture target: ${outputFile.absolutePath}")
-                writeAudioToFile(outputFile)
-            }
+            // how to pass screenCapturer into videoService ???
+
+//            videoService.createLocalCustomVideo(screenCapturer)
+
 
         } else {
             TODO("VERSION.SDK_INT < Q")
         }
     }
 
-    private fun createAudioFile(): File {
-        val audioCapturesDirectory = File(getExternalFilesDir(null), "/AudioCaptures")
-        if (!audioCapturesDirectory.exists()) {
-            audioCapturesDirectory.mkdirs()
-        }
-        val timestamp = SimpleDateFormat("dd-MM-yyyy-hh-mm-ss", Locale.US).format(Date())
-        val fileName = "Capture-$timestamp.pcm"
-        return File(audioCapturesDirectory.absolutePath + "/" + fileName)
+    /**
+     * Create and return a [ScreenCapturerAndroid].
+     */
+    private fun createScreenVideoCapturer(mediaProjectionPermissionResultIntent: Intent): VideoCapturer? {
+        return ScreenCapturerAndroid(mediaProjectionPermissionResultIntent, object : MediaProjection.Callback() {
+            override fun onStop() {
+                val log = "[ScreenCapturerAndroid][onStop] Screen capturing has been stopped."
+            }
+        })
     }
 
-    private fun writeAudioToFile(outputFile: File) {
-        val fileOutputStream = FileOutputStream(outputFile)
-        val capturedAudioSamples = ShortArray(NUM_SAMPLES_PER_READ)
-
-        while (!audioCaptureThread.isInterrupted) {
-            audioRecord?.read(capturedAudioSamples, 0, NUM_SAMPLES_PER_READ)
-
-            // This loop should be as fast as possible to avoid artifacts in the captured audio
-            // You can uncomment the following line to see the capture samples but
-            // that will incur a performance hit due to logging I/O.
-            // Log.v(LOG_TAG, "Audio samples captured: ${capturedAudioSamples.toList()}")
-
-            fileOutputStream.write(
-                    capturedAudioSamples.toByteArray(),
-                    0,
-                    BUFFER_SIZE_IN_BYTES
-            )
-        }
-
-        fileOutputStream.close()
-        Log.d(LOG_TAG, "Audio capture finished for ${outputFile.absolutePath}. File size is ${outputFile.length()} bytes.")
+    private fun stopScreenCapture() {
+//        requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
+//
+//        audioCaptureThread.interrupt()
+//        audioCaptureThread.join()
+//
+//        audioRecord!!.stop()
+//        audioRecord!!.release()
+//        audioRecord = null
+//
+//        mediaProjection!!.stop()
+//        stopSelf()
     }
 
-    private fun stopAudioCapture() {
-        requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
 
-        audioCaptureThread.interrupt()
-        audioCaptureThread.join()
-
-        audioRecord!!.stop()
-        audioRecord!!.release()
-        audioRecord = null
-
-        mediaProjection!!.stop()
-        stopSelf()
-    }
-
-    override fun onBind(p0: Intent?): IBinder? = null
-
-    private fun ShortArray.toByteArray(): ByteArray {
-        // Samples get translated into bytes following little-endianness:
-        // least significant byte first and the most significant byte last
-        val bytes = ByteArray(size * 2)
-        for (i in 0 until size) {
-            bytes[i * 2] = (this[i] and 0x00FF).toByte()
-            bytes[i * 2 + 1] = (this[i].toInt() shr 8).toByte()
-            this[i] = 0
-        }
-        return bytes
-    }
 
     companion object {
-        private const val LOG_TAG = "AudioCaptureService"
         private const val SERVICE_ID = 123
-        private const val NOTIFICATION_CHANNEL_ID = "AudioCapture channel"
+        private const val NOTIFICATION_CHANNEL_ID = "ScreenCapture channel"
 
         private const val NUM_SAMPLES_PER_READ = 1024
         private const val BYTES_PER_SAMPLE = 2 // 2 bytes since we hardcoded the PCM 16-bit format
         private const val BUFFER_SIZE_IN_BYTES = NUM_SAMPLES_PER_READ * BYTES_PER_SAMPLE
 
-        const val ACTION_START = "AudioCaptureService:Start"
-        const val ACTION_STOP = "AudioCaptureService:Stop"
-        const val EXTRA_RESULT_DATA = "AudioCaptureService:Extra:ResultData"
+        const val ACTION_START = "ScreenCaptureService:Start"
+        const val ACTION_STOP = "ScreenCaptureService:Stop"
+        const val EXTRA_RESULT_DATA = "ScreenCaptureService:Extra:ResultData"
     }
+
+
 }

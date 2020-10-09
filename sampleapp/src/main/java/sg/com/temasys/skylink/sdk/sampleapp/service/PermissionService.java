@@ -21,7 +21,7 @@ public class PermissionService {
      */
     public static boolean processPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         //
-        SkylinkConnection skylinkConnection = SkylinkCommonService.getCurrentSkylinkConnection();
+        SkylinkConnection skylinkConnection = SkylinkCommonService.Companion.getCurrentSkylinkConnection();
 
         if (skylinkConnection != null) {
             return skylinkConnection.processPermissionsResult(requestCode, permissions, grantResults);
@@ -40,7 +40,7 @@ public class PermissionService {
      */
     public static boolean processActivityResult(int requestCode, int resultCode, Intent data) {
         //
-        SkylinkConnection skylinkConnection = SkylinkCommonService.getCurrentSkylinkConnection();
+        SkylinkConnection skylinkConnection = SkylinkCommonService.Companion.getCurrentSkylinkConnection();
 
         if (skylinkConnection != null) {
             return skylinkConnection.processActivityResult(requestCode, resultCode, data);
