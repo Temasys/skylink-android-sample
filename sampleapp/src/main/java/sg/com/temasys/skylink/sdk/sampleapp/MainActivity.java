@@ -3,7 +3,7 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,11 +18,12 @@ import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.SettingActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.MainDemoButton;
 import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
+import sg.com.temasys.skylink.sdk.sampleapp.video.ScreenActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private ImageView imgBanner;
-    private MainDemoButton btnMainAudio, btnMainVideo, btnMainChat, btnMainFile, btnMainData, btnMainMulti;
+    private MainDemoButton btnMainAudio, btnMainVideo, btnMainChat, btnMainFile, btnMainData, btnMainMulti, btnMainScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMainFile = findViewById(R.id.btnMainFile);
         btnMainData = findViewById(R.id.btnMainData);
         btnMainMulti = findViewById(R.id.btnMainMulti);
+        btnMainScreen = findViewById(R.id.btnMainScreen);
 
         btnMainAudio.setType(MainDemoButton.ButtonType.AUDIO);
         btnMainVideo.setType(MainDemoButton.ButtonType.VIDEO);
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMainFile.setType(MainDemoButton.ButtonType.FILE);
         btnMainData.setType(MainDemoButton.ButtonType.DATA);
         btnMainMulti.setType(MainDemoButton.ButtonType.MULTI);
+        btnMainScreen.setType(MainDemoButton.ButtonType.SCREEN);
 
         imgBanner = findViewById(R.id.imgBanner);
     }
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMainFile.setOnClickListener(this);
         btnMainData.setOnClickListener(this);
         btnMainMulti.setOnClickListener(this);
+        btnMainScreen.setOnClickListener(this);
 
         //need check imgBanner in case of landscape orientation
         //because imgBanner is not available for landscape orientation
@@ -121,6 +125,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnMainVideo:
                 processVideo();
                 break;
+            case R.id.btnMainScreen:
+                processScreen();
+                break;
             case R.id.imgBanner:
                 processImglogo();
                 break;
@@ -149,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void processVideo() {
         startActivity(new Intent(this, VideoActivity.class));
+    }
+
+    private void processScreen() {
+        startActivity(new Intent(this, ScreenActivity.class));
     }
 
     private void processImglogo() {

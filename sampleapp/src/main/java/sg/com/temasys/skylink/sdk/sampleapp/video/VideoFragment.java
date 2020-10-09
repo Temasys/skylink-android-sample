@@ -6,11 +6,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
+import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -49,6 +51,7 @@ import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 public class VideoFragment extends CustomActionBar implements VideoContract.MainView,
         View.OnClickListener {
 
+    private static final int REQUEST_MEDIA_PROJECTION = 1000;
     private final String TAG = VideoFragment.class.getName();
     private final String SELF_CAM_VIEW = "selfCameraVideo";
     private final String SELF_SCREEN_VIEW = "selfScreenVideo";
@@ -1437,5 +1440,16 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private void processReturn() {
         presenter.processExit();
         processBack();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void requestScreenCapturePermission() {
+        Log.d(TAG, "Requesting permission to capture screen");
+        MediaProjectionManager mediaProjectionManager = (MediaProjectionManager)
+                context.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+
+        // This initiates a prompt dialog for the user to confirm screen projection.
+        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(),
+                REQUEST_MEDIA_PROJECTION);
     }
 }

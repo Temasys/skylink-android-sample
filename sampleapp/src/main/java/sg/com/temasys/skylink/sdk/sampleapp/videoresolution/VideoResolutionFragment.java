@@ -28,7 +28,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.video.VideoActivity;
  * <p>
  * Created by muoi.pham on 27/02/19.
  */
-public class VideoResolutionFragment extends android.support.v4.app.Fragment implements VideoResolutionContract.View {
+public class VideoResolutionFragment extends androidx.fragment.app.Fragment implements VideoResolutionContract.View {
 
     private final String TAG = VideoResolutionFragment.class.getName();
 

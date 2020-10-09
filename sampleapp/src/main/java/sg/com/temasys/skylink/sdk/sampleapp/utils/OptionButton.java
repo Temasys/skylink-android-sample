@@ -10,7 +10,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 /**
  * A custom Button for displaying menu context of video view
  */
-public class OptionButton extends android.support.v7.widget.AppCompatButton {
+public class OptionButton extends androidx.appcompat.widget.AppCompatButton {
 
     private Paint myPaint;
 

@@ -12,7 +12,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.R;
 /**
  * A custom text view for displaying the sending/receiving progress
  */
-public class CustomTextView extends android.support.v7.widget.AppCompatTextView {
+public class CustomTextView extends androidx.appcompat.widget.AppCompatTextView {
 
     private Path myArc;
 

@@ -16,7 +16,7 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -1542,4 +1542,9 @@ public class Utils {
         Log.d(TAG, log);
         return cameraVideoCapturer;
     }
+
+
+//    public static VideoCapturer createLocalScreenCapturer(SkylinkConnection skylinkConnection) {
+//        return null
+//    }
 }

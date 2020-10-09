@@ -2,7 +2,7 @@ package sg.com.temasys.skylink.sdk.sampleapp.utils;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;

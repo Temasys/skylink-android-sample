@@ -7,8 +7,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.AppCompatButton;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.appcompat.widget.AppCompatButton;
 import android.util.AttributeSet;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
@@ -25,7 +25,8 @@ public class MainDemoButton extends AppCompatButton {
         CHAT,
         FILE,
         DATA,
-        MULTI
+        MULTI,
+        SCREEN
     }
 
     public MainDemoButton(Context context) {
@@ -129,6 +130,10 @@ public class MainDemoButton extends AppCompatButton {
                 break;
             case MULTI:
                 icon_setting = getBitmapFromVectorDrawable(context.getResources().getDrawable(R.drawable.ic_multi_video_call_icon));
+                text = context.getResources().getString(R.string.multiVideo);
+                break;
+            case SCREEN:
+                icon_setting = getBitmapFromVectorDrawable(context.getResources().getDrawable(R.drawable.ic_screen_share_green_20dp));
                 text = context.getResources().getString(R.string.multiVideo);
                 break;
         }
