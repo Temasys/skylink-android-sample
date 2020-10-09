@@ -7,10 +7,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.appcompat.widget.AppCompatButton;
 import android.util.AttributeSet;
 
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.core.graphics.drawable.DrawableCompat;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 public class MainDemoButton extends AppCompatButton {
@@ -134,7 +134,7 @@ public class MainDemoButton extends AppCompatButton {
                 break;
             case SCREEN:
                 icon_setting = getBitmapFromVectorDrawable(context.getResources().getDrawable(R.drawable.ic_screen_share_green_20dp));
-                text = context.getResources().getString(R.string.multiVideo);
+                text = context.getResources().getString(R.string.screen);
                 break;
         }
 

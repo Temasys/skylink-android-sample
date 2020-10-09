@@ -25,14 +25,14 @@ class ScreenActivity : AppCompatActivity() {
         setContentView(R.layout.activity_screen)
 
         findViewById<Button>(R.id.btn_start_recording)
-            .setOnClickListener {
-                startCapturing()
-            }
+                .setOnClickListener {
+                    startCapturing()
+                }
 
         findViewById<Button>(R.id.btn_stop_recording)
-            .setOnClickListener {
-                stopCapturing()
-            }
+                .setOnClickListener {
+                    stopCapturing()
+                }
     }
 
     private fun setButtonsEnabled(isCapturingAudio: Boolean) {
@@ -58,35 +58,35 @@ class ScreenActivity : AppCompatActivity() {
 
     private fun isRecordAudioPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
+                this,
+                Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestRecordAudioPermission() {
         ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.RECORD_AUDIO),
-            RECORD_AUDIO_PERMISSION_REQUEST_CODE
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                RECORD_AUDIO_PERMISSION_REQUEST_CODE
         )
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         if (requestCode == RECORD_AUDIO_PERMISSION_REQUEST_CODE) {
             if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(
-                    this,
-                    "Permissions to capture audio granted. Click the button once again.",
-                    Toast.LENGTH_SHORT
+                        this,
+                        "Permissions to capture audio granted. Click the button once again.",
+                        Toast.LENGTH_SHORT
                 ).show()
             } else {
                 Toast.makeText(
-                    this, "Permissions to capture audio denied.",
-                    Toast.LENGTH_SHORT
+                        this, "Permissions to capture audio denied.",
+                        Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -102,20 +102,22 @@ class ScreenActivity : AppCompatActivity() {
         // use applicationContext to avoid memory leak on Android 10.
         // see: https://partnerissuetracker.corp.google.com/issues/139732252
         mediaProjectionManager =
-            applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         startActivityForResult(
-            mediaProjectionManager.createScreenCaptureIntent(),
-            MEDIA_PROJECTION_REQUEST_CODE
+                mediaProjectionManager.createScreenCaptureIntent(),
+                MEDIA_PROJECTION_REQUEST_CODE
         )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(
-                    this,
-                    "MediaProjection permission obtained. Foreground service will be started to capture audio.",
-                    Toast.LENGTH_SHORT
+                        this,
+                        "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                        Toast.LENGTH_SHORT
                 ).show()
 
                 val audioCaptureIntent = Intent(this, ScreenCaptureService::class.java).apply {
@@ -129,8 +131,8 @@ class ScreenActivity : AppCompatActivity() {
                 setButtonsEnabled(isCapturingAudio = true)
             } else {
                 Toast.makeText(
-                    this, "Request to obtain MediaProjection denied.",
-                    Toast.LENGTH_SHORT
+                        this, "Request to obtain MediaProjection denied.",
+                        Toast.LENGTH_SHORT
                 ).show()
             }
         }
