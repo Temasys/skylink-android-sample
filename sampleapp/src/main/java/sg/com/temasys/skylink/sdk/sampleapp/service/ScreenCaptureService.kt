@@ -44,9 +44,6 @@ class ScreenCaptureService : Service() {
         // see: https://partnerissuetracker.corp.google.com/issues/139732252
         mediaProjectionManager =
                 applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-
-        // create ScreenService
-
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -71,20 +68,15 @@ class ScreenCaptureService : Service() {
         return if (intent != null) {
             when (intent.action) {
                 ACTION_START -> {
-//                    val screenCaptureIntent = intent.getParcelableExtra(EXTRA_RESULT_DATA)
                     mediaProjection =
                             mediaProjectionManager.getMediaProjection(
                                     Activity.RESULT_OK,
                                     intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                             ) as MediaProjection
 
-//                    mediaProjectionManager.createScreenCaptureIntent()
-
                     mediaProjectionCallback = MediaProjectionCallback()
 
-//                    var handler: Handler()
-
-                    if(mediaProjectionCallback != null) {
+                    if (mediaProjectionCallback != null) {
                         mediaProjection?.registerCallback(mediaProjectionCallback!!, null)
                     }
 
@@ -104,8 +96,6 @@ class ScreenCaptureService : Service() {
 
     private fun startScreenCapture(screenCaptureIntent: Intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-
-//            val intent = mediaProjectionManager.createScreenCaptureIntent()
 
             screenVideoCapturer = createScreenVideoCapturer(screenCaptureIntent)
 
@@ -132,27 +122,16 @@ class ScreenCaptureService : Service() {
     }
 
     private fun stopScreenCapture() {
-//        requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
-//
-//        audioCaptureThread.interrupt()
-//        audioCaptureThread.join()
-//
-//        audioRecord!!.stop()
-//        audioRecord!!.release()
-//        audioRecord = null
-//
-//        mediaProjection!!.stop()
-//        stopSelf()
+        requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
+
+        mediaProjection!!.stop()
+        stopSelf()
     }
 
 
     companion object {
         private const val SERVICE_ID = 123
         private const val NOTIFICATION_CHANNEL_ID = "ScreenCapture channel"
-
-        private const val NUM_SAMPLES_PER_READ = 1024
-        private const val BYTES_PER_SAMPLE = 2 // 2 bytes since we hardcoded the PCM 16-bit format
-        private const val BUFFER_SIZE_IN_BYTES = NUM_SAMPLES_PER_READ * BYTES_PER_SAMPLE
 
         const val ACTION_START = "ScreenCaptureService:Start"
         const val ACTION_STOP = "ScreenCaptureService:Stop"
@@ -163,6 +142,4 @@ class ScreenCaptureService : Service() {
     private class MediaProjectionCallback : MediaProjection.Callback() {
         override fun onStop() {}
     }
-
-
 }
