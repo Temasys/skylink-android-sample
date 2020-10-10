@@ -1254,8 +1254,8 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
         val mediaProjectionManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         // This initiates a prompt dialog for the user to confirm screen projection.
-        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(),
-                REQUEST_MEDIA_PROJECTION)
+//        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(),
+//                REQUEST_MEDIA_PROJECTION)
     }
 
     companion object {
@@ -1299,14 +1299,14 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
      * capturing session to be started. This will allow both video and audio to be captured.
      */
     private fun startMediaProjectionRequest() {
-        // use applicationContext to avoid memory leak on Android 10.
-        // see: https://partnerissuetracker.corp.google.com/issues/139732252
-        mediaProjectionManager =
-                context.applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        startActivityForResult(
-                mediaProjectionManager.createScreenCaptureIntent(),
-                MEDIA_PROJECTION_REQUEST_CODE
-        )
+//        // use applicationContext to avoid memory leak on Android 10.
+//        // see: https://partnerissuetracker.corp.google.com/issues/139732252
+//        mediaProjectionManager =
+//                context.applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+//        startActivityForResult(
+//                mediaProjectionManager.createScreenCaptureIntent(),
+//                MEDIA_PROJECTION_REQUEST_CODE
+//        )
     }
 
     private fun stopCapturing() {

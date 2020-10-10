@@ -10,7 +10,6 @@ import android.content.Intent
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -72,11 +71,14 @@ class ScreenCaptureService : Service() {
         return if (intent != null) {
             when (intent.action) {
                 ACTION_START -> {
+//                    val screenCaptureIntent = intent.getParcelableExtra(EXTRA_RESULT_DATA)
                     mediaProjection =
                             mediaProjectionManager.getMediaProjection(
                                     Activity.RESULT_OK,
                                     intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                             ) as MediaProjection
+
+//                    mediaProjectionManager.createScreenCaptureIntent()
 
                     mediaProjectionCallback = MediaProjectionCallback()
 
@@ -86,7 +88,7 @@ class ScreenCaptureService : Service() {
                         mediaProjection?.registerCallback(mediaProjectionCallback!!, null)
                     }
 
-                    startScreenCapture()
+                    startScreenCapture(intent.getParcelableExtra(EXTRA_RESULT_DATA)!!)
                     Service.START_STICKY
                 }
                 ACTION_STOP -> {
@@ -100,12 +102,12 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun startScreenCapture() {
+    private fun startScreenCapture(screenCaptureIntent: Intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
-            val intent = mediaProjectionManager.createScreenCaptureIntent()
+//            val intent = mediaProjectionManager.createScreenCaptureIntent()
 
-            screenVideoCapturer = createScreenVideoCapturer(intent)
+            screenVideoCapturer = createScreenVideoCapturer(screenCaptureIntent)
 
             if (screenVideoCapturer != null) {
                 currentSkylinkConnection!!.createLocalMedia(SkylinkConfig.VideoDevice.SCREEN, "SCREEN video from mobile",
