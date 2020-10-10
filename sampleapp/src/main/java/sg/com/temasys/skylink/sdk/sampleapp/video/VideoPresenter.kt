@@ -373,75 +373,75 @@ class VideoPresenter(private val context: Context) : BasePresenter(), VideoContr
         processDisconnectUIChange()
     }
 
-    override fun processIntentRequired(intent: Intent, requestCode: Int, skylinkInfo: SkylinkInfo) {
+    override fun processIntentRequired(intent: Intent?, requestCode: Int, skylinkInfo: SkylinkInfo?) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onIntentRequiredHandler(intent, requestCode, skylinkInfo, context as Activity)
     }
 
-    override fun processPermissionRequired(info: PermRequesterInfo) {
+    override fun processPermissionRequired(info: PermRequesterInfo?) {
         // delegate to PermissionUtils to process the permissions
         permissionUtils.onPermissionRequiredHandler(info, TAG, context, mainVideoView!!.instance)
     }
 
-    override fun processLocalAudioCaptured(localAudio: SkylinkMedia) {
-        Utils.toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.mediaId)
+    override fun processLocalAudioCaptured(localAudio: SkylinkMedia?) {
+        Utils.toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio?.mediaId)
 
         //notify view to change the UI
-        mainVideoView!!.updateUILocalAudioAdded(localAudio.mediaId)
+        mainVideoView!!.updateUILocalAudioAdded(localAudio?.mediaId)
     }
 
-    override fun processLocalCameraCaptured(localVideo: SkylinkMedia) {
+    override fun processLocalCameraCaptured(localVideo: SkylinkMedia?) {
         var log = "[SA][processLocalCameraCaptured] "
-        Utils.toastLog(log, context, "Local video camera is on with id = " + localVideo.mediaId)
-        var selfVideoView = localVideo.videoView
+        Utils.toastLog(log, context, "Local video camera is on with id = " + localVideo?.mediaId)
+        var selfVideoView = localVideo?.videoView
         if (selfVideoView == null) {
             log += "VideoView is null! Try to get video from SDK"
             Log.w(TAG, log)
-            selfVideoView = videoService.getVideoView(localVideo.mediaId)
+            selfVideoView = videoService.getVideoView(localVideo?.mediaId)
         } else {
             log += "Adding VideoView as selfView."
             Log.d(TAG, log)
         }
 
         //notify view to change the UI
-        mainVideoView!!.updateUILocalCameraAdded(localVideo.mediaId, selfVideoView)
+        mainVideoView!!.updateUILocalCameraAdded(localVideo?.mediaId, selfVideoView)
         videoResPresenter!!.processMediaTypeSelected(SkylinkMedia.MediaType.VIDEO_CAMERA)
     }
 
-    override fun processLocalScreenCaptured(localScreen: SkylinkMedia) {
+    override fun processLocalScreenCaptured(localScreen: SkylinkMedia?) {
         var log = "[SA][processLocalScreenCaptured] "
-        Utils.toastLog(log, context, "Local video screen is on with id = " + localScreen.mediaId)
-        var selfVideoView = localScreen.videoView
+        Utils.toastLog(log, context, "Local video screen is on with id = " + localScreen?.mediaId)
+        var selfVideoView = localScreen?.videoView
         if (selfVideoView == null) {
             log += "VideoView is null! Try to get video from SDK"
             Log.w(TAG, log)
-            selfVideoView = videoService.getVideoView(localScreen.mediaId)
+            selfVideoView = videoService.getVideoView(localScreen?.mediaId)
         } else {
             log += "Adding VideoView as selfView."
             Log.d(TAG, log)
         }
 
         //notify view to change the UI
-        mainVideoView!!.updateUILocalScreenAdded(localScreen.mediaId, selfVideoView)
+        mainVideoView!!.updateUILocalScreenAdded(localScreen?.mediaId, selfVideoView)
         videoResPresenter!!.processMediaTypeSelected(SkylinkMedia.MediaType.VIDEO_SCREEN)
     }
 
-    override fun processMediaStateChanged(media: SkylinkMedia, isLocal: Boolean) {
+    override fun processMediaStateChanged(media: SkylinkMedia?, isLocal: Boolean) {
         // change the UI
-        mainVideoView!!.updateUIMediaStateChange(media.mediaType, media.mediaState, isLocal)
+        mainVideoView!!.updateUIMediaStateChange(media?.mediaType, media?.mediaState, isLocal)
 
         // stop audio routing when remote audio is unavailable
-        if (!isLocal && !media.isVideo && media.mediaState == SkylinkMedia.MediaState.UNAVAILABLE) {
+        if (!isLocal && !(media?.isVideo)!! && media?.mediaState == SkylinkMedia.MediaState.UNAVAILABLE) {
             AudioRouter.stopAudioRouting(context)
         }
     }
 
-    override fun processRemotePeerConnected(remotePeer: SkylinkPeer) {
+    override fun processRemotePeerConnected(remotePeer: SkylinkPeer?) {
         // Fill the new peer in button in custom bar
         mainVideoView!!.updateUIRemotePeerConnected(remotePeer, videoService.totalPeersInRoom - 2)
     }
 
-    override fun processRemotePeerDisconnected(remotePeer: SkylinkPeer, removeIndex: Int) {
+    override fun processRemotePeerDisconnected(remotePeer: SkylinkPeer?, removeIndex: Int) {
         // do not process if the left peer is local peer
         if (removeIndex == -1 || remotePeer == null) return
 
@@ -456,7 +456,7 @@ class VideoPresenter(private val context: Context) : BasePresenter(), VideoContr
         videoResPresenter!!.processReceivedVideoResolutionObtained(remotePeer.peerId, SkylinkMedia.MediaType.VIDEO_SCREEN, -1, -1, -1)
     }
 
-    override fun processRemoteAudioReceived(remotePeerId: String) {
+    override fun processRemoteAudioReceived(remotePeerId: String?) {
         mainVideoView!!.updateUIReceiveRemoteAudio(remotePeerId)
 
         // Add delay 3 seconds for audio speaker turned on to avoid audio echo if the device model is not supported AEC
@@ -474,7 +474,7 @@ class VideoPresenter(private val context: Context) : BasePresenter(), VideoContr
         }, 3000)
     }
 
-    override fun processRemoteVideoReceived(remotePeerId: String, remoteVideo: SkylinkMedia) {
+    override fun processRemoteVideoReceived(remotePeerId: String?, remoteVideo: SkylinkMedia?) {
         processAddRemoteView(remotePeerId, remoteVideo)
     }
 
@@ -524,17 +524,17 @@ class VideoPresenter(private val context: Context) : BasePresenter(), VideoContr
     /**
      * Get the remote video view from peer id
      */
-    private fun processGetRemoteViews(remotePeerId: String, mediaType: SkylinkMedia.MediaType): List<SurfaceViewRenderer>? {
+    private fun processGetRemoteViews(remotePeerId: String?, mediaType: SkylinkMedia.MediaType?): List<SurfaceViewRenderer>? {
         return videoService.getVideoViews(remotePeerId, mediaType)
     }
 
     /**
      * Add remote video view into the layout
      */
-    private fun processAddRemoteView(remotePeerId: String, remoteMedia: SkylinkMedia) {
-        var videoView = remoteMedia.videoView
+    private fun processAddRemoteView(remotePeerId: String?, remoteMedia: SkylinkMedia?) {
+        var videoView = remoteMedia?.videoView
         if (videoView == null) {
-            val videoViews = processGetRemoteViews(remotePeerId, remoteMedia.mediaType)
+            val videoViews = processGetRemoteViews(remotePeerId!!, remoteMedia?.mediaType)
             if (videoViews != null && videoViews.size > 0) {
                 // get the first video view of the media type
                 videoView = videoViews[0]
@@ -543,18 +543,18 @@ class VideoPresenter(private val context: Context) : BasePresenter(), VideoContr
         if (videoView == null) return
 
         // for testing getSkylinkMediaList API
-        val videoViews = processGetRemoteViews(remotePeerId, remoteMedia.mediaType)
+        val videoViews = processGetRemoteViews(remotePeerId!!, remoteMedia?.mediaType)
         if (videoViews != null && videoViews.size > 0) {
             // get the first video view of the media type
             videoView = videoViews[0]
         }
 
         // setTag for the remote video view
-        videoView.tag = remoteMedia.mediaId
-        if (remoteMedia.mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA ||
-                remoteMedia.mediaType == SkylinkMedia.MediaType.VIDEO) {
+        videoView.tag = remoteMedia?.mediaId
+        if (remoteMedia?.mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA ||
+                remoteMedia?.mediaType == SkylinkMedia.MediaType.VIDEO) {
             mainVideoView!!.updateUIReceiveRemoteVideo(videoView)
-        } else if (remoteMedia.mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
+        } else if (remoteMedia?.mediaType == SkylinkMedia.MediaType.VIDEO_SCREEN) {
             mainVideoView!!.updateUIReceiveRemoteScreen(videoView)
         }
     }

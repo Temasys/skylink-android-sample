@@ -111,7 +111,7 @@ class ScreenCaptureService : Service() {
 
             if (screenVideoCapturer != null) {
                 currentSkylinkConnection!!.createLocalMedia(SkylinkConfig.VideoDevice.SCREEN, "SCREEN video from mobile",
-                        screenVideoCapturer, -1, -1, -1, object : SkylinkCallback {
+                        screenVideoCapturer, 800, 1600, 60, object : SkylinkCallback {
                     override fun onError(error: SkylinkError, details: HashMap<String, Any>) {
                         val contextDescription = details[SkylinkEvent.CONTEXT_DESCRIPTION] as String?
                         Log.e("SkylinkCallback", contextDescription)

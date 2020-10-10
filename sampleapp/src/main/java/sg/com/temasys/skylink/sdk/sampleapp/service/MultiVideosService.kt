@@ -222,7 +222,7 @@ class MultiVideosService(context: Context?) : SkylinkCommonService(context!!), M
                         Utils.toastLog(TAG, context, "\"Unable to getInputVideoResolution as $contextDescription")
                     }
 
-                    override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat) {
+                    override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat?) {
                         obtainInputVideoResolution(width, height, fps, captureFormat, localVideo!!.mediaType)
                     }
                 })
@@ -319,7 +319,7 @@ class MultiVideosService(context: Context?) : SkylinkCommonService(context!!), M
                                 Utils.toastLog(TAG, context, "\"Unable to getSentWebRtcStats as $contextDescription")
                             }
 
-                            override fun onReceiveWebRtcStats(stats: HashMap<String, String>) {
+                            override fun onReceiveWebRtcStats(stats: HashMap<String?, String?>) {
                                 presenter!!.processWebrtcStatsReceived(stats)
                             }
                         })
@@ -338,7 +338,7 @@ class MultiVideosService(context: Context?) : SkylinkCommonService(context!!), M
                             Utils.toastLog(TAG, context, "\"Unable to getReceivedWebRtcStats as $contextDescription")
                         }
 
-                        override fun onReceiveWebRtcStats(stats: HashMap<String, String>) {
+                        override fun onReceiveWebRtcStats(stats: HashMap<String?, String?>) {
                             presenter!!.processWebrtcStatsReceived(stats)
                         }
                     })

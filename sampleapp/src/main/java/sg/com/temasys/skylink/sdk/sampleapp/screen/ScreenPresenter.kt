@@ -144,13 +144,13 @@ class ScreenPresenter(private val context: Context) : BasePresenter(), ScreenCon
         screenView!!.updateUIDisconnected()
     }
 
-    override fun processPermissionRequired(info: PermRequesterInfo) {
+    override fun processPermissionRequired(info: PermRequesterInfo?) {
         // delegate to PermissionUtils to process the permissions require
         permissionUtils.onPermissionRequiredHandler(info, TAG, context, screenView!!.instance)
     }
 
-    override fun processLocalAudioCaptured(localAudio: SkylinkMedia) {
-        Utils.toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio.mediaId)
+    override fun processLocalAudioCaptured(localAudio: SkylinkMedia?) {
+        Utils.toastLog("[SA][processLocalAudioCaptured]", context, "Local audio is on with id = " + localAudio?.mediaId)
     }
 
     override fun processAudioOutputChanged(isSpeakerOn: Boolean) {
@@ -171,14 +171,14 @@ class ScreenPresenter(private val context: Context) : BasePresenter(), ScreenCon
      *
      * @param remotePeer the new peer joined in room
      */
-    override fun processRemotePeerConnected(remotePeer: SkylinkPeer) {
+    override fun processRemotePeerConnected(remotePeer: SkylinkPeer?) {
         // Fill the new peer in button in custom bar
         // Display new peer at most right location in action bar
         screenView!!.updateUIRemotePeerConnected(remotePeer,
                 screenService.totalPeersInRoom - 2)
     }
 
-    override fun processRemotePeerDisconnected(remotePeer: SkylinkPeer, removeIndex: Int) {
+    override fun processRemotePeerDisconnected(remotePeer: SkylinkPeer?, removeIndex: Int) {
         // do not process if the left peer is local peer
         if (removeIndex == -1) return
 
@@ -188,7 +188,7 @@ class ScreenPresenter(private val context: Context) : BasePresenter(), ScreenCon
         screenView!!.updateUIRemotePeerDisconnected(screenService.peersList)
     }
 
-    override fun processRemoteAudioReceived(remotePeerId: String) {
+    override fun processRemoteAudioReceived(remotePeerId: String?) {
 
         // Add delay 3 seconds for audio speaker turned on to avoid audio echo if the device model is not supported AEC
         val handler = Handler()

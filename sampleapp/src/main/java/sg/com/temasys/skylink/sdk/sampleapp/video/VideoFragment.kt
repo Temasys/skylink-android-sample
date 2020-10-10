@@ -24,6 +24,7 @@ import org.webrtc.SurfaceViewRenderer
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia.MediaState
 import sg.com.temasys.skylink.sdk.sampleapp.R
+import sg.com.temasys.skylink.sdk.sampleapp.screen.ScreenFragment
 import sg.com.temasys.skylink.sdk.sampleapp.service.ScreenCaptureService
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config
@@ -1262,6 +1263,7 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
         const val REQUEST_MEDIA_PROJECTION = 1000
         const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 1001
         const val MEDIA_PROJECTION_REQUEST_CODE = 1002
+
         fun newInstance(): VideoFragment {
             return VideoFragment()
         }
@@ -1307,6 +1309,13 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
 //                mediaProjectionManager.createScreenCaptureIntent(),
 //                MEDIA_PROJECTION_REQUEST_CODE
 //        )
+
+        mediaProjectionManager =
+                context.applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        startActivityForResult(
+                mediaProjectionManager.createScreenCaptureIntent(),
+                MEDIA_PROJECTION_REQUEST_CODE
+        )
     }
 
     private fun stopCapturing() {
@@ -1314,5 +1323,29 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
         context.startService(Intent(context, ScreenCaptureService::class.java).apply {
             action = ScreenCaptureService.ACTION_STOP
         })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(
+                        context,
+                        "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                        Toast.LENGTH_SHORT
+                ).show()
+
+                val screenCaptureIntent = Intent(context, ScreenCaptureService::class.java).apply {
+                    action = ScreenCaptureService.ACTION_START
+                    putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data!!)
+                }
+                ContextCompat.startForegroundService(context, screenCaptureIntent)
+
+            } else {
+                Toast.makeText(
+                        context, "Request to obtain MediaProjection denied.",
+                        Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 }

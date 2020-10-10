@@ -119,7 +119,7 @@ class VideoResolutionPresenter(private val context: Context) : BasePresenter(), 
         videoResolutionView!!.updateUIChangeMediaType(mediaType)
     }
 
-    override fun processInputVideoResolutionObtained(mediaType: SkylinkMedia.MediaType, width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat) {
+    override fun processInputVideoResolutionObtained(mediaType: SkylinkMedia.MediaType?, width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat?) {
         if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             // update currentVideoResCam to the lastest resolution value
             val captureFormats = videoService!!.getCaptureFormats(null)
@@ -229,7 +229,7 @@ $fps Fps"""
         }
     }
 
-    override fun processReceivedVideoResolutionObtained(peerId: String, mediaType: SkylinkMedia.MediaType, width: Int, height: Int, fps: Int) {
+    override fun processReceivedVideoResolutionObtained(peerId: String?, mediaType: SkylinkMedia.MediaType?, width: Int, height: Int, fps: Int) {
         if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             // Update UI about received resolution from remote peer
             videoResolutionView!!.updateUIOnCameraReceivedValue(width, height, fps)
@@ -238,7 +238,7 @@ $fps Fps"""
         }
     }
 
-    override fun processSentVideoResolutionObtained(peerId: String, mediaType: SkylinkMedia.MediaType, width: Int, height: Int, fps: Int) {
+    override fun processSentVideoResolutionObtained(peerId: String?, mediaType: SkylinkMedia.MediaType?, width: Int, height: Int, fps: Int) {
         if (mediaType == SkylinkMedia.MediaType.VIDEO_CAMERA) {
             // Update UI about sent resolution to remote peer
             videoResolutionView!!.updateUIOnCameraSentValue(width, height, fps)

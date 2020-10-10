@@ -293,7 +293,7 @@ abstract class SkylinkCommonService(var context: Context?) : LifeCycleListener, 
         }
     }
 
-    override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat, mediaId: String) {
+    override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat?, mediaId: String) {
         Log.d(TAG, "onObtainInputVideoResolution(width: $width, height: $height, fps: $fps")
         var mediaType: SkylinkMedia.MediaType? = null
         if (localVideo != null && mediaId == localVideo!!.mediaId) {
@@ -991,7 +991,7 @@ abstract class SkylinkCommonService(var context: Context?) : LifeCycleListener, 
 
         // get input video resolution to check the result
         currentSkylinkConnection!!.getInputVideoResolution(videoId, object : InputVideoResolution {
-            override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat) {
+            override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat?) {
                 obtainInputVideoResolution(width, height, fps, captureFormat, mediaType)
             }
         })
@@ -1123,7 +1123,7 @@ abstract class SkylinkCommonService(var context: Context?) : LifeCycleListener, 
                     obtainInputVideoResolution(-1, -1, -1, null, mediaType)
                 }
 
-                override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat) {
+                override fun onObtainInputVideoResolution(width: Int, height: Int, fps: Int, captureFormat: SkylinkCaptureFormat?) {
                     obtainInputVideoResolution(width, height, fps, captureFormat, mediaType)
                 }
             })
