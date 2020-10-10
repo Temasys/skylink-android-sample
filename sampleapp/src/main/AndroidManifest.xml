@@ -70,11 +70,6 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/settings"></activity>
 
-        <activity
-            android:name=".screen.ScreenActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/screen"></activity>
-
         <service
             android:name=".service.ScreenCaptureService"
             android:foregroundServiceType="mediaProjection" />

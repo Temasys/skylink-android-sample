@@ -25,8 +25,7 @@ public class MainDemoButton extends AppCompatButton {
         CHAT,
         FILE,
         DATA,
-        MULTI,
-        SCREEN
+        MULTI
     }
 
     public MainDemoButton(Context context) {
@@ -131,10 +130,6 @@ public class MainDemoButton extends AppCompatButton {
             case MULTI:
                 icon_setting = getBitmapFromVectorDrawable(context.getResources().getDrawable(R.drawable.ic_multi_video_call_icon));
                 text = context.getResources().getString(R.string.multiVideo);
-                break;
-            case SCREEN:
-                icon_setting = getBitmapFromVectorDrawable(context.getResources().getDrawable(R.drawable.ic_screen_share_green_20dp));
-                text = context.getResources().getString(R.string.screen);
                 break;
         }
 

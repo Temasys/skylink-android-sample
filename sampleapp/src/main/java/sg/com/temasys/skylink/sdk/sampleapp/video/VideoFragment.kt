@@ -24,7 +24,6 @@ import org.webrtc.SurfaceViewRenderer
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia.MediaState
 import sg.com.temasys.skylink.sdk.sampleapp.R
-import sg.com.temasys.skylink.sdk.sampleapp.screen.ScreenFragment
 import sg.com.temasys.skylink.sdk.sampleapp.service.ScreenCaptureService
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config
