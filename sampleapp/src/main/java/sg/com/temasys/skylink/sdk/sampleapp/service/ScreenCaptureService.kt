@@ -122,12 +122,13 @@ class ScreenCaptureService : Service() {
     }
 
     private fun stopScreenCapture() {
-        requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
+        mediaProjection?.let {
+            mediaProjection!!.stop()
+        }
+//        requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
 
-        mediaProjection!!.stop()
         stopSelf()
     }
-
 
     companion object {
         private const val SERVICE_ID = 123

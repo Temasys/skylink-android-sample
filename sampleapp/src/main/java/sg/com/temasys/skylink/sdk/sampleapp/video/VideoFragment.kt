@@ -195,8 +195,10 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
             R.id.ll_videos -> showHideVideoResolution(false)
             R.id.btn_screen -> showScreenOptions()
 //            R.id.btn_screen_start -> presenter!!.processToggleScreen()
-            R.id.btn_screen_start -> startCapturing()
-            R.id.btn_screen_remove -> presenter!!.processRemoveScreen()
+            R.id.btn_screen_start -> startScreenCapturing()
+//            R.id.btn_screen_remove -> presenter!!.processRemoveScreen()
+            R.id.btn_screen_remove -> stopSeenCapturing()
+            //stopSeenCapturing
             R.id.btn_screen_mute -> presenter!!.processChangeScreenState()
             R.id.btn_lock -> processLockUnlockRoom()
         }
@@ -1269,28 +1271,17 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
     }
 
     // for screen share
-    private fun startCapturing() {
-        Log.e("Muoi", "startCapturing()...")
-//        if (!isRecordAudioPermissionGranted()) {
-//            requestRecordAudioPermission()
-//        } else {
-            startMediaProjectionRequest()
-//        }
+    private fun startScreenCapturing() {
+        startMediaProjectionRequest()
     }
 
-    private fun isRecordAudioPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun stopSeenCapturing() {
 
-    private fun requestRecordAudioPermission() {
-        ActivityCompat.requestPermissions(
-                context as Activity,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                RECORD_AUDIO_PERMISSION_REQUEST_CODE
-        )
+        context.startService(Intent(context, ScreenCaptureService::class.java).apply {
+            action = ScreenCaptureService.ACTION_STOP
+        })
+
+        presenter!!.processRemoveScreen()
     }
 
     /**
@@ -1300,28 +1291,13 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
      * capturing session to be started. This will allow both video and audio to be captured.
      */
     private fun startMediaProjectionRequest() {
-//        // use applicationContext to avoid memory leak on Android 10.
-//        // see: https://partnerissuetracker.corp.google.com/issues/139732252
-//        mediaProjectionManager =
-//                context.applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-//        startActivityForResult(
-//                mediaProjectionManager.createScreenCaptureIntent(),
-//                MEDIA_PROJECTION_REQUEST_CODE
-//        )
-
+        // use applicationContext to avoid memory leak on Android 10.
         mediaProjectionManager =
                 context.applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         startActivityForResult(
                 mediaProjectionManager.createScreenCaptureIntent(),
                 MEDIA_PROJECTION_REQUEST_CODE
         )
-    }
-
-    private fun stopCapturing() {
-
-        context.startService(Intent(context, ScreenCaptureService::class.java).apply {
-            action = ScreenCaptureService.ACTION_STOP
-        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
