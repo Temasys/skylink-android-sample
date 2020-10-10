@@ -55,11 +55,11 @@ class ScreenService(context: Context?) : SkylinkCommonService(context), ScreenCo
             val skylinkConfig = SkylinkConfig()
             // Set some common configs base on the default setting on the setting page
             Utils.skylinkConfigCommonOptions(skylinkConfig)
-            skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY)
-            skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_ONLY)
+            skylinkConfig.setAudioVideoSendConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO)
+            skylinkConfig.setAudioVideoReceiveConfig(SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO)
             skylinkConfig.skylinkRoomSize = SkylinkConfig.SkylinkRoomSize.MEDIUM
             val maxRemotePeer = Utils.getDefaultMaxPeerInAudioRoomConfig()
-            skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.AUDIO_ONLY)
+            skylinkConfig.setMaxRemotePeersConnected(maxRemotePeer, SkylinkConfig.AudioVideoConfig.AUDIO_AND_VIDEO)
 
             // set unsupportedHWAEC list to the skylinkConfig
             AudioRouter.unsupportedHWAECList.add("Mi A2")

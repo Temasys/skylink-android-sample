@@ -9,18 +9,27 @@ import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Binder
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import org.webrtc.ScreenCapturerAndroid
 import org.webrtc.VideoCapturer
+import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback
+import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig
+import sg.com.temasys.skylink.sdk.rtc.SkylinkError
+import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent
+import sg.com.temasys.skylink.sdk.sampleapp.service.SkylinkCommonService.Companion.currentSkylinkConnection
+import java.util.*
 
 
 class ScreenCaptureService : Service() {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var mediaProjection: MediaProjection? = null
+
+    private var mediaProjectionCallback: MediaProjectionCallback? = null
 
     private var screenVideoCapturer: VideoCapturer? = null
 
@@ -36,6 +45,9 @@ class ScreenCaptureService : Service() {
         // see: https://partnerissuetracker.corp.google.com/issues/139732252
         mediaProjectionManager =
                 applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+
+        // create ScreenService
+
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -65,6 +77,15 @@ class ScreenCaptureService : Service() {
                                     Activity.RESULT_OK,
                                     intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                             ) as MediaProjection
+
+                    mediaProjectionCallback = MediaProjectionCallback()
+
+//                    var handler: Handler()
+
+                    if(mediaProjectionCallback != null) {
+                        mediaProjection?.registerCallback(mediaProjectionCallback!!, null)
+                    }
+
                     startScreenCapture()
                     Service.START_STICKY
                 }
@@ -86,11 +107,16 @@ class ScreenCaptureService : Service() {
 
             screenVideoCapturer = createScreenVideoCapturer(intent)
 
-//            screenService.createLocalCustomVideo(screenCapturer)
-
-
-
-
+            if (screenVideoCapturer != null) {
+                currentSkylinkConnection!!.createLocalMedia(SkylinkConfig.VideoDevice.SCREEN, "SCREEN video from mobile",
+                        screenVideoCapturer, -1, -1, -1, object : SkylinkCallback {
+                    override fun onError(error: SkylinkError, details: HashMap<String, Any>) {
+                        val contextDescription = details[SkylinkEvent.CONTEXT_DESCRIPTION] as String?
+                        Log.e("SkylinkCallback", contextDescription)
+//                        Utils.toastLog("Screen", context, "\"Unable to createLocalCustomVideo as $contextDescription")
+                    }
+                })
+            }
         } else {
             TODO("VERSION.SDK_INT < Q")
         }
@@ -100,11 +126,7 @@ class ScreenCaptureService : Service() {
      * Create and return a [ScreenCapturerAndroid].
      */
     private fun createScreenVideoCapturer(mediaProjectionPermissionResultIntent: Intent): VideoCapturer? {
-        return ScreenCapturerAndroid(mediaProjectionPermissionResultIntent, object : MediaProjection.Callback() {
-            override fun onStop() {
-                val log = "[ScreenCapturerAndroid][onStop] Screen capturing has been stopped."
-            }
-        })
+        return ScreenCapturerAndroid(mediaProjectionPermissionResultIntent, MediaProjectionCallback())
     }
 
     private fun stopScreenCapture() {
@@ -122,7 +144,6 @@ class ScreenCaptureService : Service() {
     }
 
 
-
     companion object {
         private const val SERVICE_ID = 123
         private const val NOTIFICATION_CHANNEL_ID = "ScreenCapture channel"
@@ -134,6 +155,11 @@ class ScreenCaptureService : Service() {
         const val ACTION_START = "ScreenCaptureService:Start"
         const val ACTION_STOP = "ScreenCaptureService:Stop"
         const val EXTRA_RESULT_DATA = "ScreenCaptureService:Extra:ResultData"
+    }
+
+    //Called when the MediaProjection session is no longer valid.
+    private class MediaProjectionCallback : MediaProjection.Callback() {
+        override fun onStop() {}
     }
 
 

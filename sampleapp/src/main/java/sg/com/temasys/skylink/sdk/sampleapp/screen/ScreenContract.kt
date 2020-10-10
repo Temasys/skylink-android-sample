@@ -67,6 +67,8 @@ interface ScreenContract {
          * process get peer info at specific index
          */
         fun processGetPeerByIndex(index: Int): SkylinkPeer?
+
+        fun processStartScreen()
     }
 
     interface Service : BaseService<Presenter?>

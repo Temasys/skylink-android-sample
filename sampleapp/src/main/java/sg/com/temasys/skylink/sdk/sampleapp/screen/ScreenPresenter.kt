@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.screen
 
 import android.content.Context
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Handler
 import android.util.Log
@@ -32,6 +33,7 @@ class ScreenPresenter(private val context: Context) : BasePresenter(), ScreenCon
 
     //current audio output getting from default setting
     private var currentAudioSpeaker = Utils.isDefaultSpeakerSettingForAudio()
+
 
     //link Presenter to View
     fun setView(view: ScreenContract.View?) {
@@ -106,6 +108,10 @@ class ScreenPresenter(private val context: Context) : BasePresenter(), ScreenCon
      */
     override fun processGetPeerByIndex(index: Int): SkylinkPeer? {
         return screenService.getPeerByIndex(index)
+    }
+
+    override fun processStartScreen() {
+
     }
 
     override fun processExit() {
@@ -223,4 +229,6 @@ class ScreenPresenter(private val context: Context) : BasePresenter(), ScreenCon
         screenService.setPresenter(this)
         permissionUtils = PermissionUtils()
     }
+
+
 }

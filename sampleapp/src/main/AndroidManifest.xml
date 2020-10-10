@@ -71,7 +71,7 @@
             android:label="@string/settings"></activity>
 
         <activity
-            android:name=".video.ScreenActivity"
+            android:name=".screen.ScreenActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/screen"></activity>
 

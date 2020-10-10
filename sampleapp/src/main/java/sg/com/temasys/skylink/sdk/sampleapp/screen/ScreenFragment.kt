@@ -1,10 +1,13 @@
 package sg.com.temasys.skylink.sdk.sampleapp.screen
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -14,8 +17,11 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.fragment.app.Fragment
 import sg.com.temasys.skylink.sdk.sampleapp.R
+import sg.com.temasys.skylink.sdk.sampleapp.service.ScreenCaptureService
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config
 import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment
@@ -37,6 +43,19 @@ class ScreenFragment : CustomActionBar(), ScreenContract.View, View.OnClickListe
 
     // presenter instance to implement app logic
     private var presenter: ScreenContract.Presenter? = null
+
+    private lateinit var mediaProjectionManager: MediaProjectionManager
+
+    companion object {
+        private const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 42
+        private const val MEDIA_PROJECTION_REQUEST_CODE = 13
+
+        fun newInstance(): ScreenFragment {
+            return ScreenFragment()
+        }
+    }
+
+
     override fun setPresenter(presenter: ScreenContract.Presenter?) {
         this.presenter = presenter
     }
@@ -124,8 +143,14 @@ class ScreenFragment : CustomActionBar(), ScreenContract.View, View.OnClickListe
                 displayPeerInfo(7)
             }
             R.id.btnAudioSpeaker -> presenter!!.processChangeAudioOutput()
-            R.id.btnAudioEnd -> processEndAudio()
+//            R.id.btnAudioEnd -> processEndAudio()
+            R.id.btnAudioEnd -> processStartScreen()
         }
+    }
+
+    private fun processStartScreen() {
+//        presenter!!.processStartScreen()
+        startMediaProjectionRequest()
     }
 
     override fun onDetach() {
@@ -338,9 +363,46 @@ class ScreenFragment : CustomActionBar(), ScreenContract.View, View.OnClickListe
         }
     }
 
-    companion object {
-        fun newInstance(): ScreenFragment {
-            return ScreenFragment()
+    // screen
+
+    /**
+     * Before a capture session can be started, the capturing app must
+     * call MediaProjectionManager.createScreenCaptureIntent().
+     * This will display a dialog to the user, who must tap "Start now" in order for a
+     * capturing session to be started. This will allow both video and audio to be captured.
+     */
+    private fun startMediaProjectionRequest() {
+        // use applicationContext to avoid memory leak on Android 10.
+        // see: https://partnerissuetracker.corp.google.com/issues/139732252
+        mediaProjectionManager =
+                context.applicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        startActivityForResult(
+                mediaProjectionManager.createScreenCaptureIntent(),
+                MEDIA_PROJECTION_REQUEST_CODE
+        )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(
+                        context,
+                        "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                        Toast.LENGTH_SHORT
+                ).show()
+
+                val screenCaptureIntent = Intent(context, ScreenCaptureService::class.java).apply {
+                    action = ScreenCaptureService.ACTION_START
+                    putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data!!)
+                }
+                startForegroundService(context, screenCaptureIntent)
+
+            } else {
+                Toast.makeText(
+                        context, "Request to obtain MediaProjection denied.",
+                        Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 }
