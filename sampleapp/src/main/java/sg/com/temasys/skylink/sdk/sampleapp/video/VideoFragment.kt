@@ -215,6 +215,8 @@ class VideoFragment : CustomActionBar(), MainView, View.OnClickListener {
                 showHideButton(stopScreenshareFloat, false)
             }
         }
+
+        stopSeenCapturing()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
