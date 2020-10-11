@@ -1,6 +1,7 @@
 package sg.com.temasys.skylink.sdk.sampleapp.video;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -144,7 +145,13 @@ public class VideoActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        videoPresenter.processActivityResult(requestCode, resultCode, data);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (data != null) {
+                videoMainFragment.onHandleActivityResult(requestCode, resultCode, data);
+            }
+        } else {
+            videoPresenter.processActivityResult(requestCode, resultCode, data);
+        }
     }
 
     public void onShowHideVideoResFragment(boolean isVisible) {

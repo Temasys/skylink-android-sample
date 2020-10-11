@@ -2,14 +2,18 @@ package sg.com.temasys.skylink.sdk.sampleapp.video;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
+import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
@@ -21,6 +25,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import org.webrtc.SurfaceViewRenderer;
 
@@ -28,6 +33,7 @@ import java.util.List;
 
 import sg.com.temasys.skylink.sdk.rtc.SkylinkMedia;
 import sg.com.temasys.skylink.sdk.sampleapp.R;
+import sg.com.temasys.skylink.sdk.sampleapp.service.ScreenCaptureService;
 import sg.com.temasys.skylink.sdk.sampleapp.service.model.SkylinkPeer;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.Config;
 import sg.com.temasys.skylink.sdk.sampleapp.setting.ConfigRoomFragment;
@@ -40,6 +46,7 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils.MEDIA_PROJECTION_REQUEST_CODE;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
 
 /**
@@ -55,6 +62,7 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private final String REMOTE_CAM_VIEW = "remoteCameraVideo";
     private final String REMOTE_SCREEN_VIEW = "remoteScreenVideo";
     private final String MAIN_VIEW = "main";
+
 
     // view widgets
     private LinearLayout videoViewLayout;
@@ -90,6 +98,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private Constants.VIDEO_TYPE currentMainVideoType = null;
 
     private boolean exitFromRoomByUser = false;
+
+    private MediaProjectionManager mediaProjectionManager = null;
 
     public static VideoFragment newInstance() {
         return new VideoFragment();
@@ -237,10 +247,18 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
                 showScreenOptions();
                 break;
             case R.id.btn_screen_start:
-                presenter.processToggleScreen();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startScreenCapturing();
+                } else {
+                    presenter.processToggleScreen();
+                }
                 break;
             case R.id.btn_screen_remove:
-                presenter.processRemoveScreen();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    stopScreenCapturing();
+                } else {
+                    presenter.processRemoveScreen();
+                }
                 break;
             case R.id.btn_screen_mute:
                 presenter.processChangeScreenState();
@@ -264,6 +282,8 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
             if (isShowScreenSharing) {
                 showHideButton(stopScreenshareFloat, false);
             }
+
+            stopScreenCapturing();
         }
     }
 
@@ -1437,5 +1457,63 @@ public class VideoFragment extends CustomActionBar implements VideoContract.Main
     private void processReturn() {
         presenter.processExit();
         processBack();
+    }
+
+    ////////////////////////// For screen capturing on androidX ////////////////////////////////////
+    private void startScreenCapturing() {
+        startMediaProjectionRequest();
+
+        // disable button start so can not stop the screen, just use destroy screen only
+        btnScreenStart.setEnabled(false);
+    }
+
+    private void stopScreenCapturing() {
+        Intent serviceIntent = new Intent(context, ScreenCaptureService.class);
+        serviceIntent.setAction(ScreenCaptureService.ACTION_STOP);
+        context.startService(serviceIntent);
+
+        presenter.processRemoveScreen();
+
+        btnScreenStart.setEnabled(true);
+    }
+
+    /**
+     * Before a capture session can be started, the capturing app must
+     * call MediaProjectionManager.createScreenCaptureIntent().
+     * This will display a dialog to the user, who must tap "Start now" in order for a
+     * capturing session to be started. This will allow both video and audio to be captured.
+     */
+    private void startMediaProjectionRequest() {
+        // use applicationContext to avoid memory leak on Android 10.
+        mediaProjectionManager =
+                (MediaProjectionManager) context.getApplicationContext().getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+        startActivityForResult(
+                mediaProjectionManager.createScreenCaptureIntent(),
+                MEDIA_PROJECTION_REQUEST_CODE
+        );
+    }
+
+    public void onHandleActivityResult(int requestCode, int resultCode, Intent data) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(
+                        context,
+                        "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                Intent screenCaptureIntent = new Intent(context, ScreenCaptureService.class);
+                screenCaptureIntent.setAction(ScreenCaptureService.ACTION_START);
+                screenCaptureIntent.putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data);
+
+                ContextCompat.startForegroundService(context, screenCaptureIntent);
+
+            } else {
+                Toast.makeText(
+                        context, "Request to obtain MediaProjection denied.",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        }
     }
 }

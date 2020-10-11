@@ -39,6 +39,8 @@ public class PermissionUtils {
 
     public static final int REQUEST_BUTTON_OVERLAY_CODE = 1032;
 
+    public static final int MEDIA_PROJECTION_REQUEST_CODE = 1002;
+
 
     // Queue of Permission requesting objects.
     //these variables need to be static for all type call and configuration change
