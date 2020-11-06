@@ -60,7 +60,7 @@ android {
 
         implementation(group: 'sg.com.temasys.skylink.sdk',
                 name: 'skylink_sdk',
-                version: '2.1.4-RELEASE',
+                version: '2.1.5-RELEASE',
                 ext: 'aar') {
             transitive = true
         }
