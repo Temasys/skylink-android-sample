@@ -97,7 +97,7 @@ Run the sampleapp module
 
 For more information on the usage of the Temasys SDK for Android, please refer to the following:
 
- - [Temasys SDK for Android Readme](https://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/readme.md)
+ - [Temasys SDK for Android Reference](https://cdn.temasys.com.sg/skylink/skylinksdk/android/latest/doc/reference/packages.html)
 
 ## Tutorials and FAQs
 
