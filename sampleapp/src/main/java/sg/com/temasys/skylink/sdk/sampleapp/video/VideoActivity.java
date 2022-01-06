@@ -146,6 +146,7 @@ public class VideoActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (data != null) {
                 videoMainFragment.onHandleActivityResult(requestCode, resultCode, data);
