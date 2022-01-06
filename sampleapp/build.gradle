@@ -1,68 +1,44 @@
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-        maven {
-            url "https://maven.google.com"
-        }
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-        google()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5"
-    }
-}
-
-apply plugin: 'com.android.application'
-
-repositories {
-    maven {
-        url = 'http://archiva.temasys.com.sg/repository/internal'
-    }
-    maven {
-        url "https://maven.google.com"
-    }
-    google()
-    jcenter()
+plugins {
+    id 'com.android.application'
 }
 
 android {
-    compileSdkVersion 29
+    compileSdk 30
+
     defaultConfig {
-        applicationId "sg.com.temasys.skylink.sampleapp_2_2_0"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 5
-        versionName "2.2.0"
-        multiDexEnabled true
+        applicationId "sg.com.temasys.skylink.sampleapp_2_2_1"
+        minSdk 21
+        targetSdk 30
+        versionCode 6
+        versionName "2.2.1"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    // Run lint checks but don't abort build
-    lintOptions {
-        abortOnError false
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
     }
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
+}
 
-    dependencies {
-        implementation fileTree(include: ['*.jar'], dir: 'libs')
-        implementation 'com.android.support:appcompat-v7:27.1.0'
-        implementation 'com.android.support:design:27.1.0'
-        //noinspection GradleCompatible
-        implementation 'com.android.support:support-v4:27.1.0'
-        implementation 'com.android.support:design:27.1.0'
-        implementation 'com.android.support:cardview-v7:27.1.0'
-        implementation 'com.android.support:recyclerview-v7:27.1.0'
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-        implementation(group: 'sg.com.temasys.skylink.sdk',
-                name: 'skylink_sdk',
-                version: '2.2.0-RELEASE',
-                ext: 'aar') {
-            transitive = true
-        }
+    implementation(group: 'sg.com.temasys.skylink.sdk',
+            name: 'skylink_sdk',
+            version: '2.2.0-RELEASE',
+            ext: 'aar') {
+        transitive = true
     }
 }

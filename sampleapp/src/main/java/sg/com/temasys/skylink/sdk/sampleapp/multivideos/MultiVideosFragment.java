@@ -5,8 +5,6 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -37,6 +35,9 @@ import sg.com.temasys.skylink.sdk.sampleapp.utils.Utils;
 import static android.view.Gravity.FILL;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.fragment.app.Fragment;
 
 /**
  * Created by muoi.pham on 20/07/18.

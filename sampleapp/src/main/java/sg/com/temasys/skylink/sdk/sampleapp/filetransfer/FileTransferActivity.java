@@ -1,7 +1,8 @@
 package sg.com.temasys.skylink.sdk.sampleapp.filetransfer;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 

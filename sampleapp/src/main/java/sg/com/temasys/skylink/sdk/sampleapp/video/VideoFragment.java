@@ -11,10 +11,6 @@ import android.media.AudioManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -48,6 +44,11 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.PermissionUtils.MEDIA_PROJECTION_REQUEST_CODE;
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 /**
  * A simple {@link CustomActionBar} subclass.

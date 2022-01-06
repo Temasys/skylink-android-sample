@@ -33,6 +33,9 @@ Clone this repository.
 #### STEP 2
 Import the project into Android Studio with File -> Open and select the project.
 
+Then set Gradle JDK to Java 11.
+  - File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Gradle projects -> Gradle JDK = 11 version
+
 #### STEP 3
 Follow the instructions [here](https://temasys.io/creating-an-account-generating-a-key/) to create an App and a key on the Temasys Console.
 

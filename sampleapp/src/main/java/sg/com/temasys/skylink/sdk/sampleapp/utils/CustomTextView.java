@@ -7,12 +7,14 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 
+import androidx.appcompat.widget.AppCompatTextView;
+
 import sg.com.temasys.skylink.sdk.sampleapp.R;
 
 /**
  * A custom text view for displaying the sending/receiving progress
  */
-public class CustomTextView extends android.support.v7.widget.AppCompatTextView {
+public class CustomTextView extends AppCompatTextView {
 
     private Path myArc;
 

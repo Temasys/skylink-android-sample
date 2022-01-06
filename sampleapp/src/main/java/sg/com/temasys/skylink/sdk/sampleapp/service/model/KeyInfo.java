@@ -1,6 +1,6 @@
 package sg.com.temasys.skylink.sdk.sampleapp.service.model;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import org.json.JSONException;

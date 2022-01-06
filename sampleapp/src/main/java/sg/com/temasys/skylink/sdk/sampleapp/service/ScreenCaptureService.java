@@ -10,7 +10,6 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.webrtc.ScreenCapturerAndroid;
@@ -24,6 +23,8 @@ import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkEvent;
 
 import static sg.com.temasys.skylink.sdk.sampleapp.utils.Utils.toastLog;
+
+import androidx.core.app.NotificationCompat;
 
 public class ScreenCaptureService extends Service {
 

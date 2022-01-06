@@ -3,11 +3,12 @@ package sg.com.temasys.skylink.sdk.sampleapp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import sg.com.temasys.skylink.sdk.sampleapp.audio.AudioActivity;
 import sg.com.temasys.skylink.sdk.sampleapp.chat.ChatActivity;
@@ -46,6 +47,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         // hide any soft key board if present
         Utils.showHideKeyboard(this, false);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btnMainAudio:
+                processAudio();
+                break;
+            case R.id.btnMainChat:
+                processChat();
+                break;
+            case R.id.btnMainFile:
+                processFileTransfer();
+                break;
+            case R.id.btnMainData:
+                processDataTransfer();
+                break;
+            case R.id.btnMainMulti:
+                processMultiVideo();
+                break;
+            case R.id.btnMainVideo:
+                processVideo();
+                break;
+            case R.id.imgBanner:
+                processImglogo();
+                break;
+        }
     }
 
     private void getControlWidgets() {
@@ -98,33 +126,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btnMainAudio:
-                processAudio();
-                break;
-            case R.id.btnMainChat:
-                processChat();
-                break;
-            case R.id.btnMainFile:
-                processFileTransfer();
-                break;
-            case R.id.btnMainData:
-                processDataTransfer();
-                break;
-            case R.id.btnMainMulti:
-                processMultiVideo();
-                break;
-            case R.id.btnMainVideo:
-                processVideo();
-                break;
-            case R.id.imgBanner:
-                processImglogo();
-                break;
-        }
     }
 
     private void processAudio() {
