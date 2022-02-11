@@ -136,6 +136,8 @@ public class AudioPresenter extends BasePresenter implements AudioContract.Prese
 
     @Override
     public void processExit() {
+        AudioRouter.resetAudioMode();
+
         //process disconnect from room
         audioCallService.disconnectFromRoom();
 

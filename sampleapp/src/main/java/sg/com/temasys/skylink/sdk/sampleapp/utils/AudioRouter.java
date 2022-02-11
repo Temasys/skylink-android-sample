@@ -236,6 +236,10 @@ public class AudioRouter {
         changeAudioOutput(false);
     }
 
+    public static void resetAudioMode() {
+        audioManager.setMode(AudioManager.MODE_NORMAL);
+    }
+
     /**
      * Set the audio path according to whether earphone is connected. Use ear piece if earphone is
      * connected. Use speakerphone if no earphone is connected.

@@ -135,6 +135,8 @@ public class VideoPresenter extends BasePresenter implements VideoContract.Prese
 
     @Override
     public void processExit() {
+        AudioRouter.resetAudioMode();
+
         //process disconnect from room if connecting
         //after disconnected from skylink SDK, UI will be updated latter on processRoomDisconnected
         if (videoService.isConnectingOrConnected()) {

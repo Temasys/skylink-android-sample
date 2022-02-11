@@ -146,6 +146,8 @@ public class MultiVideosPresenter extends BasePresenter implements MultiVideosCo
 
     @Override
     public void processExit() {
+        AudioRouter.resetAudioMode();
+
         //process disconnect from room
         multiVideoCallService.disconnectFromRoom();
 
