@@ -11,7 +11,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:7.2.1'
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5"
     }
 }
@@ -21,6 +21,7 @@ apply plugin: 'com.android.application'
 repositories {
     maven {
         url = 'http://archiva.temasys.com.sg/repository/internal'
+        allowInsecureProtocol = true
     }
     maven {
         url "https://maven.google.com"
@@ -30,13 +31,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
     defaultConfig {
         applicationId "sg.com.temasys.skylink.sampleapp_2_2_1"
         minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 6
-        versionName "2.2.1"
+        targetSdkVersion 33
+        versionCode 9
+        versionName "2.3.1"
         multiDexEnabled true
     }
     // Run lint checks but don't abort build
@@ -60,9 +61,13 @@ android {
 
         implementation(group: 'sg.com.temasys.skylink.sdk',
                 name: 'skylink_sdk',
-                version: '2.2.1-RELEASE',
+                version: '2.3.1-RELEASE',
                 ext: 'aar') {
             transitive = true
+            exclude group: 'sg.com.temasys.skylink.sdk', module: 'skylink_message_cache_sdk'
         }
+        implementation('sg.com.temasys.skylink.sdk:skylink_message_cache_sdk:1.0.1-RELEASE')
     }
 }
+
+tasks.register("prepareKotlinBuildScriptModel") {} // As a temporary fix for the gradle issue : https://github.com/gradle/gradle/issues/14889

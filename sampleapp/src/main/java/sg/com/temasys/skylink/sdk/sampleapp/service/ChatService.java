@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import sg.com.temasys.skylink.sdk.messagecache.SkylinkMessageCache;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkCallback;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkConfig;
 import sg.com.temasys.skylink.sdk.rtc.SkylinkError;
@@ -123,6 +124,8 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         // Set timeout for getting stored message
         skylinkConfig.setTimeout(SkylinkConfig.SkylinkAction.GET_MESSAGE_STORED, Utils.getDefaultNoOfStoredMsgTimeoutConfig() * 1000);
 
+        skylinkConfig.setMessageCachingEnable(true); // Enable persistent message cache feature
+
         return skylinkConfig;
     }
 
@@ -182,5 +185,21 @@ public class ChatService extends SkylinkCommonService implements ChatContract.Se
         }
 
         skylinkConnection.setEncryptSecretsMap(encryptionMap);
+    }
+
+    public void getCachedMessagesIfExist() {
+        // Is message cache feature enabled in the Skylink Config?
+        // Then get cached messages for the room
+        if (SkylinkMessageCache.getInstance().isEnabled()) {
+            JSONArray cachedMessages = null;
+            try {
+                cachedMessages = SkylinkMessageCache.getInstance().getReadableSession(roomName).getCachedMessages();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(context, "There are errors on retrieving cached messages! Please check log!", Toast.LENGTH_LONG).show();
+            }
+            // Cached messages can be processed in the same order which the stored message result are processed
+            presenter.processStoredMessagesResult(cachedMessages);
+        }
     }
 }

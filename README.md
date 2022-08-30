@@ -117,4 +117,25 @@ You can raise tickets on our [support portal](http://support.temasys.io/) or on 
 
 ## Copyright and License
 
-Copyright 2019 Temasys Communications Pte Ltd Licensed under [APACHE 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+Copyright 2022 Temasys Communications Pte Ltd Licensed under [APACHE 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+
+
+# Skylink Message Cache SDK
+
+This is an addon SDK for the Temasys SDK for Android.
+
+## SDK documentation
+
+* [Skylink Message Cache SDK for Android Reference](https://cdn.temasys.com.sg/skylink/skylinkmessagecachesdk/android/latest/doc/reference/sg/com/temasys/skylink/sdk/messagecache/SkylinkMessageCache.html)
+
+## Tutorials and FAQs
+
+[Skylink Message Cache SDK usage](https://github.com/Temasys/android-sample-message-cache#skylink-message-cache-sdk-usage)
+
+## Feedback
+
+Please raise your tickets in [Github issues](https://github.com/Temasys/skylink-android-sample/issues).
+
+## Copyright and License
+
+Copyright 2022 Temasys Communications Pte Ltd Licensed under [APACHE 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
