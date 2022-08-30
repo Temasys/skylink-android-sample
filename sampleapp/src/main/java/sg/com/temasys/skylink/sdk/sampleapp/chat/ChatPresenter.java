@@ -108,6 +108,10 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
             //after connected to skylink SDK, UI will be updated later on processRoomConnected
 
             Log.d(TAG, "Try to connect when entering room");
+
+            // Get and display all cached messages of the room
+            // while connecting to the room.
+            chatService.getCachedMessagesIfExist();
         }
     }
 
@@ -238,7 +242,7 @@ public class ChatPresenter extends BasePresenter implements ChatContract.Present
     @Override
     public void processStoredMessagesResult(JSONArray messages) {
         // remove the UI for getting message history in the dataset
-        chatMessageCollection.remove(1);
+        chatMessageCollection.clear();
         chatView.updateUIChatCollection(false);
 
         if (messages == null || messages.length() == 0) {
